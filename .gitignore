@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Temp / helper scripts
+*.py
+__out.txt
+result.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
