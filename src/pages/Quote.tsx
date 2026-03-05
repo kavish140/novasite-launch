@@ -25,7 +25,7 @@ const Quote = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-6 py-10 md:py-16">
+    <div className="min-h-screen bg-background text-foreground px-4 py-10 sm:px-6 md:py-16">
       <div className="mx-auto max-w-4xl">
         <Link
           to="/"
@@ -35,7 +35,7 @@ const Quote = () => {
           Back to Home
         </Link>
 
-        <div className="mt-8 glass-card p-8 md:p-10 text-center">
+        <div className="mt-8 glass-card p-5 sm:p-8 md:p-10 text-center">
           <h1 className="font-heading text-3xl md:text-5xl font-bold mb-4">
             Get a <span className="gradient-text">Free Quote</span>
           </h1>
@@ -43,10 +43,10 @@ const Quote = () => {
             Tell us about your project and we will help you build a fast, modern website for your business.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-5">
+          <div className="mx-auto mb-5 flex w-full max-w-md flex-col items-center justify-center gap-4 sm:max-w-none sm:flex-row">
             <a
               href="tel:+919326060621"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect button-shimmer interactive-card"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground transition-all glow-effect button-shimmer interactive-card hover:bg-primary/90 sm:w-auto sm:px-8 sm:py-4 sm:text-lg"
             >
               <Phone size={20} />
               Call 9326060621
@@ -55,7 +55,7 @@ const Quote = () => {
               href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20interested%20in%20getting%20a%20website%20built."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all button-shimmer interactive-card"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground transition-all button-shimmer interactive-card hover:bg-primary/90 sm:w-auto sm:px-8 sm:py-4 sm:text-lg"
             >
               <MessageCircle size={20} />
               Chat on WhatsApp
@@ -66,10 +66,10 @@ const Quote = () => {
             href={emailComposeLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
+            className="inline-flex w-full max-w-md items-center justify-center gap-2 rounded-xl bg-secondary px-4 py-3.5 text-base font-semibold text-foreground transition-all button-shimmer interactive-card hover:bg-secondary/80 sm:px-8 sm:py-4 sm:text-lg"
           >
-            <Mail size={20} />
-            kavish@sitenova.dev
+            <Mail size={20} className="shrink-0" />
+            <span className="break-all sm:break-normal">kavish@sitenova.dev</span>
           </a>
         </div>
       </div>
