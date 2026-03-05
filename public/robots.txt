@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kavish140.github.io/novasite-launch/sitemap.xml
