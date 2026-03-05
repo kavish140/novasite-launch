@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { setPageSeo } from "@/lib/seo";
 
 const emailComposeLink =
-  "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Website%20Inquiry%20from%20SiteNova";
+  "https://mail.google.com/mail/?view=cm&fs=1&to=kavish@sitenova.dev&su=Website%20Inquiry%20from%20SiteNova";
 
 const Quote = () => {
   useEffect(() => {
@@ -69,7 +69,7 @@ const Quote = () => {
             className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
           >
             <Mail size={20} />
-            kavishganatra5@gmail.com
+            kavish@sitenova.dev
           </a>
         </div>
       </div>

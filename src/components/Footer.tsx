@@ -2,7 +2,7 @@ import { Phone, Mail, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const emailComposeLink =
-  "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Website%20Inquiry%20from%20SiteNova";
+  "https://mail.google.com/mail/?view=cm&fs=1&to=kavish@sitenova.dev&su=Website%20Inquiry%20from%20SiteNova";
 
 const Footer = () => {
   const scrollToSection = (sectionId: string) => {
@@ -51,7 +51,7 @@ const Footer = () => {
               </li>
               <li>
                 <a href={emailComposeLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
-                  <Mail size={14} /> kavishganatra5@gmail.com
+                  <Mail size={14} /> kavish@sitenova.dev
                 </a>
               </li>
             </ul>
