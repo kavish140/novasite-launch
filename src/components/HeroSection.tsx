@@ -56,8 +56,8 @@ const HeroSection = () => {
           </h1>
 
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 text-balance">
-            We deliver web development and landing page design for businesses in Mumbai
-            and beyond — fast, SEO-ready, mobile-first websites built to grow your brand.
+            We deliver web development and landing page design for businesses in Mumbai,
+            Mulund, and beyond - fast, SEO-ready, mobile-first websites built to grow your brand.
           </p>
 
           {/* CTAs */}

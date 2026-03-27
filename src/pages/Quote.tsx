@@ -11,13 +11,13 @@ const Quote = () => {
     setPageSeo({
       title: "Get a Free Website Quote | SiteNova",
       description:
-        "Get a free website quote from SiteNova. Contact Kavish Ganatra via call, WhatsApp, or email to discuss your custom web development project.",
+        "Get a free website quote from SiteNova. Contact Kavish Ganatra via call, WhatsApp, or email to discuss your custom web development project in Mumbai and Mulund.",
       canonicalPath: "/quote",
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "ContactPage",
         name: "Get a Free Website Quote | SiteNova",
-        url: "https://kavish140.github.io/novasite-launch/quote",
+        url: "https://sitenova.dev/quote",
         description:
           "Contact SiteNova to get a free quote for custom web development and design services.",
       },

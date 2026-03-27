@@ -20,14 +20,36 @@ const Index = () => {
         "@context": "https://schema.org",
         "@type": "ProfessionalService",
         name: "SiteNova",
-        url: "https://kavish140.github.io/novasite-launch/",
+        url: "https://sitenova.dev/",
+        image: "https://sitenova.dev/seo-preview.svg",
         description:
-          "SiteNova offers professional web development and design services to help your business grow.",
+          "SiteNova offers professional web development and design services to help businesses in Mumbai and Mulund grow.",
         founder: {
           "@type": "Person",
           name: "Kavish Ganatra",
         },
-        areaServed: "India",
+        telephone: "+91-9326060621",
+        email: "kavish@sitenova.dev",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Mulund",
+          addressRegion: "Maharashtra",
+          addressCountry: "IN",
+        },
+        areaServed: [
+          {
+            "@type": "City",
+            name: "Mumbai",
+          },
+          {
+            "@type": "City",
+            name: "Mulund",
+          },
+          {
+            "@type": "Country",
+            name: "India",
+          },
+        ],
         serviceType: ["Web Development", "Website Design", "Landing Page Design"],
       },
     });
@@ -35,13 +57,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
-      <HeroSection />
-      <FeaturesSection />
-      <PortfolioSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <CtaSection />
+      <a href="#main-content" className="sr-only focus:not-sr-only">
+        Skip to main content
+      </a>
+      <header>
+        <Navbar />
+      </header>
+      <main id="main-content">
+        <HeroSection />
+        <FeaturesSection />
+        <PortfolioSection />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <CtaSection />
+      </main>
       <Footer />
     </div>
   );
