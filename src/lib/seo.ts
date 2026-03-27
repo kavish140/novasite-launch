@@ -4,6 +4,9 @@ type SeoConfig = {
   canonicalPath?: string;
   robots?: string;
   ogType?: "website" | "article";
+  ogImage?: string;
+  locale?: string;
+  twitterCard?: "summary" | "summary_large_image";
   jsonLd?: Record<string, unknown>;
 };
 
@@ -61,15 +64,44 @@ const getCanonicalUrl = (path: string = "/") => {
   return `${SITE_URL}${normalizedPath}`;
 };
 
+export const buildLocalBusinessJsonLd = () => ({
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "@id": `${SITE_URL}/#business`,
+  name: SITE_NAME,
+  url: `${SITE_URL}/`,
+  image: DEFAULT_OG_IMAGE,
+  description:
+    "SiteNova builds high-performance websites, SEO systems, and conversion-focused digital experiences for local Mumbai businesses and global clients.",
+  telephone: "+91-9326060621",
+  email: "kavish@sitenova.dev",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Mulund",
+    addressRegion: "Maharashtra",
+    addressCountry: "IN",
+  },
+  areaServed: [
+    { "@type": "City", name: "Mumbai" },
+    { "@type": "Place", name: "India" },
+    { "@type": "Place", name: "Worldwide" },
+  ],
+  priceRange: "$$",
+});
+
 export const setPageSeo = ({
   title,
   description,
   canonicalPath = "/",
   robots = "index, follow",
   ogType = "website",
+  ogImage,
+  locale = "en_IN",
+  twitterCard = "summary_large_image",
   jsonLd,
 }: SeoConfig) => {
   const canonicalUrl = getCanonicalUrl(canonicalPath);
+  const ogImageUrl = ogImage?.startsWith("http") ? ogImage : ogImage ? `${SITE_URL}${ogImage}` : DEFAULT_OG_IMAGE;
 
   document.title = title;
 
@@ -115,12 +147,17 @@ export const setPageSeo = ({
 
   upsertMeta('meta[property="og:image"]', {
     property: "og:image",
-    content: DEFAULT_OG_IMAGE,
+    content: ogImageUrl,
+  });
+
+  upsertMeta('meta[property="og:locale"]', {
+    property: "og:locale",
+    content: locale,
   });
 
   upsertMeta('meta[name="twitter:card"]', {
     name: "twitter:card",
-    content: "summary_large_image",
+    content: twitterCard,
   });
 
   upsertMeta('meta[name="twitter:title"]', {
@@ -135,7 +172,7 @@ export const setPageSeo = ({
 
   upsertMeta('meta[name="twitter:image"]', {
     name: "twitter:image",
-    content: DEFAULT_OG_IMAGE,
+    content: ogImageUrl,
   });
 
   upsertMeta('meta[name="twitter:site"]', {

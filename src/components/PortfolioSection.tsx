@@ -1,33 +1,44 @@
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { portfolioProjects } from "@/lib/portfolio-meta";
 import drDiptiImage from "@/assets/Drdiptiganatra.png";
 import jupiterFinanceImage from "@/assets/jupiterfastfinance.png";
 import smartkitImage from "@/assets/Aismartkit.png";
 
-const projects = [
-  {
-    title: "Dr. Dipti Ganatra",
-    description: "A professional clinic website designed for Dr. Dipti Ganatra with elegant branding and easy appointment flow.",
-    image: drDiptiImage,
-    link: "https://drdiptiganatra.com",
-  },
-  {
-    title: "Jupiter Finance",
-    description: "A sleek finance landing page with modern UI, clear call-to-actions, and responsive design across all devices.",
-    image: jupiterFinanceImage,
-    link: "https://kavish140.github.io/jupiter-finance-launch/",
-  },
-  {
-    title: "AI SmartKit",
-    description: "A cutting-edge AI tools platform with a clean interface, intuitive navigation, and high-performance architecture.",
-    image: smartkitImage,
-    link: "https://aismartkit.tech",
-  },
-];
+const imageBySlug = {
+  "dr-dipti-ganatra": drDiptiImage,
+  "jupiter-finance": jupiterFinanceImage,
+  "ai-smartkit": smartkitImage,
+} as const;
 
 const PortfolioSection = () => {
+  const [inView, setInView] = useState(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const current = sectionRef.current;
+    if (!current) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px 0px" },
+    );
+
+    observer.observe(current);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section id="portfolio" className="section-padding relative">
+    <section id="portfolio" ref={sectionRef} className="section-padding relative" aria-labelledby="portfolio-title">
       <div className="mx-auto max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -37,7 +48,7 @@ const PortfolioSection = () => {
           className="text-center mb-16"
         >
           <span className="text-sm font-medium text-accent uppercase tracking-widest">Portfolio</span>
-          <h2 className="font-heading text-3xl md:text-5xl font-bold mt-3 mb-5">
+          <h2 id="portfolio-title" className="font-heading text-3xl md:text-5xl font-bold mt-3 mb-5">
             Websites Built by <span className="gradient-text">Kavish</span>
           </h2>
           <p className="max-w-xl mx-auto text-muted-foreground text-lg">
@@ -46,9 +57,9 @@ const PortfolioSection = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project, i) => (
-            <motion.div
-              key={project.title}
+          {portfolioProjects.map((project, i) => (
+            <motion.article
+              key={project.slug}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -56,7 +67,7 @@ const PortfolioSection = () => {
               className="group"
             >
               <a
-                href={project.link}
+                href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow"
@@ -64,10 +75,10 @@ const PortfolioSection = () => {
               >
                 <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2">
                   <img
-                    src={project.image}
+                    src={imageBySlug[project.slug as keyof typeof imageBySlug]}
                     alt={`${project.title} website screenshot by SiteNova`}
                     className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                    loading="lazy"
+                    loading={inView ? "lazy" : "eager"}
                     decoding="async"
                     width="500"
                     height="400"
@@ -85,7 +96,7 @@ const PortfolioSection = () => {
                   </span>
                 </div>
               </a>
-            </motion.div>
+            </motion.article>
           ))}
         </div>
       </div>

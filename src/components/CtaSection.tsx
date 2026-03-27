@@ -17,7 +17,7 @@ const CtaSection = () => {
         transition={{ duration: 0.6 }}
         className="relative mx-auto max-w-3xl text-center"
       >
-        <h2 className="font-heading text-3xl md:text-5xl font-bold mb-6">
+        <h2 id="cta-title" className="font-heading text-3xl md:text-5xl font-bold mb-6">
           Ready to build something{" "}
           <span className="gradient-text">extraordinary?</span>
         </h2>

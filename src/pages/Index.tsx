@@ -7,7 +7,8 @@ import HowItWorksSection from "@/components/HowItWorksSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import CtaSection from "@/components/CtaSection";
 import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
+import CurrencyTimezoneToggle from "@/components/CurrencyTimezoneToggle";
+import { buildLocalBusinessJsonLd, setPageSeo } from "@/lib/seo";
 
 const Index = () => {
   useEffect(() => {
@@ -16,42 +17,7 @@ const Index = () => {
       description:
         "SiteNova offers professional web development and design services to help your business grow. Contact Kavish Ganatra for custom website solutions.",
       canonicalPath: "/",
-      jsonLd: {
-        "@context": "https://schema.org",
-        "@type": "ProfessionalService",
-        name: "SiteNova",
-        url: "https://sitenova.dev/",
-        image: "https://sitenova.dev/seo-preview.svg",
-        description:
-          "SiteNova offers professional web development and design services to help businesses in Mumbai and Mulund grow.",
-        founder: {
-          "@type": "Person",
-          name: "Kavish Ganatra",
-        },
-        telephone: "+91-9326060621",
-        email: "kavish@sitenova.dev",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Mulund",
-          addressRegion: "Maharashtra",
-          addressCountry: "IN",
-        },
-        areaServed: [
-          {
-            "@type": "City",
-            name: "Mumbai",
-          },
-          {
-            "@type": "City",
-            name: "Mulund",
-          },
-          {
-            "@type": "Country",
-            name: "India",
-          },
-        ],
-        serviceType: ["Web Development", "Website Design", "Landing Page Design"],
-      },
+      jsonLd: buildLocalBusinessJsonLd(),
     });
   }, []);
 
@@ -65,11 +31,20 @@ const Index = () => {
       </header>
       <main id="main-content">
         <HeroSection />
-        <FeaturesSection />
+        <section aria-labelledby="features-title">
+          <FeaturesSection />
+        </section>
         <PortfolioSection />
-        <HowItWorksSection />
-        <TestimonialsSection />
-        <CtaSection />
+        <CurrencyTimezoneToggle />
+        <section aria-labelledby="how-it-works-title">
+          <HowItWorksSection />
+        </section>
+        <section aria-labelledby="testimonials-title">
+          <TestimonialsSection />
+        </section>
+        <section aria-labelledby="cta-title">
+          <CtaSection />
+        </section>
       </main>
       <Footer />
     </div>

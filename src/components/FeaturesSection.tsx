@@ -64,7 +64,7 @@ const FeaturesSection = () => {
 					<span className="text-sm font-medium text-primary uppercase tracking-widest">
 						Our Services
 					</span>
-					<h2 className="font-heading text-3xl md:text-5xl font-bold mt-3 mb-5">
+					<h2 id="features-title" className="font-heading text-3xl md:text-5xl font-bold mt-3 mb-5">
 						Web Development Services your business needs to{" "}
 						<span className="gradient-text">stand out online</span>
 					</h2>
