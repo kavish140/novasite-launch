@@ -17,12 +17,15 @@ const CtaSection = () => {
         transition={{ duration: 0.6 }}
         className="relative mx-auto max-w-3xl text-center"
       >
+        <p className="mx-auto mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+          Projects starting from Rs. 5,000
+        </p>
         <h2 id="cta-title" className="font-heading text-3xl md:text-5xl font-bold mb-6">
           Ready to build something{" "}
-          <span className="gradient-text">extraordinary?</span>
+          <span className="gradient-text">affordable and effective?</span>
         </h2>
         <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
-          Get in touch today and let's bring your vision to life. We'd love to hear about your project.
+          Get in touch today for a clean, modern website that fits your budget. Share your requirements and I’ll reply with a clear quote.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">

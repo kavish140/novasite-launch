@@ -108,7 +108,7 @@ export const buildLocalBusinessJsonLd = () => ({
         name,
       })),
       serviceType: "Website design and web development",
-      priceRange: "$$",
+      priceRange: "Rs. 5,000+",
     },
   ],
 });

@@ -9,23 +9,23 @@ const emailComposeLink =
 const Quote = () => {
   useEffect(() => {
     setPageSeo({
-      title: "Get a Free Website Quote in Mulund & Mumbai | SiteNova",
+      title: "Website Quotes Starting from Rs. 5,000 | SiteNova",
       description:
-        "Get a free website quote from SiteNova. Contact Kavish Ganatra via call, WhatsApp, or email to discuss your custom web development project in Mulund, Mumbai, and nearby areas.",
+        "Get a website quote starting from Rs. 5,000. Contact Kavish Ganatra via call, WhatsApp, or email to discuss your custom web development project in Mulund, Mumbai, and nearby areas.",
       canonicalPath: "/quote",
       keywords: [
         "website quote Mulund",
         "website designer Mumbai",
         "web development quote",
-        "best website designer in Mulund",
+        "website starting price",
       ],
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "ContactPage",
-        name: "Get a Free Website Quote in Mulund & Mumbai | SiteNova",
+        name: "Website Quotes Starting from Rs. 5,000 | SiteNova",
         url: "https://sitenova.dev/quote",
         description:
-          "Contact SiteNova to get a free quote for custom web development and design services in Mulund, Mumbai, and nearby areas.",
+          "Contact SiteNova to get a website quote starting from Rs. 5,000 for custom web development and design services in Mulund, Mumbai, and nearby areas.",
       },
     });
   }, []);
@@ -43,10 +43,10 @@ const Quote = () => {
 
         <div className="mt-8 glass-card p-5 sm:p-8 md:p-10 text-center">
           <h1 className="font-heading text-3xl md:text-5xl font-bold mb-4">
-            Get a <span className="gradient-text">Free Quote</span>
+            Website quotes starting from <span className="gradient-text">Rs. 5,000</span>
           </h1>
           <p className="text-muted-foreground text-base md:text-lg mb-8 max-w-2xl mx-auto">
-            Tell us about your project and we will help you build a fast, modern website for your business.
+            Tell us about your project and I’ll help you choose the right website option for your business and budget.
           </p>
 
           <div className="mx-auto mb-5 flex w-full max-w-md flex-col items-center justify-center gap-4 sm:max-w-none sm:flex-row">
