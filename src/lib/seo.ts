@@ -7,13 +7,15 @@ type SeoConfig = {
   ogImage?: string;
   locale?: string;
   twitterCard?: "summary" | "summary_large_image";
-  jsonLd?: Record<string, unknown>;
+  keywords?: string[];
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 };
 
 const SITE_NAME = "SiteNova";
 const SITE_URL = "https://sitenova.dev";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/seo-preview.svg`;
 const TWITTER_HANDLE = "@kavish140";
+const SERVICE_AREAS = ["Mulund", "Mumbai", "Bhandup", "Nahur", "Thane", "Ghatkopar", "Powai", "Central Mumbai"];
 
 const upsertMeta = (selector: string, attributes: Record<string, string>) => {
   let element = document.head.querySelector(selector) as HTMLMetaElement | null;
@@ -41,8 +43,17 @@ const upsertLink = (selector: string, attributes: Record<string, string>) => {
   });
 };
 
-const setJsonLd = (schema: Record<string, unknown>) => {
+const setJsonLd = (schema?: Record<string, unknown> | Record<string, unknown>[]) => {
   const scriptId = "route-jsonld";
+
+  document.head.querySelectorAll('script[type="application/ld+json"]').forEach((script) => {
+    script.remove();
+  });
+
+  if (!schema) {
+    return;
+  }
+
   let script = document.getElementById(scriptId) as HTMLScriptElement | null;
 
   if (!script) {
@@ -66,27 +77,40 @@ const getCanonicalUrl = (path: string = "/") => {
 
 export const buildLocalBusinessJsonLd = () => ({
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "@id": `${SITE_URL}/#business`,
-  name: SITE_NAME,
-  url: `${SITE_URL}/`,
-  image: DEFAULT_OG_IMAGE,
-  description:
-    "SiteNova builds high-performance websites, SEO systems, and conversion-focused digital experiences for local Mumbai businesses and global clients.",
-  telephone: "+91-9326060621",
-  email: "kavish@sitenova.dev",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Mulund",
-    addressRegion: "Maharashtra",
-    addressCountry: "IN",
-  },
-  areaServed: [
-    { "@type": "City", name: "Mumbai" },
-    { "@type": "Place", name: "India" },
-    { "@type": "Place", name: "Worldwide" },
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      name: SITE_NAME,
+      url: `${SITE_URL}/`,
+      description:
+        "Best website designer in Mulund, Mumbai, and nearby areas for SEO-ready, mobile-first websites.",
+      inLanguage: "en-IN",
+    },
+    {
+      "@type": "ProfessionalService",
+      "@id": `${SITE_URL}/#business`,
+      name: SITE_NAME,
+      url: `${SITE_URL}/`,
+      image: DEFAULT_OG_IMAGE,
+      description:
+        "SiteNova builds high-performance websites, SEO systems, and conversion-focused digital experiences for local Mumbai businesses and surrounding areas.",
+      telephone: "+91-9326060621",
+      email: "kavish@sitenova.dev",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Mulund",
+        addressRegion: "Maharashtra",
+        addressCountry: "IN",
+      },
+      areaServed: SERVICE_AREAS.map((name) => ({
+        "@type": "City",
+        name,
+      })),
+      serviceType: "Website design and web development",
+      priceRange: "$$",
+    },
   ],
-  priceRange: "$$",
 });
 
 export const setPageSeo = ({
@@ -98,6 +122,7 @@ export const setPageSeo = ({
   ogImage,
   locale = "en_IN",
   twitterCard = "summary_large_image",
+  keywords,
   jsonLd,
 }: SeoConfig) => {
   const canonicalUrl = getCanonicalUrl(canonicalPath);
@@ -109,6 +134,13 @@ export const setPageSeo = ({
     name: "description",
     content: description,
   });
+
+  if (keywords?.length) {
+    upsertMeta('meta[name="keywords"]', {
+      name: "keywords",
+      content: keywords.join(", "),
+    });
+  }
 
   upsertMeta('meta[name="robots"]', {
     name: "robots",

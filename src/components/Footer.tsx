@@ -19,7 +19,7 @@ const Footer = () => {
               Site<span className="gradient-text">Nova</span>
             </span>
             <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-              We build stunning, high-performing websites for businesses, clinics, startups, and brands.
+              We build stunning, high-performing websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Thane, Ghatkopar, and Powai.
             </p>
           </div>
 

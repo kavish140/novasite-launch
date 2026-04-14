@@ -46,18 +46,19 @@ const HeroSection = () => {
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 mb-8 interactive-card hover-glow">
             <Sparkles size={14} className="text-accent" />
             <span className="text-xs font-medium text-muted-foreground">
-              Professional websites, delivered fast
+              Website design for Mulund, Mumbai, and nearby suburbs
             </span>
           </div>
 
           <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-balance">
-            Custom Web Development Services{" "}
-            <span className="gradient-text animated-gradient">| SiteNova</span>
+            Best Website Designer in Mulund, Mumbai & Nearby Areas
+            <span className="block gradient-text animated-gradient">SiteNova</span>
           </h1>
 
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 text-balance">
-            We deliver web development and landing page design for businesses in Mumbai,
-            Mulund, and beyond - fast, SEO-ready, mobile-first websites built to grow your brand.
+            We deliver web development and landing page design for businesses in Mulund,
+            Mumbai, Bhandup, Thane, Ghatkopar, Powai, and beyond with fast, SEO-ready,
+            mobile-first websites built to grow your brand.
           </p>
 
           {/* CTAs */}

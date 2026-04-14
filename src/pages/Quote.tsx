@@ -9,17 +9,23 @@ const emailComposeLink =
 const Quote = () => {
   useEffect(() => {
     setPageSeo({
-      title: "Get a Free Website Quote | SiteNova",
+      title: "Get a Free Website Quote in Mulund & Mumbai | SiteNova",
       description:
-        "Get a free website quote from SiteNova. Contact Kavish Ganatra via call, WhatsApp, or email to discuss your custom web development project in Mumbai and Mulund.",
+        "Get a free website quote from SiteNova. Contact Kavish Ganatra via call, WhatsApp, or email to discuss your custom web development project in Mulund, Mumbai, and nearby areas.",
       canonicalPath: "/quote",
+      keywords: [
+        "website quote Mulund",
+        "website designer Mumbai",
+        "web development quote",
+        "best website designer in Mulund",
+      ],
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "ContactPage",
-        name: "Get a Free Website Quote | SiteNova",
+        name: "Get a Free Website Quote in Mulund & Mumbai | SiteNova",
         url: "https://sitenova.dev/quote",
         description:
-          "Contact SiteNova to get a free quote for custom web development and design services.",
+          "Contact SiteNova to get a free quote for custom web development and design services in Mulund, Mumbai, and nearby areas.",
       },
     });
   }, []);
