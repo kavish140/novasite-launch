@@ -127,47 +127,26 @@ const Quote = () => {
     setSubmitError("");
 
     try {
+      const formData = new FormData();
+      formData.append("access_key", "671591b9-2925-44ba-ba00-12e0e092bb34");
+      formData.append("subject", `New Lead - ${name} (${projectType})`);
+      formData.append("from_name", "SiteNova Web Intake");
+      formData.append("project_type", projectType);
+      formData.append("requirements", requirements);
+      formData.append("budget", budget);
+      formData.append("timeline", timeline);
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("phone", phone);
+      formData.append("business_name", businessName || "Not specified");
+
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          access_key: "671591b9-2925-44ba-ba00-12e0e092bb34",
-          subject: `New Lead - ${name} (${projectType})`,
-          from_name: "SiteNova Web Intake",
-          project_type: projectType,
-          requirements: requirements,
-          budget: budget,
-          timeline: timeline,
-          name: name,
-          email: email,
-          phone: phone,
-          business_name: businessName || "Not specified",
-        }),
+        body: formData,
       });
 
-      if (response.status === 429) {
-        setSubmitError(
-          "Too many submissions. Please wait a few minutes and try again."
-        );
-        return;
-      }
-
-      if (!response.ok) {
-        let errorMsg = `Server returned status ${response.status}.`;
-        try {
-          const errData = await response.json();
-          if (errData.message) errorMsg = errData.message;
-        } catch {
-          // Response body wasn't JSON — use the status message
-        }
-        setSubmitError(errorMsg + " Please try again.");
-        return;
-      }
-
       const data = await response.json();
+
       if (data.success) {
         setStep(4);
       } else {
