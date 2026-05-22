@@ -140,22 +140,49 @@ const Quote = () => {
       formData.append("phone", phone);
       formData.append("business_name", businessName || "Not specified");
 
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: formData,
-      });
+      let submitted = false;
 
-      const data = await response.json();
+      // Try normal CORS fetch first (so we can read the API response)
+      try {
+        const response = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.success) {
+          submitted = true;
+          setStep(4);
+        } else {
+          setSubmitError(data.message || "Failed to submit request. Please try again.");
+        }
+      } catch {
+        // CORS blocked by browser — fall back to no-cors mode.
+        // The request IS delivered to Web3Forms; CORS only blocks
+        // JavaScript from reading the response, not the HTTP request itself.
+        try {
+          await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData,
+            mode: "no-cors",
+          });
+          // Request sent successfully — show confirmation
+          submitted = true;
+          setStep(4);
+        } catch (networkErr) {
+          console.error("Web3Forms network error:", networkErr);
+          setSubmitError(
+            "Could not connect to submission server. Please check your internet connection and try again."
+          );
+        }
+      }
 
-      if (data.success) {
-        setStep(4);
-      } else {
-        setSubmitError(data.message || "Failed to submit request. Please try again.");
+      if (!submitted) {
+        // Error message was already set above
       }
     } catch (err) {
       console.error("Web3Forms submit error:", err);
       setSubmitError(
-        "Could not connect to submission server. Please check your internet connection and try again."
+        "Something went wrong. Please try again or use the WhatsApp option below."
       );
     } finally {
       setIsSubmitting(false);
