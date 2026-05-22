@@ -39,6 +39,7 @@ const Navbar = () => {
               type="button"
               key={link.label}
               onClick={() => scrollToSection(link.id)}
+              aria-label={`Scroll to ${link.label} section`}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {link.label}
@@ -50,7 +51,7 @@ const Navbar = () => {
             className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80 transition-colors"
             aria-label="Toggle theme"
           >
-            {mounted && isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+            {!mounted ? null : isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <Link
             to="/quote"
@@ -88,6 +89,7 @@ const Navbar = () => {
                     scrollToSection(link.id);
                     setMobileOpen(false);
                   }}
+                  aria-label={`Scroll to ${link.label} section`}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {link.label}
@@ -99,7 +101,7 @@ const Navbar = () => {
                 className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-5 py-2.5 text-sm font-medium text-foreground"
                 aria-label="Toggle theme"
               >
-                {mounted && isDarkMode ? (
+                {!mounted ? null : isDarkMode ? (
                   <span className="inline-flex items-center gap-2"><Sun size={16} /> Light Mode</span>
                 ) : (
                   <span className="inline-flex items-center gap-2"><Moon size={16} /> Dark Mode</span>

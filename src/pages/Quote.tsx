@@ -31,7 +31,7 @@ const Quote = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-4 py-10 sm:px-6 md:py-16">
+    <main className="min-h-screen bg-background text-foreground px-4 py-10 sm:px-6 md:py-16">
       <div className="mx-auto max-w-4xl">
         <Link
           to="/"
@@ -46,7 +46,7 @@ const Quote = () => {
             Website quotes starting from <span className="gradient-text">Rs. 5,000</span>
           </h1>
           <p className="text-muted-foreground text-base md:text-lg mb-8 max-w-2xl mx-auto">
-            Tell us about your project and I’ll help you choose the right website option for your business and budget.
+            Tell us about your project and I'll help you choose the right website option for your business and budget.
           </p>
 
           <div className="mx-auto mb-5 flex w-full max-w-md flex-col items-center justify-center gap-4 sm:max-w-none sm:flex-row">
@@ -79,7 +79,7 @@ const Quote = () => {
           </a>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

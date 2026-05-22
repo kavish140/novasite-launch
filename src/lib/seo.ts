@@ -13,7 +13,7 @@ type SeoConfig = {
 
 const SITE_NAME = "SiteNova";
 const SITE_URL = "https://sitenova.dev";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/seo-preview.svg`;
+const DEFAULT_OG_IMAGE = `${SITE_URL}/seo-preview.png`;
 const TWITTER_HANDLE = "@kavish140";
 const SERVICE_AREAS = ["Mulund", "Mumbai", "Bhandup", "Nahur", "Thane", "Ghatkopar", "Powai", "Central Mumbai"];
 
@@ -46,9 +46,10 @@ const upsertLink = (selector: string, attributes: Record<string, string>) => {
 const setJsonLd = (schema?: Record<string, unknown> | Record<string, unknown>[]) => {
   const scriptId = "route-jsonld";
 
-  document.head.querySelectorAll('script[type="application/ld+json"]').forEach((script) => {
-    script.remove();
-  });
+  const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
+  if (existing) {
+    existing.remove();
+  }
 
   if (!schema) {
     return;
@@ -180,6 +181,16 @@ export const setPageSeo = ({
   upsertMeta('meta[property="og:image"]', {
     property: "og:image",
     content: ogImageUrl,
+  });
+
+  upsertMeta('meta[property="og:image:width"]', {
+    property: "og:image:width",
+    content: "1200",
+  });
+
+  upsertMeta('meta[property="og:image:height"]', {
+    property: "og:image:height",
+    content: "630",
   });
 
   upsertMeta('meta[property="og:locale"]', {

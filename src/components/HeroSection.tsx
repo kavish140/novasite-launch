@@ -71,7 +71,7 @@ const HeroSection = () => {
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
-              href="#/"
+              href="#portfolio"
               onClick={scrollToPortfolio}
               className="inline-flex items-center gap-2 rounded-xl border border-border px-8 py-3.5 text-base font-medium text-foreground hover:bg-secondary transition-colors interactive-card"
             >

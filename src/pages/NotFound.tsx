@@ -10,7 +10,6 @@ const NotFound = () => {
     setPageSeo({
       title: "Page Not Found | SiteNova",
       description: "The page you are looking for could not be found.",
-      canonicalPath: location.pathname || "/404",
       robots: "noindex, nofollow",
     });
   }, [location.pathname]);
