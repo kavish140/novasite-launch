@@ -55,6 +55,15 @@
           );
         }
       }(window.location));
+
+      // Handle SPA version mismatch (cached index.html requesting deleted JS chunks)
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && event.reason.message && event.reason.message.match(/Failed to fetch dynamically imported module/i)) {
+          console.warn('Dynamic import failed, likely due to a new deployment. Reloading...');
+          event.preventDefault();
+          window.location.reload();
+        }
+      });
     </script>
 
     <script type="application/ld+json">
