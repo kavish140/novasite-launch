@@ -15,7 +15,7 @@ import {
   Loader2,
   Building,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { setPageSeo } from "@/lib/seo";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -73,6 +73,7 @@ const timelineOptions = [
 ];
 
 const Quote = () => {
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [projectType, setProjectType] = useState("");
   const [requirements, setRequirements] = useState("");
@@ -86,6 +87,21 @@ const Quote = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.projectType) {
+        setProjectType(location.state.projectType);
+        setStep(2);
+      }
+      if (location.state.requirements) {
+        setRequirements(location.state.requirements);
+      }
+      if (location.state.budget) {
+        setBudget(location.state.budget);
+      }
+    }
+  }, [location.state]);
 
   useEffect(() => {
     setPageSeo({

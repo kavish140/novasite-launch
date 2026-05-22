@@ -12,7 +12,7 @@ const Footer = () => {
   return (
     <footer className="border-t border-border/40 bg-card/30">
       <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div>
             <span className="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight">
@@ -20,19 +20,27 @@ const Footer = () => {
               <span>Site<span className="gradient-text">Nova</span></span>
             </span>
             <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-              We build stunning, high-performing websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Thane, Ghatkopar, and Powai.
+              We build stunning, high-performing websites for businesses in Mumbai and surrounding commercial areas.
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Services */}
           <div>
-            <h4 className="font-heading text-sm font-semibold mb-4">Quick Links</h4>
+            <h4 className="font-heading text-sm font-semibold mb-4">Our Services</h4>
             <ul className="space-y-2.5">
-              <li><button type="button" onClick={() => scrollToSection("features")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</button></li>
-              <li><button type="button" onClick={() => scrollToSection("portfolio")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Portfolio</button></li>
-              <li><button type="button" onClick={() => scrollToSection("how-it-works")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">How It Works</button></li>
-              <li><button type="button" onClick={() => scrollToSection("testimonials")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Testimonials</button></li>
-              <li><Link to="/quote" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
+              <li><Link to="/services/ecommerce" className="text-sm text-muted-foreground hover:text-foreground transition-colors">E-commerce Stores</Link></li>
+              <li><Link to="/services/web-applications" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Custom Web Apps</Link></li>
+              <li><Link to="/services/seo-optimization" className="text-sm text-muted-foreground hover:text-foreground transition-colors">SEO & Speed Tuning</Link></li>
+            </ul>
+          </div>
+
+          {/* Locations */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold mb-4">Service Areas</h4>
+            <ul className="space-y-2.5">
+              <li><Link to="/location/thane" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Thane Web Design</Link></li>
+              <li><Link to="/location/powai" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Powai Web Developer</Link></li>
+              <li><Link to="/location/andheri" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Andheri Web Designer</Link></li>
             </ul>
           </div>
 

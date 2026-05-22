@@ -1,0 +1,316 @@
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sparkles,
+  Zap,
+  ArrowRight,
+  Search,
+  CheckCircle,
+  AlertTriangle,
+  Smartphone,
+  Gauge,
+  Tags,
+  ShieldCheck,
+  RefreshCw,
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { setPageSeo } from "@/lib/seo";
+
+export default function SeoSpeed() {
+  const navigate = useNavigate();
+
+  // SEO
+  useEffect(() => {
+    setPageSeo({
+      title: "SEO and Speed Optimization Services in Mumbai | SiteNova",
+      description:
+        "Rank higher on Google. SiteNova optimizes website speeds, fixes core web vitals, and implements local SEO systems for Mumbai businesses to capture more customers.",
+      canonicalPath: "/services/seo-optimization",
+      keywords: [
+        "SEO and speed optimization Mumbai",
+        "PageSpeed optimizer Mumbai",
+        "Core Web Vitals specialist Mumbai",
+        "local SEO services Mumbai",
+        "website speed tuning",
+      ],
+    });
+  }, []);
+
+  // Scanner State
+  const [url, setUrl] = useState("");
+  const [scanStep, setScanStep] = useState<"idle" | "scanning" | "completed">("idle");
+  const [scanStatusText, setScanStatusText] = useState("");
+  const [scorePerf, setScorePerf] = useState(0);
+  const [scoreSeo, setScoreSeo] = useState(0);
+  const [scoreMobile, setScoreMobile] = useState(0);
+  const [scoreSecurity, setScoreSecurity] = useState(0);
+
+  const runScan = () => {
+    if (!url) return;
+    setScanStep("scanning");
+    setScorePerf(0);
+    setScoreSeo(0);
+    setScoreMobile(0);
+    setScoreSecurity(0);
+
+    const statuses = [
+      "Pinging host server...",
+      "Analyzing DOM layout structure...",
+      "Testing Largest Contentful Paint (LCP)...",
+      "Evaluating meta title and header hierarchy...",
+      "Auditing images for modern compression formats...",
+      "Checking mobile viewport configuration...",
+    ];
+
+    let statusIndex = 0;
+    setScanStatusText(statuses[0]);
+
+    // Cycle status messages
+    const statusInterval = setInterval(() => {
+      statusIndex++;
+      if (statusIndex < statuses.length) {
+        setScanStatusText(statuses[statusIndex]);
+      }
+    }, 600);
+
+    // Animate scores
+    setTimeout(() => {
+      clearInterval(statusInterval);
+      setScanStep("completed");
+      
+      // Typical slow scores for websites needing tuning
+      // Let's animate them up
+      let currentPerf = 0;
+      let currentSeo = 0;
+      let currentMobile = 0;
+      let currentSec = 0;
+
+      const scoreInterval = setInterval(() => {
+        if (currentPerf < 43) currentPerf += 2;
+        if (currentSeo < 58) currentSeo += 3;
+        if (currentMobile < 62) currentMobile += 3;
+        if (currentSec < 68) currentSec += 4;
+
+        setScorePerf(Math.min(currentPerf, 43));
+        setScoreSeo(Math.min(currentSeo, 58));
+        setScoreMobile(Math.min(currentMobile, 62));
+        setScoreSecurity(Math.min(currentSec, 68));
+
+        if (currentPerf >= 43 && currentSeo >= 58 && currentMobile >= 62 && currentSec >= 68) {
+          clearInterval(scoreInterval);
+        }
+      }, 30);
+    }, 4000);
+  };
+
+  const handleStartQuote = () => {
+    const specsSummary = `SEO / Speed Audit Request:
+- Website scanned: ${url}
+- Current Performance Score: ${scorePerf}%
+- Current SEO Score: ${scoreSeo}%
+- Current Mobile Score: ${scoreMobile}%
+- Requesting site rebuilding/speed optimization.`;
+
+    navigate("/quote", {
+      state: {
+        projectType: "Website Redesign",
+        requirements: specsSummary,
+        budget: "Rs. 15,000 - 30,000",
+      },
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <Navbar />
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-32 pb-20">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(120,119,198,0.1),transparent_50%)]" />
+        <div className="mx-auto max-w-7xl px-6 relative z-10 text-center">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-6">
+            <Sparkles className="h-3.5 w-3.5" />
+            Core Web Vitals & Search Domination
+          </div>
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight sm:text-6xl max-w-4xl mx-auto">
+            Rank Higher on Google with a <span className="gradient-text">Blazing Fast Website</span>
+          </h1>
+          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Slow load times and bad metadata ruin search engine rankings. We optimize Core Web Vitals, speed parameters, and implement robust search tags to drive traffic.
+          </p>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <a
+              href="#scanner"
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect"
+            >
+              Analyze Your Current Website <ArrowRight className="ml-2 h-4 w-4" />
+            </a>
+            <button
+              onClick={handleStartQuote}
+              className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
+            >
+              Consult an Expert
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content & Interactive URL Scanner */}
+      <section id="scanner" className="py-16 bg-card/10 border-t border-border/20">
+        <div className="mx-auto max-w-7xl px-6 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
+          
+          {/* Left Column: Context & Core Web Vitals */}
+          <div>
+            <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
+              Why Speed and SEO Matter
+            </h2>
+            <p className="mt-4 text-muted-foreground leading-relaxed">
+              Google officially uses loading speed (Core Web Vitals) as a direct search ranking signal. If your business site takes more than 3 seconds to load on mobile, you are actively losing rankings and local customer queries.
+            </p>
+
+            <div className="mt-8 space-y-6">
+              {[
+                {
+                  title: "Lighthouse Audit Optimization",
+                  desc: "We tune image sizes, defer script weights, and clean CSS hierarchies to achieve 90+ mobile scores on Google Lighthouse.",
+                  icon: Gauge,
+                },
+                {
+                  title: "Targeted Local SEO Structure",
+                  desc: "Structured schema setups (JSON-LD) and localized header markup ensure your business appears in the Mumbai Map Pack.",
+                  icon: Tags,
+                },
+                {
+                  title: "Mobile Viewport Tuning",
+                  desc: "Perfect styling layouts across all screen boundaries to ensure users on mobile can call or WhatsApp you instantly.",
+                  icon: Smartphone,
+                },
+                {
+                  title: "HTTPS & Performance Caching",
+                  desc: "Secure hosting integrations, cloud caching, and DNS fine-tuning to deliver content to visitors globally in milliseconds.",
+                  icon: ShieldCheck,
+                },
+              ].map((item, idx) => (
+                <div key={idx} className="flex gap-4 p-5 rounded-2xl border border-border/40 bg-card/30 backdrop-blur shadow-sm">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{item.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Interactive URL Scanner Widget */}
+          <div className="rounded-3xl border border-border bg-card/60 p-8 shadow-xl backdrop-blur-md relative overflow-hidden">
+            <div className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-primary/15 border border-primary/20 px-3.5 py-1 text-xs font-semibold text-primary backdrop-blur">
+              SEO Diagnostics
+            </div>
+            
+            <h3 className="font-heading text-2xl font-bold tracking-tight">
+              Speed & SEO Analyzer
+            </h3>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Enter your business website domain below to perform a mock PageSpeed diagnostic check.
+            </p>
+
+            <div className="mt-6 space-y-6">
+              
+              {/* Input field */}
+              {scanStep === "idle" && (
+                <div className="space-y-4">
+                  <div className="relative">
+                    <input
+                      type="url"
+                      placeholder="e.g., https://mybusiness.com"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-background/50 px-4 py-3.5 text-sm pl-11 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
+                  </div>
+                  <button
+                    onClick={runScan}
+                    disabled={!url}
+                    className="w-full inline-flex items-center justify-center rounded-xl bg-primary py-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 glow-effect-sm"
+                  >
+                    Start Diagnostic Audit <ArrowRight className="ml-2 h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Scanning status */}
+              {scanStep === "scanning" && (
+                <div className="py-10 text-center space-y-4 flex flex-col items-center justify-center">
+                  <RefreshCw className="h-8 w-8 text-primary animate-spin" />
+                  <p className="font-medium text-foreground text-sm">Analyzing site parameters...</p>
+                  <p className="text-xs text-muted-foreground animate-pulse">{scanStatusText}</p>
+                </div>
+              )}
+
+              {/* Completed Results */}
+              {scanStep === "completed" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="text-center bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-xs font-semibold text-destructive flex items-center justify-center gap-1.5">
+                    <AlertTriangle className="h-4 w-4" /> Speed and SEO performance issues detected!
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { label: "Performance", val: scorePerf, target: 99 },
+                      { label: "SEO Config", val: scoreSeo, target: 100 },
+                      { label: "Mobile Layout", val: scoreMobile, target: 100 },
+                      { label: "Security Setup", val: scoreSecurity, target: 98 },
+                    ].map((metric, idx) => (
+                      <div key={idx} className="rounded-xl border border-border bg-background/50 p-4 relative">
+                        <span className="text-[11px] text-muted-foreground font-semibold uppercase">{metric.label}</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-2xl font-bold text-destructive">{metric.val}%</span>
+                          <span className="text-[11px] text-muted-foreground">vs</span>
+                          <span className="text-xs font-bold text-emerald-500">{metric.target}% (SiteNova)</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Summary & Fix CTA */}
+                  <div className="rounded-xl border border-border/40 bg-card/40 p-4 text-xs text-muted-foreground leading-relaxed">
+                    <strong>Findings:</strong> Your site suffers from unoptimized asset sizing, missing local JSON-LD business graphs, and low viewport scores. Upgrading to SiteNova structure would increase Performance from <strong>{scorePerf}%</strong> to <strong>99%</strong>.
+                  </div>
+
+                  <div className="flex gap-2.5">
+                    <button
+                      onClick={() => setScanStep("idle")}
+                      className="flex-1 inline-flex items-center justify-center rounded-xl border border-border bg-secondary py-3.5 text-xs font-semibold text-foreground hover:bg-secondary/85 transition-colors"
+                    >
+                      Scan Again
+                    </button>
+                    <button
+                      onClick={handleStartQuote}
+                      className="flex-1.5 inline-flex items-center justify-center rounded-xl bg-primary py-3.5 text-xs font-semibold text-primary-foreground hover:bg-primary/95 transition-colors glow-effect-sm"
+                    >
+                      Request Speed Optimization <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}

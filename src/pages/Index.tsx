@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
@@ -11,6 +12,8 @@ import CurrencyTimezoneToggle from "@/components/CurrencyTimezoneToggle";
 import { buildLocalBusinessJsonLd, setPageSeo } from "@/lib/seo";
 
 const Index = () => {
+  const location = useLocation();
+
   useEffect(() => {
     setPageSeo({
       title: "Best Website Designer in Mulund, Mumbai & Nearby Areas | SiteNova",
@@ -28,6 +31,18 @@ const Index = () => {
       jsonLd: buildLocalBusinessJsonLd(),
     });
   }, []);
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.substring(1);
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 200);
+    }
+  }, [location]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
