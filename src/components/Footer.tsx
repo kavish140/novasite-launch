@@ -15,8 +15,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand */}
           <div>
-            <span className="font-heading text-xl font-bold tracking-tight">
-              Site<span className="gradient-text">Nova</span>
+            <span className="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight">
+              <img src="/logo-icon.svg" className="h-6 w-6" alt="SiteNova Logo" />
+              <span>Site<span className="gradient-text">Nova</span></span>
             </span>
             <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
               We build stunning, high-performing websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Thane, Ghatkopar, and Powai.
