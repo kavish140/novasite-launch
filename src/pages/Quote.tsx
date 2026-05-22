@@ -148,6 +148,25 @@ const Quote = () => {
         }),
       });
 
+      if (response.status === 429) {
+        setSubmitError(
+          "Too many submissions. Please wait a few minutes and try again."
+        );
+        return;
+      }
+
+      if (!response.ok) {
+        let errorMsg = `Server returned status ${response.status}.`;
+        try {
+          const errData = await response.json();
+          if (errData.message) errorMsg = errData.message;
+        } catch {
+          // Response body wasn't JSON — use the status message
+        }
+        setSubmitError(errorMsg + " Please try again.");
+        return;
+      }
+
       const data = await response.json();
       if (data.success) {
         setStep(4);
@@ -155,8 +174,9 @@ const Quote = () => {
         setSubmitError(data.message || "Failed to submit request. Please try again.");
       }
     } catch (err) {
+      console.error("Web3Forms submit error:", err);
       setSubmitError(
-        "Could not connect to submission server. Please check your internet connection."
+        "Could not connect to submission server. Please check your internet connection and try again."
       );
     } finally {
       setIsSubmitting(false);
