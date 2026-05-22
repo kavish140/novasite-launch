@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>SiteNova</title>
     <script type="text/javascript">
-      var segmentCount = 1;
+      var segmentCount = window.location.hostname.indexOf("github.io") !== -1 ? 1 : 0;
       var l = window.location;
       l.replace(
         l.protocol +
