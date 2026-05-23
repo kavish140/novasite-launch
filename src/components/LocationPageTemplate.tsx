@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   CheckCircle,
   MapPin,
   MessageSquare,
@@ -61,6 +62,15 @@ export default function LocationPageTemplate({
       <section className="relative overflow-hidden pt-32 pb-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(120,119,198,0.1),transparent_50%)]" />
         <div className="mx-auto max-w-7xl px-6 relative z-10 text-center">
+          <div className="mb-6 flex justify-start">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 rounded-xl border border-border/80 bg-secondary/20 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+            >
+              <ArrowLeft size={14} />
+              Back to Main Site
+            </Link>
+          </div>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-6">
             <MapPin className="h-3.5 w-3.5" />
             Local Web Design & SEO Expert
