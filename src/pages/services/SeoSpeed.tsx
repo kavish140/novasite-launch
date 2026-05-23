@@ -220,7 +220,7 @@ export default function SeoSpeed() {
           </div>
 
           {/* Right Column: Interactive URL Scanner Widget */}
-          <div className="rounded-3xl border border-border bg-card/60 p-8 shadow-xl backdrop-blur-md relative overflow-hidden">
+          <div className="rounded-3xl border border-border bg-card/60 p-8 shadow-xl backdrop-blur-md relative">
             <div className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-primary/15 border border-primary/20 px-3.5 py-1 text-xs font-semibold text-primary backdrop-blur">
               SEO Diagnostics
             </div>
@@ -290,14 +290,22 @@ export default function SeoSpeed() {
                       { label: "Mobile Layout", val: scoreMobile, target: 100 },
                       { label: "Security Setup", val: scoreSecurity, target: 98 },
                     ].map((metric, idx) => (
-                      <div key={idx} className="rounded-xl border border-border bg-background/50 p-4 relative">
+                      <div key={idx} className="rounded-xl border border-border bg-background/50 p-4 relative flex flex-col justify-between">
                         <span className="text-[11px] text-muted-foreground font-semibold uppercase">{metric.label}</span>
-                        <div className="flex items-baseline gap-2 mt-1">
-                          <span className={`text-2xl font-bold ${metric.val >= 90 ? "text-emerald-500" : "text-destructive"}`}>
+                        <div className="flex flex-col gap-0.5 mt-1.5">
+                          <span className={`text-2xl font-bold leading-none ${metric.val >= 90 ? "text-emerald-500" : "text-destructive"}`}>
                             {metric.val}%
                           </span>
-                          <span className="text-[11px] text-muted-foreground">vs</span>
-                          <span className="text-xs font-bold text-emerald-500">{metric.target}% (SiteNova)</span>
+                          {!isOptimized && (
+                            <span className="text-[10px] text-muted-foreground">
+                              vs <span className="text-emerald-500 font-semibold">{metric.target}%</span> target
+                            </span>
+                          )}
+                          {isOptimized && (
+                            <span className="text-[10px] text-emerald-500 font-semibold leading-none">
+                              Optimal
+                            </span>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -316,16 +324,16 @@ export default function SeoSpeed() {
                     )}
                   </div>
 
-                  <div className="flex gap-2.5">
+                  <div className="flex flex-col sm:flex-row gap-2.5">
                     <button
                       onClick={() => setScanStep("idle")}
-                      className="flex-1 inline-flex items-center justify-center rounded-xl border border-border bg-secondary py-3.5 text-xs font-semibold text-foreground hover:bg-secondary/85 transition-colors"
+                      className="w-full sm:flex-1 inline-flex items-center justify-center rounded-xl border border-border bg-secondary py-3.5 text-xs font-semibold text-foreground hover:bg-secondary/85 transition-colors"
                     >
                       Scan Again
                     </button>
                     <button
                       onClick={handleStartQuote}
-                      className="flex-1.5 inline-flex items-center justify-center rounded-xl bg-primary py-3.5 text-xs font-semibold text-primary-foreground hover:bg-primary/95 transition-colors glow-effect-sm"
+                      className="w-full sm:flex-[1.5] inline-flex items-center justify-center rounded-xl bg-primary py-3.5 text-xs font-semibold text-primary-foreground hover:bg-primary/95 transition-colors glow-effect-sm"
                     >
                       {isOptimized ? "Start a New Project" : "Request Speed Optimization"} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                     </button>
