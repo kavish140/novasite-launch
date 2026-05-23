@@ -12,7 +12,6 @@ import {
   Package,
   Layers,
   Percent,
-  MessageSquare,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -68,7 +67,6 @@ export default function Ecommerce() {
       if (feat === "coupons") base += 1500;
       if (feat === "inventory") base += 3000;
       if (feat === "accounts") base += 2500;
-      if (feat === "chat") base += 1500;
       if (feat === "multicurrency") base += 3000;
     });
 
@@ -299,7 +297,6 @@ export default function Ecommerce() {
                     { id: "coupons", label: "Coupons & Discounts", icon: Percent },
                     { id: "inventory", label: "Stock Management", icon: Package },
                     { id: "accounts", label: "Customer Portals", icon: ShieldCheck },
-                    { id: "chat", label: "WhatsApp Chat Integration", icon: MessageSquare },
                     { id: "multicurrency", label: "Multi-currency Support", icon: CreditCard },
                   ].map((feat) => {
                     const active = features.includes(feat.id);
