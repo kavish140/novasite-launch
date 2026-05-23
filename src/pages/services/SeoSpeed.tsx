@@ -275,7 +275,7 @@ export default function SeoSpeed() {
                 >
                   {isOptimized ? (
                     <div className="text-center bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-xs font-semibold text-emerald-500 flex items-center justify-center gap-1.5">
-                      <CheckCircle className="h-4 w-4" /> This site is fully optimized by SiteNova!
+                      <CheckCircle className="h-4 w-4" /> This site is fully optimized!
                     </div>
                   ) : (
                     <div className="text-center bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-xs font-semibold text-destructive flex items-center justify-center gap-1.5">
