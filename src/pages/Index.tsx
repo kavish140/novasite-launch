@@ -8,7 +8,6 @@ import HowItWorksSection from "@/components/HowItWorksSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import CtaSection from "@/components/CtaSection";
 import Footer from "@/components/Footer";
-import CurrencyTimezoneToggle from "@/components/CurrencyTimezoneToggle";
 import { buildLocalBusinessJsonLd, setPageSeo } from "@/lib/seo";
 
 const Index = () => {
@@ -122,7 +121,6 @@ const Index = () => {
           </div>
         </section>
         <PortfolioSection />
-        <CurrencyTimezoneToggle />
         <section aria-labelledby="how-it-works-title">
           <HowItWorksSection />
         </section>

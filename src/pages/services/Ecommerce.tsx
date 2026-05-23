@@ -214,13 +214,13 @@ export default function Ecommerce() {
                 </label>
                 <div className="mt-2.5 grid grid-cols-3 gap-2">
                   {[
-                    { id: "woocommerce", label: "WordPress" },
-                    { id: "shopify", label: "Shopify" },
-                    { id: "custom", label: "Custom App" },
+                    { id: "woocommerce" as const, label: "WordPress" },
+                    { id: "shopify" as const, label: "Shopify" },
+                    { id: "custom" as const, label: "Custom App" },
                   ].map((p) => (
                     <button
                       key={p.id}
-                      onClick={() => setPlatform(p.id as any)}
+                      onClick={() => setPlatform(p.id)}
                       className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${
                         platform === p.id
                           ? "border-primary bg-primary/5 text-primary shadow-sm"
@@ -240,13 +240,13 @@ export default function Ecommerce() {
                 </label>
                 <div className="mt-2.5 grid grid-cols-3 gap-2">
                   {[
-                    { id: "small", label: "< 50 products" },
-                    { id: "medium", label: "50 - 500" },
-                    { id: "large", label: "500+" },
+                    { id: "small" as const, label: "< 50 products" },
+                    { id: "medium" as const, label: "50 - 500" },
+                    { id: "large" as const, label: "500+" },
                   ].map((pr) => (
                     <button
                       key={pr.id}
-                      onClick={() => setProductsCount(pr.id as any)}
+                      onClick={() => setProductsCount(pr.id)}
                       className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${
                         productsCount === pr.id
                           ? "border-primary bg-primary/5 text-primary shadow-sm"
