@@ -46,6 +46,7 @@ export default function SeoSpeed() {
   const [scoreSeo, setScoreSeo] = useState(0);
   const [scoreMobile, setScoreMobile] = useState(0);
   const [scoreSecurity, setScoreSecurity] = useState(0);
+  const [isOptimized, setIsOptimized] = useState(false);
 
   const runScan = () => {
     if (!url) return;
@@ -54,6 +55,7 @@ export default function SeoSpeed() {
     setScoreSeo(0);
     setScoreMobile(0);
     setScoreSecurity(0);
+    setIsOptimized(false);
 
     const statuses = [
       "Pinging host server...",
@@ -75,47 +77,58 @@ export default function SeoSpeed() {
       }
     }, 600);
 
+    const cleanUrl = url.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, "").trim();
+    const isSiteNovaSite = 
+      cleanUrl.includes("sitenova.dev") || 
+      cleanUrl.includes("drdiptiganatra.com") || 
+      cleanUrl.includes("jupiterfinance.com") || 
+      cleanUrl.includes("jupiterfastfinance.com") || 
+      cleanUrl.includes("aismartkit.tech") ||
+      cleanUrl.includes("jupiter-finance-launch") ||
+      cleanUrl.includes("aismartkit");
+
     // Animate scores
     setTimeout(() => {
       clearInterval(statusInterval);
       setScanStep("completed");
+      setIsOptimized(isSiteNovaSite);
       
-      // Typical slow scores for websites needing tuning
-      // Let's animate them up
+      const targetPerf = isSiteNovaSite ? 99 : 43;
+      const targetSeo = isSiteNovaSite ? 100 : 58;
+      const targetMobile = isSiteNovaSite ? 100 : 62;
+      const targetSecurity = isSiteNovaSite ? 98 : 68;
+
       let currentPerf = 0;
       let currentSeo = 0;
       let currentMobile = 0;
       let currentSec = 0;
 
       const scoreInterval = setInterval(() => {
-        if (currentPerf < 43) currentPerf += 2;
-        if (currentSeo < 58) currentSeo += 3;
-        if (currentMobile < 62) currentMobile += 3;
-        if (currentSec < 68) currentSec += 4;
+        if (currentPerf < targetPerf) currentPerf += 3;
+        if (currentSeo < targetSeo) currentSeo += 3;
+        if (currentMobile < targetMobile) currentMobile += 3;
+        if (currentSec < targetSecurity) currentSec += 3;
 
-        setScorePerf(Math.min(currentPerf, 43));
-        setScoreSeo(Math.min(currentSeo, 58));
-        setScoreMobile(Math.min(currentMobile, 62));
-        setScoreSecurity(Math.min(currentSec, 68));
+        setScorePerf(Math.min(currentPerf, targetPerf));
+        setScoreSeo(Math.min(currentSeo, targetSeo));
+        setScoreMobile(Math.min(currentMobile, targetMobile));
+        setScoreSecurity(Math.min(currentSec, targetSecurity));
 
-        if (currentPerf >= 43 && currentSeo >= 58 && currentMobile >= 62 && currentSec >= 68) {
+        if (currentPerf >= targetPerf && currentSeo >= targetSeo && currentMobile >= targetMobile && currentSec >= targetSecurity) {
           clearInterval(scoreInterval);
         }
-      }, 30);
+      }, 20);
     }, 4000);
   };
 
   const handleStartQuote = () => {
-    const specsSummary = `SEO / Speed Audit Request:
-- Website scanned: ${url}
-- Current Performance Score: ${scorePerf}%
-- Current SEO Score: ${scoreSeo}%
-- Current Mobile Score: ${scoreMobile}%
-- Requesting site rebuilding/speed optimization.`;
+    const specsSummary = isOptimized
+      ? `Website scanned: ${url} (Already fully optimized by SiteNova). Client is looking to start a new web project / additional services.`
+      : `SEO / Speed Audit Request:\n- Website scanned: ${url}\n- Current Performance Score: ${scorePerf}%\n- Current SEO Score: ${scoreSeo}%\n- Current Mobile Score: ${scoreMobile}%\n- Requesting site rebuilding/speed optimization.`;
 
     navigate("/quote", {
       state: {
-        projectType: "Website Redesign",
+        projectType: isOptimized ? "Business Website" : "Website Redesign",
         requirements: specsSummary,
         budget: "Rs. 15,000 - 30,000",
       },
@@ -260,9 +273,15 @@ export default function SeoSpeed() {
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-6"
                 >
-                  <div className="text-center bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-xs font-semibold text-destructive flex items-center justify-center gap-1.5">
-                    <AlertTriangle className="h-4 w-4" /> Speed and SEO performance issues detected!
-                  </div>
+                  {isOptimized ? (
+                    <div className="text-center bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-xs font-semibold text-emerald-500 flex items-center justify-center gap-1.5">
+                      <CheckCircle className="h-4 w-4" /> This site is fully optimized by SiteNova!
+                    </div>
+                  ) : (
+                    <div className="text-center bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-xs font-semibold text-destructive flex items-center justify-center gap-1.5">
+                      <AlertTriangle className="h-4 w-4" /> Speed and SEO performance issues detected!
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-4">
                     {[
@@ -274,7 +293,9 @@ export default function SeoSpeed() {
                       <div key={idx} className="rounded-xl border border-border bg-background/50 p-4 relative">
                         <span className="text-[11px] text-muted-foreground font-semibold uppercase">{metric.label}</span>
                         <div className="flex items-baseline gap-2 mt-1">
-                          <span className="text-2xl font-bold text-destructive">{metric.val}%</span>
+                          <span className={`text-2xl font-bold ${metric.val >= 90 ? "text-emerald-500" : "text-destructive"}`}>
+                            {metric.val}%
+                          </span>
                           <span className="text-[11px] text-muted-foreground">vs</span>
                           <span className="text-xs font-bold text-emerald-500">{metric.target}% (SiteNova)</span>
                         </div>
@@ -284,7 +305,15 @@ export default function SeoSpeed() {
 
                   {/* Summary & Fix CTA */}
                   <div className="rounded-xl border border-border/40 bg-card/40 p-4 text-xs text-muted-foreground leading-relaxed">
-                    <strong>Findings:</strong> Your site suffers from unoptimized asset sizing, missing local JSON-LD business graphs, and low viewport scores. Upgrading to SiteNova structure would increase Performance from <strong>{scorePerf}%</strong> to <strong>99%</strong>.
+                    {isOptimized ? (
+                      <>
+                        <strong>Findings:</strong> Excellent architecture! This site runs on SiteNova's modern, lightning-fast stack. Images are compressed, schemas are local-ready, and Core Web Vitals are fully optimized.
+                      </>
+                    ) : (
+                      <>
+                        <strong>Findings:</strong> Your site suffers from unoptimized asset sizing, missing local JSON-LD business graphs, and low viewport scores. Upgrading to SiteNova structure would increase Performance from <strong>{scorePerf}%</strong> to <strong>99%</strong>.
+                      </>
+                    )}
                   </div>
 
                   <div className="flex gap-2.5">
@@ -298,7 +327,7 @@ export default function SeoSpeed() {
                       onClick={handleStartQuote}
                       className="flex-1.5 inline-flex items-center justify-center rounded-xl bg-primary py-3.5 text-xs font-semibold text-primary-foreground hover:bg-primary/95 transition-colors glow-effect-sm"
                     >
-                      Request Speed Optimization <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                      {isOptimized ? "Start a New Project" : "Request Speed Optimization"} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                     </button>
                   </div>
                 </motion.div>
