@@ -78,7 +78,7 @@ export default function SeoSpeed() {
     }, 600);
 
     const cleanUrl = url.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, "").trim();
-    const isSiteNovaSite = 
+    const isPredefined = 
       cleanUrl.includes("sitenova.dev") || 
       cleanUrl.includes("drdiptiganatra.com") || 
       cleanUrl.includes("jupiterfinance.com") || 
@@ -87,10 +87,37 @@ export default function SeoSpeed() {
       cleanUrl.includes("jupiter-finance-launch") ||
       cleanUrl.includes("aismartkit");
 
-    // Animate scores
-    setTimeout(() => {
+    let formattedUrl = url.trim();
+    if (!/^https?:\/\//i.test(formattedUrl)) {
+      formattedUrl = "https://" + formattedUrl;
+    }
+
+    let origin = formattedUrl;
+    try {
+      const parsed = new URL(formattedUrl);
+      origin = parsed.origin;
+    } catch {
+      // Fallback
+    }
+
+    // Dynamic verification check using allorigins CORS proxy
+    const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000));
+    const verifyPromise = Promise.race([
+      fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(origin + "/kavishmadesitenova")}`)
+        .then((res) => (res.ok ? res.json() : { contents: "" }))
+        .then((data) => (data.contents || "").toLowerCase().includes("made by sitenova"))
+        .catch(() => false),
+      timeoutPromise
+    ]);
+
+    // Animate scores after minimum 4 seconds and resolving the verification check
+    Promise.all([
+      verifyPromise,
+      new Promise((resolve) => setTimeout(resolve, 4000))
+    ]).then(([isVerifiedByPath]) => {
       clearInterval(statusInterval);
       setScanStep("completed");
+      const isSiteNovaSite = isVerifiedByPath || isPredefined;
       setIsOptimized(isSiteNovaSite);
       
       const targetPerf = isSiteNovaSite ? 99 : 43;
@@ -118,7 +145,7 @@ export default function SeoSpeed() {
           clearInterval(scoreInterval);
         }
       }, 20);
-    }, 4000);
+    });
   };
 
   const handleStartQuote = () => {
