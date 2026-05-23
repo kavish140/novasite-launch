@@ -13,7 +13,7 @@ export const portfolioProjects: PortfolioProjectMeta[] = [
     title: "Dr. Dipti Ganatra",
     description:
       "A professional clinic website designed for Dr. Dipti Ganatra with elegant branding and easy appointment flow.",
-    image: "/assets/Drdiptiganatra.png",
+    image: "/assets/Drdiptiganatra.webp",
     liveUrl: "https://drdiptiganatra.com",
     localFocus: "Healthcare lead generation for Mumbai and Mulund audiences.",
   },
@@ -22,7 +22,7 @@ export const portfolioProjects: PortfolioProjectMeta[] = [
     title: "Jupiter Finance",
     description:
       "A sleek finance landing page with modern UI, clear call-to-actions, and responsive design across all devices.",
-    image: "/assets/jupiterfastfinance.png",
+    image: "/assets/jupiterfastfinance.webp",
     liveUrl: "https://kavish140.github.io/jupiter-finance-launch/",
     localFocus: "Finance-focused conversion flow built for India and global prospects.",
   },
@@ -31,7 +31,7 @@ export const portfolioProjects: PortfolioProjectMeta[] = [
     title: "AI SmartKit",
     description:
       "A cutting-edge AI tools platform with a clean interface, intuitive navigation, and high-performance architecture.",
-    image: "/assets/Aismartkit.png",
+    image: "/assets/Aismartkit.webp",
     liveUrl: "https://aismartkit.tech",
     localFocus: "Global-ready SaaS presentation for international product users.",
   },

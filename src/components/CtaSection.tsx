@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Phone, Mail, MessageCircle } from "lucide-react";
 
 const emailComposeLink =
-  "https://mail.google.com/mail/?view=cm&fs=1&to=kavish@sitenova.dev&su=Website%20Inquiry%20from%20SiteNova";
+  "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Website%20Inquiry%20from%20SiteNova";
 
 const CtaSection = () => {
   return (
@@ -54,7 +54,7 @@ const CtaSection = () => {
           className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
         >
           <Mail size={20} />
-          kavish@sitenova.dev
+          kavishganatra5@gmail.com
         </a>
         <p className="mt-5 text-sm text-muted-foreground">We typically respond within 24 hours</p>
       </motion.div>

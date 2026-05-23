@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { portfolioProjects } from "@/lib/portfolio-meta";
-import drDiptiImage from "@/assets/Drdiptiganatra.png";
-import jupiterFinanceImage from "@/assets/jupiterfastfinance.png";
-import smartkitImage from "@/assets/Aismartkit.png";
+import drDiptiImage from "@/assets/Drdiptiganatra.webp";
+import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
+import smartkitImage from "@/assets/Aismartkit.webp";
 
 const imageBySlug = {
   "dr-dipti-ganatra": drDiptiImage,

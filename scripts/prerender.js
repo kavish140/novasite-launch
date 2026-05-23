@@ -38,7 +38,7 @@ const routes = [
           "image": `${SITE_URL}/seo-preview.png`,
           "description": "SiteNova builds high-performance websites, SEO systems, and conversion-focused digital experiences for local Mumbai businesses and surrounding areas.",
           "telephone": "+91-9326060621",
-          "email": "kavish@sitenova.dev",
+          "email": "kavishganatra5@gmail.com",
           "address": {
             "@type": "PostalAddress",
             "addressLocality": "Mulund",
