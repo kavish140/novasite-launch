@@ -1,15 +1,17 @@
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { portfolioProjects } from "@/lib/portfolio-meta";
+import { showcaseProjects, customerProjects } from "@/lib/portfolio-meta";
 import drDiptiImage from "@/assets/Drdiptiganatra.webp";
 import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
 import smartkitImage from "@/assets/Aismartkit.webp";
+import businessShowcaseImage from "@/assets/business-showcase.png";
 
 const imageBySlug = {
   "dr-dipti-ganatra": drDiptiImage,
   "jupiter-finance": jupiterFinanceImage,
   "ai-smartkit": smartkitImage,
+  "business-showcase": businessShowcaseImage,
 } as const;
 
 const PortfolioSection = () => {
@@ -56,48 +58,128 @@ const PortfolioSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {portfolioProjects.map((project, i) => (
-            <motion.article
-              key={project.slug}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
-              className="group"
-            >
-              <a
-                href={project.liveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow"
-                aria-label={`Open ${project.title}`}
+        {/* Showcase Websites Section */}
+        <div className="mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 border-b border-border/50 pb-4"
+          >
+            <h3 className="font-heading text-2xl md:text-3xl font-bold flex items-center gap-3">
+              <span className="h-6 w-1 rounded-full bg-accent" />
+              Showcase Websites
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              Internal products, demo templates, and modern SaaS platforms.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {showcaseProjects.map((project, i) => (
+              <motion.article
+                key={project.slug}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                className="group"
               >
-                <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2">
-                  <img
-                    src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                    alt={`${project.title} website screenshot by SiteNova`}
-                    className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                    loading={inView ? "lazy" : "eager"}
-                    decoding="async"
-                    width="500"
-                    height="400"
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-heading text-lg font-semibold">{project.title}</h3>
-                    <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow"
+                  aria-label={`Open ${project.title}`}
+                >
+                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2">
+                    <img
+                      src={imageBySlug[project.slug as keyof typeof imageBySlug]}
+                      alt={`${project.title} website screenshot by SiteNova`}
+                      className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                      loading={inView ? "lazy" : "eager"}
+                      decoding="async"
+                      width="500"
+                      height="400"
+                    />
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">{project.description}</p>
-                  <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
-                    Open Website
-                    <ExternalLink size={16} />
-                  </span>
-                </div>
-              </a>
-            </motion.article>
-          ))}
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
+                      <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-5">{project.description}</p>
+                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
+                      Open Website
+                      <ExternalLink size={16} />
+                    </span>
+                  </div>
+                </a>
+              </motion.article>
+            ))}
+          </div>
+        </div>
+
+        {/* Customer Websites Section */}
+        <div>
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 border-b border-border/50 pb-4"
+          >
+            <h3 className="font-heading text-2xl md:text-3xl font-bold flex items-center gap-3">
+              <span className="h-6 w-1 rounded-full bg-primary" />
+              Customer Websites
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              Custom websites built for local businesses and independent professionals.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {customerProjects.map((project, i) => (
+              <motion.article
+                key={project.slug}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                className="group"
+              >
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow"
+                  aria-label={`Open ${project.title}`}
+                >
+                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2">
+                    <img
+                      src={imageBySlug[project.slug as keyof typeof imageBySlug]}
+                      alt={`${project.title} website screenshot by SiteNova`}
+                      className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                      loading={inView ? "lazy" : "eager"}
+                      decoding="async"
+                      width="500"
+                      height="400"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
+                      <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-5">{project.description}</p>
+                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
+                      Open Website
+                      <ExternalLink size={16} />
+                    </span>
+                  </div>
+                </a>
+              </motion.article>
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -16,13 +16,6 @@ const testimonials = [
 			"Absolutely thrilled with my website www.drdiptiganatra.com! Site Nova’s team built it beautifully in a very short span of time, with complete database integration and seamless functionality. The design is clean, professional, and perfectly reflects my practice. Since its launch, I’ve seen improved patient engagement and steady growth in my business. Highly recommend their team for anyone looking for a powerful and well-executed website!",
 		rating: 5,
 	},
-	{
-		name: "AI SmartKit",
-		role: "Client Review",
-		content:
-			"Truly impressed with the excellent execution of aismartkit.tech by Site Nova’s team! The platform is thoughtfully designed and incredibly functional, offering 35+ powerful and useful tools all in one place — including a seamless, interactive chatbot. The interface is clean, intuitive, and makes navigating through multiple tools effortless. It’s impressive how they’ve combined smart technology with a smooth user experience. Truly a well-built and highly valuable digital platform!",
-		rating: 5,
-	},
 ];
 
 const TestimonialsSection = () => {
@@ -48,7 +41,7 @@ const TestimonialsSection = () => {
 					</h2>
 				</motion.div>
 
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
 					{testimonials.map((t, i) => (
 						<motion.div
 							key={t.name}

@@ -7,7 +7,28 @@ export type PortfolioProjectMeta = {
   localFocus?: string;
 };
 
-export const portfolioProjects: PortfolioProjectMeta[] = [
+export const showcaseProjects: PortfolioProjectMeta[] = [
+  {
+    slug: "ai-smartkit",
+    title: "AI SmartKit",
+    description:
+      "A cutting-edge AI tools platform with a clean interface, intuitive navigation, and high-performance architecture.",
+    image: "/assets/Aismartkit.webp",
+    liveUrl: "https://aismartkit.tech",
+    localFocus: "Global-ready SaaS presentation for international product users.",
+  },
+  {
+    slug: "business-showcase",
+    title: "Business Showcase",
+    description:
+      "A modern, premium business showcase showcasing state-of-the-art interactive sections and smooth user experiences.",
+    image: "/assets/business-showcase.png",
+    liveUrl: "https://buisness-showcase.sitenova.dev/",
+    localFocus: "High-performance marketing site showing design aesthetics and templates.",
+  },
+];
+
+export const customerProjects: PortfolioProjectMeta[] = [
   {
     slug: "dr-dipti-ganatra",
     title: "Dr. Dipti Ganatra",
@@ -19,26 +40,17 @@ export const portfolioProjects: PortfolioProjectMeta[] = [
   },
   {
     slug: "jupiter-finance",
-    title: "Jupiter Finance",
+    title: "Jupiter Fast Finance",
     description:
       "A sleek finance landing page with modern UI, clear call-to-actions, and responsive design across all devices.",
     image: "/assets/jupiterfastfinance.webp",
-    liveUrl: "https://kavish140.github.io/jupiter-finance-launch/",
+    liveUrl: "https://jupiterfastfinance.com",
     localFocus: "Finance-focused conversion flow built for India and global prospects.",
-  },
-  {
-    slug: "ai-smartkit",
-    title: "AI SmartKit",
-    description:
-      "A cutting-edge AI tools platform with a clean interface, intuitive navigation, and high-performance architecture.",
-    image: "/assets/Aismartkit.webp",
-    liveUrl: "https://aismartkit.tech",
-    localFocus: "Global-ready SaaS presentation for international product users.",
   },
 ];
 
 export const portfolioSeoBySlug = Object.fromEntries(
-  portfolioProjects.map((project) => [
+  [...showcaseProjects, ...customerProjects].map((project) => [
     project.slug,
     {
       pageTitle: `${project.title} Portfolio Case Study | SiteNova`,
