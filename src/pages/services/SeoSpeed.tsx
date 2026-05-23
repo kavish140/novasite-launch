@@ -100,13 +100,19 @@ export default function SeoSpeed() {
       // Fallback
     }
 
-    // Dynamic verification check using allorigins CORS proxy
-    const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000));
-    const verifyPromise = Promise.race([
-      fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(origin + "/kavishmadesitenova")}`)
+    // Dynamic verification check using allorigins CORS proxy (tries .html first, then falls back to extensionless)
+    const fetchPath = (path: string) =>
+      fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(origin + path)}`)
         .then((res) => (res.ok ? res.json() : { contents: "" }))
         .then((data) => (data.contents || "").toLowerCase().includes("made by sitenova"))
-        .catch(() => false),
+        .catch(() => false);
+
+    const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000));
+    const verifyPromise = Promise.race([
+      fetchPath("/kavishmadesitenova.html").then((result) => {
+        if (result) return true;
+        return fetchPath("/kavishmadesitenova");
+      }),
       timeoutPromise
     ]);
 
