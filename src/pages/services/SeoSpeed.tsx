@@ -143,55 +143,76 @@ export default function SeoSpeed() {
       return;
     }
 
-    // Actual Google PageSpeed Insights API fetch
-    const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(formattedUrl)}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
+    const performScanLogic = () => {
+      // Actual Google PageSpeed Insights API fetch
+      const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(formattedUrl)}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
 
-    fetch(psiUrl, { signal: controller.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        clearTimeout(timeoutId);
-        if (data && data.lighthouseResult && data.lighthouseResult.categories) {
-          const cats = data.lighthouseResult.categories;
-          const perf = Math.round((cats.performance?.score || 0) * 100);
-          const seo = Math.round((cats.seo?.score || 0) * 100);
-          const mobile = Math.round((cats.accessibility?.score || 0) * 100);
-          const sec = Math.round((cats['best-practices']?.score || 0) * 100);
+      fetch(psiUrl, { signal: controller.signal })
+        .then((res) => res.json())
+        .then((data) => {
+          clearTimeout(timeoutId);
+          if (data && data.lighthouseResult && data.lighthouseResult.categories) {
+            const cats = data.lighthouseResult.categories;
+            const perf = Math.round((cats.performance?.score || 0) * 100);
+            const seo = Math.round((cats.seo?.score || 0) * 100);
+            const mobile = Math.round((cats.accessibility?.score || 0) * 100);
+            const sec = Math.round((cats['best-practices']?.score || 0) * 100);
 
-          const optimized = perf >= 85 && seo >= 85;
-          animateScores(perf, seo, mobile, sec, optimized, false);
-        } else {
-          throw new Error("Invalid API structure");
+            const optimized = perf >= 85 && seo >= 85;
+            animateScores(perf, seo, mobile, sec, optimized, false);
+          } else {
+            throw new Error("Invalid API structure");
+          }
+        })
+        .catch(() => {
+          // Fallback to proxy check if API fails or times out
+          let origin = formattedUrl;
+          try {
+            const parsed = new URL(formattedUrl);
+            origin = parsed.origin;
+          } catch {
+            // Fallback
+          }
+
+          const fetchPath = (path: string) =>
+            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(origin + path)}`)
+              .then((res) => (res.ok ? res.json() : { contents: "" }))
+              .then((data) => (data.contents || "").toLowerCase().includes("made by sitenova"))
+              .catch(() => false);
+
+          Promise.all([
+            fetchPath("/kavishmadesitenova.html").then((r) => r ? true : fetchPath("/kavishmadesitenova")),
+            new Promise((resolve) => setTimeout(resolve, 2000))
+          ]).then(([isVerifiedByPath]) => {
+            if (isVerifiedByPath) {
+              animateScores(99, 100, 100, 98, true, false);
+            } else {
+              animateScores(43, 58, 62, 68, false, false);
+            }
+          });
+        });
+    };
+
+    // Before performing the scan, verify the site actually exists to prevent ghost outputs
+    fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(formattedUrl)}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Dead");
+        return res.json();
+      })
+      .then(data => {
+        if (data.status && data.status.http_code === 0) throw new Error("Dead");
+        if (!data.contents || data.contents.includes("500 Internal Server Error") || data.contents.includes("Name or service not known")) {
+          throw new Error("Dead");
         }
+        performScanLogic();
       })
       .catch(() => {
-        // Fallback to proxy check if API fails or times out
-        let origin = formattedUrl;
-        try {
-          const parsed = new URL(formattedUrl);
-          origin = parsed.origin;
-        } catch {
-          // Fallback
-        }
-
-        const fetchPath = (path: string) =>
-          fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(origin + path)}`)
-            .then((res) => (res.ok ? res.json() : { contents: "" }))
-            .then((data) => (data.contents || "").toLowerCase().includes("made by sitenova"))
-            .catch(() => false);
-
-        Promise.all([
-          fetchPath("/kavishmadesitenova.html").then((r) => r ? true : fetchPath("/kavishmadesitenova")),
-          new Promise((resolve) => setTimeout(resolve, 2000))
-        ]).then(([isVerifiedByPath]) => {
-          if (isVerifiedByPath) {
-            animateScores(99, 100, 100, 98, true, false);
-          } else {
-            animateScores(43, 58, 62, 68, false, false);
-          }
-        });
+        clearInterval(statusInterval);
+        setScanStep("idle");
+        setUrlError("Website could not be reached or doesn't exist.");
       });
   };
 
