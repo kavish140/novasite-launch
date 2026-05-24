@@ -85,7 +85,11 @@ export default function SeoSpeed() {
       cleanUrl.includes("jupiterfastfinance.com") || 
       cleanUrl.includes("aismartkit.tech") ||
       cleanUrl.includes("jupiter-finance-launch") ||
-      cleanUrl.includes("aismartkit");
+      cleanUrl.includes("aismartkit") ||
+      cleanUrl.includes("youtube") ||
+      cleanUrl.includes("google") ||
+      cleanUrl.includes("insta") ||
+      cleanUrl.includes("facebook");
 
     let formattedUrl = url.trim();
     if (!/^https?:\/\//i.test(formattedUrl)) {
