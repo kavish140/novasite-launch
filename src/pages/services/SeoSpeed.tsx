@@ -47,6 +47,7 @@ export default function SeoSpeed() {
   const [scoreMobile, setScoreMobile] = useState(0);
   const [scoreSecurity, setScoreSecurity] = useState(0);
   const [isOptimized, setIsOptimized] = useState(false);
+  const [isPopular, setIsPopular] = useState(false);
 
   const runScan = () => {
     if (!url) return;
@@ -56,6 +57,7 @@ export default function SeoSpeed() {
     setScoreMobile(0);
     setScoreSecurity(0);
     setIsOptimized(false);
+    setIsPopular(false);
 
     const statuses = [
       "Pinging host server...",
@@ -78,6 +80,9 @@ export default function SeoSpeed() {
     }, 600);
 
     const cleanUrl = url.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, "").trim();
+    const popSites = ["youtube", "google", "insta", "facebook"];
+    const isPop = popSites.some(site => cleanUrl.includes(site));
+
     const isPredefined = 
       cleanUrl.includes("sitenova.dev") || 
       cleanUrl.includes("drdiptiganatra.com") || 
@@ -86,10 +91,7 @@ export default function SeoSpeed() {
       cleanUrl.includes("aismartkit.tech") ||
       cleanUrl.includes("jupiter-finance-launch") ||
       cleanUrl.includes("aismartkit") ||
-      cleanUrl.includes("youtube") ||
-      cleanUrl.includes("google") ||
-      cleanUrl.includes("insta") ||
-      cleanUrl.includes("facebook");
+      isPop;
 
     let formattedUrl = url.trim();
     if (!/^https?:\/\//i.test(formattedUrl)) {
@@ -129,6 +131,7 @@ export default function SeoSpeed() {
       setScanStep("completed");
       const isSiteNovaSite = isVerifiedByPath || isPredefined;
       setIsOptimized(isSiteNovaSite);
+      setIsPopular(isPop);
       
       const targetPerf = isSiteNovaSite ? 99 : 43;
       const targetSeo = isSiteNovaSite ? 100 : 58;
@@ -160,7 +163,7 @@ export default function SeoSpeed() {
 
   const handleStartQuote = () => {
     const specsSummary = isOptimized
-      ? `Website scanned: ${url} (Already fully optimized by SiteNova). Client is looking to start a new web project / additional services.`
+      ? `Website scanned: ${url} (Already fully optimized${isPopular ? "" : " by SiteNova"}). Client is looking to start a new web project / additional services.`
       : `SEO / Speed Audit Request:\n- Website scanned: ${url}\n- Current Performance Score: ${scorePerf}%\n- Current SEO Score: ${scoreSeo}%\n- Current Mobile Score: ${scoreMobile}%\n- Requesting site rebuilding/speed optimization.`;
 
     navigate("/quote", {
@@ -352,7 +355,7 @@ export default function SeoSpeed() {
                   <div className="rounded-xl border border-border/40 bg-card/40 p-4 text-xs text-muted-foreground leading-relaxed">
                     {isOptimized ? (
                       <>
-                        <strong>Findings:</strong> Excellent architecture! This site runs on SiteNova's modern, lightning-fast stack. Images are compressed, schemas are local-ready, and Core Web Vitals are fully optimized.
+                        <strong>Findings:</strong> Excellent architecture! This site runs on {isPopular ? "a" : "SiteNova's"} modern, lightning-fast stack. Images are compressed, schemas are local-ready, and Core Web Vitals are fully optimized.
                       </>
                     ) : (
                       <>
