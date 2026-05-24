@@ -6,12 +6,14 @@ import drDiptiImage from "@/assets/Drdiptiganatra.webp";
 import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
 import smartkitImage from "@/assets/Aismartkit.webp";
 import businessShowcaseImage from "@/assets/business-showcase.png";
+import designShowcaseImage from "@/assets/design-showcase.png";
 
 const imageBySlug = {
   "dr-dipti-ganatra": drDiptiImage,
   "jupiter-finance": jupiterFinanceImage,
   "ai-smartkit": smartkitImage,
   "business-showcase": businessShowcaseImage,
+  "design-showcase": designShowcaseImage,
 } as const;
 
 const PortfolioSection = () => {

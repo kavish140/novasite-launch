@@ -26,6 +26,15 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     liveUrl: "https://buisness-showcase.sitenova.dev/",
     localFocus: "High-performance marketing site showing design aesthetics and templates.",
   },
+  {
+    slug: "design-showcase",
+    title: "Design Showcase",
+    description:
+      "A premium UI/UX design system showcase displaying interactive components, modern typography, and curated color palettes.",
+    image: "/assets/design-showcase.png",
+    liveUrl: "http://design.sitenova.dev/",
+    localFocus: "Modern design library displaying web aesthetics and component templates.",
+  },
 ];
 
 export const customerProjects: PortfolioProjectMeta[] = [
