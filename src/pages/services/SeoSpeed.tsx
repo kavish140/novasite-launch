@@ -48,9 +48,18 @@ export default function SeoSpeed() {
   const [scoreSecurity, setScoreSecurity] = useState(0);
   const [isOptimized, setIsOptimized] = useState(false);
   const [isPopular, setIsPopular] = useState(false);
+  const [urlError, setUrlError] = useState("");
 
   const runScan = () => {
     if (!url) return;
+
+    const isValidUrl = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/.test(url.trim());
+    if (!isValidUrl) {
+      setUrlError("Please enter a valid website domain.");
+      return;
+    }
+    setUrlError("");
+
     setScanStep("scanning");
     setScorePerf(0);
     setScoreSeo(0);
@@ -302,15 +311,25 @@ export default function SeoSpeed() {
               {/* Input field */}
               {scanStep === "idle" && (
                 <div className="space-y-4">
-                  <div className="relative">
-                    <input
-                      type="url"
-                      placeholder="e.g., https://mybusiness.com"
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-background/50 px-4 py-3.5 text-sm pl-11 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                    />
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
+                  <div>
+                    <div className="relative">
+                      <input
+                        type="url"
+                        placeholder="e.g., https://mybusiness.com"
+                        value={url}
+                        onChange={(e) => {
+                          setUrl(e.target.value);
+                          if (urlError) setUrlError("");
+                        }}
+                        className={`w-full rounded-xl border ${urlError ? 'border-destructive focus:border-destructive focus:ring-destructive' : 'border-border focus:border-primary focus:ring-primary'} bg-background/50 px-4 py-3.5 text-sm pl-11 focus:outline-none focus:ring-1`}
+                      />
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
+                    </div>
+                    {urlError && (
+                      <p className="text-destructive text-xs mt-2 font-medium flex items-center gap-1.5">
+                        <AlertTriangle className="h-3.5 w-3.5" /> {urlError}
+                      </p>
+                    )}
                   </div>
                   <button
                     onClick={runScan}
