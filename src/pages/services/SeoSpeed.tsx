@@ -98,45 +98,11 @@ export default function SeoSpeed() {
       formattedUrl = "https://" + formattedUrl;
     }
 
-    let origin = formattedUrl;
-    try {
-      const parsed = new URL(formattedUrl);
-      origin = parsed.origin;
-    } catch {
-      // Fallback
-    }
-
-    // Dynamic verification check using allorigins CORS proxy (tries .html first, then falls back to extensionless)
-    const fetchPath = (path: string) =>
-      fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(origin + path)}`)
-        .then((res) => (res.ok ? res.json() : { contents: "" }))
-        .then((data) => (data.contents || "").toLowerCase().includes("made by sitenova"))
-        .catch(() => false);
-
-    const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000));
-    const verifyPromise = Promise.race([
-      fetchPath("/kavishmadesitenova.html").then((result) => {
-        if (result) return true;
-        return fetchPath("/kavishmadesitenova");
-      }),
-      timeoutPromise
-    ]);
-
-    // Animate scores after minimum 4 seconds and resolving the verification check
-    Promise.all([
-      verifyPromise,
-      new Promise((resolve) => setTimeout(resolve, 4000))
-    ]).then(([isVerifiedByPath]) => {
+    const animateScores = (targetPerf: number, targetSeo: number, targetMobile: number, targetSecurity: number, optimized: boolean, popular: boolean) => {
       clearInterval(statusInterval);
       setScanStep("completed");
-      const isSiteNovaSite = isVerifiedByPath || isPredefined;
-      setIsOptimized(isSiteNovaSite);
-      setIsPopular(isPop);
-      
-      const targetPerf = isSiteNovaSite ? 99 : 43;
-      const targetSeo = isSiteNovaSite ? 100 : 58;
-      const targetMobile = isSiteNovaSite ? 100 : 62;
-      const targetSecurity = isSiteNovaSite ? 98 : 68;
+      setIsOptimized(optimized);
+      setIsPopular(popular);
 
       let currentPerf = 0;
       let currentSeo = 0;
@@ -158,7 +124,66 @@ export default function SeoSpeed() {
           clearInterval(scoreInterval);
         }
       }, 20);
-    });
+    };
+
+    if (isPredefined) {
+      // Simulate slight delay for effect
+      setTimeout(() => {
+        animateScores(99, 100, 100, 98, true, isPop);
+      }, 2500);
+      return;
+    }
+
+    // Actual Google PageSpeed Insights API fetch
+    const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(formattedUrl)}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
+
+    fetch(psiUrl, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        clearTimeout(timeoutId);
+        if (data && data.lighthouseResult && data.lighthouseResult.categories) {
+          const cats = data.lighthouseResult.categories;
+          const perf = Math.round((cats.performance?.score || 0) * 100);
+          const seo = Math.round((cats.seo?.score || 0) * 100);
+          const mobile = Math.round((cats.accessibility?.score || 0) * 100);
+          const sec = Math.round((cats['best-practices']?.score || 0) * 100);
+
+          const optimized = perf >= 85 && seo >= 85;
+          animateScores(perf, seo, mobile, sec, optimized, false);
+        } else {
+          throw new Error("Invalid API structure");
+        }
+      })
+      .catch(() => {
+        // Fallback to proxy check if API fails or times out
+        let origin = formattedUrl;
+        try {
+          const parsed = new URL(formattedUrl);
+          origin = parsed.origin;
+        } catch {
+          // Fallback
+        }
+
+        const fetchPath = (path: string) =>
+          fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(origin + path)}`)
+            .then((res) => (res.ok ? res.json() : { contents: "" }))
+            .then((data) => (data.contents || "").toLowerCase().includes("made by sitenova"))
+            .catch(() => false);
+
+        Promise.all([
+          fetchPath("/kavishmadesitenova.html").then((r) => r ? true : fetchPath("/kavishmadesitenova")),
+          new Promise((resolve) => setTimeout(resolve, 2000))
+        ]).then(([isVerifiedByPath]) => {
+          if (isVerifiedByPath) {
+            animateScores(99, 100, 100, 98, true, false);
+          } else {
+            animateScores(43, 58, 62, 68, false, false);
+          }
+        });
+      });
   };
 
   const handleStartQuote = () => {
