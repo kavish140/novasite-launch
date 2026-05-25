@@ -5,6 +5,7 @@ export type PortfolioProjectMeta = {
   image: string;
   liveUrl: string;
   localFocus?: string;
+  useIframePreview?: boolean;
 };
 
 export const showcaseProjects: PortfolioProjectMeta[] = [
@@ -16,6 +17,7 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     image: "/assets/Aismartkit.webp",
     liveUrl: "https://aismartkit.tech",
     localFocus: "Global-ready SaaS presentation for international product users.",
+    useIframePreview: true,
   },
   {
     slug: "business-showcase",
@@ -25,6 +27,7 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     image: "/assets/business-showcase.png",
     liveUrl: "https://buisness-showcase.sitenova.dev/",
     localFocus: "High-performance marketing site showing design aesthetics and templates.",
+    useIframePreview: true,
   },
   {
     slug: "design-showcase",
@@ -34,6 +37,17 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     image: "/assets/design-showcase.png",
     liveUrl: "http://design.sitenova.dev/",
     localFocus: "Modern design library displaying web aesthetics and component templates.",
+    useIframePreview: true,
+  },
+  {
+    slug: "ecommerce-showcase",
+    title: "E-commerce Showcase",
+    description:
+      "A modern, ultra-fast online storefront template featuring seamless cart actions, grid filtering, and checkout flows.",
+    image: "/assets/ecommerce-showcase.png",
+    liveUrl: "https://ecommerce.sitenova.dev/",
+    localFocus: "High-speed conversion checkout layout showing transaction flow and design templates.",
+    useIframePreview: true,
   },
 ];
 

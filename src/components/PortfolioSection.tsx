@@ -7,6 +7,7 @@ import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
 import smartkitImage from "@/assets/Aismartkit.webp";
 import businessShowcaseImage from "@/assets/business-showcase.png";
 import designShowcaseImage from "@/assets/design-showcase.png";
+import ecommerceShowcaseImage from "@/assets/ecommerce-showcase.png";
 
 const imageBySlug = {
   "dr-dipti-ganatra": drDiptiImage,
@@ -14,7 +15,37 @@ const imageBySlug = {
   "ai-smartkit": smartkitImage,
   "business-showcase": businessShowcaseImage,
   "design-showcase": designShowcaseImage,
+  "ecommerce-showcase": ecommerceShowcaseImage,
 } as const;
+
+const IframePreview = ({ src, title }: { src: string; title: string }) => {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div className="w-full h-full relative overflow-hidden rounded-xl bg-background/50">
+      {!loaded && (
+        <div className="absolute inset-0 bg-card/90 flex items-center justify-center pointer-events-none z-20">
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+              Connecting...
+            </span>
+          </div>
+        </div>
+      )}
+      <iframe
+        src={src}
+        title={`${title} live preview`}
+        onLoad={() => setLoaded(true)}
+        className={`w-[200%] h-[200%] border-0 scale-[0.5] origin-top-left pointer-events-none transition-all duration-700 relative z-10 ${
+          loaded ? "opacity-100 scale-[0.5] blur-0" : "opacity-0 scale-[0.55] blur-[2px]"
+        }`}
+        loading="lazy"
+        sandbox="allow-scripts allow-same-origin"
+      />
+    </div>
+  );
+};
 
 const PortfolioSection = () => {
   const [inView, setInView] = useState(false);
@@ -71,7 +102,7 @@ const PortfolioSection = () => {
           >
             <h3 className="font-heading text-2xl md:text-3xl font-bold flex items-center gap-3">
               <span className="h-6 w-1 rounded-full bg-accent" />
-              Showcase Websites
+              Showcase Websites (Live Previews)
             </h3>
             <p className="text-muted-foreground text-sm mt-1">
               Internal products, demo templates, and modern SaaS platforms.
@@ -94,16 +125,20 @@ const PortfolioSection = () => {
                   className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow"
                   aria-label={`Open ${project.title}`}
                 >
-                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2">
-                    <img
-                      src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                      alt={`${project.title} website screenshot by SiteNova`}
-                      className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                      loading={inView ? "lazy" : "eager"}
-                      decoding="async"
-                      width="500"
-                      height="400"
-                    />
+                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
+                    {project.useIframePreview && inView ? (
+                      <IframePreview src={project.liveUrl} title={project.title} />
+                    ) : (
+                      <img
+                        src={imageBySlug[project.slug as keyof typeof imageBySlug]}
+                        alt={`${project.title} website screenshot by SiteNova`}
+                        className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                        loading={inView ? "lazy" : "eager"}
+                        decoding="async"
+                        width="500"
+                        height="400"
+                      />
+                    )}
                   </div>
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
@@ -156,16 +191,20 @@ const PortfolioSection = () => {
                   className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow"
                   aria-label={`Open ${project.title}`}
                 >
-                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2">
-                    <img
-                      src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                      alt={`${project.title} website screenshot by SiteNova`}
-                      className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                      loading={inView ? "lazy" : "eager"}
-                      decoding="async"
-                      width="500"
-                      height="400"
-                    />
+                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
+                    {project.useIframePreview && inView ? (
+                      <IframePreview src={project.liveUrl} title={project.title} />
+                    ) : (
+                      <img
+                        src={imageBySlug[project.slug as keyof typeof imageBySlug]}
+                        alt={`${project.title} website screenshot by SiteNova`}
+                        className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                        loading={inView ? "lazy" : "eager"}
+                        decoding="async"
+                        width="500"
+                        height="400"
+                      />
+                    )}
                   </div>
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
