@@ -1,21 +1,12 @@
-import LocationPageTemplate from "@/components/LocationPageTemplate";
+import Index from "@/pages/Index";
 
 export default function Thane() {
   return (
-    <LocationPageTemplate
-      locationName="Thane"
-      subTitle="Build a fast, mobile-ready website that captures customers across Thane and helps your business stand out."
-      description="To rank your business in Thane, you need a web structure that loads in milliseconds and fits search engines. SiteNova designs custom solutions to capture Thane searches like 'web designer in Thane' and 'website developer near me'."
-      regionalFocusText="Whether your store is in Wagle Estate, Hiranandani Estate, or near Thane Station, we build premium layout systems tailored to your specific industry goals."
-      nearbySuburbs={[
-        "Wagle Estate",
-        "Hiranandani Estate",
-        "Ghodbunder Road",
-        "Majiwada",
-        "Vartak Nagar",
-        "Kopri",
-      ]}
-      keywords={[
+    <Index
+      seoTitle="Best Website Designer in Thane, Mumbai | SiteNova"
+      seoDescription="SiteNova builds premium, SEO-ready, mobile-first websites in Thane, Mumbai. Grow your business with fast load times and Google Map Pack optimization."
+      seoCanonicalPath="/location/thane"
+      seoKeywords={[
         "web designer in Thane",
         "website design Thane",
         "Thane web developers",

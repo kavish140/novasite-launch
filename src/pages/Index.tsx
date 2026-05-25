@@ -10,16 +10,23 @@ import CtaSection from "@/components/CtaSection";
 import Footer from "@/components/Footer";
 import { buildLocalBusinessJsonLd, setPageSeo } from "@/lib/seo";
 
-const Index = () => {
+interface IndexProps {
+  seoTitle?: string;
+  seoDescription?: string;
+  seoCanonicalPath?: string;
+  seoKeywords?: string[];
+}
+
+const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: IndexProps) => {
   const location = useLocation();
 
   useEffect(() => {
     setPageSeo({
-      title: "Best Website Designer in Mulund, Mumbai & Nearby Areas | SiteNova",
+      title: seoTitle || "Best Website Designer in Mulund, Mumbai & Nearby Areas | SiteNova",
       description:
-        "SiteNova builds SEO-ready, mobile-first websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Nahur, Thane, Ghatkopar, and Powai.",
-      canonicalPath: "/",
-      keywords: [
+        seoDescription || "SiteNova builds SEO-ready, mobile-first websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Nahur, Thane, Ghatkopar, and Powai.",
+      canonicalPath: seoCanonicalPath || "/",
+      keywords: seoKeywords || [
         "best website designer in Mulund",
         "website designer in Mumbai",
         "website design Mulund",
@@ -29,7 +36,7 @@ const Index = () => {
       ],
       jsonLd: buildLocalBusinessJsonLd(),
     });
-  }, []);
+  }, [seoTitle, seoDescription, seoCanonicalPath, seoKeywords]);
 
   useEffect(() => {
     if (location.hash) {

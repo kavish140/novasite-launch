@@ -1,21 +1,12 @@
-import LocationPageTemplate from "@/components/LocationPageTemplate";
+import Index from "@/pages/Index";
 
 export default function Andheri() {
   return (
-    <LocationPageTemplate
-      locationName="Andheri"
-      subTitle="Dominate one of Mumbai's largest commercial centers with a fast, professional business website."
-      description="With thousands of competing companies in Andheri, you need a website that loads instantly and ranks at the top of local maps. SiteNova optimizes your site structure to capture search traffic for 'web designer in Andheri' and 'web design company Andheri'."
-      regionalFocusText="We design customized, mobile-first systems for agencies, production houses, and retail hubs in Andheri East, Andheri West, Lokhandwala, and MIDC."
-      nearbySuburbs={[
-        "Andheri East",
-        "Andheri West",
-        "Lokhandwala",
-        "MIDC Andheri",
-        "Versova",
-        "Oshiwara",
-      ]}
-      keywords={[
+    <Index
+      seoTitle="Best Website Designer in Andheri, Mumbai | SiteNova"
+      seoDescription="SiteNova builds premium, SEO-ready, mobile-first websites in Andheri, Mumbai. Grow your business with fast load times and Google Map Pack optimization."
+      seoCanonicalPath="/location/andheri"
+      seoKeywords={[
         "web designer in Andheri",
         "website design Andheri",
         "Andheri web development",

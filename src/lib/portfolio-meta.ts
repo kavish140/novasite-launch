@@ -35,7 +35,7 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     description:
       "A premium UI/UX design system showcase displaying interactive components, modern typography, and curated color palettes.",
     image: "/assets/design-showcase.png",
-    liveUrl: "http://design.sitenova.dev/",
+    liveUrl: "https://design.sitenova.dev/",
     localFocus: "Modern design library displaying web aesthetics and component templates.",
     useIframePreview: true,
   },
