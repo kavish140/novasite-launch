@@ -62,7 +62,7 @@ const HeroSection = () => {
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
             <Link
               to="/quote"
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect group button-shimmer interactive-card"
@@ -70,6 +70,14 @@ const HeroSection = () => {
               Get a Free Quote
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
+            <a
+              href="/downloads/sitenova-beta.apk"
+              download="SiteNova-Beta.apk"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-accent/60 bg-accent/15 px-8 py-3.5 text-base font-bold text-accent hover:bg-accent/25 transition-all glow-effect group interactive-card shadow-[0_0_20px_rgba(239,68,68,0.15)] hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]"
+            >
+              <span className="text-xl animate-bounce">🎉</span>
+              Download Android App (Beta)
+            </a>
             <a
               href="#portfolio"
               onClick={scrollToPortfolio}
