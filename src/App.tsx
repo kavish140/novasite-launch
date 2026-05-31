@@ -16,6 +16,9 @@ const SeoSpeed = lazy(() => import("./pages/services/SeoSpeed"));
 const Thane = lazy(() => import("./pages/locations/Thane"));
 const Powai = lazy(() => import("./pages/locations/Powai"));
 const Andheri = lazy(() => import("./pages/locations/Andheri"));
+const FreeAudit = lazy(() => import("./pages/FreeAudit"));
+const BlogIndex = lazy(() => import("./pages/blog/BlogIndex"));
+const BlogPost = lazy(() => import("./pages/blog/BlogPost"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,6 +46,9 @@ const App = () => (
               <Route path="/location/thane" element={<Thane />} />
               <Route path="/location/powai" element={<Powai />} />
               <Route path="/location/andheri" element={<Andheri />} />
+              <Route path="/free-audit" element={<FreeAudit />} />
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

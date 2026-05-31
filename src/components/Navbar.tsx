@@ -52,6 +52,12 @@ const Navbar = () => {
               {link.label}
             </button>
           ))}
+          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
+            Blog
+          </Link>
+          <Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
+            Free Audit
+          </Link>
           <button
             type="button"
             onClick={() => setTheme(isDarkMode ? "light" : "dark")}
@@ -102,6 +108,20 @@ const Navbar = () => {
                   {link.label}
                 </button>
               ))}
+              <Link
+                to="/blog"
+                onClick={() => setMobileOpen(false)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Blog
+              </Link>
+              <Link
+                to="/free-audit"
+                onClick={() => setMobileOpen(false)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Free Audit
+              </Link>
               <button
                 type="button"
                 onClick={() => setTheme(isDarkMode ? "light" : "dark")}
