@@ -196,7 +196,7 @@ const routes = [
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "SiteNova Web Design - Andheri Service Division",
-      "url": `${SITE_URL}/location/andheri`,
+      "url": `${SITE_URL}/location/andheri/`,
       "telephone": "+91-9326060621",
       "address": {
         "@type": "PostalAddress",
@@ -206,6 +206,36 @@ const routes = [
       },
       "areaServed": ["Andheri East", "Andheri West", "Lokhandwala", "MIDC Andheri", "Versova", "Oshiwara"],
       "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "free-audit",
+    title: "Get a Free Website Audit in Mumbai | SiteNova",
+    description: "Get a free expert review of your current website. We analyze performance, SEO, mobile responsiveness, and provide actionable conversion tips for your business.",
+    keywords: "free website audit, website review, SEO check Mumbai, website performance report",
+    sitemapPriority: "0.80",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Free Website Audit",
+      "url": `${SITE_URL}/free-audit/`,
+      "description": "Get a free expert review of your current website's SEO and performance."
+    }
+  },
+  {
+    path: "blog",
+    title: "Local Web Design Blog | SiteNova",
+    description: "Read our latest articles on web design, SEO, and growing your local business in Mumbai.",
+    keywords: "web design blog, SEO tips Mumbai, local business marketing, website advice",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      "name": "SiteNova Web Design Blog",
+      "url": `${SITE_URL}/blog/`,
+      "description": "Insights on web design, SEO, and business growth for local businesses."
     }
   }
 ];
@@ -245,7 +275,7 @@ function prerender() {
 
     // Replace canonical links
     const canonicalRegex = /<link rel="canonical" href="[^"]*"\s*\/?>/i;
-    const currentCanonicalUrl = route.path ? `${SITE_URL}/${route.path}` : `${SITE_URL}/`;
+    const currentCanonicalUrl = route.path ? `${SITE_URL}/${route.path}/` : `${SITE_URL}/`;
     if (canonicalRegex.test(finalHtml)) {
       finalHtml = finalHtml.replace(canonicalRegex, `<link rel="canonical" href="${currentCanonicalUrl}" />`);
     }
@@ -288,7 +318,7 @@ function prerender() {
   let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
   routes.forEach((route) => {
-    const loc = route.path ? `${SITE_URL}/${route.path}` : `${SITE_URL}/`;
+    const loc = route.path ? `${SITE_URL}/${route.path}/` : `${SITE_URL}/`;
     sitemapContent += `  <url>\n`;
     sitemapContent += `    <loc>${loc}</loc>\n`;
     sitemapContent += `    <lastmod>${today}</lastmod>\n`;
