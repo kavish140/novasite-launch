@@ -19,6 +19,7 @@ type AuditRequest = {
   id: string;
   name: string;
   email: string;
+  mobile: string;
   website_url: string;
   status: 'pending' | 'completed';
   created_at: string;
@@ -152,6 +153,7 @@ export default function AdminDashboard() {
                           <TableHead>Date</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
+                          <TableHead>Mobile</TableHead>
                           <TableHead>Website</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -164,6 +166,7 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell className="font-medium">{request.name}</TableCell>
                             <TableCell>{request.email}</TableCell>
+                            <TableCell>{request.mobile || 'N/A'}</TableCell>
                             <TableCell>
                               <a href={request.website_url.startsWith('http') ? request.website_url : `https://${request.website_url}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                                 {request.website_url}
@@ -195,6 +198,7 @@ export default function AdminDashboard() {
                           <TableHead>Date</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
+                          <TableHead>Mobile</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -206,6 +210,7 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell className="font-medium text-muted-foreground">{request.name}</TableCell>
                             <TableCell className="text-muted-foreground">{request.email}</TableCell>
+                            <TableCell className="text-muted-foreground">{request.mobile || 'N/A'}</TableCell>
                             <TableCell className="text-right">
                               <Button size="sm" variant="outline" onClick={() => updateRequestStatus(request.id, 'pending')} className="gap-2">
                                 <RotateCcw className="w-4 h-4" />

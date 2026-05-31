@@ -18,12 +18,13 @@ export default function FreeAudit() {
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
+    const mobile = formData.get("mobile") as string;
     const website = formData.get("website") as string;
     
     try {
       const { error } = await supabase
         .from("audit_requests")
-        .insert([{ name, email, website_url: website }]);
+        .insert([{ name, email, mobile, website_url: website }]);
 
       if (error) throw error;
       
@@ -70,6 +71,10 @@ export default function FreeAudit() {
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input id="email" name="email" type="email" required placeholder="john@example.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mobile">Mobile Number</Label>
+              <Input id="mobile" name="mobile" type="tel" required placeholder="+91 98765 43210" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="website">Website URL</Label>
