@@ -19,9 +19,21 @@ export default function FreeAudit() {
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const mobile = formData.get("mobile") as string;
-    const website = formData.get("website") as string;
+    let website = formData.get("website") as string;
+    
+    // Format and validate the website URL
+    website = website.trim();
+    if (!/^https?:\/\//i.test(website)) {
+      website = `https://${website}`;
+    }
     
     try {
+      // Basic check for a valid domain structure (has a dot, no spaces)
+      const domainWithoutProtocol = website.replace(/^https?:\/\//i, '');
+      if (!/^[^\s]+\.[^\s]+$/.test(domainWithoutProtocol)) {
+        throw new Error("Please enter a valid website address (e.g. example.com).");
+      }
+
       const { error } = await supabase
         .from("audit_requests")
         .insert([{ name, email, mobile, website_url: website }]);
@@ -78,7 +90,7 @@ export default function FreeAudit() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="website">Website URL</Label>
-              <Input id="website" name="website" type="url" required placeholder="https://example.com" />
+              <Input id="website" name="website" type="text" required placeholder="example.com" />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Submitting..." : "Get My Free Audit"}
