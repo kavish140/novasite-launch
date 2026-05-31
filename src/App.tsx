@@ -21,6 +21,7 @@ const BlogIndex = lazy(() => import("./pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("./pages/blog/BlogPost"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminBlogEditor = lazy(() => import("./pages/admin/AdminBlogEditor"));
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -58,6 +59,22 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/blog/new" 
+                element={
+                  <ProtectedRoute>
+                    <AdminBlogEditor />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/blog/:id" 
+                element={
+                  <ProtectedRoute>
+                    <AdminBlogEditor />
                   </ProtectedRoute>
                 } 
               />
