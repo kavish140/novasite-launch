@@ -51,7 +51,7 @@ export default function FreeAudit() {
         <Navbar />
       </header>
       
-      <main className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12">
+      <main className="flex-1 flex flex-col items-center justify-center pt-32 pb-12 px-6 sm:px-12">
         <div className="max-w-2xl w-full text-center space-y-6">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
             Get a Free Expert Review of Your Website

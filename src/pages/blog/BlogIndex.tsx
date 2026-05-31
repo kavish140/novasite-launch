@@ -50,7 +50,7 @@ export default function BlogIndex() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
       
-      <main className="flex-1 py-16 sm:py-24 max-w-7xl mx-auto px-6 w-full">
+      <main className="flex-1 pt-32 pb-16 sm:pb-24 max-w-7xl mx-auto px-6 w-full">
         <div className="mb-12">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
             Our Blog

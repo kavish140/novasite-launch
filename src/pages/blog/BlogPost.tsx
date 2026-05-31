@@ -53,7 +53,7 @@ export default function BlogPost() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <main className="flex-1 py-24 max-w-3xl mx-auto px-6 w-full">
+        <main className="flex-1 pt-32 pb-24 max-w-3xl mx-auto px-6 w-full">
           <div className="animate-pulse space-y-4">
             <div className="h-4 w-24 bg-muted rounded"></div>
             <div className="h-10 w-3/4 bg-muted rounded"></div>
@@ -74,7 +74,7 @@ export default function BlogPost() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <main className="flex-1 py-24 max-w-3xl mx-auto px-6 w-full text-center">
+        <main className="flex-1 pt-32 pb-24 max-w-3xl mx-auto px-6 w-full text-center">
           <h1 className="text-3xl font-bold mb-4">Post Not Found</h1>
           <p className="text-muted-foreground mb-8">The article you're looking for doesn't exist or has been removed.</p>
           <Link to="/blog" className="text-primary hover:underline">
@@ -90,7 +90,7 @@ export default function BlogPost() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
       
-      <main className="flex-1 py-16 sm:py-24 max-w-3xl mx-auto px-6 w-full">
+      <main className="flex-1 pt-32 pb-16 sm:pb-24 max-w-3xl mx-auto px-6 w-full">
         <Link 
           to="/blog" 
           className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-8 transition-colors"
