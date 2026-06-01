@@ -66,18 +66,23 @@ export default function AdminDashboard() {
 
   const updateRequestStatus = async (id: string, newStatus: 'pending' | 'completed') => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("audit_requests")
         .update({ status: newStatus })
-        .eq("id", id);
+        .eq("id", id)
+        .select();
         
       if (error) throw error;
       
+      if (!data || data.length === 0) {
+        throw new Error("Update failed. This is likely due to Row Level Security (RLS) policies in Supabase blocking the update. Please check your Supabase dashboard and add an UPDATE policy for the 'audit_requests' table.");
+      }
+      
       setRequests(requests.map(r => r.id === id ? { ...r, status: newStatus } : r));
       toast({ title: "Success", description: `Request marked as ${newStatus}.` });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating request:", error);
-      toast({ title: "Error", description: "Failed to update request.", variant: "destructive" });
+      toast({ title: "Update Failed", description: error.message || "Failed to update request.", variant: "destructive" });
     }
   };
 
@@ -85,14 +90,18 @@ export default function AdminDashboard() {
     if (!window.confirm("Are you sure you want to delete this post? This cannot be undone.")) return;
     
     try {
-      const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+      const { data, error } = await supabase.from("blog_posts").delete().eq("id", id).select();
       if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        throw new Error("Delete failed. This is likely due to Row Level Security (RLS) policies in Supabase blocking the deletion. Please check your Supabase dashboard and add a DELETE policy for the 'blog_posts' table.");
+      }
       
       setPosts(posts.filter(p => p.id !== id));
       toast({ title: "Success", description: "Blog post deleted." });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting post:", error);
-      toast({ title: "Error", description: "Failed to delete post.", variant: "destructive" });
+      toast({ title: "Delete Failed", description: error.message || "Failed to delete post.", variant: "destructive" });
     }
   };
 
