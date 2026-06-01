@@ -19,9 +19,17 @@ const Footer = () => {
               <img src="/logo-icon.svg" className="h-6 w-6" alt="SiteNova Logo" />
               <span>Site<span className="gradient-text">Nova</span></span>
             </span>
-            <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+            <p className="text-sm text-muted-foreground mt-3 mb-6 leading-relaxed">
               We build stunning, high-performing websites for businesses in Mumbai and surrounding commercial areas.
             </p>
+            <a
+              href="/downloads/sitenova-beta.apk"
+              download="SiteNova-Beta.apk"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-accent/60 bg-accent/15 px-6 py-3 text-sm font-bold text-accent hover:bg-accent/25 transition-all glow-effect group interactive-card shadow-[0_0_20px_rgba(239,68,68,0.15)] hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]"
+            >
+              <span className="text-lg animate-bounce">🎉</span>
+              Download Android App (Beta)
+            </a>
           </div>
 
           {/* Services */}
