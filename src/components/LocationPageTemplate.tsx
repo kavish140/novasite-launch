@@ -24,6 +24,7 @@ interface LocationPageProps {
   regionalFocusText: string;
   nearbySuburbs: string[];
   keywords: string[];
+  otherLocations?: { name: string; path: string }[];
 }
 
 export default function LocationPageTemplate({
@@ -177,6 +178,39 @@ export default function LocationPageTemplate({
             </button>
           </div>
 
+        </div>
+      </section>
+
+      {/* Cross-linking: Other locations */}
+      <section className="py-16 border-t border-border/20">
+        <div className="mx-auto max-w-7xl px-6">
+          <h3 className="font-heading text-xl font-bold tracking-tight mb-6">
+            Other Areas We Serve
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {[
+              { name: "Mulund", path: "/" },
+              { name: "Thane", path: "/location/thane" },
+              { name: "Powai", path: "/location/powai" },
+              { name: "Andheri", path: "/location/andheri" },
+              { name: "Bhandup", path: "/location/bhandup" },
+              { name: "Nahur", path: "/location/nahur" },
+              { name: "Ghatkopar", path: "/location/ghatkopar" },
+              { name: "Vikhroli", path: "/location/vikhroli" },
+              { name: "Kurla", path: "/location/kurla" },
+              { name: "Dadar", path: "/location/dadar" },
+            ]
+              .filter((loc) => loc.name !== locationName)
+              .map((loc) => (
+                <Link
+                  key={loc.name}
+                  to={loc.path}
+                  className="rounded-xl border border-border/60 bg-secondary/20 px-4 py-3 text-center text-sm font-medium text-foreground hover:bg-secondary hover:border-primary/30 transition-all"
+                >
+                  {loc.name}
+                </Link>
+              ))}
+          </div>
         </div>
       </section>
 

@@ -17,6 +17,12 @@ const SeoSpeed = lazy(() => import("./pages/services/SeoSpeed"));
 const Thane = lazy(() => import("./pages/locations/Thane"));
 const Powai = lazy(() => import("./pages/locations/Powai"));
 const Andheri = lazy(() => import("./pages/locations/Andheri"));
+const Bhandup = lazy(() => import("./pages/locations/Bhandup"));
+const Nahur = lazy(() => import("./pages/locations/Nahur"));
+const Ghatkopar = lazy(() => import("./pages/locations/Ghatkopar"));
+const Vikhroli = lazy(() => import("./pages/locations/Vikhroli"));
+const Kurla = lazy(() => import("./pages/locations/Kurla"));
+const Dadar = lazy(() => import("./pages/locations/Dadar"));
 const FreeAudit = lazy(() => import("./pages/FreeAudit"));
 const Doctors = lazy(() => import("./pages/niche/Doctors"));
 const Finance = lazy(() => import("./pages/niche/Finance"));
@@ -57,6 +63,12 @@ const App = () => (
                 <Route path="/location/thane" element={<Thane />} />
                 <Route path="/location/powai" element={<Powai />} />
                 <Route path="/location/andheri" element={<Andheri />} />
+                <Route path="/location/bhandup" element={<Bhandup />} />
+                <Route path="/location/nahur" element={<Nahur />} />
+                <Route path="/location/ghatkopar" element={<Ghatkopar />} />
+                <Route path="/location/vikhroli" element={<Vikhroli />} />
+                <Route path="/location/kurla" element={<Kurla />} />
+                <Route path="/location/dadar" element={<Dadar />} />
                 <Route path="/free-audit" element={<FreeAudit />} />
                 <Route path="/websites-for-doctors" element={<Doctors />} />
                 <Route path="/websites-for-finance" element={<Finance />} />

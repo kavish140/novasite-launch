@@ -209,6 +209,144 @@ const routes = [
     }
   },
   {
+    path: "location/bhandup",
+    title: "Best Website Designer in Bhandup, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Bhandup, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Bhandup, website design Bhandup, Bhandup web developer, local business website Bhandup, website designer near LBS Marg",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Bhandup Service Division",
+      "url": `${SITE_URL}/location/bhandup`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Bhandup",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Bhandup West", "Bhandup East", "LBS Marg", "Nahur", "Mulund", "Kanjurmarg"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "location/nahur",
+    title: "Best Website Designer in Nahur, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Nahur, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Nahur, website design Nahur, Nahur web developer, affordable website Nahur, website designer near Nahur station",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Nahur Service Division",
+      "url": `${SITE_URL}/location/nahur`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Nahur",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Nahur East", "Nahur West", "Bhandup", "Mulund", "Kanjurmarg", "Airoli"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "location/ghatkopar",
+    title: "Best Website Designer in Ghatkopar, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Ghatkopar, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Ghatkopar, website design Ghatkopar, Ghatkopar web developer, business website Ghatkopar, website designer near R City Mall",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Ghatkopar Service Division",
+      "url": `${SITE_URL}/location/ghatkopar`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Ghatkopar",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Ghatkopar East", "Ghatkopar West", "Vikhroli", "Kurla", "LBS Road", "Tilak Nagar"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "location/vikhroli",
+    title: "Best Website Designer in Vikhroli, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Vikhroli, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Vikhroli, website design Vikhroli, Vikhroli web developer, Godrej Vikhroli web design, business website Vikhroli",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Vikhroli Service Division",
+      "url": `${SITE_URL}/location/vikhroli`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Vikhroli",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Vikhroli East", "Vikhroli West", "Godrej Campus", "Powai", "Kanjurmarg", "Bhandup"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "location/kurla",
+    title: "Best Website Designer in Kurla, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Kurla, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Kurla, website design Kurla, Kurla web developer, business website near BKC, website designer Kurla Mumbai",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Kurla Service Division",
+      "url": `${SITE_URL}/location/kurla`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Kurla",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Kurla East", "Kurla West", "BKC", "Vidyavihar", "Ghatkopar", "Chembur"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "location/dadar",
+    title: "Best Website Designer in Dadar, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Dadar, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Dadar, website design Dadar, Dadar web developer, business website Dadar Mumbai, website designer central Mumbai",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Dadar Service Division",
+      "url": `${SITE_URL}/location/dadar`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Dadar",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Dadar East", "Dadar West", "Shivaji Park", "Prabhadevi", "Matunga", "Mahim"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
     path: "free-audit",
     title: "Get a Free Website Audit in Mumbai | SiteNova",
     description: "Get a free expert review of your current website. We analyze performance, SEO, mobile responsiveness, and provide actionable conversion tips for your business.",

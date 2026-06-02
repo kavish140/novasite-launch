@@ -46,9 +46,16 @@ const Footer = () => {
           <div>
             <h4 className="font-heading text-sm font-semibold mb-4">Service Areas</h4>
             <ul className="space-y-2.5">
+              <li><Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mulund Web Design</Link></li>
               <li><Link to="/location/thane" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Thane Web Design</Link></li>
               <li><Link to="/location/powai" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Powai Web Developer</Link></li>
               <li><Link to="/location/andheri" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Andheri Web Designer</Link></li>
+              <li><Link to="/location/bhandup" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bhandup Web Design</Link></li>
+              <li><Link to="/location/nahur" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Nahur Web Design</Link></li>
+              <li><Link to="/location/ghatkopar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Ghatkopar Web Design</Link></li>
+              <li><Link to="/location/vikhroli" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Vikhroli Web Design</Link></li>
+              <li><Link to="/location/kurla" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Kurla Web Design</Link></li>
+              <li><Link to="/location/dadar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Dadar Web Design</Link></li>
             </ul>
           </div>
 
