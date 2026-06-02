@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Phone, Mail, MessageCircle } from "lucide-react";
+import { Phone, Mail, MessageCircle, ShieldCheck } from "lucide-react";
 
 const emailComposeLink =
   "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Website%20Inquiry%20from%20SiteNova";
@@ -56,7 +56,15 @@ const CtaSection = () => {
           <Mail size={20} />
           kavishganatra5@gmail.com
         </a>
-        <p className="mt-5 text-sm text-muted-foreground">We typically respond within 24 hours</p>
+
+        {/* Risk reversal guarantee */}
+        <div className="mt-6 flex items-center justify-center gap-2 rounded-full border border-[#25D366]/20 bg-[#25D366]/5 px-5 py-2">
+          <ShieldCheck size={16} className="text-[#25D366] shrink-0" />
+          <span className="text-sm font-medium text-[#25D366]">
+            Not happy? Full refund within 7 days of delivery
+          </span>
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">We typically respond within 24 hours</p>
       </motion.div>
     </section>
   );

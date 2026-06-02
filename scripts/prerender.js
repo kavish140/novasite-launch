@@ -237,6 +237,69 @@ const routes = [
       "url": `${SITE_URL}/blog/`,
       "description": "Insights on web design, SEO, and business growth for local businesses."
     }
+  },
+  {
+    path: "websites-for-doctors",
+    title: "Professional Websites for Doctors & Clinics in Mumbai | SiteNova",
+    description: "SiteNova builds patient-friendly, SEO-optimized websites for doctors, dentists, and clinics in Mumbai. Online appointments, patient testimonials, and mobile-first design.",
+    keywords: "website for doctors Mumbai, clinic website design, doctor website designer Mulund, healthcare website Mumbai, medical practice website design",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Healthcare Website Design for Doctors & Clinics",
+      "provider": {
+        "@type": "ProfessionalService",
+        "name": "SiteNova",
+        "url": `${SITE_URL}`
+      },
+      "description": "Professional website design for doctors, dentists, physiotherapists, and clinics in Mumbai. Includes online appointment booking, SEO optimization, and mobile-first design.",
+      "areaServed": { "@type": "City", "name": "Mumbai" },
+      "serviceType": "Website Design for Healthcare Professionals"
+    }
+  },
+  {
+    path: "websites-for-finance",
+    title: "Professional Websites for CAs, Financial Advisors & Insurance Agents | SiteNova",
+    description: "SiteNova builds trust-building, SEO-optimized websites for CAs, financial advisors, and insurance agents in Mumbai. Showcase your expertise and generate leads online.",
+    keywords: "website for CA firms, financial advisor website design Mumbai, insurance agent website, CA firm website design, finance website Mumbai",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Website Design for Financial Professionals",
+      "provider": {
+        "@type": "ProfessionalService",
+        "name": "SiteNova",
+        "url": `${SITE_URL}`
+      },
+      "description": "Professional website design for CAs, financial advisors, and insurance agents in Mumbai. Build trust, showcase expertise, and generate qualified leads.",
+      "areaServed": { "@type": "City", "name": "Mumbai" },
+      "serviceType": "Website Design for Financial Professionals"
+    }
+  },
+  {
+    path: "websites-for-real-estate",
+    title: "Professional Websites for Real Estate Agents & Builders in Mumbai | SiteNova",
+    description: "SiteNova builds lead-generating websites for real estate agents, builders, and property dealers in Mumbai. Property listings, virtual tours, and lead capture forms.",
+    keywords: "real estate website design Mumbai, property dealer website, builder website design, real estate agent website, property listing website Mumbai",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Website Design for Real Estate Professionals",
+      "provider": {
+        "@type": "ProfessionalService",
+        "name": "SiteNova",
+        "url": `${SITE_URL}`
+      },
+      "description": "Lead-generating websites for real estate agents, builders, and property dealers in Mumbai. Property listings, image galleries, and lead capture forms.",
+      "areaServed": { "@type": "City", "name": "Mumbai" },
+      "serviceType": "Website Design for Real Estate Professionals"
+    }
   }
 ];
 

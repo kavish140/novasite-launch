@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, Moon, Sun, X } from "lucide-react";
+import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 
@@ -11,17 +11,57 @@ const navLinks = [
   { label: "Testimonials", id: "testimonials" },
 ];
 
+const nicheLinks = [
+  {
+    label: "Websites for Doctors",
+    to: "/websites-for-doctors",
+    icon: Stethoscope,
+    description: "Clinics, dentists & healthcare",
+  },
+  {
+    label: "Websites for Finance",
+    to: "/websites-for-finance",
+    icon: TrendingUp,
+    description: "CAs, advisors & insurance",
+  },
+  {
+    label: "Websites for Real Estate",
+    to: "/websites-for-real-estate",
+    icon: Building2,
+    description: "Agents, builders & dealers",
+  },
+];
+
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const isDarkMode = resolvedTheme !== "light";
   const location = useLocation();
   const navigate = useNavigate();
+  const servicesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Close services dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
+        setServicesOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close dropdown on route change
+  useEffect(() => {
+    setServicesOpen(false);
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const scrollToSection = (sectionId: string) => {
     if (location.pathname !== "/") {
@@ -52,6 +92,55 @@ const Navbar = () => {
               {link.label}
             </button>
           ))}
+
+          {/* Services Dropdown */}
+          <div ref={servicesRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setServicesOpen(!servicesOpen)}
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+              aria-expanded={servicesOpen}
+              aria-haspopup="true"
+            >
+              Services
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            <AnimatePresence>
+              {servicesOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full right-0 mt-2 w-72 rounded-xl border border-border/60 bg-background/95 backdrop-blur-xl shadow-xl p-2"
+                >
+                  {nicheLinks.map((niche) => {
+                    const Icon = niche.icon;
+                    return (
+                      <Link
+                        key={niche.to}
+                        to={niche.to}
+                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-secondary/60 transition-colors group"
+                      >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
+                          <Icon size={18} />
+                        </div>
+                        <div>
+                          <span className="font-medium text-foreground">{niche.label}</span>
+                          <p className="text-xs text-muted-foreground mt-0.5">{niche.description}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
             Blog
           </Link>
@@ -108,6 +197,28 @@ const Navbar = () => {
                   {link.label}
                 </button>
               ))}
+
+              {/* Mobile services section */}
+              <div className="border-t border-border/30 pt-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3">
+                  Services
+                </p>
+                {nicheLinks.map((niche) => {
+                  const Icon = niche.icon;
+                  return (
+                    <Link
+                      key={niche.to}
+                      to={niche.to}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Icon size={16} className="text-primary shrink-0" />
+                      {niche.label}
+                    </Link>
+                  );
+                })}
+              </div>
+
               <Link
                 to="/blog"
                 onClick={() => setMobileOpen(false)}

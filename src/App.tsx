@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BookCallWidget from "./components/BookCallWidget";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ExitIntentPopup from "./components/ExitIntentPopup";
 
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -17,11 +18,14 @@ const Thane = lazy(() => import("./pages/locations/Thane"));
 const Powai = lazy(() => import("./pages/locations/Powai"));
 const Andheri = lazy(() => import("./pages/locations/Andheri"));
 const FreeAudit = lazy(() => import("./pages/FreeAudit"));
+const Doctors = lazy(() => import("./pages/niche/Doctors"));
+const Finance = lazy(() => import("./pages/niche/Finance"));
 const BlogIndex = lazy(() => import("./pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("./pages/blog/BlogPost"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminBlogEditor = lazy(() => import("./pages/admin/AdminBlogEditor"));
+const RealEstate = lazy(() => import("./pages/niche/RealEstate"));
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -51,6 +55,8 @@ const App = () => (
               <Route path="/location/powai" element={<Powai />} />
               <Route path="/location/andheri" element={<Andheri />} />
               <Route path="/free-audit" element={<FreeAudit />} />
+              <Route path="/websites-for-doctors" element={<Doctors />} />
+              <Route path="/websites-for-finance" element={<Finance />} />
               <Route path="/blog" element={<BlogIndex />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/admin" element={<AdminLogin />} />
@@ -78,10 +84,12 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/websites-for-real-estate" element={<RealEstate />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BookCallWidget />
+            <ExitIntentPopup />
           </Suspense>
         </BrowserRouter>
       </TooltipProvider>

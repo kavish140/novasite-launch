@@ -1,5 +1,5 @@
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
@@ -78,6 +78,36 @@ const HeroSection = () => {
               View Our Work
             </a>
           </div>
+
+          {/* Trust bar */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-10 flex flex-col items-center gap-4"
+          >
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
+              Trusted by doctors, financial firms &amp; local businesses in Mumbai
+            </p>
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
+              {[
+                { label: "Custom-Built", sublabel: "for your brand" },
+                { label: "100% Satisfaction", sublabel: "guaranteed" },
+                { label: "From ₹5,000", sublabel: "starting price" },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <p className="text-sm font-bold text-foreground">{stat.label}</p>
+                  <p className="text-[11px] text-muted-foreground">{stat.sublabel}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 mt-1 rounded-full border border-[#25D366]/20 bg-[#25D366]/5 px-4 py-1.5">
+              <ShieldCheck size={14} className="text-[#25D366]" />
+              <span className="text-[11px] font-medium text-[#25D366]">
+                7-day money-back guarantee on all projects
+              </span>
+            </div>
+          </motion.div>
         </motion.div>
 
         {/* Dashboard preview */}

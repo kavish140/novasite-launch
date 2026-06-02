@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, ExternalLink } from "lucide-react";
 
 const testimonials = [
 	{
 		name: "Jupiter Fast Finance",
 		role: "Client Review",
+		website: "https://jupiterfastfinance.com",
 		content:
 			"Truly impressed with the fantastic work done by Site Nova’s team on JupiterFinance.com. The website is exceptionally well-designed — modern, sleek, and highly professional in appearance. Every element feels thoughtfully placed, creating a smooth and engaging user experience. Their attention to detail and design aesthetics really stand out. Highly appreciative of the quality and finesse they bring to their work!",
 		rating: 5,
@@ -12,6 +13,7 @@ const testimonials = [
 	{
 		name: "Dr. Dipti Ganatra",
 		role: "Client Review",
+		website: "https://drdiptiganatra.com",
 		content:
 			"Absolutely thrilled with my website www.drdiptiganatra.com! Site Nova’s team built it beautifully in a very short span of time, with complete database integration and seamless functionality. The design is clean, professional, and perfectly reflects my practice. Since its launch, I’ve seen improved patient engagement and steady growth in my business. Highly recommend their team for anyone looking for a powerful and well-executed website!",
 		rating: 5,
@@ -64,9 +66,15 @@ const TestimonialsSection = () => {
 								"{t.content}"
 							</p>
 							<div>
-								<p className="font-heading font-semibold text-sm">
+								<a
+									href={t.website}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="inline-flex items-center gap-1.5 font-heading font-semibold text-sm hover:text-primary transition-colors"
+								>
 									{t.name}
-								</p>
+									<ExternalLink size={12} className="text-muted-foreground" />
+								</a>
 								<p className="text-xs text-muted-foreground">
 									{t.role}
 								</p>
