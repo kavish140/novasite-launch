@@ -124,7 +124,7 @@ const HeroSection = () => {
                 src={dashboardPreview}
                 alt="SiteNova web development and landing page design dashboard preview"
                 className="w-full h-auto"
-                loading="eager"
+                loading="lazy"
                 decoding="async"
                 width="1024"
                 height="640"

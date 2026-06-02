@@ -131,7 +131,52 @@
         <p>Please enable JavaScript to use this website, or contact us at <a href="mailto:kavishganatra5@gmail.com">kavishganatra5@gmail.com</a> or call <a href="tel:+919326060621">9326060621</a>.</p>
       </div>
     </noscript>
-    <div id="root"></div>
+    <style>
+      body { margin: 0; background-color: #0a0e1a; overflow-x: hidden; }
+      #root { width: 100vw; min-height: 100vh; }
+      .app-loader {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #0a0e1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        font-family: 'Space Grotesk', sans-serif;
+        color: #ffffff;
+      }
+      .app-loader-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        opacity: 0;
+        animation: fadein 0.3s ease-out forwards 0.1s;
+      }
+      .gradient-text-loader {
+        background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      @keyframes fadein {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+    <div id="root">
+      <div class="app-loader">
+        <div class="app-loader-content">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#4facfe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="#4facfe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="#00f2fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Site<span class="gradient-text-loader">Nova</span></span>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
