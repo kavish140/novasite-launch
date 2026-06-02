@@ -85,6 +85,24 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://sitenova.dev/location/lower-parel/</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://sitenova.dev/location/mahalakshmi/</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://sitenova.dev/location/pedder-road/</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://sitenova.dev/free-audit/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>

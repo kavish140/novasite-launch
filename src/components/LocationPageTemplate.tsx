@@ -199,6 +199,9 @@ export default function LocationPageTemplate({
               { name: "Vikhroli", path: "/location/vikhroli" },
               { name: "Kurla", path: "/location/kurla" },
               { name: "Dadar", path: "/location/dadar" },
+              { name: "Lower Parel", path: "/location/lower-parel" },
+              { name: "Mahalakshmi", path: "/location/mahalakshmi" },
+              { name: "Pedder Road", path: "/location/pedder-road" },
             ]
               .filter((loc) => loc.name !== locationName)
               .map((loc) => (

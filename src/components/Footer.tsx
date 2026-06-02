@@ -53,9 +53,24 @@ const Footer = () => {
               <li><Link to="/location/bhandup" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bhandup Web Design</Link></li>
               <li><Link to="/location/nahur" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Nahur Web Design</Link></li>
               <li><Link to="/location/ghatkopar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Ghatkopar Web Design</Link></li>
-              <li><Link to="/location/vikhroli" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Vikhroli Web Design</Link></li>
-              <li><Link to="/location/kurla" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Kurla Web Design</Link></li>
-              <li><Link to="/location/dadar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Dadar Web Design</Link></li>
+              <li>
+                <Link to="/location/vikhroli" className="text-muted-foreground hover:text-primary transition-colors text-sm">Vikhroli</Link>
+              </li>
+              <li>
+                <Link to="/location/kurla" className="text-muted-foreground hover:text-primary transition-colors text-sm">Kurla</Link>
+              </li>
+              <li>
+                <Link to="/location/dadar" className="text-muted-foreground hover:text-primary transition-colors text-sm">Dadar</Link>
+              </li>
+              <li>
+                <Link to="/location/lower-parel" className="text-muted-foreground hover:text-primary transition-colors text-sm">Lower Parel</Link>
+              </li>
+              <li>
+                <Link to="/location/mahalakshmi" className="text-muted-foreground hover:text-primary transition-colors text-sm">Mahalakshmi</Link>
+              </li>
+              <li>
+                <Link to="/location/pedder-road" className="text-muted-foreground hover:text-primary transition-colors text-sm">Pedder Road</Link>
+              </li>
             </ul>
           </div>
 

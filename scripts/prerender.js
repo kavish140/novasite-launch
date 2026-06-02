@@ -347,6 +347,75 @@ const routes = [
     }
   },
   {
+    path: "location/lower-parel",
+    title: "Best Website Designer in Lower Parel, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Lower Parel, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Lower Parel, website design Lower Parel, Lower Parel web agency, business website Kamala Mills, premium web design Mumbai",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Lower Parel Service Division",
+      "url": `${SITE_URL}/location/lower-parel`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Lower Parel",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Lower Parel", "Worli", "Prabhadevi", "Kamala Mills", "Mahalakshmi"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "location/mahalakshmi",
+    title: "Best Website Designer in Mahalakshmi, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Mahalakshmi, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Mahalakshmi, website design Mahalakshmi, South Mumbai web developer, premium web design Mahalakshmi, luxury brand web design",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Mahalakshmi Service Division",
+      "url": `${SITE_URL}/location/mahalakshmi`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Mahalakshmi",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Mahalakshmi", "Breach Candy", "Pedder Road", "Tardeo", "Cumballa Hill"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "location/pedder-road",
+    title: "Best Website Designer in Pedder Road, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Pedder Road, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Pedder Road, website design Pedder Road, South Mumbai web design agency, clinic web design Mumbai, luxury web developer Mumbai",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Pedder Road Service Division",
+      "url": `${SITE_URL}/location/pedder-road`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Pedder Road",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Pedder Road", "Carmichael Road", "Altamount Road", "Malabar Hill", "Breach Candy"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
     path: "free-audit",
     title: "Get a Free Website Audit in Mumbai | SiteNova",
     description: "Get a free expert review of your current website. We analyze performance, SEO, mobile responsiveness, and provide actionable conversion tips for your business.",
