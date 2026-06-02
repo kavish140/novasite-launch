@@ -133,7 +133,7 @@ const PortfolioSection = () => {
                         src={imageBySlug[project.slug as keyof typeof imageBySlug]}
                         alt={`${project.title} website screenshot by SiteNova`}
                         className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                        loading={inView ? "lazy" : "eager"}
+                        loading="lazy"
                         decoding="async"
                         width="500"
                         height="400"
@@ -199,7 +199,7 @@ const PortfolioSection = () => {
                         src={imageBySlug[project.slug as keyof typeof imageBySlug]}
                         alt={`${project.title} website screenshot by SiteNova`}
                         className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                        loading={inView ? "lazy" : "eager"}
+                        loading="lazy"
                         decoding="async"
                         width="500"
                         height="400"
