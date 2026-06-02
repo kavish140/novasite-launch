@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Zap, Paintbrush, Globe, Shield, Smartphone, HeadphonesIcon } from "lucide-react";
 
 const features = [

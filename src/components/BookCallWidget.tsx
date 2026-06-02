@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Calendar } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 
 const BookCallWidget = () => {
   const [isVisible, setIsVisible] = useState(false);

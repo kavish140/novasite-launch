@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { showcaseProjects, customerProjects } from "@/lib/portfolio-meta";

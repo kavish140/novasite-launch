@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { setPageSeo } from "@/lib/seo";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 
 interface ProjectTypeOption {
   id: string;
