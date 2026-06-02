@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
-import { buildLocalBusinessJsonLd, setPageSeo } from "@/lib/seo";
+import FaqSection, { faqs } from "@/components/FaqSection";
+import { buildLocalBusinessJsonLd, buildFaqJsonLd, setPageSeo } from "@/lib/seo";
 
 const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
 const PortfolioSection = lazy(() => import("@/components/PortfolioSection"));
@@ -35,7 +36,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
         "SEO friendly website designer",
         "website designer in nearby areas",
       ],
-      jsonLd: buildLocalBusinessJsonLd(),
+      jsonLd: [buildLocalBusinessJsonLd(), buildFaqJsonLd(faqs)],
     });
   }, [seoTitle, seoDescription, seoCanonicalPath, seoKeywords]);
 
@@ -76,7 +77,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                     Website design for Mulund, Mumbai, and nearby areas
                   </h2>
                   <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-                    SiteNova helps businesses that want to rank for searches like best website designer in Mulund, website designer in Mumbai, and related local terms. We combine fast, mobile-first design with content that speaks to the neighborhoods your customers actually search from.
+                    <strong className="font-semibold text-foreground">SiteNova is a professional web development agency based in Mulund, Mumbai, specializing in custom, high-performance websites.</strong> We help local businesses rank for searches like best website designer in Mulund and Mumbai. We combine fast, mobile-first design with content that speaks to the neighborhoods your customers actually search from.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -136,6 +137,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
           <section aria-labelledby="testimonials-title">
             <TestimonialsSection />
           </section>
+          <FaqSection />
           <section aria-labelledby="cta-title">
             <CtaSection />
           </section>
