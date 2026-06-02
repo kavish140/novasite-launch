@@ -4,10 +4,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import BookCallWidget from "./components/BookCallWidget";
 import ErrorBoundary from "./components/ErrorBoundary";
-import ExitIntentPopup from "./components/ExitIntentPopup";
 
+const BookCallWidget = lazy(() => import("./components/BookCallWidget"));
+const ExitIntentPopup = lazy(() => import("./components/ExitIntentPopup"));
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Quote = lazy(() => import("./pages/Quote"));
@@ -26,7 +26,7 @@ const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminBlogEditor = lazy(() => import("./pages/admin/AdminBlogEditor"));
 const RealEstate = lazy(() => import("./pages/niche/RealEstate"));
-import ProtectedRoute from "./components/ProtectedRoute";
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
 import { LazyMotion, domAnimation } from "framer-motion";
 
