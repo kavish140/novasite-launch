@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
@@ -13,6 +14,12 @@ export default function ExitIntentPopup() {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [industry, setIndustry] = useState("");
+  const location = useLocation();
+
+  // Do not render the popup on any admin pages
+  if (location.pathname.startsWith("/admin")) {
+    return null;
+  }
 
   const showPopup = useCallback(() => {
     // Don't show if already shown in this session
