@@ -146,13 +146,13 @@ export default function ExitIntentPopup() {
                         onChange={(e) => setIndustry(e.target.value)}
                         className="w-full rounded-xl border border-border/80 bg-secondary/20 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all appearance-none"
                       >
-                        <option value="">Select your industry (optional)</option>
-                        <option value="Healthcare">Healthcare / Clinic</option>
-                        <option value="Finance">Finance / CA / Insurance</option>
-                        <option value="Real Estate">Real Estate / Property</option>
-                        <option value="Retail">Retail / E-commerce</option>
-                        <option value="Education">Education / Coaching</option>
-                        <option value="Other">Other</option>
+                        <option value="" className="bg-background text-foreground">Select your industry (optional)</option>
+                        <option value="Healthcare" className="bg-background text-foreground">Healthcare / Clinic</option>
+                        <option value="Finance" className="bg-background text-foreground">Finance / CA / Insurance</option>
+                        <option value="Real Estate" className="bg-background text-foreground">Real Estate / Property</option>
+                        <option value="Retail" className="bg-background text-foreground">Retail / E-commerce</option>
+                        <option value="Education" className="bg-background text-foreground">Education / Coaching</option>
+                        <option value="Other" className="bg-background text-foreground">Other</option>
                       </select>
                     </div>
 
