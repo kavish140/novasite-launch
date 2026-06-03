@@ -93,7 +93,23 @@ export default function BlogPost() {
         title={`${post.title} | SiteNova Blog`}
         description={post.content.substring(0, 160).replace(/<[^>]+>/g, '') || `Read our latest article on ${post.title}.`}
         canonicalUrl={`/blog/${post.slug}`}
-      />
+        type="article"
+      >
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "headline": post.title,
+            "description": post.content.substring(0, 160).replace(/<[^>]+>/g, ''),
+            "datePublished": post.published_at,
+            "author": [{
+                "@type": "Person",
+                "name": "Kavish Ganatra",
+                "url": "https://sitenova.dev"
+            }]
+          })}
+        </script>
+      </SEO>
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
       

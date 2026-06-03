@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 import dashboardPreview from "@/assets/dashboard-preview.jpg";
+import BlurImage from "./BlurImage";
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -150,14 +151,12 @@ const HeroSection = () => {
         >
           <div className="relative mx-auto max-w-5xl gradient-border rounded-2xl overflow-hidden interactive-card hover-glow">
             <div className="rounded-2xl overflow-hidden border border-border/30">
-              <img
+              <BlurImage
                 src={dashboardPreview}
                 alt="SiteNova web development and landing page design dashboard preview"
                 className="w-full h-auto"
-                loading="lazy"
-                decoding="async"
-                width="1024"
-                height="640"
+                width={1024}
+                height={640}
               />
             </div>
             {/* Bottom fade */}

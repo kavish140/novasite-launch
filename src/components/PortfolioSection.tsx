@@ -8,6 +8,7 @@ import smartkitImage from "@/assets/Aismartkit.webp";
 import businessShowcaseImage from "@/assets/business-showcase.png";
 import designShowcaseImage from "@/assets/design-showcase.png";
 import ecommerceShowcaseImage from "@/assets/ecommerce-showcase.png";
+import BlurImage from "./BlurImage";
 
 const imageBySlug = {
   "dr-dipti-ganatra": drDiptiImage,
@@ -149,14 +150,12 @@ const PortfolioSection = () => {
                     {project.useIframePreview && inView ? (
                       <IframePreview src={project.liveUrl} title={project.title} />
                     ) : (
-                      <img
+                      <BlurImage
                         src={imageBySlug[project.slug as keyof typeof imageBySlug]}
                         alt={`${project.title} website screenshot by SiteNova`}
-                        className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                        loading="lazy"
-                        decoding="async"
-                        width="500"
-                        height="400"
+                        className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02] !bg-transparent"
+                        width={500}
+                        height={400}
                       />
                     )}
                   </div>

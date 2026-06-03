@@ -7,6 +7,7 @@ interface SEOProps {
   image?: string;
   keywords?: string[];
   type?: string;
+  children?: React.ReactNode;
 }
 
 export const SEO = ({ 
@@ -15,7 +16,8 @@ export const SEO = ({
   canonicalUrl, 
   image = "/seo-preview.png", 
   keywords = [], 
-  type = "website" 
+  type = "website",
+  children
 }: SEOProps) => {
   const siteUrl = "https://kavish140.github.io/novasite-launch"; // Adjust as needed
   const fullCanonicalUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
@@ -41,6 +43,8 @@ export const SEO = ({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
+      
+      {children}
     </Helmet>
   );
 };
