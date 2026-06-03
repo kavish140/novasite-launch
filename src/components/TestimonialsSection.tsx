@@ -20,6 +20,54 @@ const testimonials = [
 	},
 ];
 
+const MarqueeRow = ({ items, reverse = false }: { items: typeof testimonials; reverse?: boolean }) => {
+	// Duplicate items to ensure smooth infinite scroll
+	const duplicatedItems = [...items, ...items, ...items];
+	
+	const RowContent = () => (
+		<div
+			className={`flex shrink-0 gap-6 items-stretch animate-marquee ${
+				reverse ? "[animation-direction:reverse]" : ""
+			} group-hover:[animation-play-state:paused]`}
+		>
+			{duplicatedItems.map((t, i) => (
+				<div
+					key={`${t.name}-${i}`}
+					className="glass-card p-6 md:p-8 flex flex-col w-[320px] md:w-[450px] shrink-0 interactive-card hover-glow"
+				>
+					<div className="flex gap-1 mb-4">
+						{Array.from({ length: t.rating }).map((_, idx) => (
+							<Star key={idx} size={16} className="fill-accent text-accent" />
+						))}
+					</div>
+					<p className="text-foreground/90 leading-relaxed mb-6 flex-1 text-sm md:text-base line-clamp-[7]">
+						"{t.content}"
+					</p>
+					<div className="mt-auto">
+						<a
+							href={t.website}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center gap-1.5 font-heading font-semibold text-sm hover:text-primary transition-colors"
+						>
+							{t.name}
+							<ExternalLink size={12} className="text-muted-foreground" />
+						</a>
+						<p className="text-xs text-muted-foreground">{t.role}</p>
+					</div>
+				</div>
+			))}
+		</div>
+	);
+
+	return (
+		<div className="flex overflow-hidden group gap-6 w-full mb-6 last:mb-0">
+			<RowContent />
+			<RowContent />
+		</div>
+	);
+};
+
 const TestimonialsSection = () => {
 	return (
 		<section id="testimonials" className="section-padding">
@@ -43,44 +91,15 @@ const TestimonialsSection = () => {
 					</h2>
 				</motion.div>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-					{testimonials.map((t, i) => (
-						<motion.div
-							key={t.name}
-							initial={{ opacity: 0, y: 24 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.5, delay: i * 0.1 }}
-							className="glass-card p-8 flex flex-col interactive-card hover-glow"
-						>
-							<div className="flex gap-1 mb-4">
-								{Array.from({ length: t.rating }).map((_, idx) => (
-									<Star
-										key={idx}
-										size={16}
-										className="fill-accent text-accent"
-									/>
-								))}
-							</div>
-							<p className="text-foreground/90 leading-relaxed mb-6 flex-1">
-								"{t.content}"
-							</p>
-							<div>
-								<a
-									href={t.website}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1.5 font-heading font-semibold text-sm hover:text-primary transition-colors"
-								>
-									{t.name}
-									<ExternalLink size={12} className="text-muted-foreground" />
-								</a>
-								<p className="text-xs text-muted-foreground">
-									{t.role}
-								</p>
-							</div>
-						</motion.div>
-					))}
+				<div className="relative w-full max-w-[100vw] overflow-hidden -mx-6 px-6 sm:mx-0 sm:px-0">
+					{/* Gradient Masks for smooth fade out on edges */}
+					<div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10 hidden md:block" />
+					<div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10 hidden md:block" />
+					
+					<div className="flex flex-col gap-6 py-4">
+						<MarqueeRow items={testimonials} />
+						<MarqueeRow items={[...testimonials].reverse()} reverse={true} />
+					</div>
 				</div>
 			</div>
 		</section>

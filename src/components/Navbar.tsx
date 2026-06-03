@@ -144,6 +144,9 @@ const Navbar = () => {
           <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
             Blog
           </Link>
+          <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
+            Pricing
+          </Link>
           <Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
             Free Audit
           </Link>
@@ -225,6 +228,13 @@ const Navbar = () => {
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Blog
+              </Link>
+              <Link
+                to="/pricing"
+                onClick={() => setMobileOpen(false)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Pricing
               </Link>
               <Link
                 to="/free-audit"

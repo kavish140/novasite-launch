@@ -11,6 +11,7 @@ const ExitIntentPopup = lazy(() => import("./components/ExitIntentPopup"));
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Quote = lazy(() => import("./pages/Quote"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 const Ecommerce = lazy(() => import("./pages/services/Ecommerce"));
 const WebApps = lazy(() => import("./pages/services/WebApps"));
 const SeoSpeed = lazy(() => import("./pages/services/SeoSpeed"));
@@ -60,6 +61,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/quote" element={<Quote />} />
+                <Route path="/pricing" element={<Pricing />} />
                 <Route path="/services/ecommerce" element={<Ecommerce />} />
                 <Route path="/services/web-applications" element={<WebApps />} />
                 <Route path="/services/seo-optimization" element={<SeoSpeed />} />

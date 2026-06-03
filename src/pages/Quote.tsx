@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Loader2,
   Building,
+  ShieldCheck,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { setPageSeo } from "@/lib/seo";
@@ -228,7 +229,8 @@ Looking forward to discussing further!`
   return (
     <main className="min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-16 relative overflow-hidden flex flex-col justify-center">
       {/* Background glow orbs */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-primary/5 blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-primary/10 blur-[150px] animate-pulse-glow pointer-events-none -z-10" />
+      <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[120px] pointer-events-none -z-10" />
 
       <div className="mx-auto w-full max-w-3xl z-10 flex-1 flex flex-col justify-center">
         {step < 4 && (
@@ -286,7 +288,9 @@ Looking forward to discussing further!`
           </div>
         )}
 
-        <div className="glass-card p-6 sm:p-10 rounded-3xl border border-border/60 bg-card/30 shadow-xl backdrop-blur-md relative overflow-hidden">
+        <div className="glass-card p-6 sm:p-10 rounded-3xl border border-border/60 bg-card/40 shadow-2xl backdrop-blur-xl relative overflow-hidden">
+          {/* Top subtle gradient border */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           <AnimatePresence mode="wait">
             {step === 1 && (
               <motion.div
@@ -634,6 +638,22 @@ Looking forward to discussing further!`
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
+        {/* Trust Badges */}
+        <div className="mt-8 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-muted-foreground/80">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} className="text-primary" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Secure Form</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-primary" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Fast Response</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Globe size={16} className="text-primary" />
+            <span className="text-xs font-semibold uppercase tracking-wider">No Commitments</span>
+          </div>
         </div>
       </div>
     </main>

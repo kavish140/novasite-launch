@@ -32,9 +32,10 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background" />
       </motion.div>
 
-      {/* Glow orb */}
+      {/* Glow orbs */}
       <motion.div style={{ y: orbY }} className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-primary/10 blur-[120px] animate-pulse-glow pointer-events-none will-change-transform" />
-      <motion.div style={{ y: contentY }} className="absolute top-[18%] right-[8%] w-[240px] h-[240px] rounded-full bg-accent/10 blur-[90px] pointer-events-none" />
+      <motion.div style={{ y: contentY }} className="absolute top-[30%] right-[10%] w-[300px] h-[300px] rounded-full bg-accent/20 blur-[100px] animate-pulse-glow pointer-events-none" />
+      <motion.div style={{ y: contentY }} className="absolute top-[18%] right-[8%] w-[240px] h-[240px] rounded-full bg-secondary/30 blur-[90px] pointer-events-none" />
 
       <motion.div style={{ y: contentY }} className="relative z-10 mx-auto max-w-7xl px-6 text-center will-change-transform">
         <motion.div
@@ -50,10 +51,39 @@ const HeroSection = () => {
             </span>
           </div>
 
-          <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-balance">
-            Best Website Designer in Mulund, Mumbai & Nearby Areas
-            <span className="block gradient-text animated-gradient">SiteNova</span>
-          </h1>
+          <motion.h1 
+            className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-balance flex flex-wrap justify-center gap-x-3 sm:gap-x-4"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+              },
+            }}
+          >
+            {"Best Website Designer in Mulund, Mumbai & Nearby Areas".split(" ").map((word, idx) => (
+              <motion.span
+                key={idx}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0, transition: { type: "spring", damping: 12, stiffness: 100 } }
+                }}
+              >
+                {word}
+              </motion.span>
+            ))}
+            <motion.span
+              className="block w-full gradient-text animated-gradient mt-2"
+              variants={{
+                hidden: { opacity: 0, scale: 0.9 },
+                visible: { opacity: 1, scale: 1, transition: { type: "spring", delay: 0.8 } }
+              }}
+            >
+              SiteNova
+            </motion.span>
+          </motion.h1>
 
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 text-balance">
             We deliver web development and landing page design for businesses in Mulund,
@@ -91,9 +121,9 @@ const HeroSection = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
               {[
-                { label: "Custom-Built", sublabel: "for your brand" },
-                { label: "100% Satisfaction", sublabel: "guaranteed" },
-                { label: "From ₹5,000", sublabel: "starting price" },
+                { label: "Trusted by Doctors & Finance Firms", sublabel: "in Mumbai" },
+                { label: "5-Star Rated on Google", sublabel: "by our clients" },
+                { label: "Fast Delivery", sublabel: "days, not weeks" },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
                   <p className="text-sm font-bold text-foreground">{stat.label}</p>

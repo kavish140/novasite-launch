@@ -79,25 +79,59 @@ const FeaturesSection = () => {
 					initial="hidden"
 					whileInView="visible"
 					viewport={{ once: true, margin: "-80px" }}
-					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+					className="grid grid-cols-1 md:grid-cols-3 gap-4"
 				>
-					{features.map((feature) => (
-						<motion.div
-							key={feature.title}
-							variants={item}
-							className="glass-card p-8 group hover:border-primary/30 transition-colors duration-300 interactive-card hover-glow"
-						>
-							<div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
-								<feature.icon size={22} className="text-primary" />
-							</div>
-							<h3 className="font-heading text-lg font-semibold mb-2">
-								{feature.title}
-							</h3>
-							<p className="text-sm text-muted-foreground leading-relaxed">
-								{feature.description}
-							</p>
-						</motion.div>
-					))}
+					{features.map((feature, i) => {
+						const isHero = i === 0;
+						const isTall = i === 1;
+						const isWide = i === 5;
+						
+						let spanClasses = "md:col-span-1";
+						if (isHero) spanClasses = "md:col-span-2 md:row-span-2";
+						else if (isTall) spanClasses = "md:col-span-1 md:row-span-2";
+						else if (isWide) spanClasses = "md:col-span-3";
+
+						return (
+							<motion.div
+								key={feature.title}
+								variants={item}
+								className={`glass-card p-6 md:p-8 group hover:border-primary/30 transition-all duration-300 interactive-card hover-glow flex flex-col justify-between ${spanClasses} overflow-hidden relative`}
+							>
+								<div className="relative z-10">
+									<div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+										<feature.icon size={22} className="text-primary" />
+									</div>
+									<h3 className={`font-heading ${isHero ? 'text-2xl mb-3' : 'text-lg mb-2'} font-semibold`}>
+										{feature.title}
+									</h3>
+									<p className={`text-muted-foreground leading-relaxed ${isHero ? 'text-base max-w-md' : 'text-sm'}`}>
+										{feature.description}
+									</p>
+								</div>
+								
+								{/* Decorative backgrounds for bento effect */}
+								<feature.icon 
+									size={isHero ? 160 : isTall ? 120 : 80} 
+									className={`absolute text-primary/[0.03] group-hover:text-primary/[0.05] transition-colors duration-500 pointer-events-none
+										${isHero ? '-bottom-10 -right-10' : 
+										  isTall ? '-bottom-10 -right-4' : 
+										  isWide ? 'bottom-0 right-10' : 
+										  '-bottom-6 -right-6'}`} 
+								/>
+								
+								{isHero && (
+									<div className="mt-8 relative z-10 flex-1 w-full bg-secondary/30 rounded-xl border border-border/50 overflow-hidden flex items-center justify-center min-h-[160px]">
+										<div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+										<div className="flex flex-col gap-3 w-3/4">
+											<div className="w-full h-3 bg-primary/20 rounded-full animate-pulse-glow" style={{ animationDelay: '0ms' }} />
+											<div className="w-5/6 h-3 bg-primary/20 rounded-full animate-pulse-glow" style={{ animationDelay: '150ms' }} />
+											<div className="w-4/6 h-3 bg-primary/20 rounded-full animate-pulse-glow" style={{ animationDelay: '300ms' }} />
+										</div>
+									</div>
+								)}
+							</motion.div>
+						);
+					})}
 				</motion.div>
 			</div>
 		</section>
