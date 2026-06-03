@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 
 interface LocationPageProps {
   locationName: string;
@@ -37,14 +38,6 @@ export default function LocationPageTemplate({
 }: LocationPageProps) {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setPageSeo({
-      title: `Best Website Designer in ${locationName}, Mumbai | SiteNova`,
-      description: `SiteNova builds premium, SEO-ready, mobile-first websites in ${locationName}, Mumbai. Grow your business with fast load times and Google Map Pack optimization.`,
-      canonicalPath: `/location/${locationName.toLowerCase()}`,
-      keywords: keywords,
-    });
-  }, [locationName, keywords]);
 
   const handleStartQuote = () => {
     navigate("/quote", {
@@ -56,8 +49,15 @@ export default function LocationPageTemplate({
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title={`Best Website Designer in ${locationName}, Mumbai | SiteNova`}
+        description={`SiteNova builds premium, SEO-ready, mobile-first websites in ${locationName}, Mumbai. Grow your business with fast load times and Google Map Pack optimization.`}
+        canonicalUrl={`/location/${locationName.toLowerCase()}`}
+        keywords={keywords}
+      />
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-32 pb-20">
@@ -218,6 +218,7 @@ export default function LocationPageTemplate({
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

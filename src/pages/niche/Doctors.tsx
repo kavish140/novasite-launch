@@ -21,8 +21,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
+import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import drDiptiImage from "@/assets/Drdiptiganatra.webp";
 
@@ -109,36 +110,6 @@ export default function Doctors() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setPageSeo({
-      title: "Professional Websites for Doctors & Clinics in Mumbai | SiteNova",
-      description:
-        "SiteNova builds patient-friendly, SEO-optimized websites for doctors, dentists, and clinics in Mumbai. Online appointments, patient testimonials, and mobile-first design.",
-      canonicalPath: "/websites-for-doctors",
-      keywords: [
-        "website for doctors Mumbai",
-        "clinic website design",
-        "doctor website designer Mulund",
-        "healthcare website Mumbai",
-        "medical practice website design",
-      ],
-      jsonLd: {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        name: "Healthcare Website Design for Doctors & Clinics",
-        provider: {
-          "@type": "ProfessionalService",
-          name: "SiteNova",
-          url: "https://sitenova.dev",
-        },
-        description:
-          "Professional website design for doctors, dentists, physiotherapists, and clinics in Mumbai. Includes online appointment booking, SEO optimization, and mobile-first design.",
-        areaServed: {
-          "@type": "City",
-          name: "Mumbai",
-        },
-        serviceType: "Website Design for Healthcare Professionals",
-      },
-    });
     trackNichePageView("doctors");
   }, []);
 
@@ -152,8 +123,15 @@ export default function Doctors() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title="Professional Websites for Doctors & Clinics in Mumbai | SiteNova"
+        description="SiteNova builds patient-friendly, SEO-optimized websites for doctors, dentists, and clinics in Mumbai. Online appointments, patient testimonials, and mobile-first design."
+        canonicalUrl="/websites-for-doctors"
+        keywords={["website for doctors Mumbai", "clinic website design", "doctor website designer Mulund", "healthcare website Mumbai", "medical practice website design"]}
+      />
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
 
       {/* ══════════════════════════════════════════════
           HERO SECTION
@@ -537,6 +515,7 @@ export default function Doctors() {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

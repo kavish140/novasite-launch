@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
-import { setPageSeo } from "@/lib/seo";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 
 interface BlogPost {
   id: string;
@@ -18,12 +19,6 @@ export default function BlogIndex() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setPageSeo({
-      title: "Local Web Design Blog | SiteNova",
-      description: "Read our latest articles on web design, SEO, and growing your local business in Mumbai.",
-      canonicalPath: "/blog",
-    });
-
     async function fetchPosts() {
       try {
         const { data, error } = await supabase
@@ -47,8 +42,14 @@ export default function BlogIndex() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title="Local Web Design Blog | SiteNova"
+        description="Read our latest articles on web design, SEO, and growing your local business in Mumbai."
+        canonicalUrl="/blog"
+      />
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <Navbar />
       
       <main className="flex-1 pt-32 pb-16 sm:pb-24 max-w-7xl mx-auto px-6 w-full">
         <div className="mb-12">
@@ -101,6 +102,7 @@ export default function BlogIndex() {
       </main>
       
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

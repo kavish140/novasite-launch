@@ -4,7 +4,10 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
 import FaqSection, { faqs } from "@/components/FaqSection";
-import { buildLocalBusinessJsonLd, buildFaqJsonLd, setPageSeo } from "@/lib/seo";
+import { buildLocalBusinessJsonLd, buildFaqJsonLd } from "@/lib/seo";
+import SEO from "@/components/SEO";
+import TechMarquee from "@/components/TechMarquee";
+import PageTransition from "@/components/PageTransition";
 
 const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
 const PortfolioSection = lazy(() => import("@/components/PortfolioSection"));
@@ -23,21 +26,14 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
   const location = useLocation();
 
   useEffect(() => {
-    setPageSeo({
-      title: seoTitle || "Best Website Designer in Mulund, Mumbai & Nearby Areas | SiteNova",
-      description:
-        seoDescription || "SiteNova builds SEO-ready, mobile-first websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Nahur, Thane, Ghatkopar, and Powai.",
-      canonicalPath: seoCanonicalPath || "/",
-      keywords: seoKeywords || [
-        "best website designer in Mulund",
-        "website designer in Mumbai",
-        "website design Mulund",
-        "web development Mulund",
-        "SEO friendly website designer",
-        "website designer in nearby areas",
-      ],
-      jsonLd: [buildLocalBusinessJsonLd(), buildFaqJsonLd(faqs)],
-    });
+    // JSON-LD is still inserted via helmet or custom method if needed.
+    // For now, let's keep the jsonLd script injection out of SEO component or add it to Helmet later.
+    const jsonLd = [buildLocalBusinessJsonLd(), buildFaqJsonLd(faqs)];
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.innerHTML = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
   }, [seoTitle, seoDescription, seoCanonicalPath, seoKeywords]);
 
   useEffect(() => {
@@ -53,15 +49,28 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <a href="#main-content" className="sr-only focus:not-sr-only">
-        Skip to main content
-      </a>
-      <header>
-        <Navbar />
-      </header>
-      <main id="main-content">
-        <HeroSection />
+    <PageTransition>
+      <SEO 
+        title={seoTitle || "Best Website Designer in Mulund, Mumbai & Nearby Areas | SiteNova"}
+        description={seoDescription || "SiteNova builds SEO-ready, mobile-first websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Nahur, Thane, Ghatkopar, and Powai."}
+        canonicalUrl={seoCanonicalPath || "/"}
+        keywords={seoKeywords || [
+          "best website designer in Mulund",
+          "website designer in Mumbai",
+          "website design Mulund",
+          "web development Mulund"
+        ]}
+      />
+      <div className="min-h-screen bg-background text-foreground">
+        <a href="#main-content" className="sr-only focus:not-sr-only">
+          Skip to main content
+        </a>
+        <header>
+          <Navbar />
+        </header>
+        <main id="main-content">
+          <HeroSection />
+          <TechMarquee />
         <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
           <section aria-labelledby="features-title">
             <FeaturesSection />
@@ -145,6 +154,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
       </main>
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 

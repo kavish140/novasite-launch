@@ -4,7 +4,8 @@ import { CheckCircle2, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 
 const pricingTiers = [
   {
@@ -58,25 +59,29 @@ const pricingTiers = [
 
 const Pricing = () => {
   useEffect(() => {
-    setPageSeo({
-      title: "Pricing & Packages | SiteNova Web Design",
-      description: "Transparent pricing for web development in Mulund, Mumbai. Affordable, fast, and high-quality websites starting from ₹5,000.",
-      canonicalPath: "/pricing",
-      keywords: ["website design pricing Mumbai", "affordable web design Mulund", "SiteNova pricing", "website cost India"],
-    });
+    // any jsonLd can be added here
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Navbar />
-      <main className="flex-1 pt-24 pb-20">
-        <div className="mx-auto max-w-7xl px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
+    <PageTransition>
+      <SEO 
+        title="Transparent Pricing | SiteNova"
+        description="Simple, transparent pricing for high-performance websites. Choose the plan that fits your business needs."
+        canonicalUrl="/pricing"
+        keywords={["website pricing", "web design cost", "affordable web design", "business website packages"]}
+      />
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <header>
+          <Navbar />
+        </header>
+        <main className="flex-1 pt-24 pb-20">
+          <div className="mx-auto max-w-7xl px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-16"
+            >
             <span className="text-sm font-medium text-primary uppercase tracking-widest">
               Simple Pricing
             </span>
@@ -162,7 +167,8 @@ const Pricing = () => {
         </div>
       </main>
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 };
 

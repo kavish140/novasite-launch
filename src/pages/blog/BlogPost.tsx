@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
-import { setPageSeo } from "@/lib/seo";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 import { ChevronLeft } from "lucide-react";
 
 interface BlogPostData {
@@ -33,11 +34,6 @@ export default function BlogPost() {
           console.error("Error fetching post:", error);
         } else if (data) {
           setPost(data);
-          setPageSeo({
-            title: `${data.title} | SiteNova Blog`,
-            description: data.excerpt || `Read our latest article on ${data.title}.`,
-            canonicalPath: `/blog/${data.slug}`,
-          });
         }
       } catch (err) {
         console.error(err);
@@ -51,9 +47,10 @@ export default function BlogPost() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        <main className="flex-1 pt-32 pb-24 max-w-3xl mx-auto px-6 w-full">
+      <PageTransition>
+        <div className="min-h-screen bg-background flex flex-col">
+          <Navbar />
+          <main className="flex-1 pt-32 pb-24 max-w-3xl mx-auto px-6 w-full">
           <div className="animate-pulse space-y-4">
             <div className="h-4 w-24 bg-muted rounded"></div>
             <div className="h-10 w-3/4 bg-muted rounded"></div>
@@ -65,30 +62,40 @@ export default function BlogPost() {
             </div>
           </div>
         </main>
-        <Footer />
-      </div>
+          <Footer />
+        </div>
+      </PageTransition>
     );
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        <main className="flex-1 pt-32 pb-24 max-w-3xl mx-auto px-6 w-full text-center">
+      <PageTransition>
+        <SEO title="Post Not Found | SiteNova" />
+        <div className="min-h-screen bg-background flex flex-col">
+          <Navbar />
+          <main className="flex-1 pt-32 pb-24 max-w-3xl mx-auto px-6 w-full text-center">
           <h1 className="text-3xl font-bold mb-4">Post Not Found</h1>
           <p className="text-muted-foreground mb-8">The article you're looking for doesn't exist or has been removed.</p>
           <Link to="/blog" className="text-primary hover:underline">
             ← Back to Blog
           </Link>
         </main>
-        <Footer />
-      </div>
+          <Footer />
+        </div>
+      </PageTransition>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title={`${post.title} | SiteNova Blog`}
+        description={post.content.substring(0, 160).replace(/<[^>]+>/g, '') || `Read our latest article on ${post.title}.`}
+        canonicalUrl={`/blog/${post.slug}`}
+      />
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <Navbar />
       
       <main className="flex-1 pt-32 pb-16 sm:pb-24 max-w-3xl mx-auto px-6 w-full">
         <Link 
@@ -121,6 +128,7 @@ export default function BlogPost() {
       </main>
       
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

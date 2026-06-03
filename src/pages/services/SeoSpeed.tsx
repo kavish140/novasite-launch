@@ -16,27 +16,11 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
-
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 export default function SeoSpeed() {
   const navigate = useNavigate();
 
-  // SEO
-  useEffect(() => {
-    setPageSeo({
-      title: "SEO and Speed Optimization Services in Mumbai | SiteNova",
-      description:
-        "Rank higher on Google. SiteNova optimizes website speeds, fixes core web vitals, and implements local SEO systems for Mumbai businesses to capture more customers.",
-      canonicalPath: "/services/seo-optimization",
-      keywords: [
-        "SEO and speed optimization Mumbai",
-        "PageSpeed optimizer Mumbai",
-        "Core Web Vitals specialist Mumbai",
-        "local SEO services Mumbai",
-        "website speed tuning",
-      ],
-    });
-  }, []);
 
   // Scanner State
   const [url, setUrl] = useState("");
@@ -231,8 +215,15 @@ export default function SeoSpeed() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title="SEO and Speed Optimization Services in Mumbai | SiteNova"
+        description="Rank higher on Google. SiteNova optimizes website speeds, fixes core web vitals, and implements local SEO systems for Mumbai businesses to capture more customers."
+        canonicalUrl="/services/seo-optimization"
+        keywords={["SEO and speed optimization Mumbai", "PageSpeed optimizer Mumbai", "Core Web Vitals specialist Mumbai", "local SEO services Mumbai", "website speed tuning"]}
+      />
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-32 pb-20">
@@ -453,6 +444,7 @@ export default function SeoSpeed() {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

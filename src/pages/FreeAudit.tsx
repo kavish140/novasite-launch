@@ -3,6 +3,8 @@ import { m as motion } from "framer-motion";
 import { Search, Smartphone, Zap, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,10 +85,16 @@ export default function FreeAudit() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header>
-        <Navbar />
-      </header>
+    <PageTransition>
+      <SEO 
+        title="Free Website Audit | SiteNova" 
+        description="Get a 100% free, no-obligation audit of your website. We'll analyze performance, SEO health, and mobile responsiveness to help you unlock your site's potential."
+        canonicalUrl="/free-audit"
+      />
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <header>
+          <Navbar />
+        </header>
       
       <main className="relative flex-1 flex items-center justify-center pt-32 pb-24 overflow-hidden">
         {/* Background Effects */}
@@ -218,6 +226,7 @@ export default function FreeAudit() {
       </main>
       
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

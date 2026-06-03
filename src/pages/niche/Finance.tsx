@@ -20,8 +20,9 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
+import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
 
@@ -89,20 +90,6 @@ export default function Finance() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setPageSeo({
-      title:
-        "Professional Websites for CAs, Financial Advisors & Insurance Agents | SiteNova",
-      description:
-        "SiteNova builds trust-building, SEO-optimized websites for CAs, financial advisors, and insurance agents in Mumbai. Showcase your expertise and generate leads online.",
-      canonicalPath: "/websites-for-finance",
-      keywords: [
-        "website for CA firms",
-        "financial advisor website design Mumbai",
-        "insurance agent website",
-        "CA firm website design",
-        "finance website Mumbai",
-      ],
-    });
     trackNichePageView("finance");
   }, []);
 
@@ -116,8 +103,15 @@ export default function Finance() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title="Professional Websites for CAs, Financial Advisors & Insurance Agents | SiteNova"
+        description="SiteNova builds trust-building, SEO-optimized websites for CAs, financial advisors, and insurance agents in Mumbai. Showcase your expertise and generate leads online."
+        canonicalUrl="/websites-for-finance"
+        keywords={["website for CA firms", "financial advisor website design Mumbai", "insurance agent website", "CA firm website design", "finance website Mumbai"]}
+      />
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
 
       {/* ───────────────── Hero Section ───────────────── */}
       <section className="relative overflow-hidden pt-32 pb-20">
@@ -498,6 +492,7 @@ export default function Finance() {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

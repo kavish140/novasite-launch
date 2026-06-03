@@ -15,27 +15,12 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 
 export default function Ecommerce() {
   const navigate = useNavigate();
 
-  // SEO
-  useEffect(() => {
-    setPageSeo({
-      title: "E-commerce Website Design Services in Mumbai | SiteNova",
-      description:
-        "Build a high-converting online shop. SiteNova designs custom e-commerce stores in Mumbai with Razorpay/Stripe, coupon systems, and fast checkout workflows.",
-      canonicalPath: "/services/ecommerce",
-      keywords: [
-        "e-commerce web design Mumbai",
-        "online store developer Mumbai",
-        "Shopify developer Mumbai",
-        "WooCommerce website designer",
-        "custom e-commerce development",
-      ],
-    });
-  }, []);
 
   // Estimator State
   const [platform, setPlatform] = useState<"woocommerce" | "shopify" | "custom">("woocommerce");
@@ -107,8 +92,15 @@ export default function Ecommerce() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title="E-commerce Website Design Services in Mumbai | SiteNova"
+        description="Build a high-converting online shop. SiteNova designs custom e-commerce stores in Mumbai with Razorpay/Stripe, coupon systems, and fast checkout workflows."
+        canonicalUrl="/services/ecommerce"
+        keywords={["e-commerce web design Mumbai", "online store developer Mumbai", "Shopify developer Mumbai", "WooCommerce website designer", "custom e-commerce development"]}
+      />
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-32 pb-20">
@@ -345,6 +337,7 @@ export default function Ecommerce() {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

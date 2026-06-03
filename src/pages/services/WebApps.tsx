@@ -17,27 +17,11 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
-
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 export default function WebApps() {
   const navigate = useNavigate();
 
-  // SEO
-  useEffect(() => {
-    setPageSeo({
-      title: "Custom Web Application Development Services in Mumbai | SiteNova",
-      description:
-        "Build custom web applications with React, Next.js, Node.js, and Databases. SiteNova designs secure, scalable dashboard and web systems in Mumbai.",
-      canonicalPath: "/services/web-applications",
-      keywords: [
-        "custom web application developer Mumbai",
-        "React developer Mumbai",
-        "Nextjs developer Mumbai",
-        "web software developer Mumbai",
-        "dashboard development Mumbai",
-      ],
-    });
-  }, []);
 
   // Tech Stack & Blueprint Modules State
   const [selectedModules, setSelectedModules] = useState<string[]>(["database", "accounts"]);
@@ -123,8 +107,15 @@ export default function WebApps() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title="Custom Web Application Development Services in Mumbai | SiteNova"
+        description="Build custom web applications with React, Next.js, Node.js, and Databases. SiteNova designs secure, scalable dashboard and web systems in Mumbai."
+        canonicalUrl="/services/web-applications"
+        keywords={["custom web application developer Mumbai", "React developer Mumbai", "Nextjs developer Mumbai", "web software developer Mumbai", "dashboard development Mumbai"]}
+      />
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-32 pb-20">
@@ -277,6 +268,7 @@ export default function WebApps() {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }

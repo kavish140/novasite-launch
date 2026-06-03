@@ -22,8 +22,9 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { setPageSeo } from "@/lib/seo";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
+import SEO from "@/components/SEO";
+import PageTransition from "@/components/PageTransition";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -94,24 +95,10 @@ const problemPoints = [
     text: "A professional website sets you apart from agents who only use WhatsApp forwards and PDF brochures.",
   },
 ];
-
 export default function RealEstate() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setPageSeo({
-      title: "Professional Websites for Real Estate Agents & Builders in Mumbai | SiteNova",
-      description:
-        "SiteNova builds lead-generating websites for real estate agents, builders, and property dealers in Mumbai. Property listings, virtual tours, and lead capture forms.",
-      canonicalPath: "/websites-for-real-estate",
-      keywords: [
-        "real estate website design Mumbai",
-        "property dealer website",
-        "builder website design",
-        "real estate agent website",
-        "property listing website Mumbai",
-      ],
-    });
     trackNichePageView("real-estate");
   }, []);
 
@@ -125,8 +112,15 @@ export default function RealEstate() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <PageTransition>
+      <SEO 
+        title="Professional Websites for Real Estate Agents & Builders in Mumbai | SiteNova"
+        description="SiteNova builds lead-generating websites for real estate agents, builders, and property dealers in Mumbai. Property listings, virtual tours, and lead capture forms."
+        canonicalUrl="/websites-for-real-estate"
+        keywords={["real estate website design Mumbai", "property dealer website", "builder website design", "real estate agent website", "property listing website Mumbai"]}
+      />
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar />
 
       {/* ─── Hero Section ─── */}
       <section className="relative overflow-hidden pt-32 pb-20 lg:pb-28">
@@ -426,6 +420,7 @@ export default function RealEstate() {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </PageTransition>
   );
 }
