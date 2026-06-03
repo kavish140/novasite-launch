@@ -35,10 +35,11 @@ export default function AdminLogin() {
       if (error) throw error;
       
       navigate("/admin/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Invalid credentials.";
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid credentials.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

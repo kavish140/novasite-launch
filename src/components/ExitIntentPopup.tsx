@@ -16,11 +16,6 @@ export default function ExitIntentPopup() {
   const [industry, setIndustry] = useState("");
   const location = useLocation();
 
-  // Do not render the popup on any admin pages
-  if (location.pathname.startsWith("/admin")) {
-    return null;
-  }
-
   const showPopup = useCallback(() => {
     // Don't show if already shown in this session
     if (sessionStorage.getItem(STORAGE_KEY)) return;
@@ -77,6 +72,11 @@ export default function ExitIntentPopup() {
   };
 
   const handleClose = () => setIsVisible(false);
+
+  // Do not render the popup on any admin pages
+  if (location.pathname.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <AnimatePresence>

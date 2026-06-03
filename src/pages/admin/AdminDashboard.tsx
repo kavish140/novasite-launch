@@ -80,9 +80,10 @@ export default function AdminDashboard() {
       
       setRequests(requests.map(r => r.id === id ? { ...r, status: newStatus } : r));
       toast({ title: "Success", description: `Request marked as ${newStatus}.` });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating request:", error);
-      toast({ title: "Update Failed", description: error.message || "Failed to update request.", variant: "destructive" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to update request.";
+      toast({ title: "Update Failed", description: errorMessage, variant: "destructive" });
     }
   };
 
@@ -99,9 +100,10 @@ export default function AdminDashboard() {
       
       setPosts(posts.filter(p => p.id !== id));
       toast({ title: "Success", description: "Blog post deleted." });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting post:", error);
-      toast({ title: "Delete Failed", description: error.message || "Failed to delete post.", variant: "destructive" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete post.";
+      toast({ title: "Delete Failed", description: errorMessage, variant: "destructive" });
     }
   };
 

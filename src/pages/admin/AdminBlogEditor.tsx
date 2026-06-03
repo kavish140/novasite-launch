@@ -86,9 +86,10 @@ export default function AdminBlogEditor() {
       }
       
       navigate("/admin/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving post:", error);
-      toast({ title: "Error", description: error.message || "Failed to save post.", variant: "destructive" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to save post.";
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }

@@ -69,11 +69,12 @@ export default function FreeAudit() {
       });
       
       (e.target as HTMLFormElement).reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit request. Please try again later.";
       toast({
         title: "Error",
-        description: error.message || "Failed to submit request. Please try again later.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
