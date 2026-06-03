@@ -1,9 +1,21 @@
-import { useEffect, useState } from "react";
-import { m as motion, useSpring } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { m as motion, useSpring, AnimatePresence } from "framer-motion";
+
+interface Particle {
+  id: string;
+  x: number;
+  y: number;
+  color: string;
+  size: number;
+}
+
+const CONFETTI_COLORS = ["bg-primary", "bg-accent", "bg-blue-400/60", "bg-purple-400/60", "bg-pink-400/60"];
 
 export default function CustomCursor() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const lastParticlePos = useRef({ x: 0, y: 0 });
 
   // Smooth springs for cursor position
   const springConfig = { damping: 25, stiffness: 400, mass: 0.5 };
@@ -12,9 +24,32 @@ export default function CustomCursor() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-      cursorX.set(e.clientX - 16); // Center the 32px cursor
-      cursorY.set(e.clientY - 16);
+      const currentX = e.clientX;
+      const currentY = e.clientY;
+      setMousePosition({ x: currentX, y: currentY });
+      cursorX.set(currentX - 16); // Center the 32px cursor
+      cursorY.set(currentY - 16);
+
+      // Confetti Trail Logic
+      const dist = Math.hypot(currentX - lastParticlePos.current.x, currentY - lastParticlePos.current.y);
+      if (dist > 35) { // Spawn particle every 35px moved
+        lastParticlePos.current = { x: currentX, y: currentY };
+        const newParticle: Particle = {
+          id: `${Date.now()}-${Math.random()}`,
+          x: currentX,
+          y: currentY,
+          color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+          size: Math.random() * 4 + 3, // 3px to 7px
+        };
+        
+        // Keep max 15 particles to maintain performance and subtlety
+        setParticles((prev) => [...prev.slice(-14), newParticle]);
+        
+        // Remove particle automatically
+        setTimeout(() => {
+          setParticles((prev) => prev.filter((p) => p.id !== newParticle.id));
+        }, 1000);
+      }
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -77,6 +112,25 @@ export default function CustomCursor() {
         }}
         transition={{ type: "tween", ease: "backOut", duration: 0.1 }}
       />
+      {/* Confetti Trail */}
+      <AnimatePresence>
+        {particles.map((p) => (
+          <motion.div
+            key={p.id}
+            initial={{ opacity: 0.5, scale: 1, x: p.x, y: p.y, rotate: 0 }}
+            animate={{
+              opacity: 0,
+              scale: 0.2,
+              x: p.x + (Math.random() - 0.5) * 40, // slight horizontal drift
+              y: p.y + 30 + Math.random() * 30, // fall downwards
+              rotate: Math.random() * 180 * (Math.random() > 0.5 ? 1 : -1),
+            }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className={`fixed top-0 left-0 pointer-events-none z-[9998] rounded-[2px] ${p.color}`}
+            style={{ width: p.size, height: p.size }}
+          />
+        ))}
+      </AnimatePresence>
     </>
   );
 }
