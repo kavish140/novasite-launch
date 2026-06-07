@@ -1,5 +1,6 @@
 import { m as motion } from "framer-motion";
-import { Phone, Mail, MessageCircle, ShieldCheck } from "lucide-react";
+import { Phone, Mail, MessageCircle, ShieldCheck, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const emailComposeLink =
   "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Website%20Inquiry%20from%20SiteNova";
@@ -28,14 +29,14 @@ const CtaSection = () => {
           Get in touch today for a clean, modern website that fits your budget. Share your requirements and I’ll reply with a clear quote.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-          <a
-            href="tel:+919326060621"
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+          <Link
+            to="/quote"
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect button-shimmer interactive-card"
           >
-            <Phone size={20} />
-            9326060621
-          </a>
+            Request a Custom Quote
+            <ArrowRight size={20} />
+          </Link>
           <a
             href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20interested%20in%20getting%20a%20website%20built."
             target="_blank"
@@ -47,15 +48,24 @@ const CtaSection = () => {
           </a>
         </div>
 
-        <a
-          href={emailComposeLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
-        >
-          <Mail size={20} />
-          kavishganatra5@gmail.com
-        </a>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+          <a
+            href="tel:+919326060621"
+            className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
+          >
+            <Phone size={20} />
+            9326060621
+          </a>
+          <a
+            href={emailComposeLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
+          >
+            <Mail size={20} />
+            Email Us
+          </a>
+        </div>
 
         {/* Risk reversal guarantee */}
         <div className="mt-6 flex items-center justify-center gap-2 rounded-full border border-[#25D366]/20 bg-[#25D366]/5 px-5 py-2">

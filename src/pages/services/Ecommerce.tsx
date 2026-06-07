@@ -17,6 +17,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
+import PortfolioSection from "@/components/PortfolioSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import CtaSection from "@/components/CtaSection";
 
 export default function Ecommerce() {
   const navigate = useNavigate();
@@ -335,6 +338,10 @@ export default function Ecommerce() {
 
         </div>
       </section>
+
+      <PortfolioSection />
+      <TestimonialsSection />
+      <CtaSection />
 
       <Footer />
       </div>

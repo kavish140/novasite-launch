@@ -19,6 +19,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
+import PortfolioSection from "@/components/PortfolioSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import CtaSection from "@/components/CtaSection";
 export default function WebApps() {
   const navigate = useNavigate();
 
@@ -266,6 +269,10 @@ export default function WebApps() {
 
         </div>
       </section>
+
+      <PortfolioSection />
+      <TestimonialsSection />
+      <CtaSection />
 
       <Footer />
       </div>

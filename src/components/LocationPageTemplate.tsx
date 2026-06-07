@@ -17,6 +17,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
+import PortfolioSection from "@/components/PortfolioSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import CtaSection from "@/components/CtaSection";
 
 interface LocationPageProps {
   locationName: string;
@@ -216,6 +219,10 @@ export default function LocationPageTemplate({
           </div>
         </div>
       </section>
+
+      <PortfolioSection />
+      <TestimonialsSection />
+      <CtaSection />
 
       <Footer />
       </div>
