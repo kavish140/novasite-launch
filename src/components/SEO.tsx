@@ -7,6 +7,7 @@ interface SEOProps {
   image?: string;
   keywords?: string[];
   type?: string;
+  jsonLd?: Record<string, any> | Record<string, any>[];
   children?: React.ReactNode;
 }
 
@@ -44,6 +45,13 @@ export const SEO = ({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
       
+      {/* JSON-LD Structured Data */}
+      {jsonLd && (
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      )}
+
       {children}
     </Helmet>
   );
