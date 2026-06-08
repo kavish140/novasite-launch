@@ -26,6 +26,7 @@ export default function AdminBlogEditor() {
     if (isEditing && id) {
       fetchPost(id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEditing]);
 
   const fetchPost = async (postId: string) => {

@@ -7,7 +7,7 @@ interface SEOProps {
   image?: string;
   keywords?: string[];
   type?: string;
-  jsonLd?: Record<string, any> | Record<string, any>[];
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   children?: React.ReactNode;
 }
 
