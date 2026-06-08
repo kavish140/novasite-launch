@@ -21,7 +21,7 @@ export const SEO = ({
   jsonLd,
   children
 }: SEOProps) => {
-  const siteUrl = "https://kavish140.github.io/novasite-launch"; // Adjust as needed
+  const siteUrl = import.meta.env.VITE_SITE_URL || "https://sitenova.dev";
   const fullCanonicalUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
 
   return (

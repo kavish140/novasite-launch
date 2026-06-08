@@ -25,16 +25,7 @@ interface IndexProps {
 const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: IndexProps) => {
   const location = useLocation();
 
-  useEffect(() => {
-    // JSON-LD is still inserted via helmet or custom method if needed.
-    // For now, let's keep the jsonLd script injection out of SEO component or add it to Helmet later.
-    const jsonLd = [buildLocalBusinessJsonLd(), buildFaqJsonLd(faqs)];
-    const script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.innerHTML = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
-  }, [seoTitle, seoDescription, seoCanonicalPath, seoKeywords]);
+  const jsonLd = [buildLocalBusinessJsonLd(), buildFaqJsonLd(faqs)];
 
   useEffect(() => {
     if (location.hash) {
@@ -60,6 +51,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
           "website design Mulund",
           "web development Mulund"
         ]}
+        jsonLd={jsonLd}
       />
       <div className="min-h-screen bg-background text-foreground">
         <a href="#main-content" className="sr-only focus:not-sr-only">
