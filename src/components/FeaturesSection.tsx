@@ -122,10 +122,14 @@ const FeaturesSection = () => {
 								{isHero && (
 									<div className="mt-8 relative z-10 flex-1 w-full bg-secondary/30 rounded-xl border border-border/50 overflow-hidden flex items-center justify-center min-h-[160px]">
 										<div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
-										<div className="flex flex-col gap-3 w-3/4">
-											<div className="w-full h-3 bg-primary/20 rounded-full animate-pulse-glow" style={{ animationDelay: '0ms' }} />
-											<div className="w-5/6 h-3 bg-primary/20 rounded-full animate-pulse-glow" style={{ animationDelay: '150ms' }} />
-											<div className="w-4/6 h-3 bg-primary/20 rounded-full animate-pulse-glow" style={{ animationDelay: '300ms' }} />
+										<div className="flex items-center gap-4 w-3/4 bg-background p-4 rounded-xl shadow-sm border border-border/50">
+											<div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30">
+												<span className="text-green-500 font-bold text-lg">99</span>
+											</div>
+											<div className="flex flex-col">
+												<span className="text-sm font-semibold text-foreground">Performance Score</span>
+												<span className="text-xs text-muted-foreground">Lightning fast loading</span>
+											</div>
 										</div>
 									</div>
 								)}

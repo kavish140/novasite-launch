@@ -1,5 +1,6 @@
 import { m as motion } from "framer-motion";
-import { Star, ExternalLink } from "lucide-react";
+import { Star, ExternalLink, PencilLine } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const testimonials = [
 	{
@@ -89,6 +90,14 @@ const TestimonialsSection = () => {
 						Loved by{" "}
 						<span className="gradient-text">builders</span>
 					</h2>
+					<div className="mt-2 mb-4">
+						<Button asChild variant="secondary" className="rounded-full">
+							<a href="https://share.google/oVC1Tao0mO4WiGiOt" target="_blank" rel="noopener noreferrer">
+								<PencilLine className="w-4 h-4 mr-2" />
+								Write a Review
+							</a>
+						</Button>
+					</div>
 				</motion.div>
 
 				<div className="relative w-full max-w-[100vw] overflow-hidden -mx-6 px-6 sm:mx-0 sm:px-0">
