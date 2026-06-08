@@ -18,6 +18,7 @@ export const SEO = ({
   image = "/seo-preview.png", 
   keywords = [], 
   type = "website",
+  jsonLd,
   children
 }: SEOProps) => {
   const siteUrl = "https://kavish140.github.io/novasite-launch"; // Adjust as needed
