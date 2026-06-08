@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ErrorBoundary";
 
-const CustomCursor = lazy(() => import("./components/CustomCursor"));
 const ScrollProgress = lazy(() => import("./components/ScrollProgress"));
 const BookCallWidget = lazy(() => import("./components/BookCallWidget"));
 const ExitIntentPopup = lazy(() => import("./components/ExitIntentPopup"));
@@ -124,7 +123,6 @@ const App = () => (
           <LazyMotion features={domAnimation}>
             <BrowserRouter basename={import.meta.env.BASE_URL}>
               <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
-                <CustomCursor />
                 <ScrollProgress />
                 <AnimatedRoutes />
                 <BookCallWidget />
