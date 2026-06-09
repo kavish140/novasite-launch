@@ -57,6 +57,21 @@ export const routes = [
     }
   },
   {
+    path: "thank-you",
+    title: "Request Received | SiteNova",
+    description: "Thank you for your request. We have received your inquiry and will be in touch shortly.",
+    keywords: "thank you, request received, website quote",
+    sitemapPriority: "0.1",
+    sitemapChangefreq: "yearly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Request Received",
+      "url": `${SITE_URL}/thank-you`,
+      "description": "Confirmation page for submitted inquiries."
+    }
+  },
+  {
     path: "services/ecommerce",
     title: "E-commerce Website Design Services in Mumbai | SiteNova",
     description: "Build a high-converting online shop. SiteNova designs custom e-commerce stores in Mumbai with Razorpay/Stripe, coupon systems, and fast checkout workflows.",

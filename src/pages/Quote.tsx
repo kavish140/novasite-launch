@@ -16,7 +16,7 @@ import {
   Building,
   ShieldCheck,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { setPageSeo } from "@/lib/seo";
 import { m as motion, AnimatePresence } from "framer-motion";
 
@@ -75,6 +75,7 @@ const timelineOptions = [
 
 const Quote = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [projectType, setProjectType] = useState("");
   const [requirements, setRequirements] = useState("");
@@ -168,7 +169,7 @@ const Quote = () => {
         const data = await response.json();
         if (data.success) {
           submitted = true;
-          setStep(4);
+          navigate("/thank-you", { state: { name, projectType, email } });
         } else {
           setSubmitError(data.message || "Failed to submit request. Please try again.");
         }
@@ -184,7 +185,7 @@ const Quote = () => {
           });
           // Request sent successfully — show confirmation
           submitted = true;
-          setStep(4);
+          navigate("/thank-you", { state: { name, projectType, email } });
         } catch (networkErr) {
           console.error("Web3Forms network error:", networkErr);
           setSubmitError(
