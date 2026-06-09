@@ -21,6 +21,31 @@ const testimonials = [
 	},
 ];
 
+const TestimonialCard = ({ t }: { t: typeof testimonials[0] }) => (
+	<div className="glass-card p-6 md:p-8 flex flex-col w-[320px] md:w-[450px] shrink-0 interactive-card hover-glow">
+		<div className="flex gap-1 mb-4">
+			{Array.from({ length: t.rating }).map((_, idx) => (
+				<Star key={idx} size={16} className="fill-accent text-accent" />
+			))}
+		</div>
+		<p className="text-foreground/90 leading-relaxed mb-6 flex-1 text-sm md:text-base line-clamp-[7]">
+			"{t.content}"
+		</p>
+		<div className="mt-auto">
+			<a
+				href={t.website}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="inline-flex items-center gap-1.5 font-heading font-semibold text-sm hover:text-primary transition-colors"
+			>
+				{t.name}
+				<ExternalLink size={12} className="text-muted-foreground" />
+			</a>
+			<p className="text-xs text-muted-foreground">{t.role}</p>
+		</div>
+	</div>
+);
+
 const MarqueeRow = ({ items, reverse = false }: { items: typeof testimonials; reverse?: boolean }) => {
 	// Duplicate items to ensure smooth infinite scroll
 	const duplicatedItems = [...items, ...items, ...items];
@@ -32,30 +57,8 @@ const MarqueeRow = ({ items, reverse = false }: { items: typeof testimonials; re
 			} group-hover:[animation-play-state:paused]`}
 		>
 			{duplicatedItems.map((t, i) => (
-				<div
-					key={`${t.name}-${i}`}
-					className="glass-card p-6 md:p-8 flex flex-col w-[320px] md:w-[450px] shrink-0 interactive-card hover-glow"
-				>
-					<div className="flex gap-1 mb-4">
-						{Array.from({ length: t.rating }).map((_, idx) => (
-							<Star key={idx} size={16} className="fill-accent text-accent" />
-						))}
-					</div>
-					<p className="text-foreground/90 leading-relaxed mb-6 flex-1 text-sm md:text-base line-clamp-[7]">
-						"{t.content}"
-					</p>
-					<div className="mt-auto">
-						<a
-							href={t.website}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex items-center gap-1.5 font-heading font-semibold text-sm hover:text-primary transition-colors"
-						>
-							{t.name}
-							<ExternalLink size={12} className="text-muted-foreground" />
-						</a>
-						<p className="text-xs text-muted-foreground">{t.role}</p>
-					</div>
+				<div key={`${t.name}-${i}`}>
+					<TestimonialCard t={t} />
 				</div>
 			))}
 		</div>
@@ -105,10 +108,18 @@ const TestimonialsSection = () => {
 					<div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10 hidden md:block" />
 					<div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10 hidden md:block" />
 					
-					<div className="flex flex-col gap-6 py-4">
-						<MarqueeRow items={testimonials} />
-						<MarqueeRow items={[...testimonials].reverse()} reverse={true} />
-					</div>
+					{testimonials.length > 3 ? (
+						<div className="flex flex-col gap-6 py-4">
+							<MarqueeRow items={testimonials} />
+							<MarqueeRow items={[...testimonials].reverse()} reverse={true} />
+						</div>
+					) : (
+						<div className="flex flex-wrap justify-center gap-6 py-4 relative z-20">
+							{testimonials.map((t, i) => (
+								<TestimonialCard key={`${t.name}-${i}`} t={t} />
+							))}
+						</div>
+					)}
 				</div>
 			</div>
 		</section>
