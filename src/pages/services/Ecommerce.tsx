@@ -36,7 +36,7 @@ export default function Ecommerce() {
     let base = 15000;
 
     // Platform
-    if (platform === "shopify") base += 5000;
+    if (platform === "shopify") base += 10000;
     if (platform === "custom") base += 20000;
 
     // Products

@@ -61,7 +61,7 @@ const projectTypes: ProjectTypeOption[] = [
 ];
 
 const budgetOptions = [
-  "Rs. 5,000 - 15,000",
+  "Rs. 10,000 - 15,000",
   "Rs. 15,000 - 30,000",
   "Rs. 30,000+",
   "Flexible / Custom",
@@ -107,9 +107,9 @@ const Quote = () => {
 
   useEffect(() => {
     setPageSeo({
-      title: "Website Quotes Starting from Rs. 5,000 | SiteNova",
+      title: "Website Quotes Starting from Rs. 10,000 | SiteNova",
       description:
-        "Get a website quote starting from Rs. 5,000. Contact Kavish Ganatra via call, WhatsApp, or email to discuss your custom web development project in Mulund, Mumbai, and nearby areas.",
+        "Get a website quote starting from Rs. 10,000. Contact Kavish Ganatra via call, WhatsApp, or email to discuss your custom web development project in Mulund, Mumbai, and nearby areas.",
       canonicalPath: "/quote",
       keywords: [
         "website quote Mulund",
@@ -120,10 +120,10 @@ const Quote = () => {
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "ContactPage",
-        name: "Website Quotes Starting from Rs. 5,000 | SiteNova",
+        name: "Website Quotes Starting from Rs. 10,000 | SiteNova",
         url: "https://sitenova.dev/quote",
         description:
-          "Contact SiteNova to get a website quote starting from Rs. 5,000 for custom web development and design services in Mulund, Mumbai, and nearby areas.",
+          "Contact SiteNova to get a website quote starting from Rs. 10,000 for custom web development and design services in Mulund, Mumbai, and nearby areas.",
       },
     });
   }, []);

@@ -69,7 +69,7 @@ export default function WebApps() {
       id: "api",
       label: "Third-party API Integrations",
       desc: "Connection to external services like CRM, SMS gateways, or ERPs.",
-      cost: 5000,
+      cost: 10000,
       icon: Boxes,
     },
   ];

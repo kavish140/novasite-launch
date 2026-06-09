@@ -284,13 +284,13 @@ export default function RealEstate() {
             {/* Offer card */}
             <div className="mt-8 rounded-2xl border border-amber-500/15 bg-amber-500/5 p-6 md:p-8 max-w-lg mx-auto">
               <div className="font-heading text-4xl font-extrabold text-foreground">
-                ₹5,000
+                ₹10,000
                 <span className="text-lg font-normal text-muted-foreground ml-1">
                   onwards
                 </span>
               </div>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                Your property website starting from ₹5,000 — includes property
+                Your property website starting from ₹10,000 — includes property
                 listings, lead forms, and SEO setup. Limited introductory pricing.
               </p>
               <ul className="mt-4 space-y-2 text-left max-w-xs mx-auto">

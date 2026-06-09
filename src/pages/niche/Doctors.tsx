@@ -219,7 +219,7 @@ export default function Doctors() {
               </span>
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                Starting from ₹5,000
+                Starting from ₹10,000
               </span>
             </motion.div>
           </div>
@@ -467,7 +467,7 @@ export default function Doctors() {
                 Clinic websites starting from{" "}
               </span>
               <span className="font-heading text-2xl font-bold text-foreground">
-                ₹5,000
+                ₹10,000
               </span>
             </div>
 

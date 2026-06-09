@@ -10,7 +10,7 @@ import PageTransition from "@/components/PageTransition";
 const pricingTiers = [
   {
     name: "Starter",
-    price: "₹5,000",
+    price: "₹10,000",
     description: "Perfect for single-page landing pages and simple portfolios.",
     features: [
       "Custom Design (No Templates)",

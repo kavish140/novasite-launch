@@ -36,15 +36,15 @@ export const routes = [
           },
           "areaServed": ["Mulund", "Mumbai", "Bhandup", "Nahur", "Thane", "Ghatkopar", "Powai", "Central Mumbai"],
           "serviceType": "Website design and web development",
-          "priceRange": "Rs. 5,000+"
+          "priceRange": "Rs. 10,000+"
         }
       ]
     }
   },
   {
     path: "quote",
-    title: "Website Quotes Starting from Rs. 5,000 | SiteNova",
-    description: "Get a website quote starting from Rs. 5,000. Start our interactive scoping form or contact us via WhatsApp to discuss your web design project in Mumbai.",
+    title: "Website Quotes Starting from Rs. 10,000 | SiteNova",
+    description: "Get a website quote starting from Rs. 10,000. Start our interactive scoping form or contact us via WhatsApp to discuss your web design project in Mumbai.",
     keywords: "website quote Mulund, website designer Mumbai, web development quote, website starting price",
     sitemapPriority: "0.8",
     sitemapChangefreq: "monthly",

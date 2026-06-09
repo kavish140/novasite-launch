@@ -19,7 +19,7 @@ const CtaSection = () => {
         className="relative mx-auto max-w-3xl text-center"
       >
         <p className="mx-auto mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-          Projects starting from Rs. 5,000
+          Projects starting from Rs. 10,000
         </p>
         <h2 id="cta-title" className="font-heading text-3xl md:text-5xl font-bold mb-6">
           Ready to build something{" "}

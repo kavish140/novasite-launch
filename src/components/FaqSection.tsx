@@ -13,7 +13,7 @@ export const faqs = [
   },
   {
     question: "How much does it cost to build a website in Mumbai?",
-    answer: "At SiteNova, professional website design services start from Rs. 5,000 for a standard business website. The total cost depends on the complexity, features, and specific business requirements, such as e-commerce capabilities or custom web applications.",
+    answer: "At SiteNova, professional website design services start from Rs. 10,000 for a standard business website. The total cost depends on the complexity, features, and specific business requirements, such as e-commerce capabilities or custom web applications.",
   },
   {
     question: "Why do I need a mobile-first website design?",

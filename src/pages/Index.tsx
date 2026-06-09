@@ -111,7 +111,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                     Starting price
                   </p>
                   <h2 id="pricing-title" className="mt-3 font-heading text-3xl font-bold tracking-tight md:text-4xl">
-                    Websites starting from Rs. 5,000
+                    Websites starting from Rs. 10,000
                   </h2>
                   <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
                     A simple, professional website is a great way to get started without overspending. If you need a landing page, business website, or a more tailored build, I’ll quote based on scope and features.
