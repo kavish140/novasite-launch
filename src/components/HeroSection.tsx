@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { m as motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
@@ -118,7 +118,7 @@ const HeroSection = () => {
             className="mt-10 flex flex-col items-center gap-4"
           >
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
-              Trusted by doctors, financial firms &amp; local businesses in Mumbai
+              Trusted by doctors, financial firms & local businesses in Mumbai
             </p>
             <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
               {[

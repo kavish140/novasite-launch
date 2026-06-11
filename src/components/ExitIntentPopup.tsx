@@ -134,6 +134,7 @@ export default function ExitIntentPopup() {
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Your name"
                         required
+                        aria-label="Your name"
                         className="w-full rounded-xl border border-border/80 bg-secondary/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
                       />
                     </div>
@@ -144,6 +145,7 @@ export default function ExitIntentPopup() {
                         onChange={(e) => setWhatsapp(e.target.value)}
                         placeholder="WhatsApp number"
                         required
+                        aria-label="WhatsApp number"
                         className="w-full rounded-xl border border-border/80 bg-secondary/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
                       />
                     </div>
@@ -151,6 +153,7 @@ export default function ExitIntentPopup() {
                       <select
                         value={industry}
                         onChange={(e) => setIndustry(e.target.value)}
+                        aria-label="Select your industry"
                         className="w-full rounded-xl border border-border/80 bg-secondary/20 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all appearance-none"
                       >
                         <option value="" className="bg-background text-foreground">Select your industry (optional)</option>

@@ -1,17 +1,10 @@
-import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { m as motion } from "framer-motion";
 import {
-  Sparkles,
   ArrowRight,
   ArrowLeft,
   CheckCircle,
   MapPin,
-  MessageSquare,
-  Phone,
-  ShieldCheck,
   TrendingUp,
-  Globe,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -28,7 +21,6 @@ interface LocationPageProps {
   regionalFocusText: string;
   nearbySuburbs: string[];
   keywords: string[];
-  otherLocations?: { name: string; path: string }[];
 }
 
 export default function LocationPageTemplate({
@@ -56,7 +48,7 @@ export default function LocationPageTemplate({
       <SEO 
         title={`Best Website Designer in ${locationName}, Mumbai | SiteNova`}
         description={`SiteNova builds premium, SEO-ready, mobile-first websites in ${locationName}, Mumbai. Grow your business with fast load times and Google Map Pack optimization.`}
-        canonicalUrl={`/location/${locationName.toLowerCase()}`}
+        canonicalUrl={`/location/${locationName.toLowerCase().replace(/\s+/g, '-')}`}
         keywords={keywords}
       />
       <div className="min-h-screen bg-background text-foreground">
@@ -94,6 +86,7 @@ export default function LocationPageTemplate({
             </button>
             <a
               href="#local-seo"
+              onClick={(e) => { e.preventDefault(); document.getElementById('local-seo')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
               className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
             >
               Learn More

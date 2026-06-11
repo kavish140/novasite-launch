@@ -11,7 +11,7 @@
  */
 
 // ── Replace with your GA4 Measurement ID ─────────────────────────────────────
-export const GA_MEASUREMENT_ID = "G-E8ZQ5G5QQH";
+export const GA_MEASUREMENT_ID = "G-EBZGS65QQH";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
