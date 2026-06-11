@@ -138,9 +138,14 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground mt-1">Manage your website leads and content</p>
           </div>
-          <Button onClick={fetchData} variant="secondary">
-            Refresh Data
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => { throw new Error("This is a Sentry test error from the Admin Dashboard!"); }} variant="destructive">
+              Test Sentry Error
+            </Button>
+            <Button onClick={fetchData} variant="secondary">
+              Refresh Data
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="leads" className="w-full">
