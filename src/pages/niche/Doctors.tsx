@@ -24,7 +24,7 @@ import Navbar from "@/components/Navbar";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
-import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
+import Footer from "@/components/Footer";
 import drDiptiImage from "@/assets/Drdiptiganatra.webp";
 
 const fadeUp = {
