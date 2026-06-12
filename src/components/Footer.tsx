@@ -1,4 +1,4 @@
-import { Phone, Mail, MessageCircle } from "lucide-react";
+import { Phone, Mail, MessageCircle, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const emailComposeLink =
@@ -89,6 +89,11 @@ const Footer = () => {
                   <Mail size={14} /> kavishganatra5@gmail.com
                 </a>
               </li>
+              <li>
+                <a href="https://www.youtube.com/@SiteNova_Web_Design" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
+                  <Youtube size={14} /> YouTube
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -101,6 +106,7 @@ const Footer = () => {
             <a href={emailComposeLink} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Email</a>
             <a href="tel:+919326060621" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Call Us</a>
             <a href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20interested%20in%20getting%20a%20website%20built." target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">WhatsApp</a>
+            <a href="https://www.youtube.com/@SiteNova_Web_Design" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">YouTube</a>
           </div>
         </div>
       </div>
