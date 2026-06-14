@@ -511,5 +511,58 @@ export const routes = [
       "areaServed": { "@type": "City", "name": "Mumbai" },
       "serviceType": "Website Design for Real Estate Professionals"
     }
+  },
+  {
+    path: "pricing",
+    title: "Transparent Website Pricing & Packages in Mumbai | SiteNova",
+    description: "View our transparent pricing and packages for local business websites, e-commerce stores, and web applications in Mumbai. No hidden fees.",
+    keywords: "website pricing Mumbai, web design packages, e-commerce website cost, custom web app pricing",
+    sitemapPriority: "0.80",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Website Pricing and Packages",
+      "url": `${SITE_URL}/pricing/`,
+      "description": "View our transparent web development and design pricing."
+    }
+  },
+  {
+    path: "websites-for-lawyers",
+    title: "Professional Websites for Lawyers & Law Firms in Mumbai | SiteNova",
+    description: "SiteNova builds authority-driven, SEO-optimized websites for lawyers, advocates, and law firms in Mumbai. Showcase expertise, build credibility, and generate client inquiries 24/7.",
+    keywords: "website for lawyers in Mumbai, law firm website design India, advocate website Mumbai, lawyer website designer Mulund, legal website development",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Websites for Lawyers and Law Firms",
+      "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": `${SITE_URL}` },
+      "areaServed": { "@type": "City", "name": "Mumbai" },
+      "audience": { "@type": "Audience", "audienceType": "Lawyers, Advocates, Law Firms, Legal Professionals" },
+      "description": "Authority-driven, SEO-optimized websites for lawyers, advocates, and law firms in Mumbai. Practice area pages, client testimonials, and mobile-first design.",
+      "url": `${SITE_URL}/websites-for-lawyers`,
+      "serviceType": "Legal Website Design"
+    }
+  },
+  {
+    path: "websites-for-consultants",
+    title: "Professional Websites for Consultants, Coaches & Advisors in Mumbai | SiteNova",
+    description: "SiteNova builds authority-building, SEO-optimized websites for consultants, business coaches, and advisors in Mumbai. Showcase your expertise, attract premium clients, and book consultations online.",
+    keywords: "website for consultants in Mumbai, consultant portfolio website India, business coach website design, consultant website designer Mumbai, professional consulting website",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Websites for Consultants and Advisors",
+      "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": `${SITE_URL}` },
+      "areaServed": { "@type": "City", "name": "Mumbai" },
+      "audience": { "@type": "Audience", "audienceType": "Consultants, Business Coaches, Advisors, Strategy Professionals" },
+      "description": "Authority-building, lead-generating websites for consultants, business coaches, and advisors in Mumbai with expertise pages, booking integration, and thought leadership blogs.",
+      "url": `${SITE_URL}/websites-for-consultants`,
+      "serviceType": "Consulting Website Design"
+    }
   }
 ];
