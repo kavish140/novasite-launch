@@ -129,6 +129,27 @@ export default function Doctors() {
         description="SiteNova builds patient-friendly, SEO-optimized websites for doctors, dentists, and clinics in Mumbai. Online appointments, patient testimonials, and mobile-first design."
         canonicalUrl="/websites-for-doctors"
         keywords={["website for doctors Mumbai", "clinic website design", "doctor website designer Mulund", "healthcare website Mumbai", "medical practice website design"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Websites for Doctors and Clinics",
+            "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": "https://sitenova.dev" },
+            "areaServed": { "@type": "City", "name": "Mumbai" },
+            "audience": { "@type": "Audience", "audienceType": "Doctors, Dentists, Clinics, Healthcare Providers" },
+            "description": "Patient-friendly, SEO-optimized websites for doctors, dentists, and clinics in Mumbai. Online appointments, mobile-first design, and Google Maps integration.",
+            "url": "https://sitenova.dev/websites-for-doctors",
+            "serviceType": "Healthcare Website Design"
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": "Websites for Doctors", "item": "https://sitenova.dev/websites-for-doctors" }
+            ]
+          }
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />

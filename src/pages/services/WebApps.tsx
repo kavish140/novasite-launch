@@ -116,6 +116,27 @@ export default function WebApps() {
         description="Build custom web applications with React, Next.js, Node.js, and Databases. SiteNova designs secure, scalable dashboard and web systems in Mumbai."
         canonicalUrl="/services/web-applications"
         keywords={["custom web application developer Mumbai", "React developer Mumbai", "Nextjs developer Mumbai", "web software developer Mumbai", "dashboard development Mumbai"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Custom Web Application Development",
+            "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": "https://sitenova.dev" },
+            "areaServed": { "@type": "City", "name": "Mumbai" },
+            "description": "Custom web application development in Mumbai using React, Next.js, and Node.js. Dashboards, user authentication, APIs, and scalable web software.",
+            "url": "https://sitenova.dev/services/web-applications",
+            "serviceType": "Web Application Development"
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 3, "name": "Web Application Development", "item": "https://sitenova.dev/services/web-applications" }
+            ]
+          }
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />

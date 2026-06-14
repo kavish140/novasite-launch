@@ -44,20 +44,34 @@ export default function BlogIndex() {
   return (
     <PageTransition>
       <SEO 
-        title="Local Web Design Blog | SiteNova"
-        description="Read our latest articles on web design, SEO, and growing your local business in Mumbai."
+        title="Web Design & SEO Blog for Mumbai Businesses | SiteNova"
+        description="Expert articles on web design, local SEO, and digital growth for small businesses in Mumbai, Mulund, Andheri, Thane, and nearby areas. Published by SiteNova."
         canonicalUrl="/blog"
+        keywords={["web design blog Mumbai", "local SEO tips Mumbai", "website tips for small business", "Mumbai digital marketing blog"]}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          "name": "SiteNova Blog",
+          "description": "Expert articles on web design, local SEO, and digital growth for Mumbai businesses.",
+          "url": "https://sitenova.dev/blog",
+          "publisher": {
+            "@type": "Organization",
+            "name": "SiteNova",
+            "url": "https://sitenova.dev"
+          }
+        }}
       />
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
       
       <main className="flex-1 pt-32 pb-16 sm:pb-24 max-w-7xl mx-auto px-6 w-full">
         <div className="mb-12">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">SiteNova Blog</p>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
-            Our Blog
+            Web Design & SEO Insights
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Insights on web design, SEO, and business growth.
+          <p className="text-lg text-muted-foreground max-w-2xl">
+            Practical guides on websites, local SEO, and digital growth for Mumbai businesses — written by SiteNova.
           </p>
         </div>
 

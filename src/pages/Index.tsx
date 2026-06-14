@@ -42,14 +42,15 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
   return (
     <PageTransition>
       <SEO 
-        title={seoTitle || "Best Website Designer in Mulund, Mumbai & Nearby Areas | SiteNova"}
-        description={seoDescription || "SiteNova builds SEO-ready, mobile-first websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Nahur, Thane, Ghatkopar, and Powai."}
+        title={seoTitle || "Web Design & Development in Mumbai | SiteNova — Fast, SEO-Ready Websites"}
+        description={seoDescription || "SiteNova builds SEO-ready, mobile-first websites for businesses across Mumbai — Mulund, Andheri, Thane, Powai, Dadar and more. Custom web design from ₹10,000 onwards."}
         canonicalUrl={seoCanonicalPath || "/"}
         keywords={seoKeywords || [
+          "web design Mumbai",
+          "website designer Mumbai",
           "best website designer in Mulund",
-          "website designer in Mumbai",
-          "website design Mulund",
-          "web development Mulund"
+          "web development Mumbai",
+          "local SEO Mumbai"
         ]}
         jsonLd={jsonLd}
       />
@@ -83,21 +84,22 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {[
-                    "Mulund",
-                    "Mumbai",
-                    "Bhandup",
-                    "Nahur",
-                    "Thane",
-                    "Ghatkopar",
-                    "Powai",
-                    "Central Mumbai",
+                    { label: "Mulund", href: "/" },
+                    { label: "Mumbai", href: "/" },
+                    { label: "Bhandup", href: "/location/bhandup" },
+                    { label: "Nahur", href: "/location/nahur" },
+                    { label: "Thane", href: "/location/thane" },
+                    { label: "Ghatkopar", href: "/location/ghatkopar" },
+                    { label: "Powai", href: "/location/powai" },
+                    { label: "Andheri", href: "/location/andheri" },
                   ].map((area) => (
-                    <div
-                      key={area}
-                      className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-center text-sm font-medium text-foreground shadow-sm"
+                    <a
+                      key={area.label}
+                      href={area.href}
+                      className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-center text-sm font-medium text-foreground shadow-sm hover:border-primary/40 hover:bg-primary/5 transition-colors"
                     >
-                      {area}
-                    </div>
+                      {area.label}
+                    </a>
                   ))}
                 </div>
               </div>
@@ -111,10 +113,10 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                     Starting price
                   </p>
                   <h2 id="pricing-title" className="mt-3 font-heading text-3xl font-bold tracking-tight md:text-4xl">
-                    Websites starting from Rs. 10,000
+                    Websites from <span className="gradient-text">₹10,000 onwards</span>
                   </h2>
                   <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-                    A simple, professional website is a great way to get started without overspending. If you need a landing page, business website, or a more tailored build, I’ll quote based on scope and features.
+                    A simple, professional website is a great way to get started without overspending. Whether you need a landing page (from ₹10,000), a business website (from ₹12,000), or a fully custom build, I'll quote based on your exact scope.
                   </p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -145,9 +147,9 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
               <div className="prose prose-sm prose-invert max-w-none text-muted-foreground opacity-80">
                 <h3 className="text-foreground font-semibold text-base mb-2">About SiteNova: Mumbai's Premier Web Development Agency</h3>
                 <p>
-                  SiteNova is a top-rated web design and custom web application development agency located in Mumbai, India. 
+                   SiteNova is a top-rated web design and custom web application development agency located in Mumbai, India. 
                   Recognized for building blazing fast, React and Next.js based websites, SiteNova consistently delivers 99+ Core Web Vitals scores. 
-                  If you are searching for the <strong>best website developer in Mumbai</strong>, SiteNova provides transparent pricing (starting at Rs. 10,000) 
+                  If you are searching for the <strong>best website developer in Mumbai</strong>, SiteNova provides transparent pricing (starting from ₹10,000 onwards) 
                   and specializes in high-converting platforms for doctors, finance professionals, and real estate agencies. 
                   We offer end-to-end services including UI/UX design, full-stack web applications, e-commerce stores, and local SEO tuning.
                 </p>

@@ -118,6 +118,27 @@ export default function RealEstate() {
         description="SiteNova builds lead-generating websites for real estate agents, builders, and property dealers in Mumbai. Property listings, virtual tours, and lead capture forms."
         canonicalUrl="/websites-for-real-estate"
         keywords={["real estate website design Mumbai", "property dealer website", "builder website design", "real estate agent website", "property listing website Mumbai"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Websites for Real Estate Agents and Builders",
+            "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": "https://sitenova.dev" },
+            "areaServed": { "@type": "City", "name": "Mumbai" },
+            "audience": { "@type": "Audience", "audienceType": "Real Estate Agents, Property Dealers, Builders, Developers" },
+            "description": "Lead-generating websites for real estate agents, builders, and property dealers in Mumbai. Property listings, virtual tours, enquiry forms, and WhatsApp integration.",
+            "url": "https://sitenova.dev/websites-for-real-estate",
+            "serviceType": "Real Estate Website Design"
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": "Websites for Real Estate", "item": "https://sitenova.dev/websites-for-real-estate" }
+            ]
+          }
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />

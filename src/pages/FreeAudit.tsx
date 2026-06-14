@@ -87,9 +87,35 @@ export default function FreeAudit() {
   return (
     <PageTransition>
       <SEO 
-        title="Free Website Audit | SiteNova" 
-        description="Get a 100% free, no-obligation audit of your website. We'll analyze performance, SEO health, and mobile responsiveness to help you unlock your site's potential."
+        title="Free Website Audit for Mumbai Businesses | SiteNova"
+        description="Get a 100% free, no-obligation website audit. SiteNova analyses your site's performance, SEO health, and mobile responsiveness to show you exactly what's holding you back on Google."
         canonicalUrl="/free-audit"
+        keywords={["free website audit Mumbai", "website SEO audit", "website performance check", "free site audit India", "website review Mumbai"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Free Website Audit",
+            "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": "https://sitenova.dev" },
+            "areaServed": { "@type": "City", "name": "Mumbai" },
+            "description": "Free website audit covering PageSpeed scores, Core Web Vitals, on-page SEO, mobile responsiveness, and local SEO signals for Mumbai businesses.",
+            "url": "https://sitenova.dev/free-audit",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "INR",
+              "name": "Free Website SEO & Performance Audit"
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": "Free Website Audit", "item": "https://sitenova.dev/free-audit" }
+            ]
+          }
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <header>

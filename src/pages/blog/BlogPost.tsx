@@ -11,6 +11,7 @@ interface BlogPostData {
   id: string;
   title: string;
   slug: string;
+  excerpt: string;
   content: string;
   published_at: string;
 }
@@ -91,25 +92,47 @@ export default function BlogPost() {
     <PageTransition>
       <SEO 
         title={`${post.title} | SiteNova Blog`}
-        description={post.content.substring(0, 160).replace(/<[^>]+>/g, '') || `Read our latest article on ${post.title}.`}
+        description={post.excerpt || post.content.replace(/<[^>]+>/g, '').substring(0, 160) || `Read our latest article on ${post.title}.`}
         canonicalUrl={`/blog/${post.slug}`}
         type="article"
-      >
-        <script type="application/ld+json">
-          {JSON.stringify({
+        jsonLd={[
+          {
             "@context": "https://schema.org",
             "@type": "BlogPosting",
             "headline": post.title,
-            "description": post.content.substring(0, 160).replace(/<[^>]+>/g, ''),
+            "description": post.excerpt || post.content.replace(/<[^>]+>/g, '').substring(0, 160),
             "datePublished": post.published_at,
-            "author": [{
-                "@type": "Person",
-                "name": "Kavish Ganatra",
-                "url": "https://sitenova.dev"
-            }]
-          })}
-        </script>
-      </SEO>
+            "dateModified": post.published_at,
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": `https://sitenova.dev/blog/${post.slug}`
+            },
+            "author": {
+              "@type": "Person",
+              "name": "Kavish Ganatra",
+              "url": "https://sitenova.dev"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "SiteNova",
+              "url": "https://sitenova.dev",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://sitenova.dev/favicon-32x32.png"
+              }
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://sitenova.dev/blog" },
+              { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://sitenova.dev/blog/${post.slug}` }
+            ]
+          }
+        ]}
+      />
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
       

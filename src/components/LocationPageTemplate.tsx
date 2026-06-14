@@ -50,6 +50,66 @@ export default function LocationPageTemplate({
         description={`SiteNova builds premium, SEO-ready, mobile-first websites in ${locationName}, Mumbai. Grow your business with fast load times and Google Map Pack optimization.`}
         canonicalUrl={`/location/${locationName.toLowerCase().replace(/\s+/g, '-')}`}
         keywords={keywords}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "ProfessionalService",
+            "name": "SiteNova",
+            "url": "https://sitenova.dev",
+            "sameAs": ["https://share.google/Y6mq6VLzTQj9zN4kr"],
+            "telephone": "+91-9326060621",
+            "priceRange": "₹₹",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Mulund",
+              "addressRegion": "Maharashtra",
+              "addressCountry": "IN"
+            },
+            "areaServed": {
+              "@type": "City",
+              "name": locationName
+            },
+            "serviceType": "Web Design and Development"
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": `How much does a website cost in ${locationName}?`,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": `SiteNova offers website design in ${locationName} starting from ₹10,000 onwards for single-page landing sites, and ₹12,000 onwards for multi-page business websites. Premium and e-commerce projects are quoted based on scope.`
+                }
+              },
+              {
+                "@type": "Question",
+                "name": `Do you provide local SEO for businesses in ${locationName}?`,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": `Yes. Every website SiteNova builds for ${locationName} includes on-page SEO, Google Business Profile setup, local schema markup, and mobile-first optimization so your business ranks for searches in ${locationName} and nearby Mumbai areas.`
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long does it take to build a website?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most business websites are delivered within 7–14 working days. Landing pages take 3–5 days. Timeline depends on content readiness and revision rounds."
+                }
+              }
+            ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": `Web Design in ${locationName}`, "item": `https://sitenova.dev/location/${locationName.toLowerCase().replace(/\s+/g, '-')}` }
+            ]
+          }
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
@@ -174,6 +234,43 @@ export default function LocationPageTemplate({
             </button>
           </div>
 
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 border-t border-border/20" id="faq">
+        <div className="mx-auto max-w-7xl px-6">
+          <h2 className="font-heading text-2xl font-bold tracking-tight mb-8">
+            Common Questions About Web Design in {locationName}
+          </h2>
+          <div className="space-y-4 max-w-3xl">
+            {[
+              {
+                q: `How much does a website cost in ${locationName}?`,
+                a: `SiteNova's website design in ${locationName} starts from ₹10,000 onwards for a single-page landing site, and ₹12,000 onwards for a multi-page business website. Premium and e-commerce builds are quoted based on project scope.`
+              },
+              {
+                q: `Do you provide local SEO for businesses in ${locationName}?`,
+                a: `Yes — every website we build includes on-page SEO, Google Business Profile sync, local schema markup, and mobile-first optimization, ensuring you rank for searches in ${locationName} and nearby Mumbai areas.`
+              },
+              {
+                q: `How long does it take to build a website?`,
+                a: `Most business websites are delivered within 7–14 working days. Landing pages take 3–5 days. Timeline depends on content readiness and revision rounds.`
+              },
+              {
+                q: `Do I need to be physically in ${locationName} to work with SiteNova?`,
+                a: `Not at all. SiteNova works with clients across all of Mumbai and remotely. All project communication, reviews, and handoffs are done digitally via email, WhatsApp, and video calls.`
+              },
+            ].map((item, idx) => (
+              <details key={idx} className="rounded-2xl border border-border/60 bg-card/40 px-6 py-4 group cursor-pointer open:bg-card/60 transition-colors">
+                <summary className="font-semibold text-foreground list-none flex justify-between items-center gap-4 select-none">
+                  {item.q}
+                  <span className="text-primary text-xl font-light shrink-0 group-open:rotate-45 transition-transform duration-200">+</span>
+                </summary>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{item.a}</p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 

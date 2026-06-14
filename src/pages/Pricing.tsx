@@ -11,6 +11,7 @@ const pricingTiers = [
   {
     name: "Starter",
     price: "₹10,000",
+    priceLabel: "onwards",
     description: "Perfect for single-page landing pages and simple portfolios.",
     features: [
       "Custom Design (No Templates)",
@@ -26,6 +27,7 @@ const pricingTiers = [
   {
     name: "Business",
     price: "₹12,000",
+    priceLabel: "onwards",
     description: "Ideal for local businesses needing a multi-page presence.",
     features: [
       "Up to 5 Pages (Home, About, Services, etc.)",
@@ -42,6 +44,7 @@ const pricingTiers = [
   {
     name: "Premium",
     price: "Custom Quote",
+    priceLabel: "",
     description: "For e-commerce, web apps, and complex requirements.",
     features: [
       "Unlimited Pages",
@@ -65,10 +68,39 @@ const Pricing = () => {
   return (
     <PageTransition>
       <SEO 
-        title="Transparent Pricing | SiteNova"
-        description="Simple, transparent pricing for high-performance websites. Choose the plan that fits your business needs."
+        title="Website Design Pricing in Mumbai | SiteNova — Plans Starting ₹10,000 Onwards"
+        description="Transparent website design pricing in Mumbai. SiteNova plans start from ₹10,000 onwards for landing pages, ₹12,000 onwards for business sites, and custom quotes for e-commerce and web apps."
         canonicalUrl="/pricing"
-        keywords={["website pricing", "web design cost", "affordable web design", "business website packages"]}
+        keywords={["website pricing Mumbai", "web design cost Mumbai", "affordable web design Mumbai", "website package India", "web design 10000 onwards"]}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "ProfessionalService",
+          "name": "SiteNova",
+          "url": "https://sitenova.dev/pricing",
+          "priceRange": "₹10,000+",
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Website Design Packages",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "name": "Starter Website",
+                "description": "Single-page landing page or portfolio",
+                "price": "10000",
+                "priceCurrency": "INR",
+                "priceSpecification": { "@type": "PriceSpecification", "minPrice": "10000", "priceCurrency": "INR" }
+              },
+              {
+                "@type": "Offer",
+                "name": "Business Website",
+                "description": "Multi-page business website with SEO and CMS",
+                "price": "12000",
+                "priceCurrency": "INR",
+                "priceSpecification": { "@type": "PriceSpecification", "minPrice": "12000", "priceCurrency": "INR" }
+              }
+            ]
+          }
+        }}
       />
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <header>
@@ -118,8 +150,15 @@ const Pricing = () => {
                 </div>
                 
                 <div className="mb-8 pb-8 border-b border-border/50">
-                  <span className="text-4xl font-bold font-heading">{tier.price}</span>
-                  {tier.price !== "Custom Quote" && <span className="text-muted-foreground">/project</span>}
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-4xl font-bold font-heading">{tier.price}</span>
+                    {tier.priceLabel && (
+                      <span className="text-base font-semibold text-primary">{tier.priceLabel}</span>
+                    )}
+                  </div>
+                  {tier.price === "Custom Quote" && (
+                    <p className="text-xs text-muted-foreground mt-1">Scoped to your project</p>
+                  )}
                 </div>
                 
                 <ul className="flex-1 space-y-4 mb-8">

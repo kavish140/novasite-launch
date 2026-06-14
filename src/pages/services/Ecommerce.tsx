@@ -101,6 +101,27 @@ export default function Ecommerce() {
         description="Build a high-converting online shop. SiteNova designs custom e-commerce stores in Mumbai with Razorpay/Stripe, coupon systems, and fast checkout workflows."
         canonicalUrl="/services/ecommerce"
         keywords={["e-commerce web design Mumbai", "online store developer Mumbai", "Shopify developer Mumbai", "WooCommerce website designer", "custom e-commerce development"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "E-commerce Website Design",
+            "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": "https://sitenova.dev" },
+            "areaServed": { "@type": "City", "name": "Mumbai" },
+            "description": "Custom e-commerce store design and development in Mumbai. Razorpay/Stripe integration, product catalogues, coupon systems, and mobile-first checkout.",
+            "url": "https://sitenova.dev/services/ecommerce",
+            "serviceType": "E-commerce Web Design"
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 3, "name": "E-commerce Website Design", "item": "https://sitenova.dev/services/ecommerce" }
+            ]
+          }
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />

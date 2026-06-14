@@ -109,6 +109,27 @@ export default function Finance() {
         description="SiteNova builds trust-building, SEO-optimized websites for CAs, financial advisors, and insurance agents in Mumbai. Showcase your expertise and generate leads online."
         canonicalUrl="/websites-for-finance"
         keywords={["website for CA firms", "financial advisor website design Mumbai", "insurance agent website", "CA firm website design", "finance website Mumbai"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Websites for CAs and Financial Advisors",
+            "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": "https://sitenova.dev" },
+            "areaServed": { "@type": "City", "name": "Mumbai" },
+            "audience": { "@type": "Audience", "audienceType": "Chartered Accountants, Financial Advisors, Insurance Agents" },
+            "description": "Trust-building, lead-generating websites for CAs, financial advisors, and insurance agents in Mumbai with expertise pages, testimonials, and contact forms.",
+            "url": "https://sitenova.dev/websites-for-finance",
+            "serviceType": "Financial Services Website Design"
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": "Websites for Finance Professionals", "item": "https://sitenova.dev/websites-for-finance" }
+            ]
+          }
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />

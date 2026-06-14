@@ -224,6 +224,27 @@ export default function SeoSpeed() {
         description="Rank higher on Google. SiteNova optimizes website speeds, fixes core web vitals, and implements local SEO systems for Mumbai businesses to capture more customers."
         canonicalUrl="/services/seo-optimization"
         keywords={["SEO and speed optimization Mumbai", "PageSpeed optimizer Mumbai", "Core Web Vitals specialist Mumbai", "local SEO services Mumbai", "website speed tuning"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "SEO and Speed Optimization",
+            "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": "https://sitenova.dev" },
+            "areaServed": { "@type": "City", "name": "Mumbai" },
+            "description": "Local SEO, Core Web Vitals improvement, and PageSpeed optimization for Mumbai businesses. Rank higher on Google and convert more visitors.",
+            "url": "https://sitenova.dev/services/seo-optimization",
+            "serviceType": "SEO and Web Performance Optimization"
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 2, "name": "Services", "item": "https://sitenova.dev/" },
+              { "@type": "ListItem", "position": 3, "name": "SEO & Speed Optimization", "item": "https://sitenova.dev/services/seo-optimization" }
+            ]
+          }
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
