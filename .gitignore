@@ -31,3 +31,8 @@ result.txt
 # Playwright
 playwright-report/
 test-results/
+
+# Environment Variables
+.env
+.env.local
+.env.*

@@ -21,18 +21,21 @@ async function prerender() {
   console.log(`\n--- Starting SiteNova Pre-renderer ---`);
 
   // Dynamically fetch blog posts from Supabase
-  const envPath = path.resolve(__dirname, '../.env');
-  let supabaseUrl = '';
-  let supabaseKey = '';
-  if (fs.existsSync(envPath)) {
-    const envFile = fs.readFileSync(envPath, 'utf8');
-    envFile.split('\n').forEach(line => {
-      if (line.startsWith('VITE_SUPABASE_URL=')) supabaseUrl = line.split('=')[1].trim();
-      if (line.startsWith('VITE_SUPABASE_ANON_KEY=')) supabaseKey = line.split('=')[1].trim();
-    });
+  let supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+  let supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+
+  if (!supabaseUrl || !supabaseKey) {
+    const envPath = path.resolve(__dirname, '../.env');
+    if (fs.existsSync(envPath)) {
+      const envFile = fs.readFileSync(envPath, 'utf8');
+      envFile.split('\n').forEach(line => {
+        if (line.startsWith('VITE_SUPABASE_URL=')) supabaseUrl = line.split('=')[1].trim();
+        if (line.startsWith('VITE_SUPABASE_ANON_KEY=')) supabaseKey = line.split('=')[1].trim();
+      });
+    }
   }
 
-  if (supabaseUrl && supabaseKey) {
+  if (supabaseUrl && supabaseKey && !supabaseUrl.includes('placeholder')) {
     console.log("Fetching dynamic blog posts from Supabase for sitemap...");
     try {
       // Use native fetch (available in Node 18+)
@@ -73,6 +76,8 @@ async function prerender() {
     } catch (err) {
       console.error("Failed to fetch blog posts:", err.message);
     }
+  } else {
+    console.log("Skipping dynamic blog sitemap generation: Supabase credentials not found in environment or .env file.");
   }
 
   // Build each route folder & index.html
