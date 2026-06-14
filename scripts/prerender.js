@@ -10,7 +10,7 @@ const BASE_HTML_PATH = path.join(DIST_DIR, "index.html");
 
 import { routes, SITE_URL } from "../src/lib/seoRoutes.js";
 
-function prerender() {
+async function prerender() {
   if (!fs.existsSync(BASE_HTML_PATH)) {
     console.error(`Base HTML file not found at: ${BASE_HTML_PATH}. Run "npm run build" first.`);
     process.exit(1);
@@ -19,6 +19,61 @@ function prerender() {
   const baseHtml = fs.readFileSync(BASE_HTML_PATH, "utf8");
 
   console.log(`\n--- Starting SiteNova Pre-renderer ---`);
+
+  // Dynamically fetch blog posts from Supabase
+  const envPath = path.resolve(__dirname, '../.env');
+  let supabaseUrl = '';
+  let supabaseKey = '';
+  if (fs.existsSync(envPath)) {
+    const envFile = fs.readFileSync(envPath, 'utf8');
+    envFile.split('\n').forEach(line => {
+      if (line.startsWith('VITE_SUPABASE_URL=')) supabaseUrl = line.split('=')[1].trim();
+      if (line.startsWith('VITE_SUPABASE_ANON_KEY=')) supabaseKey = line.split('=')[1].trim();
+    });
+  }
+
+  if (supabaseUrl && supabaseKey) {
+    console.log("Fetching dynamic blog posts from Supabase for sitemap...");
+    try {
+      // Use native fetch (available in Node 18+)
+      const res = await fetch(`${supabaseUrl}/rest/v1/blog_posts?select=slug,published_at,title,excerpt`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
+        }
+      });
+      if (res.ok) {
+        const posts = await res.json();
+        posts.forEach(post => {
+          routes.push({
+            path: `blog/${post.slug}`,
+            title: `${post.title} | SiteNova Blog`,
+            description: post.excerpt || "Read our latest insights on web design and SEO.",
+            keywords: "web design blog, SEO tips, SiteNova",
+            sitemapPriority: "0.80",
+            sitemapChangefreq: "monthly",
+            jsonLd: {
+              "@context": "https://schema.org",
+              "@type": "BlogPosting",
+              "headline": post.title,
+              "description": post.excerpt || "Read our latest insights on web design and SEO.",
+              "datePublished": post.published_at || new Date().toISOString(),
+              "url": `${SITE_URL}/blog/${post.slug}`,
+              "author": {
+                "@type": "Organization",
+                "name": "SiteNova"
+              }
+            }
+          });
+        });
+        console.log(`Successfully added ${posts.length} dynamic blog routes to sitemap.`);
+      } else {
+        console.warn(`Supabase fetch failed with status ${res.status}`);
+      }
+    } catch (err) {
+      console.error("Failed to fetch blog posts:", err.message);
+    }
+  }
 
   // Build each route folder & index.html
   routes.forEach((route) => {
@@ -112,4 +167,4 @@ function prerender() {
   console.log(`--- Pre-rendering completed successfully! ---\n`);
 }
 
-prerender();
+prerender().catch(console.error);
