@@ -86,12 +86,18 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                   {[
                     { label: "Mulund", href: "/" },
                     { label: "Mumbai", href: "/" },
+                    { label: "Thane", href: "/location/thane" },
                     { label: "Bhandup", href: "/location/bhandup" },
                     { label: "Nahur", href: "/location/nahur" },
-                    { label: "Thane", href: "/location/thane" },
                     { label: "Ghatkopar", href: "/location/ghatkopar" },
+                    { label: "Vikhroli", href: "/location/vikhroli" },
                     { label: "Powai", href: "/location/powai" },
                     { label: "Andheri", href: "/location/andheri" },
+                    { label: "Kurla", href: "/location/kurla" },
+                    { label: "Dadar", href: "/location/dadar" },
+                    { label: "Lower Parel", href: "/location/lower-parel" },
+                    { label: "Mahalakshmi", href: "/location/mahalakshmi" },
+                    { label: "Pedder Road", href: "/location/pedder-road" },
                   ].map((area) => (
                     <a
                       key={area.label}
