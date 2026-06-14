@@ -53,11 +53,16 @@ export default function LocationPageTemplate({
         jsonLd={[
           {
             "@context": "https://schema.org",
-            "@type": "ProfessionalService",
+            "@type": ["ProfessionalService", "LocalBusiness"],
             "name": "SiteNova",
             "url": "https://sitenova.dev",
-            "sameAs": ["https://share.google/Y6mq6VLzTQj9zN4kr"],
+            "sameAs": [
+              "https://share.google/Y6mq6VLzTQj9zN4kr",
+              "https://www.clutch.co/profile/sitenova",
+              "https://techbehemoths.com/company/sitenova"
+            ],
             "telephone": "+91-9326060621",
+            "email": "kavishganatra5@gmail.com",
             "priceRange": "₹₹",
             "address": {
               "@type": "PostalAddress",
@@ -65,6 +70,20 @@ export default function LocationPageTemplate({
               "addressRegion": "Maharashtra",
               "addressCountry": "IN"
             },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 19.1726,
+              "longitude": 72.9570
+            },
+            "hasMap": "https://share.google/Y6mq6VLzTQj9zN4kr",
+            "openingHoursSpecification": [
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                "opens": "09:00",
+                "closes": "21:00"
+              }
+            ],
             "areaServed": {
               "@type": "City",
               "name": locationName

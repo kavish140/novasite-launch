@@ -8,6 +8,9 @@ interface SEOProps {
   keywords?: string[];
   type?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
   children?: React.ReactNode;
 }
 
@@ -19,6 +22,9 @@ export const SEO = ({
   keywords = [], 
   type = "website",
   jsonLd,
+  publishedTime,
+  modifiedTime,
+  author,
   children
 }: SEOProps) => {
   const siteUrl = import.meta.env.VITE_SITE_URL || "https://sitenova.dev";
@@ -39,6 +45,19 @@ export const SEO = ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={fullImageUrl} />
+
+      <meta property="og:site_name" content="SiteNova" />
+
+      {/* Article metadata (for blog posts) */}
+      {type === "article" && publishedTime && (
+        <meta property="article:published_time" content={publishedTime} />
+      )}
+      {type === "article" && modifiedTime && (
+        <meta property="article:modified_time" content={modifiedTime} />
+      )}
+      {type === "article" && author && (
+        <meta property="article:author" content={author} />
+      )}
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />

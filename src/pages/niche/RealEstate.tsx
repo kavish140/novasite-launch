@@ -137,6 +137,44 @@ export default function RealEstate() {
               { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
               { "@type": "ListItem", "position": 2, "name": "Websites for Real Estate", "item": "https://sitenova.dev/websites-for-real-estate" }
             ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Why does a real estate agent need a website?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Over 90% of property buyers start their search online. A professional website lets you showcase listings with photos and virtual tours, capture buyer and seller leads 24/7, and build trust with professional branding — giving you a major edge over agents who rely only on referrals."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How much does a real estate website cost in Mumbai?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "SiteNova builds real estate websites starting from ₹10,000 for a landing page and ₹12,000 onwards for property listing sites with enquiry forms, WhatsApp integration, and photo galleries."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I list multiple properties on my website?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. We build dynamic property listing pages with filters for BHK type, price range, and location — so buyers can find exactly what they need, and you can easily add new listings."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long does it take to build a real estate website?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most real estate websites are delivered within 7–10 working days. We provide a free mockup first so you can see the design before any commitment."
+                }
+              }
+            ]
           }
         ]}
       />

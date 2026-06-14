@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { m as motion } from "framer-motion";
-import { Search, Smartphone, Zap, ArrowRight } from "lucide-react";
+import { Search, Smartphone, Zap, ArrowRight, CheckCircle2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -114,6 +114,36 @@ export default function FreeAudit() {
               { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
               { "@type": "ListItem", "position": 2, "name": "Free Website Audit", "item": "https://sitenova.dev/free-audit" }
             ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What does SiteNova's free website audit include?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Our free audit covers Google PageSpeed scores, Core Web Vitals analysis, on-page SEO check (title tags, meta descriptions, headings, schema markup), mobile responsiveness testing, and local SEO signal review including Google Business Profile optimization tips."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long does the free audit take?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We typically deliver your audit report within 24–48 hours of submission. You'll receive a detailed PDF or video walkthrough via email and WhatsApp."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is the website audit really free?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, 100% free with no obligation. We provide the audit as a way to demonstrate our expertise. If you'd like us to implement the improvements, we can discuss a project — but there's zero pressure."
+                }
+              }
+            ]
           }
         ]}
       />
@@ -178,6 +208,26 @@ export default function FreeAudit() {
                   <h3 className="font-semibold text-base">Mobile Responsiveness</h3>
                   <p className="text-sm text-muted-foreground mt-1">Ensure a flawless experience for the 60%+ of users browsing on their phones.</p>
                 </div>
+              </div>
+            </div>
+
+            {/* What Your Audit Includes Checklist */}
+            <div className="pt-6 border-t border-border/30">
+              <h3 className="font-heading text-base font-semibold mb-4">What Your Audit Includes:</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {[
+                  "Google PageSpeed score analysis",
+                  "Core Web Vitals check",
+                  "On-page SEO review",
+                  "Mobile responsiveness test",
+                  "Local SEO signal check",
+                  "Actionable improvement tips",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                    {item}
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>

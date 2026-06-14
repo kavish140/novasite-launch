@@ -39,6 +39,8 @@ const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminBlogEditor = lazy(() => import("./pages/admin/AdminBlogEditor"));
 const RealEstate = lazy(() => import("./pages/niche/RealEstate"));
+const Consultants = lazy(() => import("./pages/niche/Consultants"));
+const Lawyers = lazy(() => import("./pages/niche/Lawyers"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
 import { LazyMotion, domAnimation, AnimatePresence } from "framer-motion";
@@ -108,6 +110,8 @@ const AnimatedRoutes = () => {
           } 
         />
         <Route path="/websites-for-real-estate" element={<RealEstate />} />
+        <Route path="/websites-for-consultants" element={<Consultants />} />
+        <Route path="/websites-for-lawyers" element={<Lawyers />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

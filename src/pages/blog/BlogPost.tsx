@@ -95,6 +95,9 @@ export default function BlogPost() {
         description={post.excerpt || post.content.replace(/<[^>]+>/g, '').substring(0, 160) || `Read our latest article on ${post.title}.`}
         canonicalUrl={`/blog/${post.slug}`}
         type="article"
+        publishedTime={post.published_at}
+        modifiedTime={post.published_at}
+        author="Kavish Ganatra"
         jsonLd={[
           {
             "@context": "https://schema.org",

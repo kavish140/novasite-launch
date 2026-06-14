@@ -128,6 +128,44 @@ export default function Finance() {
               { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sitenova.dev/" },
               { "@type": "ListItem", "position": 2, "name": "Websites for Finance Professionals", "item": "https://sitenova.dev/websites-for-finance" }
             ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Why does a CA or financial advisor need a website?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A professional website establishes credibility, showcases your services and certifications, and generates leads 24/7. Clients increasingly research financial professionals online before making contact — a strong web presence sets you apart from competitors."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How much does a finance professional website cost?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "SiteNova builds websites for CAs, insurance agents, and financial advisors starting from ₹10,000 for a landing page and ₹12,000 onwards for multi-page sites with service pages, lead capture forms, and blog functionality."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I publish tax tips and financial articles on my website?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Every finance website includes a built-in blog or knowledge center where you can publish tax tips, regulatory updates, and financial guides — positioning you as a thought leader and boosting your Google rankings."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long does it take to build a finance website?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most finance professional websites are delivered within 5–7 working days. We provide a free mockup first so you can see the design before any commitment."
+                }
+              }
+            ]
           }
         ]}
       />
