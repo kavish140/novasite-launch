@@ -5,9 +5,9 @@ import { showcaseProjects, customerProjects } from "@/lib/portfolio-meta";
 import drDiptiImage from "@/assets/Drdiptiganatra.webp";
 import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
 import smartkitImage from "@/assets/Aismartkit.webp";
-import businessShowcaseImage from "@/assets/business-showcase.png";
-import designShowcaseImage from "@/assets/design-showcase.png";
-import ecommerceShowcaseImage from "@/assets/ecommerce-showcase.png";
+import businessShowcaseImage from "@/assets/business-showcase.webp";
+import designShowcaseImage from "@/assets/design-showcase.webp";
+import ecommerceShowcaseImage from "@/assets/ecommerce-showcase.webp";
 import BlurImage from "./BlurImage";
 
 const imageBySlug = {

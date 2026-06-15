@@ -7,13 +7,16 @@ const __dirname = path.dirname(__filename);
 
 const imagesToOptimize = [
   'hero-bg.jpg',
-  'dashboard-preview.jpg'
+  'dashboard-preview.jpg',
+  'business-showcase.png',
+  'design-showcase.png',
+  'ecommerce-showcase.png'
 ];
 
 async function optimize() {
   for (const img of imagesToOptimize) {
     const inputPath = path.resolve(__dirname, '../src/assets', img);
-    const outputPath = path.resolve(__dirname, '../src/assets', img.replace('.jpg', '.webp'));
+    const outputPath = path.resolve(__dirname, '../src/assets', img.replace(/\.(jpg|png)$/, '.webp'));
     
     try {
       await sharp(inputPath)
