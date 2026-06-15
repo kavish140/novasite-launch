@@ -2,8 +2,8 @@ import { m as motion, useReducedMotion, useScroll, useTransform } from "framer-m
 import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import heroBg from "@/assets/hero-bg.jpg";
-import dashboardPreview from "@/assets/dashboard-preview.jpg";
+import heroBg from "@/assets/hero-bg.webp";
+import dashboardPreview from "@/assets/dashboard-preview.webp";
 import BlurImage from "./BlurImage";
 
 const HeroSection = () => {
