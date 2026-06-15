@@ -2,7 +2,6 @@ import { m as motion, useReducedMotion, useScroll, useTransform } from "framer-m
 import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import heroBg from "@/assets/hero-bg.webp";
 import dashboardPreview from "@/assets/dashboard-preview.webp";
 import BlurImage from "./BlurImage";
 
@@ -29,7 +28,7 @@ const HeroSection = () => {
     <section ref={sectionRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 z-0 will-change-transform">
-        <img src={heroBg} alt="Abstract modern web development background" className="w-full h-full object-cover opacity-30 scale-105" loading="eager" fetchPriority="high" decoding="async" />
+        <img src="/hero-bg.webp" alt="Abstract modern web development background" className="w-full h-full object-cover opacity-30 scale-105" loading="eager" fetchPriority="high" decoding="async" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background" />
       </motion.div>
 
