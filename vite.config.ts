@@ -20,26 +20,6 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('/node_modules/react/') || id.includes('/node_modules/react-dom/') || id.includes('/node_modules/react-router-dom/')) {
-              return 'react-vendor';
-            }
-            if (id.includes('/node_modules/@radix-ui/')) {
-              return 'radix-vendor';
-            }
-            if (id.includes('/node_modules/framer-motion/')) {
-              return 'framer-motion';
-            }
-            if (id.includes('/node_modules/@sentry/')) {
-              return 'sentry-vendor';
-            }
-            if (id.includes('/node_modules/@supabase/')) {
-              return 'supabase-vendor';
-            }
-            return 'vendor';
-          }
-        }
       },
     },
   },
