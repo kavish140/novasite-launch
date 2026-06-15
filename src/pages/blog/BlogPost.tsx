@@ -1,6 +1,8 @@
-import { Link, useLoaderData, useNavigation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { supabase } from "@/lib/supabaseClient";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
 import { ChevronLeft } from "lucide-react";
@@ -15,9 +17,34 @@ interface BlogPostData {
 }
 
 export default function BlogPost() {
-  const { post } = useLoaderData() as { post: BlogPostData | null };
-  const navigation = useNavigation();
-  const loading = navigation.state === "loading";
+  const { slug } = useParams<{ slug: string }>();
+  const [post, setPost] = useState<BlogPostData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPost() {
+      if (!slug) return;
+      try {
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("*")
+          .eq("slug", slug)
+          .single();
+          
+        if (error) {
+          console.error("Error fetching post:", error);
+        } else if (data) {
+          setPost(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPost();
+  }, [slug]);
 
   if (loading) {
     return (

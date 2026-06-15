@@ -1,9 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { supabase } from "@/lib/supabaseClient";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
-import { useLoaderData, useNavigation } from "react-router-dom";
 
 interface BlogPost {
   id: string;
@@ -14,9 +15,31 @@ interface BlogPost {
 }
 
 export default function BlogIndex() {
-  const { posts } = useLoaderData() as { posts: BlogPost[] };
-  const navigation = useNavigation();
-  const loading = navigation.state === "loading";
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("id, title, slug, excerpt, published_at")
+          .order("published_at", { ascending: false });
+          
+        if (error) {
+          console.error("Error fetching posts:", error);
+        } else {
+          setPosts(data || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPosts();
+  }, []);
 
   return (
     <PageTransition>

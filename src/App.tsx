@@ -1,13 +1,11 @@
-import React, { Suspense, lazy } from "react";
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createBrowserRouter, RouterProvider, useLocation, useOutlet, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ErrorBoundary";
-import DeferredWrapper from "./components/DeferredWrapper";
-import { blogIndexLoader, blogPostLoader } from "./pages/blog/loaders";
 
 const ScrollProgress = lazy(() => import("./components/ScrollProgress"));
 const BookCallWidget = lazy(() => import("./components/BookCallWidget"));
@@ -56,76 +54,72 @@ const queryClient = new QueryClient({
   },
 });
 
-const AnimatedOutlet = () => {
+const AnimatedRoutes = () => {
   const location = useLocation();
-  const element = useOutlet();
-
+  
   return (
     <AnimatePresence mode="wait">
-      {element && React.cloneElement(element as React.ReactElement, { key: location.pathname })}
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Index />} />
+        <Route path="/quote" element={<Quote />} />
+        <Route path="/thank-you" element={<ThankYou />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/services/ecommerce" element={<Ecommerce />} />
+        <Route path="/services/web-applications" element={<WebApps />} />
+        <Route path="/services/seo-optimization" element={<SeoSpeed />} />
+        <Route path="/location/thane" element={<Thane />} />
+        <Route path="/location/powai" element={<Powai />} />
+        <Route path="/location/andheri" element={<Andheri />} />
+        <Route path="/location/bhandup" element={<Bhandup />} />
+        <Route path="/location/nahur" element={<Nahur />} />
+        <Route path="/location/ghatkopar" element={<Ghatkopar />} />
+        <Route path="/location/vikhroli" element={<Vikhroli />} />
+        <Route path="/location/kurla" element={<Kurla />} />
+        <Route path="/location/dadar" element={<Dadar />} />
+        <Route path="/location/lower-parel" element={<LowerParel />} />
+        <Route path="/location/mahalakshmi" element={<Mahalakshmi />} />
+        <Route path="/location/pedder-road" element={<PedderRoad />} />
+        <Route path="/free-audit" element={<FreeAudit />} />
+        <Route path="/websites-for-doctors" element={<Doctors />} />
+        <Route path="/websites-for-finance" element={<Finance />} />
+        <Route path="/blog" element={<BlogIndex />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/blog/new" 
+          element={
+            <ProtectedRoute>
+              <AdminBlogEditor />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/blog/:id" 
+          element={
+            <ProtectedRoute>
+              <AdminBlogEditor />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/websites-for-real-estate" element={<RealEstate />} />
+        <Route path="/websites-for-consultants" element={<Consultants />} />
+        <Route path="/websites-for-lawyers" element={<Lawyers />} />
+        {/* Redirect for typo */}
+        <Route path="/location/peddar-road" element={<Navigate to="/location/pedder-road" replace />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </AnimatePresence>
   );
 };
-
-const RootLayout = () => {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
-      <DeferredWrapper delay={500}>
-        <ScrollProgress />
-      </DeferredWrapper>
-      <AnimatedOutlet />
-      <DeferredWrapper delay={2000}>
-        <BookCallWidget />
-      </DeferredWrapper>
-      <DeferredWrapper delay={45000}>
-        <ExitIntentPopup />
-      </DeferredWrapper>
-    </Suspense>
-  );
-};
-
-const router = createBrowserRouter([
-  {
-    element: <RootLayout />,
-    children: [
-      { path: "/", element: <Index /> },
-      { path: "/quote", element: <Quote /> },
-      { path: "/thank-you", element: <ThankYou /> },
-      { path: "/pricing", element: <Pricing /> },
-      { path: "/services/ecommerce", element: <Ecommerce /> },
-      { path: "/services/web-applications", element: <WebApps /> },
-      { path: "/services/seo-optimization", element: <SeoSpeed /> },
-      { path: "/location/thane", element: <Thane /> },
-      { path: "/location/powai", element: <Powai /> },
-      { path: "/location/andheri", element: <Andheri /> },
-      { path: "/location/bhandup", element: <Bhandup /> },
-      { path: "/location/nahur", element: <Nahur /> },
-      { path: "/location/ghatkopar", element: <Ghatkopar /> },
-      { path: "/location/vikhroli", element: <Vikhroli /> },
-      { path: "/location/kurla", element: <Kurla /> },
-      { path: "/location/dadar", element: <Dadar /> },
-      { path: "/location/lower-parel", element: <LowerParel /> },
-      { path: "/location/mahalakshmi", element: <Mahalakshmi /> },
-      { path: "/location/pedder-road", element: <PedderRoad /> },
-      { path: "/free-audit", element: <FreeAudit /> },
-      { path: "/websites-for-doctors", element: <Doctors /> },
-      { path: "/websites-for-finance", element: <Finance /> },
-      { path: "/blog", element: <BlogIndex />, loader: blogIndexLoader },
-      { path: "/blog/:slug", element: <BlogPost />, loader: blogPostLoader },
-      { path: "/admin", element: <AdminLogin /> },
-      { path: "/admin/dashboard", element: <ProtectedRoute><AdminDashboard /></ProtectedRoute> },
-      { path: "/admin/blog/new", element: <ProtectedRoute><AdminBlogEditor /></ProtectedRoute> },
-      { path: "/admin/blog/:id", element: <ProtectedRoute><AdminBlogEditor /></ProtectedRoute> },
-      { path: "/websites-for-real-estate", element: <RealEstate /> },
-      { path: "/websites-for-consultants", element: <Consultants /> },
-      { path: "/websites-for-lawyers", element: <Lawyers /> },
-      { path: "/location/peddar-road", element: <Navigate to="/location/pedder-road" replace /> },
-      { path: "*", element: <NotFound /> }
-    ]
-  }
-], {
-  basename: import.meta.env.BASE_URL
-});
 
 const App = () => (
   <HelmetProvider>
@@ -135,7 +129,14 @@ const App = () => (
           <Toaster />
           <Sonner />
           <LazyMotion features={domAnimation}>
-            <RouterProvider router={router} />
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
+              <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
+                <ScrollProgress />
+                <AnimatedRoutes />
+                <BookCallWidget />
+                <ExitIntentPopup />
+              </Suspense>
+            </BrowserRouter>
           </LazyMotion>
         </TooltipProvider>
       </QueryClientProvider>
