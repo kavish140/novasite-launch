@@ -20,6 +20,12 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', 'lucide-react'],
+          'sentry-vendor': ['@sentry/react'],
+          'supabase-vendor': ['@supabase/supabase-js']
+        }
       },
     },
   },
