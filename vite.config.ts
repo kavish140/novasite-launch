@@ -22,19 +22,19 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react/') || id.includes('react-dom/') || id.includes('react-router-dom/')) {
+            if (id.includes('/node_modules/react/') || id.includes('/node_modules/react-dom/') || id.includes('/node_modules/react-router-dom/')) {
               return 'react-vendor';
             }
-            if (id.includes('@radix-ui/')) {
+            if (id.includes('/node_modules/@radix-ui/')) {
               return 'radix-vendor';
             }
-            if (id.includes('framer-motion/')) {
+            if (id.includes('/node_modules/framer-motion/')) {
               return 'framer-motion';
             }
-            if (id.includes('@sentry/')) {
+            if (id.includes('/node_modules/@sentry/')) {
               return 'sentry-vendor';
             }
-            if (id.includes('@supabase/')) {
+            if (id.includes('/node_modules/@supabase/')) {
               return 'supabase-vendor';
             }
             return 'vendor';
