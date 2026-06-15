@@ -6,11 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ErrorBoundary";
-import Index from "./pages/Index";
 
 const ScrollProgress = lazy(() => import("./components/ScrollProgress"));
 const BookCallWidget = lazy(() => import("./components/BookCallWidget"));
 const ExitIntentPopup = lazy(() => import("./components/ExitIntentPopup"));
+const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Quote = lazy(() => import("./pages/Quote"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
