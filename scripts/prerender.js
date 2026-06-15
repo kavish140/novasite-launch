@@ -105,7 +105,7 @@ async function prerender() {
 
     // Replace canonical links
     const canonicalRegex = /<link rel="canonical" href="[^"]*"\s*\/?>/i;
-    const currentCanonicalUrl = route.path ? `${SITE_URL}/${route.path}/` : `${SITE_URL}/`;
+    const currentCanonicalUrl = route.path ? `${SITE_URL}/${route.path}` : `${SITE_URL}/`;
     if (canonicalRegex.test(finalHtml)) {
       finalHtml = finalHtml.replace(canonicalRegex, `<link rel="canonical" href="${currentCanonicalUrl}" />`);
     }
@@ -133,11 +133,11 @@ async function prerender() {
       fs.writeFileSync(BASE_HTML_PATH, finalHtml, "utf8");
       console.log(`Updated root: ${BASE_HTML_PATH}`);
     } else {
-      // Create subdirectories
-      const targetDir = path.join(DIST_DIR, route.path);
+      // Create HTML file instead of directory with index.html to prevent trailing slash redirects
+      const targetHtmlPath = path.join(DIST_DIR, `${route.path}.html`);
+      const targetDir = path.dirname(targetHtmlPath);
       fs.mkdirSync(targetDir, { recursive: true });
       
-      const targetHtmlPath = path.join(targetDir, "index.html");
       fs.writeFileSync(targetHtmlPath, finalHtml, "utf8");
       console.log(`Created static route: ${targetHtmlPath}`);
     }
@@ -148,7 +148,7 @@ async function prerender() {
   let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
   routes.forEach((route) => {
-    const loc = route.path ? `${SITE_URL}/${route.path}/` : `${SITE_URL}/`;
+    const loc = route.path ? `${SITE_URL}/${route.path}` : `${SITE_URL}/`;
     sitemapContent += `  <url>\n`;
     sitemapContent += `    <loc>${loc}</loc>\n`;
     sitemapContent += `    <lastmod>${today}</lastmod>\n`;
