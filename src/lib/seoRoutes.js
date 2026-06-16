@@ -215,7 +215,7 @@ export const routes = [
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "SiteNova Web Design - Andheri Service Division",
-      "url": `${SITE_URL}/location/andheri/`,
+      "url": `${SITE_URL}/location/andheri`,
       "telephone": "+91-9326060621",
       "address": {
         "@type": "PostalAddress",
@@ -445,7 +445,7 @@ export const routes = [
       "@context": "https://schema.org",
       "@type": "WebPage",
       "name": "Free Website Audit",
-      "url": `${SITE_URL}/free-audit/`,
+      "url": `${SITE_URL}/free-audit`,
       "description": "Get a free expert review of your current website's SEO and performance."
     }
   },
@@ -460,7 +460,7 @@ export const routes = [
       "@context": "https://schema.org",
       "@type": "Blog",
       "name": "SiteNova Web Design Blog",
-      "url": `${SITE_URL}/blog/`,
+      "url": `${SITE_URL}/blog`,
       "description": "Insights on web design, SEO, and business growth for local businesses."
     }
   },
@@ -538,7 +538,7 @@ export const routes = [
       "@context": "https://schema.org",
       "@type": "WebPage",
       "name": "Website Pricing and Packages",
-      "url": `${SITE_URL}/pricing/`,
+      "url": `${SITE_URL}/pricing`,
       "description": "View our transparent web development and design pricing."
     }
   },
