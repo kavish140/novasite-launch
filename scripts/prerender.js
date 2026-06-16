@@ -85,42 +85,42 @@ async function prerender() {
     let finalHtml = baseHtml;
 
     // Replace Title
-    finalHtml = finalHtml.replace(/<title>[\s\S]*?<\/title>/i, `<title>${route.title}</title>`);
+    finalHtml = finalHtml.replace(/<title>[\s\S]*?<\/title>/i, `<title data-rh="true">${route.title}</title>`);
 
     // Replace Description
     const descMetaRegex = /<meta name="description" content="[^"]*"\s*\/?>/i;
     if (descMetaRegex.test(finalHtml)) {
-      finalHtml = finalHtml.replace(descMetaRegex, `<meta name="description" content="${route.description}" />`);
+      finalHtml = finalHtml.replace(descMetaRegex, `<meta name="description" content="${route.description}" data-rh="true" />`);
     } else {
-      finalHtml = finalHtml.replace("</head>", `  <meta name="description" content="${route.description}" />\n  </head>`);
+      finalHtml = finalHtml.replace("</head>", `  <meta name="description" content="${route.description}" data-rh="true" />\n  </head>`);
     }
 
     // Replace Keywords
     const keywordsMetaRegex = /<meta name="keywords" content="[^"]*"\s*\/?>/i;
     if (keywordsMetaRegex.test(finalHtml)) {
-      finalHtml = finalHtml.replace(keywordsMetaRegex, `<meta name="keywords" content="${route.keywords}" />`);
+      finalHtml = finalHtml.replace(keywordsMetaRegex, `<meta name="keywords" content="${route.keywords}" data-rh="true" />`);
     } else {
-      finalHtml = finalHtml.replace("</head>", `  <meta name="keywords" content="${route.keywords}" />\n  </head>`);
+      finalHtml = finalHtml.replace("</head>", `  <meta name="keywords" content="${route.keywords}" data-rh="true" />\n  </head>`);
     }
 
     // Replace canonical links
     const canonicalRegex = /<link rel="canonical" href="[^"]*"\s*\/?>/i;
     const currentCanonicalUrl = route.path ? `${SITE_URL}/${route.path}` : `${SITE_URL}/`;
     if (canonicalRegex.test(finalHtml)) {
-      finalHtml = finalHtml.replace(canonicalRegex, `<link rel="canonical" href="${currentCanonicalUrl}" />`);
+      finalHtml = finalHtml.replace(canonicalRegex, `<link rel="canonical" href="${currentCanonicalUrl}" data-rh="true" />`);
     }
 
     // Replace OpenGraph & Twitter title + desc + url
-    finalHtml = finalHtml.replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${route.title}" />`);
-    finalHtml = finalHtml.replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${route.description}" />`);
-    finalHtml = finalHtml.replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${currentCanonicalUrl}" />`);
-    finalHtml = finalHtml.replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${route.title}" />`);
-    finalHtml = finalHtml.replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${route.description}" />`);
-    finalHtml = finalHtml.replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${SITE_URL}/seo-preview.png" />`);
-    finalHtml = finalHtml.replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${SITE_URL}/seo-preview.png" />`);
+    finalHtml = finalHtml.replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${route.title}" data-rh="true" />`);
+    finalHtml = finalHtml.replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${route.description}" data-rh="true" />`);
+    finalHtml = finalHtml.replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${currentCanonicalUrl}" data-rh="true" />`);
+    finalHtml = finalHtml.replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${route.title}" data-rh="true" />`);
+    finalHtml = finalHtml.replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${route.description}" data-rh="true" />`);
+    finalHtml = finalHtml.replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${SITE_URL}/seo-preview.png" data-rh="true" />`);
+    finalHtml = finalHtml.replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${SITE_URL}/seo-preview.png" data-rh="true" />`);
 
     // Replace JSON-LD schema block
-    const jsonLdBlock = `<script type="application/ld+json" id="route-jsonld">${JSON.stringify(route.jsonLd, null, 2)}</script>`;
+    const jsonLdBlock = `<script type="application/ld+json" data-rh="true">${JSON.stringify(route.jsonLd, null, 2)}</script>`;
     // Remove the default schema block in base html
     const defaultJsonLdRegex = /<script type="application\/ld\+json">[\s\S]*?<\/script>/gi;
     finalHtml = finalHtml.replace(defaultJsonLdRegex, "");
