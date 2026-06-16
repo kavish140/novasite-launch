@@ -107,7 +107,8 @@ const Footer = () => {
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} SiteNova. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            <Link to="/contact-us" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link>
             <a href={emailComposeLink} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Email</a>
             <a href="tel:+919326060621" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Call Us</a>
             <a href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20interested%20in%20getting%20a%20website%20built." target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">WhatsApp</a>

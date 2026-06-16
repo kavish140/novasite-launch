@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar } from "lucide-react";
+import { Phone } from "lucide-react";
 import { m as motion, AnimatePresence } from "framer-motion";
 
 const BookCallWidget = () => {
@@ -41,14 +41,12 @@ const BookCallWidget = () => {
           <div className="relative flex items-center justify-center">
             <div className="absolute inset-0 -z-10 rounded-full animate-ping bg-primary/40 opacity-75" style={{ animationDuration: '3s' }}></div>
             <a
-              href="https://calendly.com/kavishganatra5/30min"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="tel:+919326060621"
               className="flex items-center gap-2 rounded-full bg-primary px-4 py-3 sm:px-5 text-sm font-semibold text-primary-foreground shadow-lg hover:shadow-primary/50 transition-all hover:-translate-y-1 active:scale-95"
-              aria-label="Book a Call"
+              aria-label="Call Now"
             >
-              <Calendar className="h-5 w-5" />
-              <span className="hidden sm:inline">Book a Call</span>
+              <Phone className="h-5 w-5" />
+              <span className="hidden sm:inline">Call Now</span>
             </a>
           </div>
         </motion.div>

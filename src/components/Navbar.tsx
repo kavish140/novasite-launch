@@ -171,7 +171,7 @@ const Navbar = () => {
             {!mounted ? null : isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <Link
-            to="/quote"
+            to="/contact-us"
             className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm"
           >
             Contact Us
@@ -268,7 +268,7 @@ const Navbar = () => {
                 )}
               </button>
               <Link
-                to="/quote"
+                to="/contact-us"
                 onClick={() => setMobileOpen(false)}
                 className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
               >

@@ -72,6 +72,21 @@ export const routes = [
     }
   },
   {
+    path: "contact-us",
+    title: "Contact SiteNova | Web Development Agency in Mumbai",
+    description: "Get in touch with SiteNova for custom web development. Call us directly, send a WhatsApp message, or request a quote for your next project.",
+    keywords: "contact web designer Mumbai, SiteNova contact, hire web developer Mumbai, website development inquiry",
+    sitemapPriority: "0.8",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "name": "Contact SiteNova",
+      "url": `${SITE_URL}/contact-us`,
+      "description": "Get in touch with SiteNova for custom web development."
+    }
+  },
+  {
     path: "services/ecommerce",
     title: "E-commerce Website Design Services in Mumbai | SiteNova",
     description: "Build a high-converting online shop. SiteNova designs custom e-commerce stores in Mumbai with Razorpay/Stripe, coupon systems, and fast checkout workflows.",

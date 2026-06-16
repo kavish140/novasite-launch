@@ -13,6 +13,7 @@ const ExitIntentPopup = lazy(() => import("./components/ExitIntentPopup"));
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Quote = lazy(() => import("./pages/Quote"));
+const Contact = lazy(() => import("./pages/Contact"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Ecommerce = lazy(() => import("./pages/services/Ecommerce"));
@@ -62,6 +63,7 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Index />} />
         <Route path="/quote" element={<Quote />} />
+        <Route path="/contact-us" element={<Contact />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/services/ecommerce" element={<Ecommerce />} />

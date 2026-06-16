@@ -609,13 +609,11 @@ Looking forward to discussing further!`
                 {/* Follow-up Action Options */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto pt-4">
                   <a
-                    href="https://calendly.com/kavishganatra5/30min"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="tel:+919326060621"
                     className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all glow-effect button-shimmer"
                   >
-                    <Calendar size={18} />
-                    Book Free Strategy Call
+                    <Phone size={18} />
+                    Call Now
                   </a>
                   <a
                     href={whatsappUrl}
