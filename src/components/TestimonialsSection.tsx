@@ -8,7 +8,7 @@ const testimonials = [
 		role: "Client Review",
 		website: "https://jupiterfastfinance.com",
 		content:
-			"Truly impressed with the fantastic work done by Site Nova’s team on JupiterFinance.com. The website is exceptionally well-designed — modern, sleek, and highly professional in appearance. Every element feels thoughtfully placed, creating a smooth and engaging user experience. Their attention to detail and design aesthetics really stand out. Highly appreciative of the quality and finesse they bring to their work!",
+			"Truly impressed with the fantastic work done by Site Nova's team on JupiterFinance.com. The website is exceptionally well-designed — modern, sleek, and highly professional in appearance. Every element feels thoughtfully placed, creating a smooth and engaging user experience. Their attention to detail and design aesthetics really stand out. Highly appreciative of the quality and finesse they bring to their work!",
 		rating: 5,
 	},
 	{
@@ -16,16 +16,16 @@ const testimonials = [
 		role: "Client Review",
 		website: "https://drdiptiganatra.com",
 		content:
-			"Absolutely thrilled with my website www.drdiptiganatra.com! Site Nova’s team built it beautifully in a very short span of time, with complete database integration and seamless functionality. The design is clean, professional, and perfectly reflects my practice. Since its launch, I’ve seen improved patient engagement and steady growth in my business. Highly recommend their team for anyone looking for a powerful and well-executed website!",
+			"Absolutely thrilled with my website www.drdiptiganatra.com! Site Nova's team built it beautifully in a very short span of time, with complete database integration and seamless functionality. The design is clean, professional, and perfectly reflects my practice. Since its launch, I've seen improved patient engagement and steady growth in my business. Highly recommend their team for anyone looking for a powerful and well-executed website!",
 		rating: 5,
 	},
 ];
 
 const TestimonialCard = ({ t }: { t: typeof testimonials[0] }) => (
 	<div className="glass-card p-6 md:p-8 flex flex-col w-[320px] md:w-[450px] shrink-0 interactive-card hover-glow">
-		<div className="flex gap-1 mb-4">
+		<div className="flex gap-1 mb-4" role="img" aria-label={`${t.rating} out of 5 stars`}>
 			{Array.from({ length: t.rating }).map((_, idx) => (
-				<Star key={idx} size={16} className="fill-accent text-accent" />
+				<Star key={idx} size={16} className="fill-accent text-accent" aria-hidden="true" />
 			))}
 		</div>
 		<p className="text-foreground/90 leading-relaxed mb-6 flex-1 text-sm md:text-base line-clamp-[7]">
@@ -50,11 +50,12 @@ const MarqueeRow = ({ items, reverse = false }: { items: typeof testimonials; re
 	// Duplicate items to ensure smooth infinite scroll
 	const duplicatedItems = [...items, ...items, ...items];
 	
-	const RowContent = () => (
+	const RowContent = ({ ariaHidden = false }: { ariaHidden?: boolean }) => (
 		<div
-			className={`flex shrink-0 gap-6 items-stretch animate-marquee ${
+			className={`flex shrink-0 gap-6 items-stretch animate-marquee motion-reduce:[animation-play-state:paused] ${
 				reverse ? "[animation-direction:reverse]" : ""
 			} group-hover:[animation-play-state:paused]`}
+			aria-hidden={ariaHidden || undefined}
 		>
 			{duplicatedItems.map((t, i) => (
 				<div key={`${t.name}-${i}`}>
@@ -67,7 +68,7 @@ const MarqueeRow = ({ items, reverse = false }: { items: typeof testimonials; re
 	return (
 		<div className="flex overflow-hidden group gap-6 w-full mb-6 last:mb-0">
 			<RowContent />
-			<RowContent />
+			<RowContent ariaHidden />
 		</div>
 	);
 };

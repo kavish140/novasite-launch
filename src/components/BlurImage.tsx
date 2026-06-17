@@ -19,17 +19,28 @@ export default function BlurImage({
   const [currentSrc, setCurrentSrc] = useState(blurDataURL || src);
 
   useEffect(() => {
-    // Only fetch if a blurDataURL is provided and we want to load the real image
+    let cancelled = false;
+
     if (blurDataURL) {
       const img = new Image();
       img.src = src;
       img.onload = () => {
+        if (cancelled) return;
         setCurrentSrc(src);
+        setLoading(false);
+      };
+      img.onerror = () => {
+        if (cancelled) return;
+        // On failure, remove the blur so the user sees whatever loaded (or nothing)
         setLoading(false);
       };
     } else {
       setLoading(false);
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [src, blurDataURL]);
 
   return (

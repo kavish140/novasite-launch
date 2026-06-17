@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, Sparkles } from "lucide-react";
@@ -11,16 +11,26 @@ export default function ExitIntentPopup() {
   const [isVisible, setIsVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [industry, setIndustry] = useState("");
   const location = useLocation();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const showPopup = useCallback(() => {
     // Don't show if already shown in this session
     if (sessionStorage.getItem(STORAGE_KEY)) return;
+    previousFocusRef.current = document.activeElement as HTMLElement;
     setIsVisible(true);
     sessionStorage.setItem(STORAGE_KEY, "true");
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false);
+    // Restore focus to the element that was focused before the popup opened
+    previousFocusRef.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -46,11 +56,55 @@ export default function ExitIntentPopup() {
     };
   }, [showPopup]);
 
+  // Focus trap and Escape key handling
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleClose();
+        return;
+      }
+
+      // Focus trap
+      if (e.key === "Tab" && dialogRef.current) {
+        const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement?.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement?.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Auto-focus the dialog when it opens
+    setTimeout(() => {
+      const firstInput = dialogRef.current?.querySelector<HTMLElement>("input, button, select");
+      firstInput?.focus();
+    }, 100);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isVisible, handleClose]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !whatsapp.trim()) return;
 
     setIsSubmitting(true);
+    setSubmitError(false);
 
     try {
       await supabase.from("audit_requests").insert([
@@ -66,12 +120,11 @@ export default function ExitIntentPopup() {
       setSubmitted(true);
     } catch (err) {
       console.error("Exit popup submit error:", err);
+      setSubmitError(true);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const handleClose = () => setIsVisible(false);
 
   // Do not render the popup on any admin pages
   if (location.pathname.startsWith("/admin")) {
@@ -81,7 +134,12 @@ export default function ExitIntentPopup() {
   return (
     <AnimatePresence>
       {isVisible && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="exit-popup-title"
+        >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -93,6 +151,7 @@ export default function ExitIntentPopup() {
 
           {/* Popup */}
           <motion.div
+            ref={dialogRef}
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -116,7 +175,7 @@ export default function ExitIntentPopup() {
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
                       <Sparkles className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-heading text-xl font-bold tracking-tight sm:text-2xl">
+                    <h3 id="exit-popup-title" className="font-heading text-xl font-bold tracking-tight sm:text-2xl">
                       Before you go...
                     </h3>
                     <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
@@ -165,6 +224,12 @@ export default function ExitIntentPopup() {
                         <option value="Other" className="bg-background text-foreground">Other</option>
                       </select>
                     </div>
+
+                    {submitError && (
+                      <p className="text-sm text-destructive text-center">
+                        Something went wrong. Please try again.
+                      </p>
+                    )}
 
                     <button
                       type="submit"

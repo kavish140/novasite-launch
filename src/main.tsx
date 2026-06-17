@@ -2,11 +2,11 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { ThemeProvider } from "@/components/theme-provider";
-if (import.meta.env.PROD) {
+if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   setTimeout(() => {
     import("@sentry/react").then((Sentry) => {
       Sentry.init({
-        dsn: "https://2159c483e3c50155f15c45caf6fb3667@o4511547708997632.ingest.us.sentry.io/4511547730690048",
+        dsn: import.meta.env.VITE_SENTRY_DSN,
         integrations: [
           Sentry.browserTracingIntegration(),
           Sentry.replayIntegration(),

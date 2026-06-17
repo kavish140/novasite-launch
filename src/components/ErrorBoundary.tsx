@@ -17,23 +17,24 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+
     // Automatically handle chunk load errors (deployments) by refreshing the page
     if (error.message && error.message.includes("Failed to fetch dynamically imported module")) {
       const reloadKey = "chunk_load_error_reloaded";
       if (!sessionStorage.getItem(reloadKey)) {
         sessionStorage.setItem(reloadKey, "true");
         window.location.reload();
-        return { hasError: false, error: null };
+        return;
       } else {
         // If we already reloaded and still failed, clear the flag and show the error UI
         sessionStorage.removeItem(reloadKey);
       }
     }
-    return { hasError: true, error };
-  }
-
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
   }
 
   private handleReset = () => {
@@ -44,7 +45,7 @@ class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#0a0e1a] text-foreground flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="min-h-screen bg-[#0a0e1a] text-foreground flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans" role="alert">
           {/* Background glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-destructive/5 blur-[120px] pointer-events-none" />
 

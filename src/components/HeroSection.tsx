@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import dashboardPreview from "@/assets/dashboard-preview.webp";
 import BlurImage from "./BlurImage";
 
+const HERO_HEADING_WORDS = "Best Website Designer in Mulund, Mumbai & Nearby Areas".split(" ");
+
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
@@ -63,7 +65,7 @@ const HeroSection = () => {
               },
             }}
           >
-            {"Best Website Designer in Mulund, Mumbai & Nearby Areas".split(" ").map((word, idx) => (
+            {HERO_HEADING_WORDS.map((word, idx) => (
               <motion.span
                 key={idx}
                 variants={{

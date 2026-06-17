@@ -1,8 +1,6 @@
 import { Phone, Mail, MessageCircle, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const emailComposeLink =
-  "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Website%20Inquiry%20from%20SiteNova";
+import { PHONE_NUMBER, PHONE_TEL_LINK, EMAIL, EMAIL_COMPOSE_LINK, WHATSAPP_URL } from "@/lib/constants";
 
 const Footer = () => {
   return (
@@ -55,22 +53,22 @@ const Footer = () => {
               <li><Link to="/location/nahur" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Nahur Web Design</Link></li>
               <li><Link to="/location/ghatkopar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Ghatkopar Web Design</Link></li>
               <li>
-                <Link to="/location/vikhroli" className="text-muted-foreground hover:text-primary transition-colors text-sm">Vikhroli</Link>
+                <Link to="/location/vikhroli" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Vikhroli</Link>
               </li>
               <li>
-                <Link to="/location/kurla" className="text-muted-foreground hover:text-primary transition-colors text-sm">Kurla</Link>
+                <Link to="/location/kurla" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Kurla</Link>
               </li>
               <li>
-                <Link to="/location/dadar" className="text-muted-foreground hover:text-primary transition-colors text-sm">Dadar</Link>
+                <Link to="/location/dadar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Dadar</Link>
               </li>
               <li>
-                <Link to="/location/lower-parel" className="text-muted-foreground hover:text-primary transition-colors text-sm">Lower Parel</Link>
+                <Link to="/location/lower-parel" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Lower Parel</Link>
               </li>
               <li>
-                <Link to="/location/mahalakshmi" className="text-muted-foreground hover:text-primary transition-colors text-sm">Mahalakshmi</Link>
+                <Link to="/location/mahalakshmi" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mahalakshmi</Link>
               </li>
               <li>
-                <Link to="/location/pedder-road" className="text-muted-foreground hover:text-primary transition-colors text-sm">Pedder Road</Link>
+                <Link to="/location/pedder-road" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pedder Road</Link>
               </li>
             </ul>
           </div>
@@ -80,18 +78,18 @@ const Footer = () => {
             <h4 className="font-heading text-sm font-semibold mb-4">Get in Touch</h4>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+919326060621" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
-                  <Phone size={14} /> 9326060621
+                <a href={PHONE_TEL_LINK} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
+                  <Phone size={14} /> {PHONE_NUMBER}
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20interested%20in%20getting%20a%20website%20built." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
                   <MessageCircle size={14} /> WhatsApp
                 </a>
               </li>
               <li>
-                <a href={emailComposeLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
-                  <Mail size={14} /> kavishganatra5@gmail.com
+                <a href={EMAIL_COMPOSE_LINK} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
+                  <Mail size={14} /> {EMAIL}
                 </a>
               </li>
               <li>
@@ -109,9 +107,9 @@ const Footer = () => {
           </p>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <Link to="/contact-us" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link>
-            <a href={emailComposeLink} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Email</a>
-            <a href="tel:+919326060621" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Call Us</a>
-            <a href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20interested%20in%20getting%20a%20website%20built." target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">WhatsApp</a>
+            <a href={EMAIL_COMPOSE_LINK} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Email</a>
+            <a href={PHONE_TEL_LINK} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Call Us</a>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">WhatsApp</a>
             <a href="https://www.youtube.com/@SiteNova_Web_Design" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">YouTube</a>
           </div>
         </div>

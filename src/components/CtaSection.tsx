@@ -1,9 +1,7 @@
 import { m as motion } from "framer-motion";
 import { Phone, Mail, MessageCircle, ShieldCheck, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const emailComposeLink =
-  "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Website%20Inquiry%20from%20SiteNova";
+import { PHONE_NUMBER, PHONE_TEL_LINK, EMAIL_COMPOSE_LINK, WHATSAPP_URL } from "@/lib/constants";
 
 const CtaSection = () => {
   return (
@@ -38,7 +36,7 @@ const CtaSection = () => {
             <ArrowRight size={20} />
           </Link>
           <a
-            href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20interested%20in%20getting%20a%20website%20built."
+            href={WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-8 py-4 text-lg font-semibold text-white hover:bg-[#1ebe57] transition-all button-shimmer interactive-card"
@@ -50,14 +48,14 @@ const CtaSection = () => {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
           <a
-            href="tel:+919326060621"
+            href={PHONE_TEL_LINK}
             className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
           >
             <Phone size={20} />
-            9326060621
+            {PHONE_NUMBER}
           </a>
           <a
-            href={emailComposeLink}
+            href={EMAIL_COMPOSE_LINK}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"

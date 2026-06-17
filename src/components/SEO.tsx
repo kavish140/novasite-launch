@@ -69,7 +69,7 @@ export const SEO = ({
       {/* JSON-LD Structured Data */}
       {jsonLd && (
         <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
+          {JSON.stringify(jsonLd).replace(/</g, '\\u003c')}
         </script>
       )}
 

@@ -28,10 +28,13 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
   const jsonLd = [buildLocalBusinessJsonLd(), buildFaqJsonLd(faqs)];
 
   useEffect(() => {
-    if (location.hash) {
-      const id = location.hash.substring(1);
+    // Handle scroll-to-section from Navbar (via state) or direct hash links
+    const scrollTarget = (location.state as { scrollTo?: string } | null)?.scrollTo || 
+      (location.hash ? location.hash.substring(1) : null);
+    
+    if (scrollTarget) {
       setTimeout(() => {
-        const element = document.getElementById(id);
+        const element = document.getElementById(scrollTarget);
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "start" });
         }
