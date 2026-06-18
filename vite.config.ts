@@ -22,8 +22,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'motion-vendor': ['framer-motion'],
-          'ui-vendor': ['lucide-react', '@radix-ui/react-accordion', '@radix-ui/react-tooltip', '@radix-ui/react-slot'],
+          'ui-vendor': ['framer-motion', 'lucide-react'],
           'supabase-vendor': ['@supabase/supabase-js']
         }
       },
