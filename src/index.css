@@ -107,7 +107,6 @@
   }
 
   html {
-    scroll-behavior: smooth;
   }
 
   body {
@@ -213,7 +212,7 @@
 
   .animated-gradient {
     background-size: 200% 200%;
-    animation: gradient-pan 6s ease infinite;
+    /* animation removed — background-position is non-compositable */
   }
 }
 

@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import dashboardPreview from "@/assets/dashboard-preview.webp";
 import BlurImage from "./BlurImage";
 
-const HERO_HEADING_WORDS = "Best Website Designer in Mulund, Mumbai & Nearby Areas".split(" ");
+
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -40,11 +40,7 @@ const HeroSection = () => {
       <motion.div style={{ y: contentY }} className="absolute top-[18%] right-[8%] w-[160px] h-[160px] md:w-[240px] md:h-[240px] rounded-full bg-secondary/30 blur-[50px] md:blur-[90px] pointer-events-none will-change-transform" />
 
       <motion.div style={{ y: contentY }} className="relative z-10 mx-auto max-w-7xl px-6 text-center will-change-transform">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-        >
+        <div>
           {/* Badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 mb-8 interactive-card hover-glow">
             <Sparkles size={14} className="text-accent" />
@@ -53,39 +49,12 @@ const HeroSection = () => {
             </span>
           </div>
 
-          <motion.h1 
-            className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-balance flex flex-wrap justify-center gap-x-3 sm:gap-x-4"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.1, delayChildren: 0.1 },
-              },
-            }}
-          >
-            {HERO_HEADING_WORDS.map((word, idx) => (
-              <motion.span
-                key={idx}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0, transition: { type: "spring", damping: 12, stiffness: 100 } }
-                }}
-              >
-                {word}
-              </motion.span>
-            ))}
-            <motion.span
-              className="block w-full gradient-text animated-gradient mt-2"
-              variants={{
-                hidden: { opacity: 0, scale: 0.9 },
-                visible: { opacity: 1, scale: 1, transition: { type: "spring", delay: 0.8 } }
-              }}
-            >
+          <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-balance">
+            Best Website Designer in Mulund, Mumbai &amp; Nearby Areas{" "}
+            <span className="block w-full gradient-text mt-2">
               SiteNova
-            </motion.span>
-          </motion.h1>
+            </span>
+          </h1>
 
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 text-balance">
             We deliver web development and landing page design for businesses in Mulund,
@@ -113,12 +82,7 @@ const HeroSection = () => {
           </div>
 
           {/* Trust bar */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-10 flex flex-col items-center gap-4"
-          >
+          <div className="mt-10 flex flex-col items-center gap-4">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
               Trusted by doctors, financial firms & local businesses in Mumbai
             </p>
@@ -140,8 +104,8 @@ const HeroSection = () => {
                 7-day money-back guarantee on all projects
               </span>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Dashboard preview */}
         <motion.div

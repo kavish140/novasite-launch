@@ -16,7 +16,7 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
         replaysOnErrorSampleRate: 1.0,
       });
     });
-  }, 5000);
+  }, 10000);
 }
 
 createRoot(document.getElementById("root")!).render(

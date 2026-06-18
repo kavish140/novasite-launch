@@ -3,7 +3,7 @@
   <head>
     <!-- Google Analytics 4 (Deferred for Performance) -->
     <script>
-      document.addEventListener("DOMContentLoaded", function() {
+      window.addEventListener("load", function() {
         setTimeout(function() {
           var script = document.createElement('script');
           script.src = 'https://www.googletagmanager.com/gtag/js?id=G-EBZGS65QQH';
@@ -14,7 +14,7 @@
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', 'G-EBZGS65QQH');
-        }, 1000);
+        }, 2000);
       });
     </script>
     <meta charset="UTF-8" />
@@ -38,7 +38,7 @@
     <!-- Preconnect for Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" />
+
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
 
