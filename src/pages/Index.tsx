@@ -2,18 +2,19 @@ import { useEffect, Suspense, lazy } from "react";
 import { useLocation, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import Footer from "@/components/Footer";
-import FaqSection, { faqs } from "@/components/FaqSection";
 import { buildLocalBusinessJsonLd, buildFaqJsonLd } from "@/lib/seo";
 import SEO from "@/components/SEO";
-import TechMarquee from "@/components/TechMarquee";
 import PageTransition from "@/components/PageTransition";
+import { faqs } from "@/lib/faq-data";
 
+const TechMarquee = lazy(() => import("@/components/TechMarquee"));
 const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
 const PortfolioSection = lazy(() => import("@/components/PortfolioSection"));
 const HowItWorksSection = lazy(() => import("@/components/HowItWorksSection"));
 const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
 const CtaSection = lazy(() => import("@/components/CtaSection"));
+const FaqSection = lazy(() => import("@/components/FaqSection"));
+const Footer = lazy(() => import("@/components/Footer"));
 
 interface IndexProps {
   seoTitle?: string;
@@ -66,8 +67,8 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
         </header>
         <main id="main-content">
           <HeroSection />
-          <TechMarquee />
         <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
+          <TechMarquee />
           <section aria-labelledby="features-title">
             <FeaturesSection />
           </section>
@@ -198,9 +199,9 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
           <section aria-labelledby="cta-title">
             <CtaSection />
           </section>
+          <Footer />
         </Suspense>
       </main>
-      <Footer />
     </div>
     </PageTransition>
   );

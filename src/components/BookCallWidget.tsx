@@ -40,7 +40,7 @@ const BookCallWidget = () => {
 
           {/* Book Call Button Container */}
           <div className="relative flex items-center justify-center">
-            <div className="absolute inset-0 -z-10 rounded-full animate-ping bg-primary/40 opacity-75" style={{ animationDuration: '3s' }} aria-hidden="true"></div>
+            <div className="absolute inset-0 -z-10 rounded-full animate-ping bg-primary/40 opacity-75" style={{ animationDuration: '3s', willChange: 'transform, opacity' }} aria-hidden="true"></div>
             <a
               href={PHONE_TEL_LINK}
               className="flex items-center gap-2 rounded-full bg-primary px-4 py-3 sm:px-5 text-sm font-semibold text-primary-foreground shadow-lg hover:shadow-primary/50 transition-all hover:-translate-y-1 active:scale-95"

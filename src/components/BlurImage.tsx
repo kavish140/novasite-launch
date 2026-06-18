@@ -6,6 +6,7 @@ interface BlurImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   alt: string;
   className?: string;
   blurDataURL?: string;
+  loading?: 'lazy' | 'eager';
 }
 
 export default function BlurImage({
@@ -13,6 +14,7 @@ export default function BlurImage({
   alt,
   className,
   blurDataURL,
+  loading = "lazy",
   ...props
 }: BlurImageProps) {
   const [isLoading, setLoading] = useState(true);
@@ -49,9 +51,10 @@ export default function BlurImage({
         {...props}
         src={currentSrc}
         alt={alt}
-        loading="lazy"
+        loading={loading}
+        decoding="async"
         className={cn(
-          "w-full h-full object-cover transition-all duration-700 ease-in-out",
+          "w-full h-full object-cover transition-[filter,transform] duration-700 ease-in-out",
           isLoading ? "scale-105 blur-md" : "scale-100 blur-0"
         )}
         onLoad={() => setLoading(false)}

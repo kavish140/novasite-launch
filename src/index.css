@@ -174,7 +174,7 @@
   }
 
   .interactive-card {
-    @apply transition-all duration-300 ease-out;
+    @apply transition-[transform,box-shadow] duration-300 ease-out;
   }
 
   .interactive-card:hover {
@@ -193,7 +193,7 @@
     content: '';
     position: absolute;
     top: 0;
-    left: -130%;
+    left: 0;
     width: 50%;
     height: 100%;
     background: linear-gradient(
@@ -202,13 +202,13 @@
       hsl(var(--foreground) / 0.22) 45%,
       transparent 100%
     );
-    transform: skewX(-20deg);
-    transition: left 0.8s ease;
+    transform: translateX(-260%) skewX(-20deg);
+    transition: transform 0.8s ease;
     pointer-events: none;
   }
 
   .button-shimmer:hover::after {
-    left: 130%;
+    transform: translateX(260%) skewX(-20deg);
   }
 
   .animated-gradient {

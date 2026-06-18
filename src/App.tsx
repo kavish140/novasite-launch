@@ -44,7 +44,10 @@ const Consultants = lazy(() => import("./pages/niche/Consultants"));
 const Lawyers = lazy(() => import("./pages/niche/Lawyers"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
-import { LazyMotion, domAnimation, AnimatePresence } from "framer-motion";
+import { LazyMotion, AnimatePresence } from "framer-motion";
+
+const loadFramerFeatures = () =>
+  import("framer-motion").then((mod) => mod.domAnimation);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -130,7 +133,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <LazyMotion features={domAnimation}>
+          <LazyMotion features={loadFramerFeatures} strict={false}>
             <BrowserRouter basename={import.meta.env.BASE_URL}>
               <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
                 <ScrollProgress />

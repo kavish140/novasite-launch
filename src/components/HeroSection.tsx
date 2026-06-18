@@ -30,14 +30,14 @@ const HeroSection = () => {
     <section ref={sectionRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 z-0 will-change-transform">
-        <img src="/hero-bg.webp" alt="Abstract modern web development background" className="w-full h-full object-cover opacity-30 scale-105" loading="eager" fetchPriority="high" decoding="async" />
+        <img src="/hero-bg.webp" alt="" role="presentation" className="w-full h-full object-cover opacity-30 scale-105" loading="eager" fetchPriority="high" decoding="async" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background" />
       </motion.div>
 
       {/* Glow orbs */}
-      <motion.div style={{ y: orbY }} className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-primary/10 blur-[120px] animate-pulse-glow pointer-events-none will-change-transform" />
-      <motion.div style={{ y: contentY }} className="absolute top-[30%] right-[10%] w-[300px] h-[300px] rounded-full bg-accent/20 blur-[100px] animate-pulse-glow pointer-events-none" />
-      <motion.div style={{ y: contentY }} className="absolute top-[18%] right-[8%] w-[240px] h-[240px] rounded-full bg-secondary/30 blur-[90px] pointer-events-none" />
+      <motion.div style={{ y: orbY }} className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[300px] md:w-[600px] md:h-[400px] rounded-full bg-primary/10 blur-[80px] md:blur-[120px] animate-pulse-glow pointer-events-none will-change-transform" />
+      <motion.div style={{ y: contentY }} className="absolute top-[30%] right-[10%] w-[200px] h-[200px] md:w-[300px] md:h-[300px] rounded-full bg-accent/20 blur-[60px] md:blur-[100px] animate-pulse-glow pointer-events-none will-change-transform" />
+      <motion.div style={{ y: contentY }} className="absolute top-[18%] right-[8%] w-[160px] h-[160px] md:w-[240px] md:h-[240px] rounded-full bg-secondary/30 blur-[50px] md:blur-[90px] pointer-events-none will-change-transform" />
 
       <motion.div style={{ y: contentY }} className="relative z-10 mx-auto max-w-7xl px-6 text-center will-change-transform">
         <motion.div
@@ -105,6 +105,7 @@ const HeroSection = () => {
             <a
               href="#portfolio"
               onClick={scrollToPortfolio}
+              role="button"
               className="inline-flex items-center gap-2 rounded-xl border border-border px-8 py-3.5 text-base font-medium text-foreground hover:bg-secondary transition-colors interactive-card"
             >
               View Our Work
@@ -144,11 +145,9 @@ const HeroSection = () => {
 
         {/* Dashboard preview */}
         <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          initial={{ opacity: 1, y: 0 }}
           style={{ y: previewY, rotateX: previewRotate }}
-          className="mt-16 md:mt-20"
+          className="mt-16 md:mt-20 will-change-transform"
         >
           <div className="relative mx-auto max-w-5xl gradient-border rounded-2xl overflow-hidden interactive-card hover-glow">
             <div className="rounded-2xl overflow-hidden border border-border/30">

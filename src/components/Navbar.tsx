@@ -61,13 +61,14 @@ const Navbar = () => {
   // Close services dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      if (!servicesOpen) return;
       if (servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
         setServicesOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [servicesOpen]);
 
   // Close dropdown on route change
   useEffect(() => {
