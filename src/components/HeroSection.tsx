@@ -1,5 +1,5 @@
 import { m as motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck, Layers } from "lucide-react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import dashboardPreview from "@/assets/dashboard-preview.webp";
@@ -75,6 +75,14 @@ const HeroSection = () => {
               Check Your Website Score
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
+            <button
+              onClick={() => document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/30 px-8 py-3.5 text-base font-medium text-foreground hover:bg-secondary/60 hover:border-border transition-all interactive-card"
+              aria-label="Scroll to portfolio section"
+            >
+              <Layers size={18} className="text-muted-foreground" />
+              View Our Work
+            </button>
           </div>
 
           {/* Trust bar */}
