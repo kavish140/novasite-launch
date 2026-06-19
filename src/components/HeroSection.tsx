@@ -21,10 +21,7 @@ const HeroSection = () => {
   const previewY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : -42]);
   const previewRotate = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : -1.5]);
 
-  const scrollToPortfolio = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+
 
   return (
     <section ref={sectionRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -71,14 +68,13 @@ const HeroSection = () => {
               Get a Free Quote
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <a
-              href="#portfolio"
-              onClick={scrollToPortfolio}
-              role="button"
-              className="inline-flex items-center gap-2 rounded-xl border border-border px-8 py-3.5 text-base font-medium text-foreground hover:bg-secondary transition-colors interactive-card"
+            <Link
+              to="/free-audit"
+              className="inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-8 py-3.5 text-base font-medium text-primary hover:bg-primary/10 hover:border-primary/70 transition-all interactive-card"
             >
-              View Our Work
-            </a>
+              Check Your Website Score
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
 
           {/* Trust bar */}

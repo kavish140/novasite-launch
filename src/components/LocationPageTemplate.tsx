@@ -301,7 +301,7 @@ export default function LocationPageTemplate({
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {[
-              { name: "Mulund", path: "/" },
+              { name: "Mulund", path: "/location/mulund" },
               { name: "Thane", path: "/location/thane" },
               { name: "Powai", path: "/location/powai" },
               { name: "Andheri", path: "/location/andheri" },

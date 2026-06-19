@@ -54,7 +54,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
     <PageTransition>
       <SEO 
         title={seoTitle || "Web Design & Development in Mumbai | SiteNova — Fast, SEO-Ready Websites"}
-        description={seoDescription || "SiteNova builds SEO-ready, mobile-first websites for businesses across Mumbai — Mulund, Andheri, Thane, Powai, Dadar and more. Custom web design from ₹10,000 onwards."}
+        description={seoDescription || "Is your website losing you customers? SiteNova builds fast, custom websites for businesses in Mulund, Mumbai — SEO-ready, mobile-first, and delivered in 7–14 days. From ₹10,000."}
         canonicalUrl={seoCanonicalPath || "/"}
         keywords={seoKeywords || [
           "web design Mumbai",
@@ -95,7 +95,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {[
-                    { label: "Mulund", href: "/" },
+                    { label: "Mulund", href: "/location/mulund" },
                     { label: "Mumbai", href: "/" },
                     { label: "Thane", href: "/location/thane" },
                     { label: "Bhandup", href: "/location/bhandup" },

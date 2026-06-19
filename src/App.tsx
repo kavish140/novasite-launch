@@ -31,6 +31,7 @@ const Dadar = lazy(() => import("./pages/locations/Dadar"));
 const LowerParel = lazy(() => import("./pages/locations/LowerParel"));
 const Mahalakshmi = lazy(() => import("./pages/locations/Mahalakshmi"));
 const PedderRoad = lazy(() => import("./pages/locations/PedderRoad"));
+const Mulund = lazy(() => import("./pages/locations/Mulund"));
 const FreeAudit = lazy(() => import("./pages/FreeAudit"));
 const Doctors = lazy(() => import("./pages/niche/Doctors"));
 const Finance = lazy(() => import("./pages/niche/Finance"));
@@ -87,6 +88,7 @@ const AnimatedRoutes = () => {
         <Route path="/location/lower-parel" element={<LowerParel />} />
         <Route path="/location/mahalakshmi" element={<Mahalakshmi />} />
         <Route path="/location/pedder-road" element={<PedderRoad />} />
+        <Route path="/location/mulund" element={<Mulund />} />
         <Route path="/free-audit" element={<FreeAudit />} />
         <Route path="/websites-for-doctors" element={<Doctors />} />
         <Route path="/websites-for-finance" element={<Finance />} />

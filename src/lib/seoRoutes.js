@@ -4,7 +4,7 @@ export const routes = [
   {
     path: "",
     title: "Best Website Designer in Mulund, Mumbai & Nearby Areas | SiteNova",
-    description: "SiteNova builds SEO-ready, mobile-first websites for businesses in Mulund, Mumbai, and nearby areas like Bhandup, Nahur, Thane, Ghatkopar, and Powai.",
+    description: "Is your website losing you customers? SiteNova builds fast, custom websites for businesses in Mulund, Mumbai — SEO-ready, mobile-first, and delivered in 7–14 days. From ₹10,000.",
     keywords: "best website designer in Mulund, website designer in Mumbai, website design Mulund, web development Mulund, SEO friendly website designer",
     sitemapPriority: "1.0",
     sitemapChangefreq: "weekly",
@@ -156,6 +156,43 @@ export const routes = [
         "url": `${SITE_URL}/`
       },
       "areaServed": "Mumbai"
+    }
+  },
+  {
+    path: "location/mulund",
+    title: "Best Website Designer in Mulund, Mumbai | SiteNova",
+    description: "SiteNova is based in Mulund, Mumbai — building fast, custom websites for local businesses on LBS Road, Mulund West, and Mulund East. SEO-ready, mobile-first, delivered in 7–14 days.",
+    keywords: "website designer in Mulund, web design Mulund, best website designer in Mulund, website developer Mulund Mumbai, local SEO Mulund, web design agency Mulund",
+    sitemapPriority: "0.95",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": ["LocalBusiness", "ProfessionalService"],
+      "name": "SiteNova Web Design - Mulund",
+      "url": `${SITE_URL}/location/mulund`,
+      "telephone": "+91-9326060621",
+      "email": "kavishganatra5@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Mulund",
+        "addressRegion": "Maharashtra",
+        "postalCode": "400080",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 19.1726,
+        "longitude": 72.9570
+      },
+      "hasMap": "https://share.google/Y6mq6VLzTQj9zN4kr",
+      "areaServed": ["Mulund West", "Mulund East", "Nahur", "Bhandup", "Vikhroli", "LBS Road"],
+      "serviceType": "Website design and web development",
+      "priceRange": "₹10,000+",
+      "sameAs": [
+        "https://share.google/Y6mq6VLzTQj9zN4kr",
+        "https://www.clutch.co/profile/sitenova",
+        "https://techbehemoths.com/company/sitenova"
+      ]
     }
   },
   {
@@ -578,6 +615,51 @@ export const routes = [
       "description": "Authority-building, lead-generating websites for consultants, business coaches, and advisors in Mumbai with expertise pages, booking integration, and thought leadership blogs.",
       "url": `${SITE_URL}/websites-for-consultants`,
       "serviceType": "Consulting Website Design"
+    }
+  },
+  {
+    path: "about",
+    title: "About SiteNova | Web Design Studio in Mumbai",
+    description: "SiteNova is a custom web design and development studio founded by Kavish Ganatra in Mulund, Mumbai. We write bespoke React and Next.js code for high-performance websites.",
+    keywords: "about SiteNova, Kavish Ganatra, web design agency Mumbai, custom web development Mumbai, SiteNova dev",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "name": "About SiteNova",
+      "url": `${SITE_URL}/about`,
+      "description": "About SiteNova web design studio in Mumbai."
+    }
+  },
+  {
+    path: "our-process",
+    title: "Our Web Design Process | SiteNova Mumbai",
+    description: "Learn how SiteNova builds high-performance, custom-coded React websites. From discovery and UI design to development and SEO optimization.",
+    keywords: "web design process, custom web development process, SiteNova process, website development phases",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Our Web Design Process",
+      "url": `${SITE_URL}/our-process`,
+      "description": "Learn about our end-to-end custom web design process."
+    }
+  },
+  {
+    path: "why-us",
+    title: "Why Choose SiteNova for Web Design in Mumbai? | SiteNova",
+    description: "Why choose SiteNova? We hand-code our websites in React for 95+ PageSpeed scores, optimized for AI Search (GEO) and local SEO.",
+    keywords: "why choose SiteNova, custom vs template website, best web development agency Mumbai, fast loading websites",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Why Choose SiteNova",
+      "url": `${SITE_URL}/why-us`,
+      "description": "Why we are the best choice for custom web development in Mumbai."
     }
   }
 ];

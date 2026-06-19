@@ -145,7 +145,7 @@ async function prerender() {
 
   // Generate sitemap.xml
   const today = new Date().toISOString().split("T")[0];
-  let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+  let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"\n        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`;
 
   routes.forEach((route) => {
     const loc = route.path ? `${SITE_URL}/${route.path}` : `${SITE_URL}/`;
@@ -154,6 +154,20 @@ async function prerender() {
     sitemapContent += `    <lastmod>${today}</lastmod>\n`;
     sitemapContent += `    <changefreq>${route.sitemapChangefreq}</changefreq>\n`;
     sitemapContent += `    <priority>${route.sitemapPriority}</priority>\n`;
+    if (route.path && route.path.startsWith("blog/")) {
+      const pubDate = route.jsonLd?.datePublished ? route.jsonLd.datePublished.split("T")[0] : today;
+      const safeTitle = (route.title || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      // For SEO news parsing, the title should just be the article name, so we can strip " | SiteNova Blog" if present
+      const cleanTitle = safeTitle.replace(" | SiteNova Blog", "");
+      sitemapContent += `    <news:news>\n`;
+      sitemapContent += `      <news:publication>\n`;
+      sitemapContent += `        <news:name>SiteNova Blog</news:name>\n`;
+      sitemapContent += `        <news:language>en</news:language>\n`;
+      sitemapContent += `      </news:publication>\n`;
+      sitemapContent += `      <news:publication_date>${pubDate}</news:publication_date>\n`;
+      sitemapContent += `      <news:title>${cleanTitle}</news:title>\n`;
+      sitemapContent += `    </news:news>\n`;
+    }
     sitemapContent += `  </url>\n`;
   });
 

@@ -59,4 +59,19 @@ export const faqs = [
     answer:
       "Unlike a generic freelancer using Wix, WordPress, or Squarespace templates, SiteNova writes fully custom code using React and Next.js for every project. This results in significantly faster load times (90+ PageSpeed), better Google rankings, unique designs that precisely match the client's brand, and long-term code maintainability. SiteNova also includes structured Schema.org data, Generative Engine Optimisation (GEO) signals, and Core Web Vitals tuning as standard — ensuring the client's website appears not just in traditional search but also in AI-powered results like Google AI Mode and Perplexity.",
   },
+  {
+    question: "What is the difference between a template website and a custom website?",
+    answer:
+      "A template website (such as Wix, Squarespace, or a WordPress theme) is a pre-built design that thousands of businesses share. They load slowly, rank poorly on Google, and cannot be uniquely tailored to your brand. A custom website — like those SiteNova builds — is coded from scratch using React or Next.js. This means it is uniquely designed for your business, loads 2–3× faster than a template site, achieves 90+ PageSpeed scores, and is built with technical SEO baked in from day one. For businesses in Mumbai looking to rank on Google and generate leads, a custom website is a significantly better long-term investment.",
+  },
+  {
+    question: "Do I need a budget approved before contacting SiteNova?",
+    answer:
+      "Not at all. You are welcome to contact SiteNova at any stage — even if you are still researching options. However, having a rough budget in mind helps us recommend the right package. Business websites at SiteNova start from ₹12,000 for standard multi-page sites. If you have a budget of ₹15,000–₹35,000, we can build a fully custom, SEO-optimised site with all the features your business needs. For larger or more complex projects, we provide a custom quote based on your exact requirements.",
+  },
+  {
+    question: "Does SiteNova offer ongoing website maintenance and support?",
+    answer:
+      "Yes. SiteNova offers ongoing maintenance and support packages for clients who want their website kept updated, secure, and performing. This includes content updates, performance monitoring, speed optimisation, SEO adjustments, and adding new pages or features. Maintenance plans are available on a monthly retainer basis, or you can request one-off updates as needed. All websites built by SiteNova are fully handed over with source code and hosting access — you are never locked in to a proprietary platform.",
+  },
 ];
