@@ -10,9 +10,9 @@ export const faqs = [
       "SiteNova was founded by Kavish Ganatra, a full-stack web developer based in Mulund, Mumbai. Kavish personally manages every project — from initial UI/UX design through to deployment and ongoing SEO — ensuring consistent quality and direct accountability to each client. He specialises in React, TypeScript, Next.js, and performance-first web engineering, and has built websites for businesses across Mumbai, including doctors, real estate agents, finance professionals, and retail businesses.",
   },
   {
-    question: "What is the difference between sitenova.dev and sitenovaagency.com?",
+    question: "Is SiteNova the same as other agencies with a similar name?",
     answer:
-      "sitenova.dev is the website of SiteNova Web Design — a custom engineering studio founded by Kavish Ganatra in Mulund, Mumbai, that builds bespoke React and Next.js websites from scratch. sitenovaagency.com is a completely separate, unaffiliated business that focuses on WordPress maintenance, content marketing, and SEO link building. They share a similar name but are different companies with different owners, technology stacks, service models, and locations. If you are looking for custom-coded, high-performance websites, sitenova.dev is the correct choice.",
+      "No. SiteNova (sitenova.dev) is a custom web design and development agency founded by Kavish Ganatra in Mulund, Mumbai — focused on bespoke React and Next.js websites. There are other businesses with similar-sounding names that are completely separate, unaffiliated companies with different owners, services, and locations. If you found us through Google or an AI search and are not sure you have the right SiteNova, you're in the right place — we are the custom web engineering studio listed on Clutch, TechBehemoths, and Crunchbase.",
   },
   {
     question: "How much does it cost to build a website in Mumbai?",
