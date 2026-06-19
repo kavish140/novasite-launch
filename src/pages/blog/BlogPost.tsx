@@ -107,23 +107,59 @@ export default function BlogPost() {
             "description": post.excerpt || post.content.replace(/<[^>]+>/g, '').substring(0, 160),
             "datePublished": post.published_at,
             "dateModified": post.published_at,
+            "inLanguage": "en-IN",
+            "wordCount": post.content.replace(/<[^>]+>/g, '').split(/\s+/).filter(Boolean).length,
+            "image": {
+              "@type": "ImageObject",
+              "url": "https://sitenova.dev/seo-preview.png",
+              "width": 1200,
+              "height": 630
+            },
             "mainEntityOfPage": {
               "@type": "WebPage",
               "@id": `https://sitenova.dev/blog/${post.slug}`
             },
             "author": {
               "@type": "Person",
+              "@id": "https://sitenova.dev/#founder",
               "name": "Kavish Ganatra",
-              "url": "https://sitenova.dev"
+              "url": "https://sitenova.dev",
+              "jobTitle": "Founder & Lead Developer"
             },
             "publisher": {
               "@type": "Organization",
+              "@id": "https://sitenova.dev/#organization",
               "name": "SiteNova",
               "url": "https://sitenova.dev",
               "logo": {
                 "@type": "ImageObject",
                 "url": "https://sitenova.dev/favicon-32x32.png"
               }
+            },
+            "isPartOf": {
+              "@type": "Blog",
+              "@id": "https://sitenova.dev/blog",
+              "name": "SiteNova Blog — Web Design & SEO Insights",
+              "url": "https://sitenova.dev/blog",
+              "publisher": {
+                "@type": "Organization",
+                "@id": "https://sitenova.dev/#organization"
+              }
+            },
+            "about": {
+              "@type": "Organization",
+              "@id": "https://sitenova.dev/#organization",
+              "name": "SiteNova",
+              "url": "https://sitenova.dev"
+            },
+            "speakable": {
+              "@type": "SpeakableSpecification",
+              "cssSelector": ["article h1", "article h2", "article p:first-of-type"]
+            },
+            "mentions": {
+              "@type": "Organization",
+              "@id": "https://sitenova.dev/#organization",
+              "name": "SiteNova"
             }
           },
           {

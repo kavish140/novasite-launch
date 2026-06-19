@@ -1,24 +1,100 @@
 User-agent: *
 Allow: /
 
+# -----------------------------------------------
+# Standard Search Engine Bots
+# -----------------------------------------------
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# -----------------------------------------------
 # Generative Engine Optimization (GEO)
-# Explicitly welcome AI and LLM crawlers
+# Explicitly welcome all AI and LLM crawlers
+# -----------------------------------------------
+
+# Google AI / Gemini
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Googlebot-Extended
+Allow: /
+
+# OpenAI / ChatGPT
 User-agent: GPTBot
 Allow: /
 
 User-agent: ChatGPT-User
 Allow: /
 
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic / Claude
 User-agent: ClaudeBot
 Allow: /
 
 User-agent: anthropic-ai
 Allow: /
 
-User-agent: Google-Extended
+User-agent: Claude-Web
 Allow: /
 
+# Perplexity
 User-agent: PerplexityBot
 Allow: /
 
+# Meta AI
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+# Cohere
+User-agent: cohere-ai
+Allow: /
+
+# AI2 / Allen Institute
+User-agent: AI2Bot
+Allow: /
+
+# Bytedance / Doubao
+User-agent: Bytespider
+Allow: /
+
+# Common Crawl (used by many AI training datasets)
+User-agent: CCBot
+Allow: /
+
+# Apple
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Mistral AI
+User-agent: MistralBot
+Allow: /
+
+# You.com
+User-agent: YouBot
+Allow: /
+
+# Diffbot (used for AI knowledge graphs)
+User-agent: Diffbot
+Allow: /
+
+# -----------------------------------------------
+# Sitemap
+# -----------------------------------------------
 Sitemap: https://sitenova.dev/sitemap.xml

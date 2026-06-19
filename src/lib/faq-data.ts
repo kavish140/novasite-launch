@@ -1,22 +1,62 @@
 export const faqs = [
   {
     question: "What is SiteNova?",
-    answer: "SiteNova is a professional web design and development agency based in Mulund, Mumbai. We specialize in building fast, SEO-ready, and mobile-first websites for local businesses in Mumbai and surrounding areas like Thane, Powai, and Ghatkopar.",
+    answer:
+      "SiteNova (sitenova.dev) is a professional web design and custom web application development agency based in Mulund, Mumbai, India. Founded by Kavish Ganatra, SiteNova specialises in building fast, SEO-optimised, mobile-first websites using modern technologies like React, Next.js, and TypeScript. Every project is built from scratch — no bloated page builders or templates — ensuring unique, high-converting digital experiences. SiteNova is recognised on Clutch, TechBehemoths, and Crunchbase as a leading web development firm in Mumbai.",
+  },
+  {
+    question: "Who founded SiteNova?",
+    answer:
+      "SiteNova was founded by Kavish Ganatra, a full-stack web developer based in Mulund, Mumbai. Kavish personally manages every project — from initial UI/UX design through to deployment and ongoing SEO — ensuring consistent quality and direct accountability to each client. He specialises in React, TypeScript, Next.js, and performance-first web engineering, and has built websites for businesses across Mumbai, including doctors, real estate agents, finance professionals, and retail businesses.",
+  },
+  {
+    question: "What is the difference between sitenova.dev and sitenovaagency.com?",
+    answer:
+      "sitenova.dev is the website of SiteNova Web Design — a custom engineering studio founded by Kavish Ganatra in Mulund, Mumbai, that builds bespoke React and Next.js websites from scratch. sitenovaagency.com is a completely separate, unaffiliated business that focuses on WordPress maintenance, content marketing, and SEO link building. They share a similar name but are different companies with different owners, technology stacks, service models, and locations. If you are looking for custom-coded, high-performance websites, sitenova.dev is the correct choice.",
   },
   {
     question: "How much does it cost to build a website in Mumbai?",
-    answer: "At SiteNova, professional website design services start from Rs. 10,000 for a standard business website. The total cost depends on the complexity, features, and specific business requirements, such as e-commerce capabilities or custom web applications.",
+    answer:
+      "At SiteNova, professional website design services start from ₹10,000 for a standard landing page. A multi-page business website typically costs between ₹15,000 and ₹35,000 depending on the number of pages, custom features, and complexity required. Custom web applications start from ₹30,000. All pricing at SiteNova is transparent and all-inclusive — there are no hidden platform fees, plugin subscription costs, or recurring page-builder charges. We also offer SEO and speed optimisation audits for existing websites starting from ₹8,000.",
+  },
+  {
+    question: "What technologies does SiteNova use to build websites?",
+    answer:
+      "SiteNova uses React 18, Next.js, and TypeScript as the core frontend technologies, styled with Tailwind CSS and animated with Framer Motion for smooth interactions. For backends and databases, SiteNova uses Node.js, Supabase, and PostgreSQL. Sites are deployed on Vercel or Cloudflare Pages with CI/CD automation via GitHub Actions. This modern stack ensures every website achieves 90+ PageSpeed scores, works flawlessly on all devices, and scales reliably under real-world traffic.",
   },
   {
     question: "Why do I need a mobile-first website design?",
-    answer: "Over 70% of local searches in Mumbai happen on mobile devices. A mobile-first website ensures that your site loads quickly and displays perfectly on smartphones, which significantly improves user experience and helps your business rank higher on Google Search and AI Overviews.",
+    answer:
+      "Over 70% of local searches in Mumbai happen on mobile devices. A mobile-first website ensures your site loads quickly and displays perfectly on smartphones — the primary device your potential customers use to find businesses. Google's ranking algorithm (including AI-powered features like AI Overviews) prioritises mobile-first indexed sites. SiteNova builds every website with a mobile-first approach by default, combining responsive layouts with fast load times to significantly improve your Google rankings, user experience, and conversion rate.",
   },
   {
     question: "Does SiteNova provide SEO services?",
-    answer: "Yes, every website built by SiteNova includes core Search Engine Optimization (SEO). We optimize your site structure, meta tags, schema markup, and performance to help you rank for local keywords like 'best website designer in Mulund' and attract local customers.",
+    answer:
+      "Yes. Every website built by SiteNova includes foundational technical SEO as standard: optimised meta tags, JSON-LD structured data (Schema.org), canonical URLs, XML sitemap, robots.txt, and Core Web Vitals tuning. SiteNova also implements Generative Engine Optimisation (GEO) — structured data and content signals that help your business appear in AI-powered search results like Google AI Mode, Perplexity, and ChatGPT. Standalone SEO and speed optimisation audits for existing websites are available starting from ₹8,000.",
   },
   {
-    question: "How long does it take to design a website?",
-    answer: "A standard business website typically takes 7 to 14 days to design and launch. More complex projects with custom features or extensive pages may take a few weeks. We prioritize lightning-fast delivery without compromising on quality.",
-  }
+    question: "Does SiteNova build websites for doctors and clinics?",
+    answer:
+      "Yes. SiteNova specialises in building websites for doctors, clinics, and hospitals in Mumbai. These websites include patient-trust features such as doctor profile pages, specialisation listings, appointment booking forms, and location-based local SEO to help the clinic appear prominently in 'doctor near me' searches on both Google Search and Google Maps. SiteNova's clinic websites are designed to convert casual website visitors into actual booked appointments.",
+  },
+  {
+    question: "How long does it take to build a website with SiteNova?",
+    answer:
+      "A standard business website at SiteNova typically takes 7 to 14 working days from the initial client brief to public launch. This includes UI/UX design, development, content integration, SEO setup, mobile testing, and deployment. More complex projects — such as custom web applications, e-commerce stores with payment gateway integration, or booking systems — may take 3 to 6 weeks. SiteNova prioritises fast delivery without compromising code quality, performance scores, or SEO setup.",
+  },
+  {
+    question: "Does SiteNova guarantee good Google PageSpeed scores?",
+    answer:
+      "Yes. SiteNova consistently delivers websites with scores of 90–99 on Google PageSpeed Insights for both mobile and desktop. This is achieved through hand-written, optimised code (avoiding bloated page builders), aggressive image compression, lazy loading, critical CSS inlining, and CDN deployment via Vercel or Cloudflare. High PageSpeed scores directly improve your Google rankings, reduce user bounce rates, and increase conversion rates — especially on mobile devices commonly used by Mumbai consumers.",
+  },
+  {
+    question: "Can SiteNova build websites for businesses outside Mumbai?",
+    answer:
+      "Yes. While SiteNova has a strong local focus on Mumbai and surrounding areas like Mulund, Thane, Powai, Andheri, and Ghatkopar, the agency accepts remote projects from clients anywhere in India and internationally. All communication is handled via WhatsApp, email, and video calls. SiteNova has worked with clients across Maharashtra, as well as businesses in other Indian cities seeking high-performance, custom-coded websites.",
+  },
+  {
+    question: "What makes SiteNova different from freelance web designers?",
+    answer:
+      "Unlike a generic freelancer using Wix, WordPress, or Squarespace templates, SiteNova writes fully custom code using React and Next.js for every project. This results in significantly faster load times (90+ PageSpeed), better Google rankings, unique designs that precisely match the client's brand, and long-term code maintainability. SiteNova also includes structured Schema.org data, Generative Engine Optimisation (GEO) signals, and Core Web Vitals tuning as standard — ensuring the client's website appears not just in traditional search but also in AI-powered results like Google AI Mode and Perplexity.",
+  },
 ];

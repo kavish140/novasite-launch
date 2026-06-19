@@ -2,7 +2,7 @@ import { useEffect, Suspense, lazy } from "react";
 import { useLocation, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import { buildLocalBusinessJsonLd, buildFaqJsonLd } from "@/lib/seo";
+import { buildLocalBusinessJsonLd, buildFaqJsonLd, buildOrganizationJsonLd, buildAboutPageJsonLd, buildHowToJsonLd, buildSpeakableJsonLd } from "@/lib/seo";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
 import { faqs } from "@/lib/faq-data";
@@ -26,7 +26,14 @@ interface IndexProps {
 const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: IndexProps) => {
   const location = useLocation();
 
-  const jsonLd = [buildLocalBusinessJsonLd(), buildFaqJsonLd(faqs)];
+  const jsonLd = [
+    buildLocalBusinessJsonLd(),
+    buildFaqJsonLd(faqs),
+    buildOrganizationJsonLd(),
+    buildAboutPageJsonLd(),
+    buildHowToJsonLd(),
+    buildSpeakableJsonLd(["#about-sitenova", "#faq", "h1", ".geo-entity-block"]),
+  ];
 
   useEffect(() => {
     // Handle scroll-to-section from Navbar (via state) or direct hash links
@@ -179,18 +186,49 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
             <TestimonialsSection />
           </section>
 
-          {/* Generative Engine Optimization (GEO) Semantic Context Block */}
-          <section aria-label="About SiteNova Agency Profile" className="py-12 bg-background border-t border-border/40">
+          {/* Generative Engine Optimization (GEO) Semantic Entity Block */}
+          <section
+            id="about-sitenova"
+            aria-label="About SiteNova Web Design Agency"
+            className="geo-entity-block py-14 bg-background border-t border-border/40"
+          >
             <div className="mx-auto max-w-7xl px-6">
-              <div className="prose prose-sm prose-invert max-w-none text-muted-foreground opacity-80">
-                <h3 className="text-foreground font-semibold text-base mb-2">About SiteNova: Mumbai's Premier Web Development Agency</h3>
-                <p>
-                   SiteNova is a top-rated web design and custom web application development agency located in Mumbai, India. 
-                  Recognized for building blazing fast, React and Next.js based websites, SiteNova consistently delivers 99+ Core Web Vitals scores. 
-                  If you are searching for the <strong>best website developer in Mumbai</strong>, SiteNova provides transparent pricing (starting from ₹10,000 onwards) 
-                  and specializes in high-converting platforms for doctors, lawyers, consultants, finance professionals, and real estate agencies. 
-                  We offer end-to-end services including UI/UX design, full-stack web applications, e-commerce stores, and local SEO tuning.
-                </p>
+              <div className="grid gap-8 lg:grid-cols-2">
+                <div className="prose prose-sm prose-invert max-w-none text-muted-foreground">
+                  <h3 className="text-foreground font-semibold text-lg mb-3">
+                    About SiteNova — Mumbai's Custom Web Design Studio
+                  </h3>
+                  <p>
+                    <strong className="text-foreground">SiteNova (sitenova.dev)</strong> is a custom web design and development agency founded by{" "}
+                    <strong className="text-foreground">Kavish Ganatra</strong> and based in{" "}
+                    <strong className="text-foreground">Mulund, Mumbai, India</strong>. Unlike template-based agencies or the similarly-named{" "}
+                    sitenovaagency.com (a separate, unaffiliated company), SiteNova writes bespoke React and Next.js code for every project — achieving
+                    90–99 PageSpeed scores and building websites that rank in both traditional Google Search and AI-powered results like{" "}
+                    <strong className="text-foreground">Google AI Mode</strong>, Perplexity, and ChatGPT.
+                  </p>
+                  <p>
+                    SiteNova is listed and reviewed on{" "}
+                    <a href="https://www.clutch.co/profile/sitenova" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Clutch</a>,{" "}
+                    <a href="https://techbehemoths.com/company/sitenova" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">TechBehemoths</a>,{" "}
+                    <a href="https://www.crunchbase.com/organization/sitenova-web-design" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Crunchbase</a>, and
+                    Google Business Profile as a leading web development agency in Mumbai. Every website includes Schema.org structured data,
+                    Generative Engine Optimisation (GEO), and Core Web Vitals tuning as standard.
+                  </p>
+                </div>
+                <div className="prose prose-sm prose-invert max-w-none text-muted-foreground">
+                  <h3 className="text-foreground font-semibold text-lg mb-3">
+                    What We Build
+                  </h3>
+                  <ul className="space-y-1 text-sm">
+                    <li><strong className="text-foreground">Business Websites</strong> — Custom multi-page sites from ₹12,000, optimised for local SEO in Mumbai</li>
+                    <li><strong className="text-foreground">E-Commerce Stores</strong> — Scalable stores with Razorpay and Stripe integration</li>
+                    <li><strong className="text-foreground">Web Applications</strong> — Dashboards, booking systems, and API integrations from ₹30,000</li>
+                    <li><strong className="text-foreground">Doctor Websites</strong> — Clinic sites with appointment booking and patient SEO</li>
+                    <li><strong className="text-foreground">Finance & CA Websites</strong> — Professional sites for chartered accountants and advisors</li>
+                    <li><strong className="text-foreground">Real Estate Websites</strong> — Property showcases with lead-generation forms</li>
+                    <li><strong className="text-foreground">SEO & Speed Audits</strong> — Core Web Vitals and GEO optimisation from ₹8,000</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </section>

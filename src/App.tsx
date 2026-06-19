@@ -42,6 +42,9 @@ const AdminBlogEditor = lazy(() => import("./pages/admin/AdminBlogEditor"));
 const RealEstate = lazy(() => import("./pages/niche/RealEstate"));
 const Consultants = lazy(() => import("./pages/niche/Consultants"));
 const Lawyers = lazy(() => import("./pages/niche/Lawyers"));
+const About = lazy(() => import("./pages/About"));
+const OurProcess = lazy(() => import("./pages/OurProcess"));
+const WhyUs = lazy(() => import("./pages/WhyUs"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
 import { LazyMotion, AnimatePresence } from "framer-motion";
@@ -117,6 +120,9 @@ const AnimatedRoutes = () => {
         <Route path="/websites-for-real-estate" element={<RealEstate />} />
         <Route path="/websites-for-consultants" element={<Consultants />} />
         <Route path="/websites-for-lawyers" element={<Lawyers />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/our-process" element={<OurProcess />} />
+        <Route path="/why-us" element={<WhyUs />} />
         {/* Redirect for typo */}
         <Route path="/location/peddar-road" element={<Navigate to="/location/pedder-road" replace />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

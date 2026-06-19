@@ -73,6 +73,19 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* Company */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold mb-4">Company</h4>
+            <ul className="space-y-2.5">
+              <li><Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About SiteNova</Link></li>
+              <li><Link to="/our-process" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Our Process</Link></li>
+              <li><Link to="/why-us" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Why Choose Us</Link></li>
+              <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
+              <li><Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
+              <li><Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Free Audit</Link></li>
+            </ul>
+          </div>
+
           {/* Contact */}
           <div>
             <h4 className="font-heading text-sm font-semibold mb-4">Get in Touch</h4>
@@ -107,6 +120,9 @@ const Footer = () => {
           </p>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <Link to="/contact-us" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link>
+            <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors">About</Link>
+            <Link to="/our-process" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Our Process</Link>
+            <Link to="/why-us" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Why Us</Link>
             <a href={EMAIL_COMPOSE_LINK} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Email</a>
             <a href={PHONE_TEL_LINK} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Call Us</a>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">WhatsApp</a>
