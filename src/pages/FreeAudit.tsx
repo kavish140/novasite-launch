@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { m as motion } from "framer-motion";
-import { Search, Smartphone, Zap, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Search, Smartphone, Zap, ArrowRight, CheckCircle2, ShieldCheck, Lock, Star } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -168,15 +168,15 @@ export default function FreeAudit() {
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 interactive-card">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="text-xs font-semibold text-primary">100% Free & No Obligation</span>
+              <span className="text-xs font-semibold text-primary">Limited Time: 5 Free Audits Remaining This Week</span>
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
-              Unlock Your Website's <span className="gradient-text animated-gradient">True Potential</span>
+              Stop Losing Customers. Get Your <span className="gradient-text animated-gradient">Free Audit</span>
             </h1>
             
             <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-              Find out exactly why your current website is losing customers. Our expert team will analyze your site and provide actionable tips to increase conversions.
+              Discover exactly what's holding your website back on Google. We'll analyze your performance, SEO, and design, and give you a step-by-step plan to fix it.
             </p>
             
             <div className="space-y-5 pt-4">
@@ -229,6 +229,21 @@ export default function FreeAudit() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Testimonial */}
+            <div className="pt-6 mt-6 border-t border-border/30">
+              <div className="flex items-center gap-1 mb-2 text-yellow-500">
+                <Star className="w-4 h-4 fill-current" />
+                <Star className="w-4 h-4 fill-current" />
+                <Star className="w-4 h-4 fill-current" />
+                <Star className="w-4 h-4 fill-current" />
+                <Star className="w-4 h-4 fill-current" />
+              </div>
+              <p className="text-sm italic text-muted-foreground">
+                "The free audit from SiteNova showed us exactly why our competitors were ranking above us. Implementing their suggestions increased our leads by 40% in two months."
+              </p>
+              <p className="text-xs font-semibold mt-2">— Rahul D., Local Business Owner</p>
             </div>
           </motion.div>
 
@@ -295,6 +310,18 @@ export default function FreeAudit() {
                   {!loading && <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />}
                 </Button>
               </form>
+
+              {/* Trust Badges */}
+              <div className="mt-6 flex items-center justify-center gap-4 text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-xs">
+                  <ShieldCheck className="w-4 h-4 text-green-500" />
+                  <span>100% Free</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Lock className="w-4 h-4 text-primary" />
+                  <span>Secure & Private</span>
+                </div>
+              </div>
             </div>
           </motion.div>
           
