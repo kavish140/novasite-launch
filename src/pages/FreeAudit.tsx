@@ -67,7 +67,12 @@ export default function FreeAudit() {
 
       if (error) throw error;
       
-      navigate("/thank-you", { state: { name, projectType: "Free Audit", email } });
+      toast({
+        title: "Request Received",
+        description: "We'll review your website and get back to you shortly!",
+      });
+      
+      (e.target as HTMLFormElement).reset();
     } catch (error: unknown) {
       console.error(error);
       const errorMessage = error instanceof Error ? error.message : "Failed to submit request. Please try again later.";
