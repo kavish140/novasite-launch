@@ -159,25 +159,40 @@ export default function FreeAudit() {
         <div className="absolute top-1/4 left-0 w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full bg-accent/10 blur-[120px] pointer-events-none" />
         
-        <div className="relative z-10 mx-auto max-w-6xl px-6 sm:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
-          
-          {/* Left Side: Value Prop */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-8"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 interactive-card">
+        <div className="flex flex-col w-full">
+          {/* Mobile Header (Hidden on Desktop) */}
+          <div className="relative z-10 mx-auto max-w-md px-6 w-full mb-10 text-center lg:hidden">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 mb-6">
+              <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+              <span className="text-[10px] sm:text-xs font-semibold text-primary">Limited Time: 5 Free Audits Remaining This Week</span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-4">
+              Stop Losing Customers. Get Your <span className="gradient-text animated-gradient">Free Audit</span>
+            </h1>
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Discover exactly what's holding your website back on Google. We'll analyze your performance, SEO, and design, and give you a step-by-step plan to fix it.
+            </p>
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6 sm:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-start">
+            
+            {/* Left Side: Value Prop */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="space-y-8 order-2 lg:order-1"
+            >
+            <div className="hidden lg:inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 interactive-card">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
               <span className="text-xs font-semibold text-primary">Limited Time: 5 Free Audits Remaining This Week</span>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
+            <h1 className="hidden lg:block text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
               Stop Losing Customers. Get Your <span className="gradient-text animated-gradient">Free Audit</span>
             </h1>
             
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
+            <p className="hidden lg:block text-lg text-muted-foreground leading-relaxed max-w-lg">
               Discover exactly what's holding your website back on Google. We'll analyze your performance, SEO, and design, and give you a step-by-step plan to fix it.
             </p>
             
@@ -254,7 +269,7 @@ export default function FreeAudit() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="w-full max-w-md mx-auto lg:ml-auto lg:mr-0 relative flex flex-col gap-8"
+            className="w-full max-w-md mx-auto lg:ml-auto lg:mr-0 relative flex flex-col gap-8 order-1 lg:order-2"
           >
             {/* Highly Prominent Quote Banner */}
             <div 
@@ -349,6 +364,7 @@ export default function FreeAudit() {
             </div>
           </motion.div>
           
+        </div>
         </div>
       </main>
       
