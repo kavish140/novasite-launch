@@ -54,8 +54,8 @@ const ThankYou = () => {
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
                 Thank you, <span className="text-foreground font-semibold">{name}</span>! We have
-                received your scoping details for your <span className="text-foreground font-semibold">{projectType}</span>. 
-                A quote summary is being sent to <span className="text-foreground font-semibold">{email}</span>.
+                received your {projectType === "Free Audit" ? "request" : "scoping details"} for your <span className="text-foreground font-semibold">{projectType}</span>. 
+                {projectType === "Free Audit" ? " Our team will review your site and get back" : " A quote summary is being sent"} to <span className="text-foreground font-semibold">{email}</span>.
               </p>
               <p className="text-muted-foreground text-xs">
                 We typically respond within 24 hours. For the fastest booking, choose an option below:

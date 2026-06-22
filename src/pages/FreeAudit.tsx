@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { m as motion } from "framer-motion";
 import { Search, Smartphone, Zap, ArrowRight, CheckCircle2, ShieldCheck, Lock, Star } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -21,6 +22,7 @@ import { supabase } from "@/lib/supabaseClient";
 export default function FreeAudit() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -65,12 +67,7 @@ export default function FreeAudit() {
 
       if (error) throw error;
       
-      toast({
-        title: "Request Received",
-        description: "We'll review your website and get back to you shortly!",
-      });
-      
-      (e.target as HTMLFormElement).reset();
+      navigate("/thank-you", { state: { name, projectType: "Free Audit", email } });
     } catch (error: unknown) {
       console.error(error);
       const errorMessage = error instanceof Error ? error.message : "Failed to submit request. Please try again later.";
