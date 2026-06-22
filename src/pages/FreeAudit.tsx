@@ -249,15 +249,35 @@ export default function FreeAudit() {
             </div>
           </motion.div>
 
-          {/* Right Side: Form */}
+          {/* Right Side: Form & Upsell */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="w-full max-w-md mx-auto lg:ml-auto lg:mr-0 relative"
+            className="w-full max-w-md mx-auto lg:ml-auto lg:mr-0 relative flex flex-col gap-8"
           >
-            {/* Glowing border effect */}
-            <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/30 to-accent/30 rounded-3xl blur opacity-50" />
+            {/* Highly Prominent Quote Banner */}
+            <div 
+              onClick={() => navigate("/quote")}
+              className="group relative overflow-hidden rounded-3xl p-[2px] cursor-pointer hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 transform hover:-translate-y-1"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary opacity-80" />
+              <div className="relative bg-card rounded-[22px] p-7 text-center h-full flex flex-col items-center justify-center">
+                <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />
+                <h3 className="font-bold text-2xl mb-2 flex items-center gap-2">
+                  <Zap className="w-6 h-6 text-yellow-500 fill-current" />
+                  Ready to build?
+                </h3>
+                <p className="text-sm text-muted-foreground mb-6">Skip the free audit. Tell us what you need and get a custom quote instantly.</p>
+                <Button className="w-full font-bold shadow-lg text-base h-14" size="lg">
+                  Get A Free Quote <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative">
+              {/* Glowing border effect */}
+              <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/30 to-accent/30 rounded-3xl blur opacity-50" />
             
             <div className="relative bg-card/80 backdrop-blur-xl border border-border/60 rounded-3xl p-8 shadow-2xl">
               <div className="mb-8 text-center">
@@ -325,17 +345,6 @@ export default function FreeAudit() {
                 </div>
               </div>
 
-              {/* Quote Upsell */}
-              <div className="mt-8 pt-6 border-t border-border/40 text-center">
-                <p className="text-sm text-muted-foreground mb-3">Already know what you need?</p>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full border-primary/50 text-primary hover:bg-primary/10 transition-colors"
-                  onClick={() => navigate("/quote")}
-                >
-                  Request a Custom Quote
-                </Button>
               </div>
             </div>
           </motion.div>
