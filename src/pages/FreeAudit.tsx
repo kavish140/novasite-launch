@@ -324,6 +324,19 @@ export default function FreeAudit() {
                   <span>Secure & Private</span>
                 </div>
               </div>
+
+              {/* Quote Upsell */}
+              <div className="mt-8 pt-6 border-t border-border/40 text-center">
+                <p className="text-sm text-muted-foreground mb-3">Already know what you need?</p>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full border-primary/50 text-primary hover:bg-primary/10 transition-colors"
+                  onClick={() => navigate("/quote")}
+                >
+                  Request a Custom Quote
+                </Button>
+              </div>
             </div>
           </motion.div>
           
