@@ -4,6 +4,12 @@ import { useEffect } from "react";
 import { m as motion } from "framer-motion";
 import { CheckCircle2, Phone, MessageCircle, ShieldCheck, Globe } from "lucide-react";
 
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+
 const ThankYou = () => {
   const location = useLocation();
   const state = location.state as { name?: string; projectType?: string; email?: string } | null;
@@ -18,6 +24,13 @@ const ThankYou = () => {
       description: "Thank you for your request. We will get back to you shortly.",
       canonicalPath: "/thank-you",
     });
+
+    // Fire Google Ads Conversion
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-18182593308/FLS8CJvM3LscEJy2kd5D'
+      });
+    }
   }, []);
 
   const whatsappMessage = encodeURIComponent(
