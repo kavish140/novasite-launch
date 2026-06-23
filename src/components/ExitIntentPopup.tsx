@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import { trackExitPopupSubmit } from "@/lib/analytics";
+import { trackExitPopupSubmit, trackGoogleAdsConversion } from "@/lib/analytics";
 
 const STORAGE_KEY = "sitenova_exit_popup_shown";
 
@@ -117,6 +117,7 @@ export default function ExitIntentPopup() {
       ]);
 
       trackExitPopupSubmit();
+      trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D"); // Request quote
       setSubmitted(true);
     } catch (err) {
       console.error("Exit popup submit error:", err);

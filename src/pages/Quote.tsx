@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { setPageSeo } from "@/lib/seo";
+import { trackGoogleAdsConversion } from "@/lib/analytics";
 import { m as motion, AnimatePresence } from "framer-motion";
 
 interface ProjectTypeOption {
@@ -169,6 +170,7 @@ const Quote = () => {
         const data = await response.json();
         if (data.success) {
           submitted = true;
+          trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D"); // Request quote
           navigate("/thank-you", { state: { name, projectType, email } });
         } else {
           setSubmitError(data.message || "Failed to submit request. Please try again.");
@@ -185,6 +187,7 @@ const Quote = () => {
           });
           // Request sent successfully — show confirmation
           submitted = true;
+          trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D"); // Request quote
           navigate("/thank-you", { state: { name, projectType, email } });
         } catch (networkErr) {
           console.error("Web3Forms network error:", networkErr);

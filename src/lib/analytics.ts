@@ -69,6 +69,18 @@ export const trackPageView = (path: string, title?: string): void => {
   });
 };
 
+/**
+ * Fire a native Google Ads conversion event.
+ * Uses the base Google Ads tag (AW-18182593308) already in index.html.
+ */
+export const trackGoogleAdsConversion = (conversionLabel: string): void => {
+  if (typeof window !== "undefined" && typeof window.gtag === "function") {
+    window.gtag("event", "conversion", {
+      send_to: `AW-18182593308/${conversionLabel}`,
+    });
+  }
+};
+
 // ── Convenience wrappers (import directly in click handlers) ─────────────────
 
 export const trackWhatsAppClick = (page?: string) =>

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
+import { trackGoogleAdsConversion } from "@/lib/analytics";
 
 export default function FreeAudit() {
   const [loading, setLoading] = useState(false);
@@ -66,6 +67,8 @@ export default function FreeAudit() {
         .insert([{ name, email, mobile, website_url: website }]);
 
       if (error) throw error;
+      
+      trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D"); // Request quote
       
       toast({
         title: "Request Received",
