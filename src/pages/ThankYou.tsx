@@ -1,18 +1,25 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { setPageSeo } from "@/lib/seo";
 import { useEffect } from "react";
 import { m as motion } from "framer-motion";
 import { CheckCircle2, Phone, MessageCircle, ShieldCheck, Globe } from "lucide-react";
+import { trackGoogleAdsConversion } from "@/lib/analytics";
 
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}
 
 const ThankYou = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const state = location.state as { name?: string; projectType?: string; email?: string } | null;
+
+  // Guard: block direct URL access to prevent phantom conversions.
+  // /thank-you is only valid when reached via a form submission (state is populated by React Router).
+  useEffect(() => {
+    if (!state) {
+      navigate("/", { replace: true });
+    }
+  }, [state, navigate]);
+
+  if (!state) return null; // Render nothing while redirecting
 
   const name = state?.name || "there";
   const projectType = state?.projectType || "project";
@@ -25,12 +32,8 @@ const ThankYou = () => {
       canonicalPath: "/thank-you",
     });
 
-    // Fire Google Ads Conversion
-    if (typeof window !== "undefined" && window.gtag) {
-      window.gtag('event', 'conversion', {
-        'send_to': 'AW-18182593308/FLS8CJvM3LscEJy2kd5D'
-      });
-    }
+    // Single, canonical Google Ads conversion fire — only Quote form leads reach this page
+    trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D");
   }, []);
 
   const whatsappMessage = encodeURIComponent(

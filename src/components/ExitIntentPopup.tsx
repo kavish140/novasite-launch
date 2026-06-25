@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import { trackExitPopupSubmit, trackGoogleAdsConversion } from "@/lib/analytics";
+import { trackExitPopupSubmit } from "@/lib/analytics";
 
 const STORAGE_KEY = "sitenova_exit_popup_shown";
+
+// Validation helpers
+const isValidIndianMobile = (num: string): boolean => /^[6-9]\d{9}$/.test(num.replace(/\s+/g, ""));
+const isValidName = (n: string): boolean => /^[a-zA-Z\s]{2,}$/.test(n.trim());
+const isValidEmail = (e: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
 export default function ExitIntentPopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -13,9 +18,12 @@ export default function ExitIntentPopup() {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [industry, setIndustry] = useState("");
+  const [errors, setErrors] = useState<{name?: string; email?: string; whatsapp?: string}>({});
   const location = useLocation();
+  const navigate = useNavigate();
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -101,8 +109,20 @@ export default function ExitIntentPopup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !whatsapp.trim()) return;
 
+    // Strict validation before submitting
+    const newErrors: {name?: string; email?: string; whatsapp?: string} = {};
+    if (!isValidName(name)) newErrors.name = "Please enter your real name (letters only, min 2 characters)";
+    if (!isValidEmail(email)) newErrors.email = "Please enter a valid email address";
+    const cleanPhone = whatsapp.replace(/\s+/g, "");
+    if (!isValidIndianMobile(cleanPhone)) newErrors.whatsapp = "Please enter a valid 10-digit Indian mobile number";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
     setIsSubmitting(true);
     setSubmitError(false);
 
@@ -110,15 +130,21 @@ export default function ExitIntentPopup() {
       await supabase.from("audit_requests").insert([
         {
           name: name.trim(),
-          mobile: whatsapp.trim(),
+          mobile: cleanPhone,
           website_url: `Exit popup lead — Industry: ${industry || "Not specified"}`,
-          email: "exit-popup-lead@sitenova.dev",
+          email: email.trim().toLowerCase(),
         },
       ]);
 
       trackExitPopupSubmit();
-      trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D"); // Request quote
-      setSubmitted(true);
+      handleClose();
+      navigate("/thank-you", {
+        state: {
+          name: name.trim(),
+          projectType: `Quote Request (Exit Popup - ${industry || "Not specified"})`,
+          email: email.trim(),
+        },
+      });
     } catch (err) {
       console.error("Exit popup submit error:", err);
       setSubmitError(true);
@@ -192,22 +218,43 @@ export default function ExitIntentPopup() {
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Your name"
+                        placeholder="Your full name"
                         required
-                        aria-label="Your name"
-                        className="w-full rounded-xl border border-border/80 bg-secondary/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                        aria-label="Your full name"
+                        className={`w-full rounded-xl border bg-secondary/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 transition-all ${
+                          errors.name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-border/80 focus:border-primary focus:ring-primary"
+                        }`}
                       />
+                      {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
+                    </div>
+                    <div>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Your business email"
+                        required
+                        aria-label="Your business email"
+                        className={`w-full rounded-xl border bg-secondary/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 transition-all ${
+                          errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-border/80 focus:border-primary focus:ring-primary"
+                        }`}
+                      />
+                      {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email}</p>}
                     </div>
                     <div>
                       <input
                         type="tel"
                         value={whatsapp}
-                        onChange={(e) => setWhatsapp(e.target.value)}
-                        placeholder="WhatsApp number"
+                        onChange={(e) => setWhatsapp(e.target.value.replace(/[^0-9\s]/g, ""))}
+                        placeholder="10-digit WhatsApp number (e.g. 9820012345)"
                         required
+                        maxLength={10}
                         aria-label="WhatsApp number"
-                        className="w-full rounded-xl border border-border/80 bg-secondary/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                        className={`w-full rounded-xl border bg-secondary/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 transition-all ${
+                          errors.whatsapp ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-border/80 focus:border-primary focus:ring-primary"
+                        }`}
                       />
+                      {errors.whatsapp && <p className="mt-1 text-xs text-red-400">{errors.whatsapp}</p>}
                     </div>
                     <div>
                       <select
@@ -221,7 +268,9 @@ export default function ExitIntentPopup() {
                         <option value="Finance" className="bg-background text-foreground">Finance / CA / Insurance</option>
                         <option value="Real Estate" className="bg-background text-foreground">Real Estate / Property</option>
                         <option value="Retail" className="bg-background text-foreground">Retail / E-commerce</option>
-                        <option value="Education" className="bg-background text-foreground">Education / Coaching</option>
+                        <option value="Restaurant" className="bg-background text-foreground">Restaurant / Food & Beverage</option>
+                        <option value="Manufacturing" className="bg-background text-foreground">Manufacturing / Industrial</option>
+                        <option value="Legal" className="bg-background text-foreground">Legal / Law Firm</option>
                         <option value="Other" className="bg-background text-foreground">Other</option>
                       </select>
                     </div>

@@ -62,9 +62,9 @@ const projectTypes: ProjectTypeOption[] = [
 ];
 
 const budgetOptions = [
-  "Rs. 10,000 - 15,000",
   "Rs. 15,000 - 30,000",
   "Rs. 30,000+",
+  "Rs. 10,000 - 15,000",
   "Flexible / Custom",
 ];
 
@@ -80,7 +80,7 @@ const Quote = () => {
   const [step, setStep] = useState(1);
   const [projectType, setProjectType] = useState("");
   const [requirements, setRequirements] = useState("");
-  const [budget, setBudget] = useState("Rs. 15,000 - 30,000");
+  const [budget, setBudget] = useState("Rs. 15,000 - 30,000"); // Default to mid-tier to attract higher-value B2B leads
   const [timeline, setTimeline] = useState("Normal (2-4 weeks)");
 
   const [name, setName] = useState("");
@@ -170,7 +170,7 @@ const Quote = () => {
         const data = await response.json();
         if (data.success) {
           submitted = true;
-          trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D"); // Request quote
+          // Conversion fires on /thank-you page load — single source of truth
           navigate("/thank-you", { state: { name, projectType, email } });
         } else {
           setSubmitError(data.message || "Failed to submit request. Please try again.");
@@ -187,7 +187,7 @@ const Quote = () => {
           });
           // Request sent successfully — show confirmation
           submitted = true;
-          trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D"); // Request quote
+          // Conversion fires on /thank-you page load — single source of truth
           navigate("/thank-you", { state: { name, projectType, email } });
         } catch (networkErr) {
           console.error("Web3Forms network error:", networkErr);
