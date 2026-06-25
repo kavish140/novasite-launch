@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
@@ -23,7 +23,6 @@ export default function ExitIntentPopup() {
   const [industry, setIndustry] = useState("");
   const [errors, setErrors] = useState<{name?: string; email?: string; whatsapp?: string}>({});
   const location = useLocation();
-  const navigate = useNavigate();
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -137,14 +136,10 @@ export default function ExitIntentPopup() {
       ]);
 
       trackExitPopupSubmit();
-      handleClose();
-      navigate("/thank-you", {
-        state: {
-          name: name.trim(),
-          projectType: `Quote Request (Exit Popup - ${industry || "Not specified"})`,
-          email: email.trim(),
-        },
-      });
+      // Show success state INSIDE the popup — do NOT navigate to /thank-you
+      // (navigating there would fire the Google Ads conversion pixel,
+      //  falsely counting a popup lead as a Quote Form conversion)
+      setSubmitted(true);
     } catch (err) {
       console.error("Exit popup submit error:", err);
       setSubmitError(true);
