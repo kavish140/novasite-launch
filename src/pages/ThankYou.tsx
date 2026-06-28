@@ -19,12 +19,6 @@ const ThankYou = () => {
     }
   }, [state, navigate]);
 
-  if (!state) return null; // Render nothing while redirecting
-
-  const name = state?.name || "there";
-  const projectType = state?.projectType || "project";
-  const email = state?.email || "your email";
-
   useEffect(() => {
     setPageSeo({
       title: "Request Received | SiteNova",
@@ -35,6 +29,12 @@ const ThankYou = () => {
     // Single, canonical Google Ads conversion fire — only Quote form leads reach this page
     trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D");
   }, []);
+
+  if (!state) return null; // Render nothing while redirecting
+
+  const name = state?.name || "there";
+  const projectType = state?.projectType || "project";
+  const email = state?.email || "your email";
 
   const whatsappMessage = encodeURIComponent(
     `Hi Kavish, I just filled out the intake form on SiteNova!`

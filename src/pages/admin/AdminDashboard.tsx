@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { CheckCircle2, RotateCcw, Pencil, Trash2, Plus } from "lucide-react";
+import { CheckCircle2, RotateCcw, Pencil, Trash2, Plus, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type AuditRequest = {
@@ -30,6 +30,51 @@ type BlogPost = {
   title: string;
   slug: string;
   created_at: string;
+};
+
+const PhoneCell = ({ mobile, className }: { mobile: string, className?: string }) => {
+  const { toast } = useToast();
+  const [isLongPress, setIsLongPress] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  if (!mobile) return <span className={className || "text-muted-foreground"}>N/A</span>;
+
+  const startPress = () => {
+    setIsLongPress(false);
+    timerRef.current = setTimeout(() => {
+      setIsLongPress(true);
+      navigator.clipboard.writeText(mobile);
+      toast({ title: "Copied!", description: "Phone number copied to clipboard." });
+    }, 500);
+  };
+
+  const cancelPress = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (isLongPress) {
+      e.preventDefault();
+      setIsLongPress(false);
+    }
+  };
+
+  return (
+    <a
+      href={`tel:${mobile}`}
+      className={`text-primary hover:underline select-none ${className || ''}`}
+      onPointerDown={startPress}
+      onPointerUp={cancelPress}
+      onPointerLeave={cancelPress}
+      onPointerCancel={cancelPress}
+      onClick={handleClick}
+    >
+      {mobile}
+    </a>
+  );
 };
 
 export default function AdminDashboard() {
@@ -113,6 +158,41 @@ export default function AdminDashboard() {
     navigate("/admin");
   };
 
+  const handleExport = () => {
+    if (requests.length === 0) {
+      toast({ title: "No Data", description: "There are no requests to export." });
+      return;
+    }
+
+    const headers = ["Date", "Name", "Email", "Mobile", "Website", "Status"];
+    const csvRows = [headers.join(",")];
+
+    requests.forEach((req) => {
+      const row = [
+        format(new Date(req.created_at), "yyyy-MM-dd HH:mm:ss"),
+        `"${req.name.replace(/"/g, '""')}"`,
+        `"${req.email.replace(/"/g, '""')}"`,
+        `"${(req.mobile || "").replace(/"/g, '""')}"`,
+        `"${req.website_url.replace(/"/g, '""')}"`,
+        req.status
+      ];
+      csvRows.push(row.join(","));
+    });
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `site-nova-leads-${format(new Date(), "yyyy-MM-dd")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast({ title: "Success", description: "Export started successfully." });
+  };
+
   const pendingRequests = requests.filter(r => r.status !== 'completed');
   const completedRequests = requests.filter(r => r.status === 'completed');
 
@@ -141,6 +221,10 @@ export default function AdminDashboard() {
           <div className="flex gap-2">
             <Button onClick={() => { throw new Error("This is a Sentry test error from the Admin Dashboard!"); }} variant="destructive">
               Test Sentry Error
+            </Button>
+            <Button onClick={handleExport} variant="outline" className="gap-2">
+              <Download className="w-4 h-4" />
+              Export Data
             </Button>
             <Button onClick={fetchData} variant="secondary">
               Refresh Data
@@ -183,7 +267,9 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell className="font-medium">{request.name}</TableCell>
                             <TableCell>{request.email}</TableCell>
-                            <TableCell>{request.mobile || 'N/A'}</TableCell>
+                            <TableCell>
+                              <PhoneCell mobile={request.mobile} />
+                            </TableCell>
                             <TableCell>
                               <a href={request.website_url.startsWith('http') ? request.website_url : `https://${request.website_url}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                                 {request.website_url}
@@ -227,7 +313,9 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell className="font-medium text-muted-foreground">{request.name}</TableCell>
                             <TableCell className="text-muted-foreground">{request.email}</TableCell>
-                            <TableCell className="text-muted-foreground">{request.mobile || 'N/A'}</TableCell>
+                            <TableCell>
+                              <PhoneCell mobile={request.mobile} className="text-muted-foreground hover:text-primary" />
+                            </TableCell>
                             <TableCell className="text-right">
                               <Button size="sm" variant="outline" onClick={() => updateRequestStatus(request.id, 'pending')} className="gap-2">
                                 <RotateCcw className="w-4 h-4" />
