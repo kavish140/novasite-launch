@@ -68,11 +68,11 @@ export default function FreeAudit() {
       if (error) throw error;
       
       toast({
-        title: "Request Received",
-        description: "We'll review your website and get back to you shortly!",
+        title: "Audit Request Received! 🎉",
+        description: "While we analyze your site, get a custom quote for an upgrade below.",
       });
       
-      (e.target as HTMLFormElement).reset();
+      navigate("/quote");
     } catch (error: unknown) {
       console.error(error);
       const errorMessage = error instanceof Error ? error.message : "Failed to submit request. Please try again later.";
