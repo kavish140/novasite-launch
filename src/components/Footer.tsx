@@ -6,9 +6,9 @@ const Footer = () => {
   return (
     <footer className="border-t border-border/40 bg-card/30">
       <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
           {/* Brand */}
-          <div>
+          <div className="sm:col-span-2 lg:col-span-1">
             <span className="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight">
               <img src="/logo-icon.svg" className="h-6 w-6" alt="SiteNova Logo" width="24" height="24" />
               <span>Site<span className="gradient-text">Nova</span></span>
@@ -43,10 +43,10 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Locations */}
-          <div>
+          {/* Locations (Wrapped into 2 columns) */}
+          <div className="sm:col-span-2 lg:col-span-2">
             <h4 className="font-heading text-sm font-semibold mb-4">Service Areas</h4>
-            <ul className="space-y-2.5">
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5">
               <li><Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mulund Web Design</Link></li>
               <li><Link to="/location/thane" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Thane Web Design</Link></li>
               <li><Link to="/location/bandra" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bandra Web Design</Link></li>
@@ -55,31 +55,19 @@ const Footer = () => {
               <li><Link to="/location/bhandup" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bhandup Web Design</Link></li>
               <li><Link to="/location/nahur" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Nahur Web Design</Link></li>
               <li><Link to="/location/ghatkopar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Ghatkopar Web Design</Link></li>
-              <li>
-                <Link to="/location/vikhroli" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Vikhroli</Link>
-              </li>
-              <li>
-                <Link to="/location/kurla" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Kurla</Link>
-              </li>
-              <li>
-                <Link to="/location/dadar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Dadar</Link>
-              </li>
-              <li>
-                <Link to="/location/lower-parel" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Lower Parel</Link>
-              </li>
-              <li>
-                <Link to="/location/mahalakshmi" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mahalakshmi</Link>
-              </li>
-              <li>
-                <Link to="/location/pedder-road" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pedder Road</Link>
-              </li>
+              <li><Link to="/location/vikhroli" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Vikhroli</Link></li>
+              <li><Link to="/location/kurla" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Kurla</Link></li>
+              <li><Link to="/location/dadar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Dadar</Link></li>
+              <li><Link to="/location/lower-parel" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Lower Parel</Link></li>
+              <li><Link to="/location/mahalakshmi" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mahalakshmi</Link></li>
+              <li><Link to="/location/pedder-road" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pedder Road</Link></li>
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Company & Contact (Stacked to balance height) */}
           <div>
             <h4 className="font-heading text-sm font-semibold mb-4">Company</h4>
-            <ul className="space-y-2.5">
+            <ul className="space-y-2.5 mb-10">
               <li><Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About SiteNova</Link></li>
               <li><Link to="/our-process" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Our Process</Link></li>
               <li><Link to="/why-us" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Why Choose Us</Link></li>
@@ -87,10 +75,7 @@ const Footer = () => {
               <li><Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
               <li><Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Free Audit</Link></li>
             </ul>
-          </div>
 
-          {/* Contact */}
-          <div>
             <h4 className="font-heading text-sm font-semibold mb-4">Get in Touch</h4>
             <ul className="space-y-3">
               <li>
