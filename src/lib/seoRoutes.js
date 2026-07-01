@@ -661,5 +661,66 @@ export const routes = [
       "url": `${SITE_URL}/why-us`,
       "description": "Why we are the best choice for custom web development in Mumbai."
     }
+  },
+  {
+    path: "location/bandra",
+    title: "Best Website Designer in Bandra, Mumbai | SiteNova",
+    description: "SiteNova builds premium, SEO-ready, mobile-first websites in Bandra, Mumbai. Grow your business with fast load times and Google Map Pack optimization.",
+    keywords: "web designer in Bandra, website design Bandra, Bandra web developers, startup website Bandra, local SEO Bandra Mumbai",
+    sitemapPriority: "0.85",
+    sitemapChangefreq: "weekly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "SiteNova Web Design - Bandra Service Division",
+      "url": `${SITE_URL}/location/bandra`,
+      "telephone": "+91-9326060621",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Bandra",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "areaServed": ["Bandra West", "Bandra East", "BKC", "Khar", "Santacruz", "Mahim"],
+      "serviceType": "Website design and web development"
+    }
+  },
+  {
+    path: "websites-for-startups",
+    title: "Custom Website Development for Startups & SaaS in Mumbai | SiteNova",
+    description: "SiteNova builds high-performance, investor-ready React websites for tech startups and SaaS companies in Mumbai. Launch fast, scale easily, and impress users.",
+    keywords: "startup website design Mumbai, SaaS website development, React developer for startups, tech startup web design, investor ready website",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Websites for Startups and SaaS",
+      "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": `${SITE_URL}` },
+      "areaServed": { "@type": "City", "name": "Mumbai" },
+      "audience": { "@type": "Audience", "audienceType": "Tech Startups, SaaS Companies, Founders" },
+      "description": "High-performance, custom-coded React websites for tech startups in Mumbai. Built for speed, conversions, and scalable growth.",
+      "url": `${SITE_URL}/websites-for-startups`,
+      "serviceType": "Startup Web Development"
+    }
+  },
+  {
+    path: "websites-for-restaurants",
+    title: "Professional Websites for Restaurants & Cafes in Mumbai | SiteNova",
+    description: "SiteNova builds stunning, mouth-watering websites for restaurants, cafes, and cloud kitchens in Mumbai. Digital menus, reservations, and local SEO.",
+    keywords: "restaurant website design Mumbai, cafe website developer, cloud kitchen website, digital menu website, food business web design",
+    sitemapPriority: "0.90",
+    sitemapChangefreq: "monthly",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Websites for Restaurants and Cafes",
+      "provider": { "@type": "ProfessionalService", "name": "SiteNova", "url": `${SITE_URL}` },
+      "areaServed": { "@type": "City", "name": "Mumbai" },
+      "audience": { "@type": "Audience", "audienceType": "Restaurants, Cafes, Cloud Kitchens, Food Businesses" },
+      "description": "Appetizing, mobile-optimized websites for restaurants in Mumbai featuring digital menus, table reservations, and local SEO.",
+      "url": `${SITE_URL}/websites-for-restaurants`,
+      "serviceType": "Restaurant Web Design"
+    }
   }
 ];

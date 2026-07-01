@@ -46,6 +46,9 @@ const Lawyers = lazy(() => import("./pages/niche/Lawyers"));
 const About = lazy(() => import("./pages/About"));
 const OurProcess = lazy(() => import("./pages/OurProcess"));
 const WhyUs = lazy(() => import("./pages/WhyUs"));
+const Bandra = lazy(() => import("./pages/locations/Bandra"));
+const Startups = lazy(() => import("./pages/niche/Startups"));
+const Restaurants = lazy(() => import("./pages/niche/Restaurants"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
 import { LazyMotion, AnimatePresence } from "framer-motion";
@@ -127,6 +130,9 @@ const AnimatedRoutes = () => {
         <Route path="/why-us" element={<WhyUs />} />
         {/* Redirect for typo */}
         <Route path="/location/peddar-road" element={<Navigate to="/location/pedder-road" replace />} />
+        <Route path="/location/bandra" element={<Bandra />} />
+        <Route path="/websites-for-startups" element={<Startups />} />
+        <Route path="/websites-for-restaurants" element={<Restaurants />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
