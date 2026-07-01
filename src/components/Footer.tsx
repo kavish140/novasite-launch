@@ -38,6 +38,8 @@ const Footer = () => {
               <li><Link to="/websites-for-consultants" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Consultants</Link></li>
               <li><Link to="/websites-for-finance" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Finance Pros</Link></li>
               <li><Link to="/websites-for-real-estate" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Real Estate</Link></li>
+              <li><Link to="/websites-for-startups" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Startups</Link></li>
+              <li><Link to="/websites-for-restaurants" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Restaurants</Link></li>
             </ul>
           </div>
 
@@ -47,6 +49,7 @@ const Footer = () => {
             <ul className="space-y-2.5">
               <li><Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mulund Web Design</Link></li>
               <li><Link to="/location/thane" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Thane Web Design</Link></li>
+              <li><Link to="/location/bandra" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bandra Web Design</Link></li>
               <li><Link to="/location/powai" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Powai Web Developer</Link></li>
               <li><Link to="/location/andheri" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Andheri Web Designer</Link></li>
               <li><Link to="/location/bhandup" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bhandup Web Design</Link></li>

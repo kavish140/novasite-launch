@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase } from "lucide-react";
+import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 
@@ -41,6 +41,18 @@ const nicheLinks = [
     to: "/websites-for-consultants",
     icon: Briefcase,
     description: "Coaches, advisors & consultants",
+  },
+  {
+    label: "Websites for Startups",
+    to: "/websites-for-startups",
+    icon: Rocket,
+    description: "SaaS, founders & tech",
+  },
+  {
+    label: "Websites for Restaurants",
+    to: "/websites-for-restaurants",
+    icon: UtensilsCrossed,
+    description: "Cafes, diners & kitchens",
   },
 ];
 
