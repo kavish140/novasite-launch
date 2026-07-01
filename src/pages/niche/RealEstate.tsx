@@ -25,6 +25,7 @@ import Footer from "@/components/Footer";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
+import { buildWhatsAppUrl, PHONE_TEL_LINK, EMAIL } from "@/lib/constants";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -379,7 +380,7 @@ export default function RealEstate() {
                 Claim This Offer <ArrowRight className="ml-2 h-4 w-4" />
               </button>
               <a
-                href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20a%20real%20estate%20professional%20and%20I%27m%20interested%20in%20getting%20a%20property%20website."
+                href={buildWhatsAppUrl("Hi, I'm a real estate professional and I'm interested in getting a property website.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
@@ -425,7 +426,7 @@ export default function RealEstate() {
             className="mt-10 grid gap-4 sm:grid-cols-3 max-w-xl mx-auto"
           >
             <a
-              href="tel:+919326060621"
+              href={PHONE_TEL_LINK}
               onClick={() => trackPhoneClick("/websites-for-real-estate")}
               className="flex flex-col items-center gap-2 rounded-2xl border border-border/50 bg-card/40 backdrop-blur p-6 hover:bg-card/60 transition-colors interactive-card hover-glow"
             >
@@ -437,7 +438,7 @@ export default function RealEstate() {
             </a>
 
             <a
-              href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20a%20real%20estate%20professional%20and%20I%27m%20interested%20in%20getting%20a%20property%20website."
+              href={buildWhatsAppUrl("Hi, I'm a real estate professional and I'm interested in getting a property website.")}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackWhatsAppClick("/websites-for-real-estate")}
@@ -451,14 +452,14 @@ export default function RealEstate() {
             </a>
 
             <a
-              href="mailto:kavishganatra5@gmail.com"
+              href={`mailto:${EMAIL}`}
               className="flex flex-col items-center gap-2 rounded-2xl border border-border/50 bg-card/40 backdrop-blur p-6 hover:bg-card/60 transition-colors interactive-card hover-glow"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
                 <Mail className="h-5 w-5" />
               </div>
               <span className="text-sm font-medium text-foreground">Email</span>
-              <span className="text-xs text-muted-foreground">kavishganatra5@gmail.com</span>
+              <span className="text-xs text-muted-foreground">{EMAIL}</span>
             </a>
           </motion.div>
 

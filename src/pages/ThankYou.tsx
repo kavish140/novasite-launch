@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { m as motion } from "framer-motion";
 import { CheckCircle2, Phone, MessageCircle, ShieldCheck, Globe } from "lucide-react";
 import { trackGoogleAdsConversion } from "@/lib/analytics";
+import { PHONE_TEL_LINK, PHONE_NUMBER } from "@/lib/constants";
 
 
 const ThankYou = () => {
@@ -80,7 +81,7 @@ const ThankYou = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto pt-4">
               <a
-                href="tel:+919326060621"
+                href={PHONE_TEL_LINK}
                 className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all glow-effect button-shimmer"
               >
                 <Phone size={18} />

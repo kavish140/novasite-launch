@@ -26,6 +26,7 @@ import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
 import drDiptiImage from "@/assets/Drdiptiganatra.webp";
+import { buildWhatsAppUrl, PHONE_TEL_LINK, EMAIL } from "@/lib/constants";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -540,7 +541,7 @@ export default function Doctors() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </button>
               <a
-                href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20a%20doctor%20and%20I%27m%20interested%20in%20getting%20a%20website%20for%20my%20clinic."
+                href={buildWhatsAppUrl("Hi, I'm a doctor and I'm interested in getting a website for my clinic.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackWhatsAppClick("/websites-for-doctors")}
@@ -554,7 +555,7 @@ export default function Doctors() {
             {/* Secondary contact options */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
               <a
-                href="tel:+919326060621"
+                href={PHONE_TEL_LINK}
                 onClick={() => trackPhoneClick("/websites-for-doctors")}
                 className="inline-flex items-center gap-2 hover:text-foreground transition-colors"
               >
@@ -562,11 +563,11 @@ export default function Doctors() {
                 +91 93260 60621
               </a>
               <a
-                href="mailto:kavishganatra5@gmail.com"
+                href={`mailto:${EMAIL}`}
                 className="inline-flex items-center gap-2 hover:text-foreground transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                kavishganatra5@gmail.com
+                {EMAIL}
               </a>
             </div>
           </motion.div>

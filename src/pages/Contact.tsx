@@ -3,9 +3,10 @@ import { Phone, Mail, MessageCircle, MapPin, ShieldCheck, CheckCircle2, Globe } 
 import { setPageSeo } from "@/lib/seo";
 import { Link } from "react-router-dom";
 import { m as motion } from "framer-motion";
+import { PHONE_TEL_LINK, EMAIL_COMPOSE_LINK, EMAIL, PHONE_NUMBER } from "@/lib/constants";
 
 const emailComposeLink =
-  "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Website%20Inquiry%20from%20SiteNova";
+  `https://mail.google.com/mail/?view=cm&fs=1&to=${EMAIL}&su=Website%20Inquiry%20from%20SiteNova`;
 
 const Contact = () => {
   useEffect(() => {
@@ -55,7 +56,7 @@ const Contact = () => {
           >
             {/* Call Now Card - Highlighted */}
             <a
-              href="tel:+919326060621"
+              href={PHONE_TEL_LINK}
               className="group glass-card p-6 md:p-8 rounded-3xl border-2 border-primary/40 hover:border-primary bg-card/40 hover:bg-card/60 transition-all duration-300 relative overflow-hidden interactive-card"
             >
               <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />

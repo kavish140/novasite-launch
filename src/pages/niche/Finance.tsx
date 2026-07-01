@@ -25,9 +25,10 @@ import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
 import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
+import { buildWhatsAppUrl, PHONE_TEL_LINK, EMAIL_COMPOSE_LINK, EMAIL, PHONE_NUMBER } from "@/lib/constants";
 
 const emailComposeLink =
-  "https://mail.google.com/mail/?view=cm&fs=1&to=kavishganatra5@gmail.com&su=Finance%20Website%20Inquiry%20from%20SiteNova";
+  `https://mail.google.com/mail/?view=cm&fs=1&to=${EMAIL}&su=Finance%20Website%20Inquiry%20from%20SiteNova`;
 
 const features = [
   {
@@ -504,15 +505,15 @@ export default function Finance() {
           {/* Contact buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <a
-              href="tel:+919326060621"
+              href={PHONE_TEL_LINK}
               onClick={() => trackPhoneClick("/websites-for-finance")}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect button-shimmer interactive-card"
             >
               <Phone size={20} />
-              9326060621
+              {PHONE_NUMBER}
             </a>
             <a
-              href="https://wa.me/919326060621?text=Hi%2C%20I%27m%20a%20financial%20professional%20and%20I%27m%20interested%20in%20getting%20a%20website."
+              href={buildWhatsAppUrl("Hi, I'm a financial professional and I'm interested in getting a website.")}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackWhatsAppClick("/websites-for-finance")}
@@ -530,7 +531,7 @@ export default function Finance() {
             className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
           >
             <Mail size={20} />
-            kavishganatra5@gmail.com
+            {EMAIL}
           </a>
 
           <p className="mt-5 text-sm text-muted-foreground">

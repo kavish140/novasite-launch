@@ -20,6 +20,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { setPageSeo } from "@/lib/seo";
 import { trackGoogleAdsConversion } from "@/lib/analytics";
 import { m as motion, AnimatePresence } from "framer-motion";
+import { PHONE_TEL_LINK, PHONE_NUMBER } from "@/lib/constants";
 
 interface ProjectTypeOption {
   id: string;
@@ -612,7 +613,7 @@ Looking forward to discussing further!`
                 {/* Follow-up Action Options */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto pt-4">
                   <a
-                    href="tel:+919326060621"
+                    href={PHONE_TEL_LINK}
                     className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all glow-effect button-shimmer"
                   >
                     <Phone size={18} />

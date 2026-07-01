@@ -1,4 +1,5 @@
 import { m as motion } from "framer-motion";
+import { PHONE_TEL_LINK, EMAIL, PHONE_NUMBER } from "@/lib/constants";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -276,20 +277,20 @@ const About = () => {
                   <div className="glass-card rounded-2xl p-6 space-y-3">
                     <h3 className="font-heading font-semibold mb-2">Get in touch</h3>
                     <a
-                      href="tel:+919326060621"
+                      href={PHONE_TEL_LINK}
                       className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
                       itemProp="telephone"
                     >
                       <Phone className="h-4 w-4 text-primary shrink-0" />
-                      +91 9326060621
+                      {PHONE_NUMBER}
                     </a>
                     <a
-                      href="mailto:kavishganatra5@gmail.com"
+                      href={`mailto:${EMAIL}`}
                       className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
                       itemProp="email"
                     >
                       <Mail className="h-4 w-4 text-primary shrink-0" />
-                      kavishganatra5@gmail.com
+                      {EMAIL}
                     </a>
                     <p
                       className="flex items-center gap-3 text-sm text-muted-foreground"
