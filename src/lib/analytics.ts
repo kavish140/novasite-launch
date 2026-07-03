@@ -81,6 +81,8 @@ export const trackGoogleAdsConversion = (conversionLabel: string): void => {
   }
 };
 
+export const trackGoogleAdsClickToCall = () => trackGoogleAdsConversion("d5XPCKyS5skcEJy2kd5D");
+
 // ── Convenience wrappers (import directly in click handlers) ─────────────────
 
 export const trackWhatsAppClick = (page?: string) =>

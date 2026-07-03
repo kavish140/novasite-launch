@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Phone, X } from "lucide-react";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { PHONE_TEL_LINK, WHATSAPP_URL } from "@/lib/constants";
-import { trackWhatsAppClick } from "@/lib/analytics";
+import { trackWhatsAppClick, trackPhoneClick, trackGoogleAdsClickToCall } from "@/lib/analytics";
 
 const BookCallWidget = () => {
   const [showQualifier, setShowQualifier] = useState(false);
@@ -14,12 +14,20 @@ const BookCallWidget = () => {
 
   const handleQualifierYes = () => {
     trackWhatsAppClick();
+    // Trigger Google Ads conversion for WhatsApp
+    trackGoogleAdsClickToCall(); 
     setShowQualifier(false);
     window.open(WHATSAPP_URL, "_blank", "noopener,noreferrer");
   };
 
   const handleQualifierNo = () => {
     setShowQualifier(false);
+  };
+
+  const handlePhoneClick = () => {
+    trackPhoneClick();
+    // Trigger Google Ads conversion for Phone Calls
+    trackGoogleAdsClickToCall();
   };
 
   return (
@@ -47,6 +55,7 @@ const BookCallWidget = () => {
           />
           <a
             href={PHONE_TEL_LINK}
+            onClick={handlePhoneClick}
             className="flex items-center gap-2 rounded-full bg-primary px-4 py-3 sm:px-5 text-sm font-semibold text-primary-foreground shadow-lg hover:shadow-primary/50 transition-all hover:-translate-y-1 active:scale-95"
             aria-label="Call Now"
           >
