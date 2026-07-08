@@ -284,7 +284,7 @@ export default function FreeAudit() {
                   Ready to build?
                 </h3>
                 <p className="text-sm text-muted-foreground mb-6">Skip the free audit. Tell us what you need and get a custom quote instantly.</p>
-                <Button className="w-full font-bold shadow-lg text-base h-14" size="lg">
+                <Button className="w-full font-bold shadow-lg text-base h-14 btn-quote-pulse" size="lg">
                   Get A Free Quote <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>

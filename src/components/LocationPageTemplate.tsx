@@ -159,7 +159,7 @@ export default function LocationPageTemplate({
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <button
               onClick={handleStartQuote}
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect"
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect btn-quote-pulse"
             >
               Get Local Quote <ArrowRight className="ml-2 h-4 w-4" />
             </button>
@@ -247,7 +247,7 @@ export default function LocationPageTemplate({
 
             <button
               onClick={handleStartQuote}
-              className="mt-8 w-full inline-flex items-center justify-center rounded-xl bg-primary py-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm"
+              className="mt-8 w-full inline-flex items-center justify-center rounded-xl bg-primary py-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm btn-quote-pulse"
             >
               Discuss Your {locationName} Project <ArrowRight className="ml-2 h-4 w-4" />
             </button>

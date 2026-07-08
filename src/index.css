@@ -214,11 +214,27 @@
     background-size: 200% 200%;
     /* animation removed — background-position is non-compositable */
   }
+
+  .btn-quote-pulse {
+    animation: btn-quote-pulse-anim 2s infinite;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@keyframes btn-quote-pulse-anim {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
   }
 }
 

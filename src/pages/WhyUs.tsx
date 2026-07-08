@@ -346,7 +346,7 @@ const WhyUs = () => {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link
                     to="/quote"
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm btn-quote-pulse"
                   >
                     Get a Free Quote
                     <ArrowRight className="h-4 w-4" />

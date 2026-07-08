@@ -134,7 +134,7 @@ const Contact = () => {
               </p>
               <Link
                 to="/quote"
-                className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-6 py-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect-sm button-shimmer shadow-lg shadow-primary/20"
+                className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-6 py-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect-sm button-shimmer shadow-lg shadow-primary/20 btn-quote-pulse"
               >
                 Request a Custom Quote
               </Link>

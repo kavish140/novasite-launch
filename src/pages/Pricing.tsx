@@ -174,7 +174,7 @@ const Pricing = () => {
                   to="/quote"
                   className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all button-shimmer ${
                     tier.popular
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90 glow-effect"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90 glow-effect btn-quote-pulse"
                       : "bg-secondary text-foreground hover:bg-secondary/80"
                   }`}
                 >
