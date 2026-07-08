@@ -10,7 +10,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <span className="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight">
-              <img src="/logo-icon.svg" className="h-6 w-6" alt="SiteNova Logo" width="24" height="24" />
+              <img src="/logo-icon.png" className="h-8 w-8 object-contain" alt="SiteNova Logo" width="32" height="32" />
               <span>Site<span className="gradient-text">Nova</span></span>
             </span>
             <p className="text-sm text-muted-foreground mt-3 mb-6 leading-relaxed">
