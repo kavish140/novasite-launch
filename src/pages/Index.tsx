@@ -133,7 +133,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                     Websites from <span className="gradient-text">₹10,000 onwards</span>
                   </h2>
                   <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-                    A simple, professional website is a great way to get started without overspending. Whether you need a landing page (from ₹10,000), a business website (from ₹12,000), or a fully custom build, I'll quote based on your exact scope.
+                    A simple, professional website is a great way to get started without overspending. Whether you need a landing page (from ₹10,000), a business website (from ₹15,000), or a fully custom build, I'll quote based on your exact scope.
                   </p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -220,7 +220,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                     What We Build
                   </h3>
                   <ul className="space-y-1 text-sm">
-                    <li><strong className="text-foreground">Business Websites</strong> — Custom multi-page sites from ₹12,000, optimised for local SEO in Mumbai</li>
+                    <li><strong className="text-foreground">Business Websites</strong> — Custom multi-page sites from ₹15,000, optimised for local SEO in Mumbai</li>
                     <li><strong className="text-foreground">E-Commerce Stores</strong> — Scalable stores with Razorpay and Stripe integration</li>
                     <li><strong className="text-foreground">Web Applications</strong> — Dashboards, booking systems, and API integrations from ₹30,000</li>
                     <li><strong className="text-foreground">Doctor Websites</strong> — Clinic sites with appointment booking and patient SEO</li>

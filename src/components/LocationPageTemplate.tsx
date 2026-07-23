@@ -99,7 +99,7 @@ export default function LocationPageTemplate({
                 "name": `How much does a website cost in ${locationName}?`,
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": `SiteNova offers website design in ${locationName} starting from ₹10,000 onwards for single-page landing sites, and ₹12,000 onwards for multi-page business websites. Premium and e-commerce projects are quoted based on scope.`
+                  "text": `SiteNova offers website design in ${locationName} starting from ₹10,000 onwards for single-page landing sites, and ₹15,000 onwards for multi-page business websites. Premium and e-commerce projects are quoted based on scope.`
                 }
               },
               {
@@ -266,7 +266,7 @@ export default function LocationPageTemplate({
             {[
               {
                 q: `How much does a website cost in ${locationName}?`,
-                a: `SiteNova's website design in ${locationName} starts from ₹10,000 onwards for a single-page landing site, and ₹12,000 onwards for a multi-page business website. Premium and e-commerce builds are quoted based on project scope.`
+                a: `SiteNova's website design in ${locationName} starts from ₹10,000 onwards for a single-page landing site, and ₹15,000 onwards for a multi-page business website. Premium and e-commerce builds are quoted based on project scope.`
               },
               {
                 q: `Do you provide local SEO for businesses in ${locationName}?`,

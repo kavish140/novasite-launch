@@ -67,7 +67,7 @@ export const faqs = [
   {
     question: "Do I need a budget approved before contacting SiteNova?",
     answer:
-      "Not at all. You are welcome to contact SiteNova at any stage — even if you are still researching options. However, having a rough budget in mind helps us recommend the right package. Business websites at SiteNova start from ₹12,000 for standard multi-page sites. If you have a budget of ₹15,000–₹35,000, we can build a fully custom, SEO-optimised site with all the features your business needs. For larger or more complex projects, we provide a custom quote based on your exact requirements.",
+      "Not at all. You are welcome to contact SiteNova at any stage — even if you are still researching options. However, having a rough budget in mind helps us recommend the right package. Business websites at SiteNova start from ₹15,000 for standard multi-page sites. If you have a budget of ₹15,000–₹35,000, we can build a fully custom, SEO-optimised site with all the features your business needs. For larger or more complex projects, we provide a custom quote based on your exact requirements.",
   },
   {
     question: "Does SiteNova offer ongoing website maintenance and support?",

@@ -147,7 +147,7 @@ export default function Finance() {
                 "name": "How much does a finance professional website cost?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "SiteNova builds websites for CAs, insurance agents, and financial advisors starting from ₹10,000 for a landing page and ₹12,000 onwards for multi-page sites with service pages, lead capture forms, and blog functionality."
+                  "text": "SiteNova builds websites for CAs, insurance agents, and financial advisors starting from ₹10,000 for a landing page and ₹15,000 onwards for multi-page sites with service pages, lead capture forms, and blog functionality."
                 }
               },
               {

@@ -167,7 +167,7 @@ export default function Doctors() {
                 "name": "How much does a doctor website cost in Mumbai?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "SiteNova builds clinic and doctor websites starting from ₹10,000 for a landing page and ₹12,000 onwards for multi-page sites with appointment booking, Google Maps integration, and patient testimonial sections."
+                  "text": "SiteNova builds clinic and doctor websites starting from ₹10,000 for a landing page and ₹15,000 onwards for multi-page sites with appointment booking, Google Maps integration, and patient testimonial sections."
                 }
               },
               {

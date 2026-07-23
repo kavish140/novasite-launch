@@ -26,7 +26,7 @@ const pricingTiers = [
   },
   {
     name: "Business",
-    price: "₹12,000",
+    price: "₹15,000",
     priceLabel: "onwards",
     description: "Ideal for local businesses needing a multi-page presence.",
     features: [
@@ -69,7 +69,7 @@ const Pricing = () => {
     <PageTransition>
       <SEO 
         title="Website Design Pricing in Mumbai | SiteNova — Plans Starting ₹10,000 Onwards"
-        description="Transparent website design pricing in Mumbai. SiteNova plans start from ₹10,000 onwards for landing pages, ₹12,000 onwards for business sites, and custom quotes for e-commerce and web apps."
+        description="Transparent website design pricing in Mumbai. SiteNova plans start from ₹10,000 onwards for landing pages, ₹15,000 onwards for business sites, and custom quotes for e-commerce and web apps."
         canonicalUrl="/pricing"
         keywords={["website pricing Mumbai", "web design cost Mumbai", "affordable web design Mumbai", "website package India", "web design 10000 onwards"]}
         jsonLd={{
@@ -94,9 +94,9 @@ const Pricing = () => {
                 "@type": "Offer",
                 "name": "Business Website",
                 "description": "Multi-page business website with SEO and CMS",
-                "price": "12000",
+                "price": "15000",
                 "priceCurrency": "INR",
-                "priceSpecification": { "@type": "PriceSpecification", "minPrice": "12000", "priceCurrency": "INR" }
+                "priceSpecification": { "@type": "PriceSpecification", "minPrice": "15000", "priceCurrency": "INR" }
               }
             ]
           }

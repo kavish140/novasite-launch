@@ -156,7 +156,7 @@ export default function RealEstate() {
                 "name": "How much does a real estate website cost in Mumbai?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "SiteNova builds real estate websites starting from ₹10,000 for a landing page and ₹12,000 onwards for property listing sites with enquiry forms, WhatsApp integration, and photo galleries."
+                  "text": "SiteNova builds real estate websites starting from ₹10,000 for a landing page and ₹15,000 onwards for property listing sites with enquiry forms, WhatsApp integration, and photo galleries."
                 }
               },
               {
