@@ -47,7 +47,8 @@
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0a0e1a" />
+    <meta name="theme-color" content="#0a0e1a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
     <title>Web Design &amp; Development in Mumbai | SiteNova — Fast, SEO-Ready Websites</title>
     <meta name="description" content="Is your website losing you customers? SiteNova builds fast, custom websites for businesses in Mulund, Mumbai — SEO-ready, mobile-first, and delivered in 7–14 days. From ₹10,000." />
     <meta name="keywords" content="best website designer in Mulund, website designer in Mumbai, website design Mulund, web development Mulund, SEO friendly website designer, nearby areas" />
@@ -276,18 +277,28 @@
       </div>
     </noscript>
     <style>
-      body { margin: 0; background-color: #0a0e1a; overflow-x: hidden; }
+      :root {
+        --loader-bg: #0a0e1a;
+        --loader-text: #ffffff;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --loader-bg: #f8fafc;
+          --loader-text: #0f172a;
+        }
+      }
+      body { margin: 0; background-color: var(--loader-bg); overflow-x: hidden; }
       #root { width: 100vw; min-height: 100vh; }
       .app-loader {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #0a0e1a;
+        background-color: var(--loader-bg);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 9999;
         font-family: 'Space Grotesk', sans-serif;
-        color: #ffffff;
+        color: var(--loader-text);
       }
       .app-loader-content {
         display: flex;
