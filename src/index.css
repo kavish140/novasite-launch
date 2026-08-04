@@ -224,6 +224,44 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* ── Blog prose table fixes ─────────────────────────────────────────────── */
+  /* Tailwind Typography's prose-invert makes <thead> backgrounds nearly black
+     while the <th> text colour also goes dark — making headers invisible.
+     These overrides ensure tables are always legible in both themes.          */
+
+  .prose table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .prose thead {
+    @apply border-b border-border;
+  }
+
+  .prose thead th {
+    @apply bg-secondary text-foreground font-semibold text-left px-4 py-3;
+  }
+
+  .prose tbody tr {
+    @apply border-b border-border/50 transition-colors;
+  }
+
+  .prose tbody tr:hover {
+    @apply bg-muted/30;
+  }
+
+  .prose tbody td {
+    @apply px-4 py-3 text-muted-foreground align-top;
+  }
+
+  /* Dark mode: make sure header is visually distinct but not invisible */
+  .dark .prose thead th {
+    @apply bg-secondary text-foreground;
+  }
+
+  .dark .prose tbody tr:hover {
+    @apply bg-secondary/40;
+  }
 }
 
 @keyframes btn-quote-pulse-anim {
