@@ -92,18 +92,85 @@ const Quote = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
+  // ── Normalise any incoming router state ───────────────────────────────────
+  // Accepts state from: WebsiteCostCalculator, location pages, niche pages,
+  // service pages, and blog CTAs. Maps all label variants to Quote's own IDs.
   useEffect(() => {
-    if (location.state) {
-      if (location.state.projectType) {
-        setProjectType(location.state.projectType);
-        setStep(2);
-      }
-      if (location.state.requirements) {
-        setRequirements(location.state.requirements);
-      }
-      if (location.state.budget) {
-        setBudget(location.state.budget);
-      }
+    const state = location.state as {
+      projectType?: string;
+      requirements?: string;
+      budget?: string | number;
+      timeline?: string;
+      estimateMin?: number;
+      estimateMax?: number;
+      addOns?: string[];
+    } | null;
+
+    if (!state) return;
+
+    // ── 1. Normalise project type ──────────────────────────────────────────
+    const typeMap: Record<string, string> = {
+      // Calculator labels → Quote IDs
+      "Landing Page": "Landing Page",
+      "Business Website": "Business Website",
+      "Large Website": "Business Website",   // closest equivalent
+      "E-Commerce Store": "E-commerce Store",
+      "E-commerce Store": "E-commerce Store",
+      "Ecommerce": "E-commerce Store",
+      "Web Application": "Custom Web App",
+      "Web App": "Custom Web App",
+      "Custom Web App": "Custom Web App",
+      "Website Redesign": "Website Redesign",
+    };
+    const knownIds = projectTypes.map((p) => p.id);
+    const rawType = state.projectType ?? "";
+    const resolvedType =
+      typeMap[rawType] ??
+      knownIds.find((id) => id.toLowerCase() === rawType.toLowerCase()) ??
+      "";
+
+    if (resolvedType) {
+      setProjectType(resolvedType);
+      setStep(2);
+    }
+
+    // ── 2. Normalise budget ────────────────────────────────────────────────
+    // Calculator passes estimateMin (number). Other pages pass a string label.
+    if (state.estimateMin !== undefined) {
+      const n = state.estimateMin;
+      if (n < 15000)       setBudget("Rs. 10,000 - 15,000");
+      else if (n < 30000)  setBudget("Rs. 15,000 - 30,000");
+      else if (n < 100000) setBudget("Rs. 30,000+");
+      else                 setBudget("Flexible / Custom");
+    } else if (typeof state.budget === "string" && budgetOptions.includes(state.budget)) {
+      setBudget(state.budget);
+    }
+
+    // ── 3. Normalise timeline ─────────────────────────────────────────────
+    const timelineMap: Record<string, string> = {
+      "Rush (3–5 days)": "Urgent (< 2 weeks)",
+      "Standard (7–14 days)": "Normal (2-4 weeks)",
+      "Flexible (3–4 weeks)": "Flexible (1+ months)",
+    };
+    if (state.timeline) {
+      const mapped = timelineMap[state.timeline] ?? state.timeline;
+      if (timelineOptions.includes(mapped)) setTimeline(mapped);
+    }
+
+    // ── 4. Build a clean requirements pre-fill ────────────────────────────
+    if (state.estimateMin !== undefined) {
+      // Coming from calculator: show a clean human-readable summary
+      const addOnList = state.addOns?.length ? state.addOns.join(", ") : "None";
+      setRequirements(
+        `Estimate from cost calculator: ₹${state.estimateMin.toLocaleString("en-IN")}–₹${state.estimateMax?.toLocaleString("en-IN") ?? ""}.\nSelected add-ons: ${addOnList}.\n\nPlease add any extra details about your project here.`
+      );
+    } else if (state.requirements) {
+      // Strip internal strings injected by location/niche pages
+      const cleaned = state.requirements
+        .replace(/^Client located near:[^.]+\.\s*/i, "")
+        .replace(/Interested in building a local business website\.?\s*/i, "")
+        .trim();
+      if (cleaned.length > 0) setRequirements(cleaned);
     }
   }, [location.state]);
 

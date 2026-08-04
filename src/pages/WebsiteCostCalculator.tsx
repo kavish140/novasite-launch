@@ -106,8 +106,11 @@ export default function WebsiteCostCalculator() {
     "₹" + n.toLocaleString("en-IN");
 
   const quoteState = {
-    projectType: tier.label,
-    requirements: `Calculator estimate: ${formatINR(grandMin)}–${formatINR(grandMax)}. Add-ons: ${[...selectedAddOns].join(", ") || "none"}. Timeline: ${timeline.label}.`,
+    projectType: tier.label,          // normalised by Quote's typeMap
+    estimateMin: grandMin,            // number → Quote maps to budgetOption bracket
+    estimateMax: grandMax,
+    timeline: timeline.label,         // normalised by Quote's timelineMap
+    addOns: [...selectedAddOns].map((id) => ADD_ONS.find((a) => a.id === id)?.label ?? id),
   };
 
   return (
