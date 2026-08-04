@@ -15,6 +15,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://sitenova.dev/thank-you</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+  <url>
     <loc>https://sitenova.dev/contact-us</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
@@ -450,6 +456,34 @@
       </news:publication>
       <news:publication_date>2026-08-03</news:publication_date>
       <news:title>Wix vs a Real Website: What Bhandup Businesses Should Know</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://sitenova.dev/blog/what-a-website-project-looks-like-start-to-finish</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <news:news>
+      <news:publication>
+        <news:name>SiteNova Blog</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-08-04</news:publication_date>
+      <news:title>What a Website Project Actually Looks Like (Start to Finish)</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://sitenova.dev/blog/why-diy-website-builders-cost-you-customers</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <news:news>
+      <news:publication>
+        <news:name>SiteNova Blog</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-08-04</news:publication_date>
+      <news:title>Why Your DIY Website Builder Is Costing You Customers</news:title>
     </news:news>
   </url>
 </urlset>
