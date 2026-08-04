@@ -172,6 +172,9 @@ const Navbar = () => {
           <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
             Pricing
           </Link>
+          <Link to="/website-cost-calculator" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
+            Cost Calculator
+          </Link>
           <Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
             Free Audit
           </Link>
@@ -263,6 +266,13 @@ const Navbar = () => {
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Pricing
+              </Link>
+              <Link
+                to="/website-cost-calculator"
+                onClick={() => setMobileOpen(false)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cost Calculator
               </Link>
               <Link
                 to="/free-audit"

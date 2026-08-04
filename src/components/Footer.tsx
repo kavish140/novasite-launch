@@ -73,6 +73,7 @@ const Footer = () => {
               <li><Link to="/why-us" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Why Choose Us</Link></li>
               <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
               <li><Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
+              <li><Link to="/website-cost-calculator" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Cost Calculator</Link></li>
               <li><Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Free Audit</Link></li>
             </ul>
 
