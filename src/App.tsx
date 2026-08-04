@@ -50,6 +50,7 @@ const Bandra = lazy(() => import("./pages/locations/Bandra"));
 const Startups = lazy(() => import("./pages/niche/Startups"));
 const Restaurants = lazy(() => import("./pages/niche/Restaurants"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+const WebsiteCostCalculator = lazy(() => import("./pages/WebsiteCostCalculator"));
 
 import { LazyMotion, AnimatePresence } from "framer-motion";
 
@@ -133,6 +134,7 @@ const AnimatedRoutes = () => {
         <Route path="/location/bandra" element={<Bandra />} />
         <Route path="/websites-for-startups" element={<Startups />} />
         <Route path="/websites-for-restaurants" element={<Restaurants />} />
+        <Route path="/website-cost-calculator" element={<WebsiteCostCalculator />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

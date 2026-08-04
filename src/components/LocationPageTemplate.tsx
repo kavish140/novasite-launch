@@ -117,6 +117,14 @@ export default function LocationPageTemplate({
                   "@type": "Answer",
                   "text": "Most business websites are delivered within 7–14 working days. Landing pages take 3–5 days. Timeline depends on content readiness and revision rounds."
                 }
+              },
+              {
+                "@type": "Question",
+                "name": `Do I need to be physically in ${locationName} to work with SiteNova?`,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": `Not at all. SiteNova works with clients across all of Mumbai and remotely. All project communication, reviews, and handoffs are done digitally via email, WhatsApp, and video calls.`
+                }
               }
             ]
           },
@@ -314,6 +322,7 @@ export default function LocationPageTemplate({
               { name: "Lower Parel", path: "/location/lower-parel" },
               { name: "Mahalakshmi", path: "/location/mahalakshmi" },
               { name: "Pedder Road", path: "/location/pedder-road" },
+              { name: "Bandra", path: "/location/bandra" },
             ]
               .filter((loc) => loc.name !== locationName)
               .map((loc) => (

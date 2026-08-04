@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
 import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
+import BlogCTA from "@/components/BlogCTA";
+import RelatedPosts from "@/components/RelatedPosts";
 import { ChevronLeft } from "lucide-react";
 
 interface BlogPostData {
@@ -203,7 +205,16 @@ export default function BlogPost() {
             className="prose prose-slate dark:prose-invert prose-lg max-w-none"
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
           />
+
+          {/* Mid-article CTA — shown after content so readers who scroll deep see it */}
+          <BlogCTA variant="mid" />
         </article>
+
+        {/* End-of-article CTA */}
+        <BlogCTA variant="end" />
+
+        {/* Related posts + service links for internal linking */}
+        <RelatedPosts currentSlug={slug ?? ""} />
       </main>
       
       <Footer />
