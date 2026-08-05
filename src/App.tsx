@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -50,6 +50,7 @@ const Bandra = lazy(() => import("./pages/locations/Bandra"));
 const Startups = lazy(() => import("./pages/niche/Startups"));
 const Restaurants = lazy(() => import("./pages/niche/Restaurants"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+const MobileAuditBar = lazy(() => import("./components/MobileAuditBar"));
 const WebsiteCostCalculator = lazy(() => import("./pages/WebsiteCostCalculator"));
 
 import { LazyMotion, AnimatePresence } from "framer-motion";
@@ -156,6 +157,7 @@ const App = () => (
                 <AnimatedRoutes />
                 <BookCallWidget />
                 <ExitIntentPopup />
+                <MobileAuditBar />
               </Suspense>
             </BrowserRouter>
           </LazyMotion>
