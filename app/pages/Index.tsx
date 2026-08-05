@@ -1,4 +1,4 @@
-import { useEffect, Suspense, lazy } from "react";
+import { useEffect, Suspense } from "react";
 import { useLocation, Link } from "react-router";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
@@ -7,14 +7,15 @@ import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
 import { faqs } from "@/lib/faq-data";
 
-const TechMarquee = lazy(() => import("@/components/TechMarquee"));
-const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
-const PortfolioSection = lazy(() => import("@/components/PortfolioSection"));
-const HowItWorksSection = lazy(() => import("@/components/HowItWorksSection"));
-const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
-const CtaSection = lazy(() => import("@/components/CtaSection"));
-const FaqSection = lazy(() => import("@/components/FaqSection"));
-const Footer = lazy(() => import("@/components/Footer"));
+import TechMarquee from "@/components/TechMarquee";
+import FeaturesSection from "@/components/FeaturesSection";
+import PortfolioSection from "@/components/PortfolioSection";
+import HowItWorksSection from "@/components/HowItWorksSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import CtaSection from "@/components/CtaSection";
+import FaqSection from "@/components/FaqSection";
+import Footer from "@/components/Footer";
+
 
 interface IndexProps {
   seoTitle?: string;
