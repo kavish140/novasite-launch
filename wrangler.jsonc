@@ -3,7 +3,7 @@
   "name": "novasite-launch",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "./dist/server/index.js",
+  "main": "./workers/app.ts",
   "assets": {
     "directory": "./dist/client"
   },
