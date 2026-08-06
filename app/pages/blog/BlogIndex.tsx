@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
@@ -15,10 +15,14 @@ interface BlogPost {
 }
 
 export default function BlogIndex() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const loaderData = useLoaderData<{ posts?: BlogPost[] }>();
+  const initialPosts = loaderData?.posts ?? [];
+  const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
+  const [loading, setLoading] = useState(initialPosts.length === 0);
 
   useEffect(() => {
+    if (initialPosts.length > 0) return;
+
     async function fetchPosts() {
       try {
         const { data, error } = await supabase
@@ -39,7 +43,7 @@ export default function BlogIndex() {
     }
 
     fetchPosts();
-  }, []);
+  }, [initialPosts.length]);
 
   return (
     <PageTransition>
@@ -91,7 +95,7 @@ export default function BlogIndex() {
               <Link key={post.id} to={`/blog/${post.slug}`} className="group block h-full">
                 <article className="flex flex-col h-full rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/20">
                   <div className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-3">
+                    <p className="text-sm text-muted-foreground mb-3" suppressHydrationWarning>
                       {new Date(post.published_at || Date.now()).toLocaleDateString("en-IN", {
                         year: 'numeric',
                         month: 'long',

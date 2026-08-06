@@ -79,7 +79,7 @@ export default function RelatedPosts({ currentSlug }: RelatedPostsProps) {
                 to={`/blog/${post.slug}`}
                 className="group flex flex-col rounded-2xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-md hover:border-primary/20 transition-all"
               >
-                <p className="text-xs text-muted-foreground mb-2">
+                <p className="text-xs text-muted-foreground mb-2" suppressHydrationWarning>
                   {new Date(post.published_at || Date.now()).toLocaleDateString("en-IN", {
                     year: "numeric",
                     month: "short",
