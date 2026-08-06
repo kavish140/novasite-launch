@@ -12,7 +12,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ClientOnly } from "@/components/ClientOnly";
-import { LazyMotion, AnimatePresence } from "framer-motion";
+import { LazyMotion, domAnimation } from "framer-motion";
 
 import "@/index.css";
 
@@ -20,9 +20,6 @@ const ScrollProgress = lazy(() => import("@/components/ScrollProgress"));
 const BookCallWidget = lazy(() => import("@/components/BookCallWidget"));
 const ExitIntentPopup = lazy(() => import("@/components/ExitIntentPopup"));
 const MobileAuditBar = lazy(() => import("@/components/MobileAuditBar"));
-
-const loadFramerFeatures = () =>
-  import("framer-motion").then((mod) => mod.domAnimation);
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -246,7 +243,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           }}
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -280,7 +277,7 @@ export default function App() {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <LazyMotion features={loadFramerFeatures} strict={false}>
+          <LazyMotion features={domAnimation}>
             <Suspense
               fallback={
                 <div className="min-h-screen bg-background" aria-hidden="true" />
