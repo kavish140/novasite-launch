@@ -66,8 +66,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
           rel="stylesheet"
           media="print"
-          // @ts-expect-error — onLoad to switch media is a common performance pattern
-          onLoad="this.media='all'"
+          onLoad={(e) => { (e.currentTarget as HTMLLinkElement).media = "all"; }}
         />
         <noscript>
           <link
