@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, startTransition } from "react";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -67,7 +67,9 @@ const Navbar = () => {
   const servicesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMounted(true);
+    startTransition(() => {
+      setMounted(true);
+    });
   }, []);
 
   // Close services dropdown on outside click

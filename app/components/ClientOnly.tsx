@@ -1,7 +1,11 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, startTransition, type ReactNode } from "react";
 
 export function ClientOnly({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    startTransition(() => {
+      setMounted(true);
+    });
+  }, []);
   return mounted ? <>{children}</> : null;
 }
