@@ -1,7 +1,26 @@
 import type { Route } from "./+types/blog.$slug";
 import { buildMeta } from "@/lib/meta";
 import { createServerClient } from "@/lib/supabaseClient";
-import sanitizeHtml from "sanitize-html";
+
+/**
+ * Lightweight edge-compatible HTML sanitizer.
+ * Replaces sanitize-html (which uses Node.js stream APIs incompatible with CF Workers).
+ * Blog content comes from a trusted admin editor, so this focuses on stripping
+ * the most dangerous XSS vectors: <script>, <style>, inline event handlers,
+ * and javascript:/data: URLs.
+ */
+function edgeSanitize(html: string): string {
+  return html
+    // Remove <script>...</script> blocks (including contents)
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    // Remove <style>...</style> blocks
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "")
+    // Remove inline event handler attributes (onclick, onerror, onload, etc.)
+    .replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "")
+    // Remove javascript: and data: hrefs/srcs
+    .replace(/\s+(href|src|action)\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, "")
+    .replace(/\s+(href|src|action)\s*=\s*(?:"data:[^"]*"|'data:[^']*')/gi, "");
+}
 
 export async function loader({ params, context }: Route.LoaderArgs) {
   const { SUPABASE_URL, SUPABASE_ANON_KEY } = context.cloudflare.env;
@@ -25,30 +44,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  // Sanitize HTML on the server so the client receives clean content.
-  // Wrapped in try/catch in case sanitize-html has edge runtime issues.
-  let sanitizedContent = post.content;
-  try {
-    sanitizedContent = sanitizeHtml(post.content, {
-      allowedTags: sanitizeHtml.defaults.allowedTags.concat([
-        "img", "iframe", "video", "source", "picture", "figure",
-        "figcaption", "details", "summary", "mark", "del", "ins", "sub", "sup",
-      ]),
-      allowedAttributes: {
-        ...sanitizeHtml.defaults.allowedAttributes,
-        img: ["src", "srcset", "alt", "title", "width", "height", "loading", "decoding", "class"],
-        iframe: ["src", "width", "height", "frameborder", "allowfullscreen", "allow", "title", "loading"],
-        video: ["src", "controls", "width", "height", "poster", "preload", "muted", "autoplay", "loop", "playsinline"],
-        source: ["src", "srcset", "type", "media", "sizes"],
-        "*": ["class", "id", "style"],
-      },
-      allowedIframeHostnames: ["www.youtube.com", "www.youtube-nocookie.com", "player.vimeo.com", "www.loom.com"],
-    });
-  } catch (e) {
-    console.error("sanitize-html failed in Worker, using raw content:", e);
-  }
-
-  return { post: { ...post, content: sanitizedContent } };
+  return { post: { ...post, content: edgeSanitize(post.content) } };
 }
 
 export function meta({ data }: Route.MetaArgs) {
