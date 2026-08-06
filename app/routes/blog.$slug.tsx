@@ -56,10 +56,10 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     .from("blog_posts")
     .select("*")
     .eq("slug", params.slug)
-    .eq("status", "published")
     .single();
 
   if (error || !post) {
+    console.error("[blog loader] Post not found for slug:", params.slug, error);
     throw new Response("Not Found", { status: 404 });
   }
 
