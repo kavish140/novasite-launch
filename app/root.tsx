@@ -278,12 +278,8 @@ export default function App() {
           <Toaster />
           <Sonner />
           <LazyMotion features={domAnimation}>
-            <Suspense
-              fallback={
-                <div className="min-h-screen bg-background" aria-hidden="true" />
-              }
-            >
-              <Outlet />
+            <Outlet />
+            <Suspense fallback={null}>
               <ClientOnly>
                 <ScrollProgress />
                 <BookCallWidget />
