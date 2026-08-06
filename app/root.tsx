@@ -12,7 +12,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ClientOnly } from "@/components/ClientOnly";
-import { LazyMotion } from "framer-motion";
+import { LazyMotion, domAnimation } from "framer-motion";
 
 import "@/index.css";
 
@@ -276,7 +276,7 @@ export default function App() {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <LazyMotion features={() => import("framer-motion").then((m) => m.domAnimation)} strict>
+          <LazyMotion features={domAnimation}>
             <Outlet />
             <Suspense fallback={null}>
               <ClientOnly>
