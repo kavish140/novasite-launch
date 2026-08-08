@@ -1,3 +1,10 @@
+import aiSmartkitImg from "@/assets/Aismartkit.webp";
+import businessShowcaseImg from "@/assets/business-showcase.webp";
+import designShowcaseImg from "@/assets/design-showcase.webp";
+import ecommerceShowcaseImg from "@/assets/ecommerce-showcase.webp";
+import drDiptiGanatraImg from "@/assets/Drdiptiganatra.webp";
+import jupiterFinanceImg from "@/assets/jupiterfastfinance.webp";
+
 export type PortfolioProjectMeta = {
   slug: string;
   title: string;
@@ -14,7 +21,7 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     title: "AI SmartKit",
     description:
       "A cutting-edge AI tools platform with a clean interface, intuitive navigation, and high-performance architecture.",
-    image: "/assets/Aismartkit.webp",
+    image: aiSmartkitImg,
     liveUrl: "https://aismartkit.tech",
     localFocus: "Global-ready SaaS presentation for international product users.",
     useIframePreview: true,
@@ -24,8 +31,8 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     title: "Business Showcase",
     description:
       "A modern, premium business showcase showcasing state-of-the-art interactive sections and smooth user experiences.",
-    image: "/assets/business-showcase.png",
-    liveUrl: "https://buisness-showcase.sitenova.dev/",
+    image: businessShowcaseImg,
+    liveUrl: "https://business-showcase.sitenova.dev/",
     localFocus: "High-performance marketing site showing design aesthetics and templates.",
     useIframePreview: true,
   },
@@ -34,7 +41,7 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     title: "Design Showcase",
     description:
       "A premium UI/UX design system showcase displaying interactive components, modern typography, and curated color palettes.",
-    image: "/assets/design-showcase.png",
+    image: designShowcaseImg,
     liveUrl: "https://design.sitenova.dev/",
     localFocus: "Modern design library displaying web aesthetics and component templates.",
     useIframePreview: true,
@@ -44,7 +51,7 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     title: "E-commerce Showcase",
     description:
       "A modern, ultra-fast online storefront template featuring seamless cart actions, grid filtering, and checkout flows.",
-    image: "/assets/ecommerce-showcase.png",
+    image: ecommerceShowcaseImg,
     liveUrl: "https://ecommerce.sitenova.dev/",
     localFocus: "High-speed conversion checkout layout showing transaction flow and design templates.",
     useIframePreview: true,
@@ -57,7 +64,7 @@ export const customerProjects: PortfolioProjectMeta[] = [
     title: "Dr. Dipti Ganatra",
     description:
       "A professional clinic website designed for Dr. Dipti Ganatra with elegant branding and easy appointment flow.",
-    image: "/assets/Drdiptiganatra.webp",
+    image: drDiptiGanatraImg,
     liveUrl: "https://drdiptiganatra.com",
     localFocus: "Healthcare lead generation for Mumbai and Mulund audiences.",
   },
@@ -66,7 +73,7 @@ export const customerProjects: PortfolioProjectMeta[] = [
     title: "Jupiter Fast Finance",
     description:
       "A sleek finance landing page with modern UI, clear call-to-actions, and responsive design across all devices.",
-    image: "/assets/jupiterfastfinance.webp",
+    image: jupiterFinanceImg,
     liveUrl: "https://jupiterfastfinance.com",
     localFocus: "Finance-focused conversion flow built for India and global prospects.",
   },

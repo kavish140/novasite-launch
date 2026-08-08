@@ -62,7 +62,7 @@ const IframePreview = ({ src, title }: { src: string; title: string }) => {
           loaded ? "opacity-100 scale-[0.5] blur-0" : "opacity-0 scale-[0.55] blur-[2px]"
         }`}
         loading="lazy"
-        sandbox="allow-scripts"
+        sandbox="allow-scripts allow-same-origin"
       />
     </div>
   );

@@ -173,11 +173,25 @@
   }
 
   .interactive-card {
-    @apply transition-[transform,box-shadow] duration-300 ease-out;
+    @apply transition-all duration-300 ease-out;
   }
 
   .interactive-card:hover {
-    transform: translateY(-6px);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow-sm);
+  }
+
+  .link-minimal {
+    @apply relative inline-block transition-colors hover:text-primary/80;
+  }
+
+  .link-minimal::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 h-[2px] w-full origin-left scale-x-0 bg-primary transition-transform duration-300 ease-out;
+  }
+
+  .link-minimal:hover::after {
+    @apply scale-x-100;
   }
 
   .hover-glow:hover {
