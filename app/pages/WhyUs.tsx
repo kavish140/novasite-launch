@@ -301,7 +301,17 @@ const WhyUs = () => {
                     itemScope
                     itemType="https://schema.org/Review"
                   >
-                    <div className="flex gap-1 mb-4">
+                    <div className="hidden" itemProp="itemReviewed" itemScope itemType="https://schema.org/Organization">
+                      <meta itemProp="name" content="SiteNova" />
+                    </div>
+                    <div 
+                      className="flex gap-1 mb-4"
+                      itemProp="reviewRating"
+                      itemScope
+                      itemType="https://schema.org/Rating"
+                    >
+                      <meta itemProp="ratingValue" content="5" />
+                      <meta itemProp="bestRating" content="5" />
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
