@@ -10,6 +10,7 @@ import { faqs } from "@/lib/faq-data";
 import TechMarquee from "@/components/TechMarquee";
 import FeaturesSection from "@/components/FeaturesSection";
 import PortfolioSection from "@/components/PortfolioSection";
+import LocalAgencySection from "@/components/LocalAgencySection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import CtaSection from "@/components/CtaSection";
@@ -154,6 +155,8 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
             </div>
           </section>
           <PortfolioSection />
+
+          <LocalAgencySection />
 
           {/* Free Audit CTA Banner */}
           <section aria-label="Free website audit" className="py-16 sm:py-20">

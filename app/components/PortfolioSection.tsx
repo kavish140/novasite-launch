@@ -13,6 +13,7 @@ import BlurImage from "./BlurImage";
 const imageBySlug = {
   "dr-dipti-ganatra": drDiptiImage,
   "jupiter-finance": jupiterFinanceImage,
+  "corporate-zone": jupiterFinanceImage, // fallback only — useIframePreview renders live site
   "ai-smartkit": smartkitImage,
   "business-showcase": businessShowcaseImage,
   "design-showcase": designShowcaseImage,

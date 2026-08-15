@@ -77,6 +77,16 @@ export const customerProjects: PortfolioProjectMeta[] = [
     liveUrl: "https://jupiterfastfinance.com",
     localFocus: "Finance-focused conversion flow built for India and global prospects.",
   },
+  {
+    slug: "corporate-zone",
+    title: "CorporateZone",
+    description:
+      "A clean, professional B2B services website built for CorporateZone — strong brand identity, clear service hierarchy, and a lead-generation layout designed for corporate clients.",
+    image: jupiterFinanceImg, // unused — useIframePreview renders live site as the card thumbnail
+    liveUrl: "https://corporatezone.in",
+    localFocus: "B2B corporate services website targeting Mumbai and pan-India business clients.",
+    useIframePreview: true,
+  },
 ];
 
 export const portfolioSeoBySlug = Object.fromEntries(
