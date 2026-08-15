@@ -167,57 +167,80 @@ const PortfolioSection = () => {
                   transition={{ duration: 0.5, delay: i * 0.15 }}
                   className="group"
                 >
-                  <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow flex flex-col">
-                    {/* Thumbnail */}
-                    <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
-                      {project.useIframePreview && inView ? (
-                        <IframePreview src={project.liveUrl} title={project.title} />
-                      ) : (
-                        <img
-                          src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                          alt={`${project.title} website screenshot by SiteNova`}
-                          className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                          loading="lazy"
-                          decoding="async"
-                          width="500"
-                          height="400"
-                        />
-                      )}
-                    </div>
-
-                    {/* Card body */}
-                    <div className="p-6 flex flex-col flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
+                  {caseStudyPath ? (
+                    <Link
+                      to={caseStudyPath}
+                      className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow flex flex-col"
+                      aria-label={`View ${project.title} case study`}
+                    >
+                      {/* Thumbnail */}
+                      <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
+                        {project.useIframePreview && inView ? (
+                          <IframePreview src={project.liveUrl} title={project.title} />
+                        ) : (
+                          <img
+                            src={imageBySlug[project.slug as keyof typeof imageBySlug]}
+                            alt={`${project.title} website screenshot by SiteNova`}
+                            className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                            loading="lazy"
+                            decoding="async"
+                            width="500"
+                            height="400"
+                          />
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">{project.description}</p>
 
-                      <div className="flex flex-col gap-2">
-                        {/* Primary — internal case study */}
-                        {caseStudyPath ? (
-                          <Link
-                            to={caseStudyPath}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer"
-                            aria-label={`View ${project.title} case study`}
-                          >
-                            View Case Study
-                            <ArrowRight size={16} />
-                          </Link>
-                        ) : null}
-                        {/* Secondary — live site */}
-                        <a
-                          href={project.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border/60 bg-card/50 px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-                          aria-label={`Open ${project.title} live website`}
-                        >
-                          Open Live Site
-                          <ExternalLink size={13} />
-                        </a>
+                      {/* Card body */}
+                      <div className="p-6 flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">{project.description}</p>
+                        <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
+                          View Case Study
+                          <ArrowRight size={16} />
+                        </span>
                       </div>
-                    </div>
-                  </div>
+                    </Link>
+                  ) : (
+                    <a
+                      href={project.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow flex flex-col"
+                      aria-label={`Open ${project.title} live website`}
+                    >
+                      {/* Thumbnail */}
+                      <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
+                        {project.useIframePreview && inView ? (
+                          <IframePreview src={project.liveUrl} title={project.title} />
+                        ) : (
+                          <img
+                            src={imageBySlug[project.slug as keyof typeof imageBySlug]}
+                            alt={`${project.title} website screenshot by SiteNova`}
+                            className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                            loading="lazy"
+                            decoding="async"
+                            width="500"
+                            height="400"
+                          />
+                        )}
+                      </div>
+
+                      {/* Card body */}
+                      <div className="p-6 flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
+                          <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">{project.description}</p>
+                        <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
+                          Open Website
+                          <ExternalLink size={16} />
+                        </span>
+                      </div>
+                    </a>
+                  )}
                 </motion.article>
               );
             })}
