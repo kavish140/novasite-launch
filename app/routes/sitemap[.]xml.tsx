@@ -40,6 +40,9 @@ export async function loader({ context }: Route.LoaderArgs) {
     "/websites-for-lawyers",
     "/websites-for-startups",
     "/websites-for-restaurants",
+    "/portfolio/dr-dipti-ganatra",
+    "/portfolio/jupiter-fast-finance",
+    "/portfolio/corporate-zone",
   ];
 
   // Fetch live blog slugs from Supabase

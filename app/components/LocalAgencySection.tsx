@@ -17,9 +17,9 @@ const pillars = [
   },
   {
     icon: Languages,
-    title: "Hindi, Marathi, or English",
+    title: "Hindi, Marathi, Gujarati & Kutchi too",
     description:
-      "Discuss your project however you're most comfortable. Most offshore agencies can't say the same — we can.",
+      "Hindi, Marathi, Gujarati, Kutchi, or English — discuss your project however you're most comfortable. Most offshore agencies can't say the same.",
   },
   {
     icon: BadgeIndianRupee,

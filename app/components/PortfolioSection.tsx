@@ -1,6 +1,7 @@
 import { m as motion } from "framer-motion";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
 import { showcaseProjects, customerProjects } from "@/lib/portfolio-meta";
 import drDiptiImage from "@/assets/Drdiptiganatra.webp";
 import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
@@ -9,6 +10,7 @@ import businessShowcaseImage from "@/assets/business-showcase.webp";
 import designShowcaseImage from "@/assets/design-showcase.webp";
 import ecommerceShowcaseImage from "@/assets/ecommerce-showcase.webp";
 import BlurImage from "./BlurImage";
+import IframePreview from "./IframePreview";
 
 const imageBySlug = {
   "dr-dipti-ganatra": drDiptiImage,
@@ -20,54 +22,6 @@ const imageBySlug = {
   "ecommerce-showcase": ecommerceShowcaseImage,
 } as const;
 
-const IframePreview = ({ src, title }: { src: string; title: string }) => {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    // Timeout to show error message if iframe doesn't load in 8 seconds
-    const timer = setTimeout(() => {
-      if (!loaded) setError(true);
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [loaded]);
-
-  return (
-    <div className="w-full h-full relative overflow-hidden rounded-xl bg-background/50">
-      {!loaded && !error && (
-        <div className="absolute inset-0 bg-card/90 flex items-center justify-center pointer-events-none z-20">
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-              Connecting...
-            </span>
-          </div>
-        </div>
-      )}
-
-      {error && !loaded && (
-        <div className="absolute inset-0 bg-card/90 flex items-center justify-center pointer-events-none z-20 px-4 text-center">
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-sm font-medium text-destructive">Oops, the site preview is currently not available.</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">You can still click 'Open Website' to visit directly.</span>
-          </div>
-        </div>
-      )}
-
-      <iframe
-        src={src}
-        title={`${title} live preview`}
-        onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
-        className={`w-[200%] h-[200%] border-0 scale-[0.5] origin-top-left pointer-events-none transition-all duration-700 relative z-10 ${
-          loaded ? "opacity-100 scale-[0.5] blur-0" : "opacity-0 scale-[0.55] blur-[2px]"
-        }`}
-        loading="lazy"
-        sandbox="allow-scripts allow-same-origin"
-      />
-    </div>
-  );
-};
 
 const PortfolioSection = () => {
   const [inView, setInView] = useState(false);
@@ -195,51 +149,78 @@ const PortfolioSection = () => {
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {customerProjects.map((project, i) => (
-              <motion.article
-                key={project.slug}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.15 }}
-                className="group"
-              >
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow"
-                  aria-label={`Open ${project.title}`}
+            {customerProjects.map((project, i) => {
+              // Slug → internal case study page mapping
+              const caseStudySlugMap: Record<string, string> = {
+                "dr-dipti-ganatra": "/portfolio/dr-dipti-ganatra",
+                "jupiter-finance": "/portfolio/jupiter-fast-finance",
+                "corporate-zone": "/portfolio/corporate-zone",
+              };
+              const caseStudyPath = caseStudySlugMap[project.slug];
+
+              return (
+                <motion.article
+                  key={project.slug}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.15 }}
+                  className="group"
                 >
-                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
-                    {project.useIframePreview && inView ? (
-                      <IframePreview src={project.liveUrl} title={project.title} />
-                    ) : (
-                      <img
-                        src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                        alt={`${project.title} website screenshot by SiteNova`}
-                        className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                        loading="lazy"
-                        decoding="async"
-                        width="500"
-                        height="400"
-                      />
-                    )}
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
-                      <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                  <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow flex flex-col">
+                    {/* Thumbnail */}
+                    <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
+                      {project.useIframePreview && inView ? (
+                        <IframePreview src={project.liveUrl} title={project.title} />
+                      ) : (
+                        <img
+                          src={imageBySlug[project.slug as keyof typeof imageBySlug]}
+                          alt={`${project.title} website screenshot by SiteNova`}
+                          className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                          loading="lazy"
+                          decoding="async"
+                          width="500"
+                          height="400"
+                        />
+                      )}
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-5">{project.description}</p>
-                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
-                      Open Website
-                      <ExternalLink size={16} />
-                    </span>
+
+                    {/* Card body */}
+                    <div className="p-6 flex flex-col flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">{project.description}</p>
+
+                      <div className="flex flex-col gap-2">
+                        {/* Primary — internal case study */}
+                        {caseStudyPath ? (
+                          <Link
+                            to={caseStudyPath}
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer"
+                            aria-label={`View ${project.title} case study`}
+                          >
+                            View Case Study
+                            <ArrowRight size={16} />
+                          </Link>
+                        ) : null}
+                        {/* Secondary — live site */}
+                        <a
+                          href={project.liveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border/60 bg-card/50 px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                          aria-label={`Open ${project.title} live website`}
+                        >
+                          Open Live Site
+                          <ExternalLink size={13} />
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                </a>
-              </motion.article>
-            ))}
+                </motion.article>
+              );
+            })}
           </div>
         </div>
       </div>
