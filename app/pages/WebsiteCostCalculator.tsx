@@ -23,7 +23,7 @@ const PAGE_TIERS = [
   { id: "landing", label: "Landing Page", desc: "1 page · Great for campaigns or simple presence", base: 10000 },
   { id: "business", label: "Business Website", desc: "5–8 pages · Home, About, Services, Contact", base: 18000 },
   { id: "large", label: "Large Website", desc: "10+ pages · Multiple services, blog, team", base: 28000 },
-  { id: "ecom", label: "E-Commerce Store", desc: "Product catalogue + Razorpay / Stripe checkout", base: 35000 },
+  { id: "ecom", label: "E-Commerce Store", desc: "Product catalogue + Razorpay / Stripe checkout", base: 41000 },
   { id: "webapp", label: "Web Application", desc: "Custom dashboard, booking system, SaaS MVP", base: 50000 },
 ];
 
@@ -45,7 +45,7 @@ const TIMELINE = [
 const FAQS = [
   {
     q: "How much does a website cost in Mumbai?",
-    a: "A basic single-page website in Mumbai starts from ₹10,000. A multi-page business website typically costs ₹15,000–₹30,000. E-commerce and web applications range from ₹35,000 upwards depending on features. SiteNova provides transparent, fixed-price quotes.",
+    a: "A basic single-page website in Mumbai starts from ₹10,000. A multi-page business website typically costs ₹15,000–₹30,000. E-commerce and web applications range from ₹41,000 upwards depending on features. SiteNova provides transparent, fixed-price quotes.",
   },
   {
     q: "How much does a website cost in India in 2026?",

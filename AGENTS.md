@@ -56,7 +56,7 @@
 
 ### Services Offered
 - Business Websites (from ₹15,000)
-- E-Commerce Stores (Razorpay + Stripe integration)
+- E-Commerce Stores (from ₹18,000 — Razorpay + Stripe integration)
 - Custom Web Applications / Dashboards (from ₹30,000)
 - SEO & Speed Audits / Core Web Vitals (from ₹8,000)
 - Niche websites: Doctors, Lawyers, Finance/CA, Real Estate, Consultants, Startups, Restaurants
@@ -706,3 +706,21 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 - **Created** `app/pages/portfolio/DrDiptiGanatra.tsx`, `JupiterFastFinance.tsx`, `CorporateZone.tsx`.
 - **Created** route files: `portfolio.dr-dipti-ganatra.tsx`, `portfolio.jupiter-fast-finance.tsx`, `portfolio.corporate-zone.tsx`.
 - **Updated** `sitemap[.]xml.tsx` — added new portfolio routes.
+
+---
+
+### [2026-08-21] — E-Commerce pricing increase (~15–20%)
+
+- **Updated** `app/pages/services/Ecommerce.tsx` — increased all estimator prices by ~17.5%:
+  - Base WooCommerce/WordPress: ₹15,000 → ₹18,000
+  - Shopify add-on: ₹10,000 → ₹12,000; Custom React add-on: ₹20,000 → ₹24,000
+  - Medium catalog: ₹8,000 → ₹9,500; Large catalog: ₹15,000 → ₹18,000
+  - Stripe gateway: ₹3,000 → ₹3,500; Razorpay: ₹2,000 → ₹2,500; CoD: ₹1,000 → ₹1,200
+  - Coupons: ₹1,500 → ₹1,800; Inventory: ₹3,000 → ₹3,500; Accounts: ₹2,500 → ₹3,000; Multi-currency: ₹3,000 → ₹3,500
+  - Updated SEO title/description from ₹15,000 → ₹18,000
+  - Updated budget bracket logic: ₹30,000 → ₹35,000 threshold
+- **Updated** `app/routes/services.ecommerce.tsx` — route-level meta title/description updated to ₹18,000.
+- **Updated** `app/pages/WebsiteCostCalculator.tsx` — E-Commerce Store base: ₹35,000 → ₹41,000; FAQ text updated.
+- **Updated** `app/pages/Pricing.tsx` — meta description updated to mention ₹18,000 for e-commerce.
+- **Updated** `AGENTS.md` §1 Services Offered — E-Commerce Stores now shows `from ₹18,000`.
+

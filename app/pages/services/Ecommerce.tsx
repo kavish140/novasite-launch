@@ -33,29 +33,29 @@ export default function Ecommerce() {
 
   // Calculate Price
   const calculatePrice = () => {
-    let base = 15000;
+    let base = 18000;
 
     // Platform
-    if (platform === "shopify") base += 10000;
-    if (platform === "custom") base += 20000;
+    if (platform === "shopify") base += 12000;
+    if (platform === "custom") base += 24000;
 
     // Products
-    if (productsCount === "medium") base += 8000;
-    if (productsCount === "large") base += 15000;
+    if (productsCount === "medium") base += 9500;
+    if (productsCount === "large") base += 18000;
 
     // Gateways
     gateways.forEach((gw) => {
-      if (gw === "stripe") base += 3000;
-      if (gw === "razorpay") base += 2000;
-      if (gw === "cod") base += 1000;
+      if (gw === "stripe") base += 3500;
+      if (gw === "razorpay") base += 2500;
+      if (gw === "cod") base += 1200;
     });
 
     // Features
     features.forEach((feat) => {
-      if (feat === "coupons") base += 1500;
-      if (feat === "inventory") base += 3000;
-      if (feat === "accounts") base += 2500;
-      if (feat === "multicurrency") base += 3000;
+      if (feat === "coupons") base += 1800;
+      if (feat === "inventory") base += 3500;
+      if (feat === "accounts") base += 3000;
+      if (feat === "multicurrency") base += 3500;
     });
 
     return base;
@@ -89,7 +89,7 @@ export default function Ecommerce() {
       state: {
         projectType: "E-commerce Store",
         requirements: specsSummary,
-        budget: calculatePrice() > 30000 ? "Rs. 30,000+" : "Rs. 15,000 - 30,000",
+        budget: calculatePrice() > 35000 ? "Rs. 35,000+" : "Rs. 18,000 - 35,000",
       },
     });
   };
@@ -97,8 +97,8 @@ export default function Ecommerce() {
   return (
     <PageTransition>
       <SEO 
-        title="E-commerce Website Design in Mumbai | Online Store from ₹15,000 | SiteNova"
-        description="Launch your online store in Mumbai. SiteNova builds fast, mobile-first e-commerce websites with Razorpay integration, coupon systems & SEO — delivered in 14 days. From ₹15,000."
+        title="E-commerce Website Design in Mumbai | Online Store from ₹18,000 | SiteNova"
+        description="Launch your online store in Mumbai. SiteNova builds fast, mobile-first e-commerce websites with Razorpay integration, coupon systems & SEO — delivered in 14 days. From ₹18,000."
         canonicalUrl="/services/ecommerce"
         keywords={["e-commerce web design Mumbai", "online store developer Mumbai", "Shopify developer Mumbai", "WooCommerce website designer", "custom e-commerce development"]}
         jsonLd={[

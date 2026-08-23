@@ -69,7 +69,7 @@ const Pricing = () => {
     <PageTransition>
       <SEO 
         title="Website Design Pricing in Mumbai | SiteNova — Plans Starting ₹10,000 Onwards"
-        description="Transparent website design pricing in Mumbai. SiteNova plans start from ₹10,000 onwards for landing pages, ₹15,000 onwards for business sites, and custom quotes for e-commerce and web apps."
+        description="Transparent website design pricing in Mumbai. SiteNova plans start from ₹10,000 onwards for landing pages, ₹15,000 onwards for business sites, and custom quotes for e-commerce (from ₹18,000) and web apps."
         canonicalUrl="/pricing"
         keywords={["website pricing Mumbai", "web design cost Mumbai", "affordable web design Mumbai", "website package India", "web design 10000 onwards"]}
         jsonLd={{
