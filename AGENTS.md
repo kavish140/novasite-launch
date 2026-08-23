@@ -183,6 +183,7 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `location.mahalakshmi.tsx` | `/location/mahalakshmi` | `pages/locations/Mahalakshmi.tsx` |
 | `location.pedder-road.tsx` | `/location/pedder-road` | `pages/locations/PedderRoad.tsx` |
 | `location.powai.tsx` | `/location/powai` | `pages/locations/Powai.tsx` |
+| `lp.web-design.tsx` | `/lp/web-design` | `pages/lp/WebDesignLP.tsx` — **noindex** paid ad LP |
 | `sitemap[.]xml.tsx` | `/sitemap.xml` | (inline handler — Worker-first) |
 | `$.tsx` | `*` (catch-all) | `pages/NotFound.tsx` |
 
@@ -211,6 +212,14 @@ This injects `<title>`, meta tags, Open Graph, Twitter Card, canonical link, rob
 | Website Cost Calculator | `pages/WebsiteCostCalculator.tsx` | Interactive calculator with dynamic pricing |
 | Why Us | `pages/WhyUs.tsx` | Differentiators, trust signals |
 | Not Found | `pages/NotFound.tsx` | 404 page |
+
+### Paid Ad Landing Pages (`pages/lp/`)
+Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`. Insert `source: "paid_ad"` into `audit_requests` on form submit. Ad leads appear in a separate "Ad Leads" tab in the Admin Dashboard.
+
+| Page | URL | Description |
+|---|---|---|
+| `pages/lp/WebDesignLP.tsx` | `/lp/web-design` | Google + Meta ads LP. Offer: Free Website Audit. Sections: Hero+form, social proof strip, pain points, how it works, testimonials, FAQ, final CTA form, sticky mobile CTA bar. Fires `trackAuditSubmit()` + Google Ads conversion `FLS8CJvM3LscEJy2kd5D` on submit. |
+
 
 ### Blog Pages
 | Page | File | Description |
@@ -374,7 +383,7 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 ### Database Tables
 
 #### `audit_requests`
-Stores leads from: Free Audit form, Exit Intent Popup, and Contact form submissions.
+Stores leads from: Free Audit form, Exit Intent Popup, Contact form submissions, and the paid ad landing page (`/lp/web-design`).
 
 | Column | Type | Notes |
 |---|---|---|
@@ -384,6 +393,7 @@ Stores leads from: Free Audit form, Exit Intent Popup, and Contact form submissi
 | `mobile` | text | 10-digit Indian mobile number |
 | `website_url` | text | Their website URL or "Exit popup lead — Industry: X" |
 | `status` | text | `'pending'` or `'completed'` |
+| `source` | text (nullable) | `'paid_ad'` for leads from `/lp/web-design`; `null` for all organic leads. Used to split the Admin Dashboard "Audit Requests" tab (organic) from the "Ad Leads" tab (paid). **You must add this column in Supabase:** `ALTER TABLE audit_requests ADD COLUMN source text;` |
 | `created_at` | timestamptz | Auto-set |
 
 #### `blog_posts`
@@ -723,4 +733,14 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 - **Updated** `app/pages/WebsiteCostCalculator.tsx` — E-Commerce Store base: ₹35,000 → ₹41,000; FAQ text updated.
 - **Updated** `app/pages/Pricing.tsx` — meta description updated to mention ₹18,000 for e-commerce.
 - **Updated** `AGENTS.md` §1 Services Offered — E-Commerce Stores now shows `from ₹18,000`.
+
+---
+
+### [2026-08-23] — Paid Ad Landing Page + Admin Ad Leads Tab
+
+- **Created** `app/pages/lp/WebDesignLP.tsx` — high-converting landing page for Google + Meta ads. Offer: Free Website Audit ("Is Your Website Costing You Customers?"). No Navbar/Footer. Sections: hero+form, social proof strip, 3 pain-point cards, how it works (3 steps), 2 testimonials, FAQ (4 questions), final CTA form, sticky mobile CTA bar. Fires `trackAuditSubmit()` + `trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D")` on submit. Inserts to `audit_requests` with `source: "paid_ad"`.
+- **Created** `app/routes/lp.web-design.tsx` — RR7 route wrapper for `/lp/web-design`. `noindex: true`.
+- **Updated** `app/pages/admin/AdminDashboard.tsx` — added `source` field to `AuditRequest` type; added "Ad Leads" sidebar tab (purple `Megaphone` icon) with badge count; added full Ad Leads tab content (pending/resolved tables, purple "Ad Lead" badge, search, info banner); updated Overview KPI grid from 4→5 cards adding "Ad Leads" card; "Audit Requests" tab now excludes `paid_ad` rows; both tabs have Export CSV.
+- **Action required**: Run `ALTER TABLE audit_requests ADD COLUMN source text;` in Supabase SQL Editor to add the `source` column.
+
 

@@ -28,7 +28,8 @@ import {
   LogOut, 
   Clock,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Megaphone
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
@@ -40,6 +41,7 @@ type AuditRequest = {
   mobile: string;
   website_url: string;
   status: 'pending' | 'completed';
+  source?: string | null;
   created_at: string;
 };
 
@@ -96,7 +98,7 @@ const PhoneCell = ({ mobile, className }: { mobile: string, className?: string }
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'blogs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'ad_leads' | 'blogs'>('overview');
   const [requests, setRequests] = useState<AuditRequest[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -241,12 +243,24 @@ export default function AdminDashboard() {
     r.website_url.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  const pendingRequests = filteredRequests.filter(r => r.status !== 'completed');
-  const completedRequests = filteredRequests.filter(r => r.status === 'completed');
+  const pendingRequests = filteredRequests.filter(r => r.status !== 'completed' && r.source !== 'paid_ad');
+  const completedRequests = filteredRequests.filter(r => r.status === 'completed' && r.source !== 'paid_ad');
+
+  // Ad leads: submitted from the /lp/web-design paid ads landing page
+  const allAdLeads = requests.filter(r => r.source === 'paid_ad');
+  const filteredAdLeads = allAdLeads.filter(r =>
+    r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (r.mobile && r.mobile.includes(searchQuery)) ||
+    r.website_url.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const pendingAdLeads = filteredAdLeads.filter(r => r.status !== 'completed');
+  const completedAdLeads = filteredAdLeads.filter(r => r.status === 'completed');
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'leads', label: 'Audit Requests', icon: Users, badge: requests.filter(r => r.status !== 'completed').length },
+    { id: 'leads', label: 'Audit Requests', icon: Users, badge: requests.filter(r => r.status !== 'completed' && r.source !== 'paid_ad').length },
+    { id: 'ad_leads', label: 'Ad Leads', icon: Megaphone, badge: allAdLeads.filter(r => r.status !== 'completed').length },
     { id: 'blogs', label: 'Blog Posts', icon: FileText },
   ] as const;
 
@@ -320,13 +334,13 @@ export default function AdminDashboard() {
         {/* Top Header Actions */}
         <header className="h-16 flex flex-shrink-0 items-center justify-between px-6 lg:px-8 border-b border-border/40 bg-background/95 backdrop-blur z-10">
           <h2 className="text-xl font-bold tracking-tight capitalize">
-            {activeTab === 'leads' ? 'Audit Requests' : activeTab}
+            {activeTab === 'leads' ? 'Audit Requests' : activeTab === 'ad_leads' ? 'Ad Leads' : activeTab}
           </h2>
           <div className="flex items-center gap-2">
             <Button onClick={fetchData} variant="ghost" size="icon" title="Refresh Data">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-            {(activeTab === 'overview' || activeTab === 'leads') && (
+            {(activeTab === 'overview' || activeTab === 'leads' || activeTab === 'ad_leads') && (
               <Button onClick={handleExport} variant="outline" size="sm" className="gap-2">
                 <Download className="w-4 h-4" />
                 <span className="hidden sm:inline">Export CSV</span>
@@ -350,7 +364,7 @@ export default function AdminDashboard() {
           {activeTab === 'overview' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* KPI Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
                 <Card className="bg-card/40 border-border/40">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
@@ -361,14 +375,24 @@ export default function AdminDashboard() {
                     <p className="text-xs text-muted-foreground mt-1">All time requests</p>
                   </CardContent>
                 </Card>
-                <Card className="bg-card/40 border-border/40">
+                <Card className="bg-card/40 border-border/40 border-amber-500/20">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">Pending Action</CardTitle>
                     <Clock className="h-4 w-4 text-amber-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{requests.filter(r => r.status !== 'completed').length}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Require follow up</p>
+                    <div className="text-2xl font-bold">{requests.filter(r => r.status !== 'completed' && r.source !== 'paid_ad').length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Organic leads pending</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-card/40 border-border/40 border-purple-500/20">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Ad Leads</CardTitle>
+                    <Megaphone className="h-4 w-4 text-purple-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{allAdLeads.length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">{allAdLeads.filter(r => r.status !== 'completed').length} pending follow-up</p>
                   </CardContent>
                 </Card>
                 <Card className="bg-card/40 border-border/40">
@@ -516,6 +540,128 @@ export default function AdminDashboard() {
                               </TableCell>
                               <TableCell>
                                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 hover:text-emerald-500 border-emerald-500/20">Resolved</Badge>
+                              </TableCell>
+                              <TableCell className="font-medium text-muted-foreground">{request.name}</TableCell>
+                              <TableCell className="text-muted-foreground">{request.email}</TableCell>
+                              <TableCell>
+                                <PhoneCell mobile={request.mobile} className="text-muted-foreground hover:text-primary" />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button size="sm" variant="ghost" onClick={() => updateRequestStatus(request.id, 'pending')} className="gap-2 h-8 text-muted-foreground">
+                                  <RotateCcw className="w-3.5 h-3.5" />
+                                  Reopen
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* AD LEADS TAB */}
+          {activeTab === 'ad_leads' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-sm text-purple-400">
+                <Megaphone className="w-4 h-4 flex-shrink-0" />
+                <span>These leads came from your Google / Meta paid ad campaigns via <strong className="text-purple-300">/lp/web-design</strong>.</span>
+              </div>
+
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, email, or website..."
+                  className="pl-9 bg-card/50"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  Pending Follow-up
+                  <Badge variant="secondary">{pendingAdLeads.length}</Badge>
+                </h3>
+                <div className="bg-card/40 border border-border/40 rounded-xl overflow-hidden shadow-sm">
+                  {loading ? (
+                    <div className="p-8 text-center text-muted-foreground">Loading...</div>
+                  ) : pendingAdLeads.length === 0 ? (
+                    <div className="p-8 text-center text-muted-foreground bg-secondary/10">No pending ad leads! You're all caught up.</div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader className="bg-secondary/20">
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Mobile</TableHead>
+                            <TableHead>Website</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pendingAdLeads.map((request) => (
+                            <TableRow key={request.id}>
+                              <TableCell className="whitespace-nowrap text-muted-foreground">
+                                {format(new Date(request.created_at), "MMM d, yyyy")}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="bg-purple-500/10 text-purple-400 border-purple-500/20">Ad Lead</Badge>
+                              </TableCell>
+                              <TableCell className="font-medium">{request.name}</TableCell>
+                              <TableCell>{request.email}</TableCell>
+                              <TableCell>
+                                <PhoneCell mobile={request.mobile} />
+                              </TableCell>
+                              <TableCell>
+                                <a href={request.website_url.startsWith('http') ? request.website_url : `https://${request.website_url}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                  {request.website_url}
+                                </a>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button size="sm" onClick={() => updateRequestStatus(request.id, 'completed')} className="gap-2">
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  Resolve
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {completedAdLeads.length > 0 && (
+                <div className="space-y-4 pt-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2 text-muted-foreground">
+                    Resolved Ad Leads
+                    <Badge variant="outline">{completedAdLeads.length}</Badge>
+                  </h3>
+                  <div className="bg-card/20 border border-border/30 rounded-xl overflow-hidden shadow-sm opacity-90">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader className="bg-secondary/10">
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Mobile</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {completedAdLeads.map((request) => (
+                            <TableRow key={request.id}>
+                              <TableCell className="whitespace-nowrap text-muted-foreground">
+                                {format(new Date(request.created_at), "MMM d, yyyy")}
                               </TableCell>
                               <TableCell className="font-medium text-muted-foreground">{request.name}</TableCell>
                               <TableCell className="text-muted-foreground">{request.email}</TableCell>
