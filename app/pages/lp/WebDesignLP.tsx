@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { m as motion } from "framer-motion";
 import {
@@ -348,6 +348,15 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function WebDesignLP() {
+  // Track page view for analytics — fires once on mount, client-side only
+  useEffect(() => {
+    supabase
+      .from("page_views")
+      .insert([{ page: "/lp/web-design", referrer: document.referrer || null }])
+      .then(() => {}) // fire-and-forget — never block or alert on failure
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <MinimalHeader />

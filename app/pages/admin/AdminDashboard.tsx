@@ -29,10 +29,14 @@ import {
   Clock,
   RefreshCw,
   AlertTriangle,
-  Megaphone
+  Megaphone,
+  TrendingUp,
+  MousePointerClick,
+  Eye,
+  Percent,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
 type AuditRequest = {
   id: string;
@@ -49,6 +53,13 @@ type BlogPost = {
   id: string;
   title: string;
   slug: string;
+  created_at: string;
+};
+
+type PageView = {
+  id: string;
+  page: string;
+  referrer: string | null;
   created_at: string;
 };
 
@@ -98,9 +109,10 @@ const PhoneCell = ({ mobile, className }: { mobile: string, className?: string }
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'ad_leads' | 'blogs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'ad_leads' | 'analytics' | 'blogs'>('overview');
   const [requests, setRequests] = useState<AuditRequest[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [pageViews, setPageViews] = useState<PageView[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -115,13 +127,18 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [requestsResponse, postsResponse] = await Promise.all([
+      const [requestsResponse, postsResponse, pageViewsResponse] = await Promise.all([
         supabase.from("audit_requests").select("*").order("created_at", { ascending: false }),
-        supabase.from("blog_posts").select("id, title, slug, created_at").order("created_at", { ascending: false })
+        supabase.from("blog_posts").select("id, title, slug, created_at").order("created_at", { ascending: false }),
+        supabase.from("page_views").select("*").eq("page", "/lp/web-design").order("created_at", { ascending: false }),
       ]);
 
       if (requestsResponse.error) throw requestsResponse.error;
       if (postsResponse.error) throw postsResponse.error;
+      // page_views is optional — gracefully handle if table doesn't exist yet
+      if (!pageViewsResponse.error) {
+        setPageViews(pageViewsResponse.data || []);
+      }
 
       setRequests(requestsResponse.data || []);
       setPosts(postsResponse.data || []);
@@ -257,10 +274,54 @@ export default function AdminDashboard() {
   const pendingAdLeads = filteredAdLeads.filter(r => r.status !== 'completed');
   const completedAdLeads = filteredAdLeads.filter(r => r.status === 'completed');
 
+  // ── Analytics derived data (LP /lp/web-design) ──────────────────────────
+  const totalLPVisits = pageViews.length;
+  const totalAdLeads = allAdLeads.length;
+  const conversionRate = totalLPVisits > 0
+    ? ((totalAdLeads / totalLPVisits) * 100).toFixed(1)
+    : "0.0";
+
+  const visitChartData = useMemo(() => {
+    const days = Array.from({ length: 30 }).map((_, i) => {
+      const d = subDays(new Date(), 29 - i);
+      return { date: format(d, 'MMM dd'), visits: 0, leads: 0 };
+    });
+    pageViews.forEach(pv => {
+      const pvDate = format(new Date(pv.created_at), 'MMM dd');
+      const day = days.find(d => d.date === pvDate);
+      if (day) day.visits += 1;
+    });
+    allAdLeads.forEach(lead => {
+      const leadDate = format(new Date(lead.created_at), 'MMM dd');
+      const day = days.find(d => d.date === leadDate);
+      if (day) day.leads += 1;
+    });
+    return days;
+  }, [pageViews, allAdLeads]);
+
+  const referrerData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    pageViews.forEach(pv => {
+      let ref = pv.referrer || 'Direct';
+      try {
+        const url = new URL(ref);
+        ref = url.hostname.replace('www.', '');
+      } catch {
+        ref = ref.startsWith('http') ? ref : 'Direct';
+      }
+      counts[ref] = (counts[ref] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([source, count]) => ({ source, count, pct: ((count / totalLPVisits) * 100).toFixed(1) }));
+  }, [pageViews, totalLPVisits]);
+
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'leads', label: 'Audit Requests', icon: Users, badge: requests.filter(r => r.status !== 'completed' && r.source !== 'paid_ad').length },
     { id: 'ad_leads', label: 'Ad Leads', icon: Megaphone, badge: allAdLeads.filter(r => r.status !== 'completed').length },
+    { id: 'analytics', label: 'LP Analytics', icon: TrendingUp },
     { id: 'blogs', label: 'Blog Posts', icon: FileText },
   ] as const;
 
@@ -334,7 +395,7 @@ export default function AdminDashboard() {
         {/* Top Header Actions */}
         <header className="h-16 flex flex-shrink-0 items-center justify-between px-6 lg:px-8 border-b border-border/40 bg-background/95 backdrop-blur z-10">
           <h2 className="text-xl font-bold tracking-tight capitalize">
-            {activeTab === 'leads' ? 'Audit Requests' : activeTab === 'ad_leads' ? 'Ad Leads' : activeTab}
+            {activeTab === 'leads' ? 'Audit Requests' : activeTab === 'ad_leads' ? 'Ad Leads' : activeTab === 'analytics' ? 'LP Analytics' : activeTab}
           </h2>
           <div className="flex items-center gap-2">
             <Button onClick={fetchData} variant="ghost" size="icon" title="Refresh Data">
@@ -682,6 +743,127 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ANALYTICS TAB */}
+          {activeTab === 'analytics' && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+              {/* Info banner */}
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-sm text-primary">
+                <TrendingUp className="w-4 h-4 flex-shrink-0" />
+                <span>Showing visit and conversion data for <strong>/lp/web-design</strong> — your paid ads landing page.</span>
+              </div>
+
+              {/* KPI cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <Card className="bg-card/40 border-border/40">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Visits</CardTitle>
+                    <Eye className="h-4 w-4 text-primary" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{totalLPVisits}</div>
+                    <p className="text-xs text-muted-foreground mt-1">All-time page views</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-card/40 border-border/40">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Conversions</CardTitle>
+                    <MousePointerClick className="h-4 w-4 text-emerald-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{totalAdLeads}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Form submissions (ad leads)</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-card/40 border-border/40">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Conversion Rate</CardTitle>
+                    <Percent className="h-4 w-4 text-accent" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{conversionRate}%</div>
+                    <p className="text-xs text-muted-foreground mt-1">Visits → form submissions</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-card/40 border-border/40">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Pending Follow-up</CardTitle>
+                    <Megaphone className="h-4 w-4 text-purple-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{allAdLeads.filter(r => r.status !== 'completed').length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Ad leads awaiting action</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* 30-day visits + conversions chart */}
+              <Card className="bg-card/30 border-border/40">
+                <CardHeader>
+                  <CardTitle>Visits &amp; Conversions — Last 30 Days</CardTitle>
+                  <CardDescription>Daily page visits (blue) vs form submissions / conversions (green) on the ad landing page.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-80 w-full pl-0">
+                  {loading ? (
+                    <div className="h-full flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+                  ) : totalLPVisits === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground text-sm">
+                      <Eye className="w-8 h-8 opacity-30" />
+                      <p>No visit data yet. Make sure the <code className="text-xs bg-secondary px-1 py-0.5 rounded">page_views</code> table exists in Supabase.</p>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={visitChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.4} />
+                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} dy={10}
+                          tickFormatter={(v, i) => i % 5 === 0 ? v : ''} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} dx={-10} />
+                        <RechartsTooltip
+                          cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+                          contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px' }}
+                        />
+                        <Line type="monotone" dataKey="visits" name="Visits" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="leads" name="Conversions" stroke="hsl(142, 71%, 45%)" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Referrer breakdown */}
+              <Card className="bg-card/30 border-border/40">
+                <CardHeader>
+                  <CardTitle>Traffic Sources</CardTitle>
+                  <CardDescription>Where your landing page visitors are coming from.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="py-8 text-center text-muted-foreground text-sm">Loading...</div>
+                  ) : referrerData.length === 0 ? (
+                    <div className="py-8 text-center text-muted-foreground text-sm">No referrer data yet.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {referrerData.map(({ source, count, pct }) => (
+                        <div key={source} className="flex items-center gap-3">
+                          <div className="w-28 text-sm text-muted-foreground truncate flex-shrink-0">{source}</div>
+                          <div className="flex-1 h-2 bg-secondary/40 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full transition-all duration-500"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <div className="text-sm font-semibold w-10 text-right">{count}</div>
+                          <div className="text-xs text-muted-foreground w-12 text-right">{pct}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
             </div>
           )}
 
