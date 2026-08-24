@@ -184,6 +184,8 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `location.pedder-road.tsx` | `/location/pedder-road` | `pages/locations/PedderRoad.tsx` |
 | `location.powai.tsx` | `/location/powai` | `pages/locations/Powai.tsx` |
 | `lp.web-design.tsx` | `/lp/web-design` | `pages/lp/WebDesignLP.tsx` — **noindex** paid ad LP |
+| `lp.thank-you-quote.tsx` | `/lp/thank-you-quote` | `pages/lp/LpThankYouQuote.tsx` — **noindex** LP quote confirmation |
+| `lp.thank-you-audit.tsx` | `/lp/thank-you-audit` | `pages/lp/LpThankYouAudit.tsx` — **noindex** LP audit confirmation |
 | `sitemap[.]xml.tsx` | `/sitemap.xml` | (inline handler — Worker-first) |
 | `$.tsx` | `*` (catch-all) | `pages/NotFound.tsx` |
 
@@ -218,7 +220,9 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 
 | Page | URL | Description |
 |---|---|---|
-| `pages/lp/WebDesignLP.tsx` | `/lp/web-design` | Google + Meta ads LP. Offer: Free Website Audit. Sections: Hero+form, social proof strip, pain points, how it works, testimonials, FAQ, final CTA form, sticky mobile CTA bar. Fires `trackAuditSubmit()` + Google Ads conversion `FLS8CJvM3LscEJy2kd5D` on submit. |
+| `pages/lp/WebDesignLP.tsx` | `/lp/web-design` | Google + Meta ads LP. **Hero**: inline 3-step `QuoteWizard` (project type → requirements/budget/timeline → contact details). Saves to `quote_requests` Supabase table + sends email via Web3Forms. **Bottom CTA**: 4-field free audit form (`LeadForm`) — saves to `audit_requests` with `source: 'paid_ad'`. Fires `trackAuditSubmit()` on audit submit. Sections: hero+wizard, social proof strip, pain points, how it works, testimonials, FAQ, final audit CTA. Sticky mobile CTA bar. |
+| `pages/lp/LpThankYouQuote.tsx` | `/lp/thank-you-quote` | Confirmation page for LP quote form. Shows name + project type + email. Fires `trackQuoteSubmit()`. Guard: redirects to `/lp/web-design` if accessed directly without router state. |
+| `pages/lp/LpThankYouAudit.tsx` | `/lp/thank-you-audit` | Confirmation page for LP audit form. Shows name + email. Fires `trackAuditSubmit()`. Guard: redirects to `/lp/web-design` if accessed directly without router state. |
 
 
 ### Blog Pages
@@ -394,6 +398,24 @@ Stores leads from: Free Audit form, Exit Intent Popup, Contact form submissions,
 | `website_url` | text | Their website URL or "Exit popup lead — Industry: X" |
 | `status` | text | `'pending'` or `'completed'` |
 | `source` | text (nullable) | `'paid_ad'` for leads from `/lp/web-design`; `null` for all organic leads. Used to split the Admin Dashboard "Audit Requests" tab (organic) from the "Ad Leads" tab (paid). **You must add this column in Supabase:** `ALTER TABLE audit_requests ADD COLUMN source text;` |
+| `created_at` | timestamptz | Auto-set |
+
+#### `quote_requests`
+Stores quote leads from the LP quote wizard (`/lp/web-design` hero form). Created 2026-08-24.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | Primary key |
+| `name` | text | Lead's full name |
+| `email` | text | Lead's email address |
+| `phone` | text | Phone / WhatsApp number |
+| `business_name` | text (nullable) | Business name (optional) |
+| `project_type` | text | Selected project type (e.g., "Business Website") |
+| `requirements` | text (nullable) | Project description from Step 2 |
+| `budget` | text (nullable) | Selected budget range |
+| `timeline` | text (nullable) | Selected timeline preference |
+| `source` | text | Always `'paid_ad'` (from LP) |
+| `status` | text | `'pending'` or `'completed'` |
 | `created_at` | timestamptz | Auto-set |
 
 #### `blog_posts`
@@ -742,5 +764,16 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 - **Created** `app/routes/lp.web-design.tsx` — RR7 route wrapper for `/lp/web-design`. `noindex: true`.
 - **Updated** `app/pages/admin/AdminDashboard.tsx` — added `source` field to `AuditRequest` type; added "Ad Leads" sidebar tab (purple `Megaphone` icon) with badge count; added full Ad Leads tab content (pending/resolved tables, purple "Ad Lead" badge, search, info banner); updated Overview KPI grid from 4→5 cards adding "Ad Leads" card; "Audit Requests" tab now excludes `paid_ad` rows; both tabs have Export CSV.
 - **Action required**: Run `ALTER TABLE audit_requests ADD COLUMN source text;` in Supabase SQL Editor to add the `source` column.
+
+---
+
+### [2026-08-24] — LP Dual-Form Redesign (Quote Wizard + Audit Form)
+
+- **Modified** `app/pages/lp/WebDesignLP.tsx` — full redesign. Hero form replaced with inline 3-step `QuoteWizard` component (Step 1: project type cards, Step 2: requirements + budget + timeline selectors, Step 3: contact details). Quote wizard saves to new `quote_requests` Supabase table + sends email via Web3Forms (`access_key: 671591b9-2925-44ba-ba00-12e0e092bb34`). Bottom CTA section retains 4-field `LeadForm` (audit) — now navigates to `/lp/thank-you-audit` instead of `/thank-you`. Hero copy updated to quote-first offer. How It Works steps updated to reflect quote flow. Sticky mobile CTA now scrolls to quote wizard (`#qw-name`).
+- **Created** `app/pages/lp/LpThankYouQuote.tsx` — confirmation page for LP quote submissions. Fires `trackQuoteSubmit()`. Guards against direct URL access (redirects to `/lp/web-design`).
+- **Created** `app/pages/lp/LpThankYouAudit.tsx` — confirmation page for LP audit submissions. Fires `trackAuditSubmit()`. Guards against direct URL access (redirects to `/lp/web-design`).
+- **Created** `app/routes/lp.thank-you-quote.tsx` — RR7 route for `/lp/thank-you-quote`. `noindex: true`.
+- **Created** `app/routes/lp.thank-you-audit.tsx` — RR7 route for `/lp/thank-you-audit`. `noindex: true`.
+- **Supabase**: New `quote_requests` table created (id, name, email, phone, business_name, project_type, requirements, budget, timeline, source, status, created_at).
 
 

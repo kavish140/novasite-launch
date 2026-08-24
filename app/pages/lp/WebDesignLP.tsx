@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
-import { m as motion } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Smartphone,
   Zap,
   ArrowRight,
+  ArrowLeft,
   CheckCircle2,
   ShieldCheck,
   Lock,
@@ -15,6 +16,13 @@ import {
   Phone,
   ChevronDown,
   MessageCircle,
+  Monitor,
+  Globe,
+  ShoppingCart,
+  Code2,
+  RefreshCw,
+  Building,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,9 +38,56 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import {
   trackAuditSubmit,
-  trackGoogleAdsConversion,
 } from "@/lib/analytics";
 import { PHONE_TEL_LINK, PHONE_NUMBER, WHATSAPP_URL } from "@/lib/constants";
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const projectTypes = [
+  {
+    id: "Landing Page",
+    title: "Landing Page",
+    description: "One-page site built for conversion, single product, or event.",
+    icon: Monitor,
+  },
+  {
+    id: "Business Website",
+    title: "Business Website",
+    description: "Multi-page site showcasing services, team, and building authority.",
+    icon: Globe,
+  },
+  {
+    id: "E-commerce Store",
+    title: "E-commerce Store",
+    description: "Online shop equipped with checkout, products, and payments.",
+    icon: ShoppingCart,
+  },
+  {
+    id: "Custom Web App",
+    title: "Custom Web App",
+    description: "Advanced application with custom dashboard, logic, and database.",
+    icon: Code2,
+  },
+  {
+    id: "Website Redesign",
+    title: "Website Redesign",
+    description: "Modernize styling, improve SEO, and speed up your existing website.",
+    icon: RefreshCw,
+  },
+];
+
+const budgetOptions = [
+  "Rs. 10,000 - 15,000",
+  "Rs. 15,000 - 30,000",
+  "Rs. 30,000+",
+  "Flexible / Custom",
+];
+
+const timelineOptions = [
+  "Urgent (< 2 weeks)",
+  "Normal (2-4 weeks)",
+  "Flexible (1+ months)",
+];
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -55,6 +110,450 @@ function MinimalHeader() {
     </header>
   );
 }
+
+// ── Inline Quote Wizard (Hero form) ──────────────────────────────────────────
+
+function QuoteWizard({ className }: { className?: string }) {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const [step, setStep] = useState(1);
+  const [projectType, setProjectType] = useState("");
+  const [requirements, setRequirements] = useState("");
+  const [budget, setBudget] = useState("Rs. 15,000 - 30,000");
+  const [timeline, setTimeline] = useState("Normal (2-4 weeks)");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const isStep3Valid = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return (
+      name.trim().length > 0 &&
+      emailRegex.test(email) &&
+      phone.trim().replace(/\D/g, "").length >= 10
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isStep3Valid()) return;
+
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      // 1. Save to Supabase quote_requests
+      const { error: dbError } = await supabase.from("quote_requests").insert([
+        {
+          name,
+          email,
+          phone,
+          business_name: businessName || null,
+          project_type: projectType,
+          requirements,
+          budget,
+          timeline,
+          source: "paid_ad",
+        },
+      ]);
+      if (dbError) throw dbError;
+
+      // 2. Send email via Web3Forms
+      const formData = new FormData();
+      formData.append("access_key", "671591b9-2925-44ba-ba00-12e0e092bb34");
+      formData.append("subject", `New LP Quote Lead — ${name} (${projectType})`);
+      formData.append("from_name", "SiteNova LP Quote Form");
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("phone", phone);
+      formData.append("business_name", businessName || "Not specified");
+      formData.append("project_type", projectType);
+      formData.append("requirements", requirements);
+      formData.append("budget", budget);
+      formData.append("timeline", timeline);
+      formData.append("source", "paid_ad — /lp/web-design");
+
+      try {
+        const res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        if (!data.success) {
+          // Non-fatal — DB save already succeeded; log and continue
+          console.warn("Web3Forms warning:", data.message);
+        }
+      } catch {
+        // CORS fallback
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: formData,
+          mode: "no-cors",
+        }).catch((err) => console.warn("Web3Forms network error:", err));
+      }
+
+      navigate("/lp/thank-you-quote", {
+        state: { name, projectType, email },
+      });
+    } catch (err) {
+      console.error("Quote submit error:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again or contact us via WhatsApp.";
+      setSubmitError(message);
+      toast({ title: "Error", description: message, variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const stepsLabels = ["Project Type", "Requirements", "Contact"];
+  const linePercent = step === 1 ? "0%" : step === 2 ? "50%" : "100%";
+
+  return (
+    <div className={className}>
+      <div className="relative">
+        {/* Glow border */}
+        <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/40 to-accent/30 rounded-3xl blur opacity-60" />
+        <div className="relative bg-card/90 backdrop-blur-xl border border-border/60 rounded-3xl p-6 shadow-2xl">
+          {/* Header */}
+          <div className="mb-5 text-center">
+            <h2 className="text-2xl font-bold font-heading mb-1">
+              Get a Free Quote
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Tell us about your project — we'll get back within{" "}
+              <span className="text-foreground font-semibold">24 hours</span>.
+            </p>
+          </div>
+
+          {/* Step progress */}
+          <div className="mb-5 relative max-w-xs mx-auto">
+            <div className="flex items-center justify-between">
+              {stepsLabels.map((label, idx) => {
+                const stepNum = idx + 1;
+                const isActive = step === stepNum;
+                const isCompleted = step > stepNum;
+                return (
+                  <div key={idx} className="flex flex-col items-center z-10 relative">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
+                        isCompleted
+                          ? "bg-primary text-primary-foreground"
+                          : isActive
+                          ? "bg-primary/20 text-primary border-2 border-primary"
+                          : "bg-secondary text-muted-foreground border border-border"
+                      }`}
+                    >
+                      {isCompleted ? <CheckCircle2 size={14} /> : stepNum}
+                    </div>
+                    <span
+                      className={`text-[10px] mt-1 font-medium transition-colors ${
+                        isActive ? "text-foreground font-semibold" : "text-muted-foreground"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="absolute top-3.5 left-6 right-6 h-[2px] bg-border/40 -z-10" />
+            <div
+              className="absolute top-3.5 left-6 h-[2px] bg-gradient-to-r from-primary to-accent -z-10 transition-all duration-500"
+              style={{
+                width: `calc(${linePercent} - ${step === 1 ? "0px" : step === 2 ? "12px" : "24px"})`,
+              }}
+            />
+          </div>
+
+          {/* Steps */}
+          <AnimatePresence mode="wait">
+            {/* STEP 1: Project Type */}
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-2"
+              >
+                <p className="text-xs font-semibold text-muted-foreground text-center mb-3">
+                  What type of website do you need?
+                </p>
+                <div className="grid grid-cols-1 gap-2">
+                  {projectTypes.map((type) => {
+                    const Icon = type.icon;
+                    const isSelected = projectType === type.id;
+                    return (
+                      <button
+                        type="button"
+                        key={type.id}
+                        onClick={() => {
+                          setProjectType(type.id);
+                          setStep(2);
+                        }}
+                        className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all duration-200 ${
+                          isSelected
+                            ? "border-primary bg-primary/5"
+                            : "border-border/60 bg-card/40 hover:border-primary/50 hover:bg-card/75"
+                        }`}
+                      >
+                        <div
+                          className={`p-2 rounded-lg flex-shrink-0 transition-colors ${
+                            isSelected
+                              ? "bg-primary/20 text-primary"
+                              : "bg-secondary text-muted-foreground"
+                          }`}
+                        >
+                          <Icon size={16} />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm leading-tight">{type.title}</p>
+                          <p className="text-[11px] text-muted-foreground leading-tight">
+                            {type.description}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 2: Requirements + Budget + Timeline */}
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Project Description{" "}
+                    <span className="text-muted-foreground/60">(min. 10 chars)</span>
+                  </label>
+                  <textarea
+                    value={requirements}
+                    onChange={(e) => setRequirements(e.target.value)}
+                    placeholder="e.g., Dental clinic in Mulund — need a hero banner, services section, and enquiry form."
+                    className="w-full h-24 bg-background/50 border border-border/80 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground block">
+                    Budget
+                  </span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {budgetOptions.map((opt) => (
+                      <button
+                        type="button"
+                        key={opt}
+                        onClick={() => setBudget(opt)}
+                        className={`py-2 px-2 text-center text-[11px] font-semibold rounded-xl border transition-all duration-200 ${
+                          budget === opt
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-secondary/40 border-border/60 hover:bg-secondary/70 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground block">
+                    Timeline
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {timelineOptions.map((opt) => (
+                      <button
+                        type="button"
+                        key={opt}
+                        onClick={() => setTimeline(opt)}
+                        className={`py-2 px-1 text-center text-[11px] font-semibold rounded-xl border transition-all duration-200 ${
+                          timeline === opt
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-secondary/40 border-border/60 hover:bg-secondary/70 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ArrowLeft size={13} />
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    disabled={requirements.trim().length < 10}
+                    className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/95 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    Next
+                    <ArrowRight size={13} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 3: Contact Details */}
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <p className="text-xs font-semibold text-muted-foreground text-center mb-4">
+                  Where should we send your quote?
+                </p>
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1 text-left">
+                      <Label htmlFor="qw-name" className="text-xs">
+                        Full Name <span className="text-primary">*</span>
+                      </Label>
+                      <Input
+                        id="qw-name"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="John Doe"
+                        className="bg-background/50 focus:bg-background transition-colors h-10 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1 text-left">
+                      <Label htmlFor="qw-email" className="text-xs">
+                        Email <span className="text-primary">*</span>
+                      </Label>
+                      <Input
+                        id="qw-email"
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="john@example.com"
+                        className="bg-background/50 focus:bg-background transition-colors h-10 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1 text-left">
+                      <Label htmlFor="qw-phone" className="text-xs">
+                        Phone / WhatsApp <span className="text-primary">*</span>
+                      </Label>
+                      <Input
+                        id="qw-phone"
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="9876543210"
+                        className="bg-background/50 focus:bg-background transition-colors h-10 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1 text-left">
+                      <Label htmlFor="qw-biz" className="text-xs">
+                        Business Name{" "}
+                        <span className="text-muted-foreground/60">(optional)</span>
+                      </Label>
+                      <div className="relative">
+                        <Building
+                          size={14}
+                          className="absolute left-3 top-3 text-muted-foreground/60"
+                        />
+                        <Input
+                          id="qw-biz"
+                          value={businessName}
+                          onChange={(e) => setBusinessName(e.target.value)}
+                          placeholder="Acme Corp"
+                          className="bg-background/50 focus:bg-background transition-colors h-10 text-sm pl-8"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {submitError && (
+                    <div className="p-3 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive text-xs font-semibold">
+                      {submitError}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <ArrowLeft size={13} />
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !isStep3Valid()}
+                      className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/95 transition-all disabled:opacity-50 disabled:pointer-events-none glow-effect-sm"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          Submit Quote
+                          <ArrowRight size={13} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Trust badges */}
+          <div className="mt-5 flex items-center justify-center gap-5 text-muted-foreground border-t border-border/20 pt-4">
+            <div className="flex items-center gap-1.5 text-xs">
+              <ShieldCheck className="w-4 h-4 text-green-500" />
+              <span>No Commitment</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs">
+              <Lock className="w-4 h-4 text-primary" />
+              <span>No Spam</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs">
+              <Clock className="w-4 h-4 text-accent" />
+              <span>24h Reply</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Free Audit Form (Bottom) ──────────────────────────────────────────────────
 
 function LeadForm({ className }: { className?: string }) {
   const [loading, setLoading] = useState(false);
@@ -109,12 +608,10 @@ function LeadForm({ className }: { className?: string }) {
 
       if (error) throw error;
 
-      // Fire conversions
       trackAuditSubmit();
-      trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D");
 
-      navigate("/thank-you", {
-        state: { name, projectType: "Free Audit", email },
+      navigate("/lp/thank-you-audit", {
+        state: { name, email, website },
       });
     } catch (error: unknown) {
       console.error(error);
@@ -150,9 +647,9 @@ function LeadForm({ className }: { className?: string }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5 text-left">
-              <Label htmlFor="lp-name">Full Name</Label>
+              <Label htmlFor="lp-audit-name">Full Name</Label>
               <Input
-                id="lp-name"
+                id="lp-audit-name"
                 name="name"
                 required
                 placeholder="John Doe"
@@ -160,9 +657,9 @@ function LeadForm({ className }: { className?: string }) {
               />
             </div>
             <div className="space-y-1.5 text-left">
-              <Label htmlFor="lp-email">Email Address</Label>
+              <Label htmlFor="lp-audit-email">Email Address</Label>
               <Input
-                id="lp-email"
+                id="lp-audit-email"
                 name="email"
                 type="email"
                 required
@@ -171,7 +668,7 @@ function LeadForm({ className }: { className?: string }) {
               />
             </div>
             <div className="space-y-1.5 text-left">
-              <Label htmlFor="lp-mobile">WhatsApp Number</Label>
+              <Label htmlFor="lp-audit-mobile">WhatsApp Number</Label>
               <div className="flex gap-2">
                 <Select name="countryCode" defaultValue="+91">
                   <SelectTrigger className="w-[110px] bg-background/50 focus:bg-background transition-colors">
@@ -186,7 +683,7 @@ function LeadForm({ className }: { className?: string }) {
                   </SelectContent>
                 </Select>
                 <Input
-                  id="lp-mobile"
+                  id="lp-audit-mobile"
                   name="mobile"
                   type="tel"
                   required
@@ -199,9 +696,9 @@ function LeadForm({ className }: { className?: string }) {
               </div>
             </div>
             <div className="space-y-1.5 text-left">
-              <Label htmlFor="lp-website">Your Website URL</Label>
+              <Label htmlFor="lp-audit-website">Your Website URL</Label>
               <Input
-                id="lp-website"
+                id="lp-audit-website"
                 name="website"
                 type="text"
                 required
@@ -247,6 +744,8 @@ function LeadForm({ className }: { className?: string }) {
   );
 }
 
+// ── Static data ───────────────────────────────────────────────────────────────
+
 const PAIN_POINTS = [
   {
     icon: Search,
@@ -274,18 +773,18 @@ const PAIN_POINTS = [
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Submit Your Website",
-    desc: "Fill out the form with your name, email, and website URL. Takes less than 60 seconds.",
+    title: "Submit Your Details",
+    desc: "Fill out the quote form with your project needs. Takes less than 2 minutes.",
   },
   {
     step: "02",
-    title: "We Run a Full Audit",
-    desc: "Our team manually reviews your PageSpeed, SEO health, mobile UX, and local visibility.",
+    title: "We Review & Plan",
+    desc: "Our team reviews your requirements and prepares a custom scope with a clear timeline.",
   },
   {
     step: "03",
-    title: "You Get a Detailed Report",
-    desc: "Within 24-48 hours, you will receive a video walkthrough plus PDF report with actionable fixes, completely free.",
+    title: "You Get a Quote",
+    desc: "Within 24 hours, you will receive a detailed, transparent quote — no hidden fees, no pressure.",
   },
 ];
 
@@ -314,12 +813,12 @@ const FAQS = [
     a: "Google PageSpeed scores, Core Web Vitals, on-page SEO (title tags, meta descriptions, headings, schema), mobile responsiveness, local SEO signals, and a prioritised list of improvements.",
   },
   {
-    q: "How long does it take?",
-    a: "We deliver your audit within 24-48 hours of submission. You will get a detailed PDF or video walkthrough via email and WhatsApp.",
+    q: "How long does the quote process take?",
+    a: "We respond to all quote requests within 24 hours. The quote itself is free, transparent, and comes with a clear scope and timeline.",
   },
   {
     q: "Do I need to buy anything afterwards?",
-    a: "Absolutely not. The audit is yours to keep and implement yourself. We only work with you further if you choose to, and only when it makes sense for your business.",
+    a: "Absolutely not. The audit and quote are yours to keep. We only work with you further if you choose to, and only when it makes sense for your business.",
   },
 ];
 
@@ -361,7 +860,7 @@ export default function WebDesignLP() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <MinimalHeader />
 
-      {/* HERO */}
+      {/* HERO — Quote Wizard */}
       <section className="relative flex-1 overflow-hidden py-16 md:py-24">
         <div className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[130px] pointer-events-none -z-0" />
         <div className="absolute bottom-0 right-0 w-[500px] h-[400px] rounded-full bg-accent/10 blur-[120px] pointer-events-none -z-0" />
@@ -376,29 +875,31 @@ export default function WebDesignLP() {
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
               <span className="text-xs font-semibold text-primary">
-                Limited: 5 Free Audits Remaining This Week
+                Free Quotes — No Obligation, No Hidden Fees
               </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] font-heading">
-              Is Your Website{" "}
+              Build a Website That{" "}
               <span className="gradient-text animated-gradient">
-                Costing You Customers?
+                Actually Wins Customers
               </span>
             </h1>
 
             <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-              Get a <strong className="text-foreground">free, no-obligation</strong> website audit from Mumbai's top web studio. We will find exactly what is holding your site back and give you a clear plan to fix it.
+              Tell us about your project in 3 quick steps and get a{" "}
+              <strong className="text-foreground">free, transparent quote</strong>{" "}
+              from Mumbai's top web studio — delivered within 24 hours.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
               {[
-                "Google PageSpeed analysis",
-                "Core Web Vitals check",
-                "On-page SEO review",
-                "Mobile responsiveness test",
-                "Local SEO signal check",
-                "Prioritised fix list",
+                "Custom design, no templates",
+                "Fast-loading, mobile-first",
+                "SEO-ready from day one",
+                "Transparent, fixed pricing",
+                "Direct developer access",
+                "Lifetime support available",
               ].map((item) => (
                 <div
                   key={item}
@@ -415,12 +916,17 @@ export default function WebDesignLP() {
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star key={i} className="w-3.5 h-3.5 fill-current" />
                 ))}
-                <span className="text-xs text-muted-foreground ml-1">5.0 by Mumbai businesses</span>
+                <span className="text-xs text-muted-foreground ml-1">
+                  5.0 by Mumbai businesses
+                </span>
               </div>
               <p className="text-sm italic text-muted-foreground">
-                "Their audit showed us exactly why competitors ranked above us. Leads up 40% in 2 months."
+                "Their audit showed us exactly why competitors ranked above us.
+                Leads up 40% in 2 months."
               </p>
-              <p className="text-xs font-semibold mt-1.5">Rahul D., Local Business Owner</p>
+              <p className="text-xs font-semibold mt-1.5">
+                Rahul D., Local Business Owner
+              </p>
             </div>
           </motion.div>
 
@@ -429,7 +935,7 @@ export default function WebDesignLP() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            <LeadForm />
+            <QuoteWizard />
           </motion.div>
         </div>
       </section>
@@ -474,7 +980,8 @@ export default function WebDesignLP() {
               <span className="gradient-text">Fail to Convert</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              These three problems silently bleed revenue from thousands of Mumbai businesses every day.
+              These three problems silently bleed revenue from thousands of
+              Mumbai businesses every day.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -489,7 +996,9 @@ export default function WebDesignLP() {
                   transition={{ duration: 0.5 }}
                   className="glass-card p-6 space-y-4"
                 >
-                  <div className={`w-11 h-11 rounded-xl ${p.bg} flex items-center justify-center`}>
+                  <div
+                    className={`w-11 h-11 rounded-xl ${p.bg} flex items-center justify-center`}
+                  >
                     <Icon className={`w-5 h-5 ${p.color}`} />
                   </div>
                   <h3 className="font-semibold text-base">{p.title}</h3>
@@ -511,7 +1020,7 @@ export default function WebDesignLP() {
               How It Works
             </h2>
             <p className="text-muted-foreground">
-              Three simple steps. Zero risk. Results in 48 hours.
+              Three simple steps. Zero risk. Quote in 24 hours.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -591,7 +1100,7 @@ export default function WebDesignLP() {
         </div>
       </section>
 
-      {/* FINAL CTA SECTION */}
+      {/* FINAL CTA — Free Audit Form */}
       <section className="py-20 md:py-28">
         <div className="mx-auto max-w-4xl px-6">
           <div className="text-center mb-12">
@@ -602,10 +1111,11 @@ export default function WebDesignLP() {
               </span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-4">
-              Ready to Fix Your Website?
+              Not Ready for a Quote Yet?
             </h2>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Submit your details below. We will handle the rest and deliver your report within 48 hours.
+              Get a free audit of your existing website instead. We'll identify
+              exactly what's holding you back — delivered within 48 hours.
             </p>
           </div>
           <LeadForm className="max-w-md mx-auto" />
@@ -615,7 +1125,8 @@ export default function WebDesignLP() {
       {/* MINIMAL FOOTER */}
       <footer className="border-t border-border/30 py-6 text-center text-xs text-muted-foreground px-6">
         <p>
-          {new Date().getFullYear()} SiteNova, Web Design and Development, Mumbai.{" "}
+          {new Date().getFullYear()} SiteNova, Web Design and Development,
+          Mumbai.{" "}
           <Link to="/" className="hover:text-foreground transition-colors">
             Visit Homepage
           </Link>
@@ -636,12 +1147,14 @@ export default function WebDesignLP() {
         <button
           className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground button-shimmer"
           onClick={() => {
-            document.getElementById("lp-name")?.scrollIntoView({ behavior: "smooth" });
-            document.getElementById("lp-name")?.focus();
+            document
+              .getElementById("qw-name")
+              ?.scrollIntoView({ behavior: "smooth" });
+            document.getElementById("qw-name")?.focus();
           }}
         >
           <Zap size={16} />
-          Get Free Audit
+          Get a Quote
         </button>
       </div>
 
