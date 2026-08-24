@@ -16,7 +16,7 @@
 
 const SITE_NAME = "SiteNova";
 const SITE_URL = "https://sitenova.dev";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/seo-preview.png`;
+const DEFAULT_OG_IMAGE = `${SITE_URL}/seo-preview.webp`;
 const TWITTER_HANDLE = "@kavish140";
 
 interface MetaOptions {

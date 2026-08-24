@@ -125,6 +125,8 @@ const HeroSection = () => {
                 className="w-full h-auto"
                 width={1024}
                 height={640}
+                loading="eager"
+                fetchPriority="high"
               />
             </div>
             {/* Bottom fade */}

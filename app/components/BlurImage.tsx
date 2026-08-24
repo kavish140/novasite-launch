@@ -15,6 +15,8 @@ export default function BlurImage({
   className,
   blurDataURL,
   loading = "lazy",
+  width,
+  height,
   ...props
 }: BlurImageProps) {
   const [isLoading, setLoading] = useState(true);
@@ -46,11 +48,16 @@ export default function BlurImage({
   }, [src, blurDataURL]);
 
   return (
-    <div className={cn("overflow-hidden bg-muted/20 flex items-center justify-center", className)}>
+    <div
+      className={cn("overflow-hidden bg-muted/20 flex items-center justify-center", className)}
+      style={width && height ? { aspectRatio: `${width} / ${height}` } : undefined}
+    >
       <img
         {...props}
         src={currentSrc}
         alt={alt}
+        width={width}
+        height={height}
         loading={loading}
         decoding="async"
         className={cn(

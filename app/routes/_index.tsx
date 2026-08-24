@@ -1,5 +1,20 @@
 import { buildMeta } from "@/lib/meta";
+import dashboardPreview from "@/assets/dashboard-preview.webp";
 export { default } from "@/pages/Index";
+
+export function links() {
+  return [
+    // Preload the hero LCP image — Vite-hashed URL injected at SSR time so the
+    // browser preload scanner discovers it before React hydrates.
+    {
+      rel: "preload",
+      as: "image",
+      href: dashboardPreview,
+      fetchpriority: "high",
+    } as const,
+  ];
+}
+
 
 export function meta() {
   return buildMeta({

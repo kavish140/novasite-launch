@@ -54,6 +54,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="alternate" href="https://sitenova.dev/" hrefLang="en-IN" />
         <link rel="alternate" href="https://sitenova.dev/" hrefLang="x-default" />
 
+        {/* Hero image preload — static URL known at build time */}
+        <link rel="preload" as="image" href="/hero-bg.webp" fetchPriority="high" />
+
         {/* Google Fonts — preload + async load */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

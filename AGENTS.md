@@ -301,7 +301,7 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 |---|---|
 | `SEO` | **Legacy** — still referenced in `Index.tsx`. For new pages use `buildMeta()` in route files instead. |
 | `JsonLd` | Injects a JSON-LD `<script>` tag inline |
-| `BlurImage` | Image with blur-up loading effect |
+| `BlurImage` | Image with blur-up loading effect. Accepts all standard `<img>` HTML attributes. **Important**: always pass `width` and `height` props — these are forwarded to both the `<img>` element and used to set `aspect-ratio` on the outer wrapper div, preventing CLS before the image loads. For above-fold images always pass `loading="eager" fetchPriority="high"`. |
 | `IframePreview` | Shared component that renders a live iframe thumbnail with loading/error states. Extracted from `PortfolioSection`. Used in both `PortfolioSection` and `PortfolioPageTemplate`. Props: `src`, `title`. |
 | `PortfolioPageTemplate` | Shared full-page layout for all client portfolio case study pages. Accepts `client`, `project`, `backSlug` props. Renders: hero + live iframe, stats bar, optional testimonial, features grid, tech stack pills, dual CTA. See `app/pages/portfolio/` for usage. |
 | `ClientOnly` | Renders children only after client hydration (prevents SSR mismatches) |
@@ -776,4 +776,36 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 - **Created** `app/routes/lp.thank-you-audit.tsx` — RR7 route for `/lp/thank-you-audit`. `noindex: true`.
 - **Supabase**: New `quote_requests` table created (id, name, email, phone, business_name, project_type, requirements, budget, timeline, source, status, created_at).
 
+---
+
+### [2026-08-24] — Phase 1 Core Web Vitals Fixes (LCP + CLS)
+
+- **Fixed** `app/components/HeroSection.tsx` — `<BlurImage>` for `dashboard-preview.webp` now passes `loading="eager"` and `fetchPriority="high"`. Previously used `BlurImage`'s default `loading="lazy"`, which deferred loading of the primary LCP element — directly hurting LCP score.
+- **Fixed** `app/components/BlurImage.tsx` — wrapper `<div>` now receives `style={{ aspectRatio: "W / H" }}` derived from the `width` and `height` props. This reserves the correct layout space before the image loads, eliminating CLS. `width` and `height` are also now explicitly destructured and forwarded to `<img>` rather than relying solely on `...props` spread.
+- **Fixed** `app/root.tsx` — added `<link rel="preload" as="image" href="/hero-bg.webp" fetchPriority="high">` to `<head>`. The hero background is a static `public/` asset with a known URL; preloading it lets the browser fetch it before React hydrates.
+- **Added** `app/routes/_index.tsx` — exported `links()` function that injects a `<link rel="preload" as="image">` for the Vite-hashed `dashboard-preview.webp`. Because Vite hashes this file at build time, its URL can only be resolved via a JS import — `links()` is the correct RR7 mechanism to inject it server-side.
+- **Updated** `AGENTS.md` §6 — updated `BlurImage` component entry with new `width`/`height`/`aspect-ratio` behaviour and above-fold usage guidance.
+- Build: `✓ built in 42.46s` — no errors. All 3574 modules transformed successfully.
+
+---
+
+### [2026-08-24] — Phase 2 Performance Improvements (Bandwidth + Caching + Code Split)
+
+- **Fixed** `public/favicon-16x16.png`, `public/favicon-32x32.png`, `public/apple-touch-icon.png`, `public/logo-icon.png` — all were 186 KB each (same unresized source). Resized to correct dimensions (16×16, 32×32, 180×180, 32×32) using `sharp`. Total reduction: ~746 KB → ~14 KB (98% savings). Script saved as `scripts/resize-favicons.mjs`.
+- **Reverted** `React.lazy()` in `app/pages/Index.tsx` — after auditing `entry.server.tsx`, confirmed the app uses `renderToReadableStream` (streaming SSR). `React.lazy()` inside a `<Suspense>` boundary with streaming SSR renders only the fallback div in the initial HTML shell — Googlebot would see a blank page instead of the section content, directly harming SEO. Reverted to static imports. A comment explains the reason in the file.
+- **Updated** `vite.config.ts` — added `build.rollupOptions.output.manualChunks` (function form) to split vendor libraries into dedicated cached chunks: `vendor-motion` (Framer Motion), `vendor-supabase`, `vendor-query` (TanStack), `vendor-sentry`, `vendor-radix` (all Radix UI). React/react-router are NOT listed — they are externalized in the SSR bundle and cannot be in manualChunks.
+- **Created** `public/_headers` — Cloudflare Workers static assets cache-control rules. Hashed `/assets/*` bundles: `max-age=31536000, immutable`. Public images (`.webp`, `.png`, `.svg`, `.ico`): 30-day cache with `stale-while-revalidate=86400`. Note: the `wrangler.jsonc` `headers` field is not supported by wrangler v4 — `_headers` is the correct mechanism.
+- Build: `✓ built in 19.39s` — exit code 0, no errors. TypeScript: 0 errors.
+
+---
+
+### [2026-08-24] — Phase 3 Housekeeping (Animation + OG Image + Asset Cleanup)
+
+- **Fixed** `app/index.css` — replaced `btn-quote-pulse` `box-shadow` keyframe animation with a GPU-compositable `::before` pseudo-element that animates `transform: scale()` + `opacity`. `box-shadow` forces a full layer repaint on every frame of the 2s infinite loop; the new approach runs entirely on the compositor thread. Used in 16 places across the codebase — no JSX changes required. Keyframe updated to `0% scale(1) opacity(1)` → `70% scale(1.35) opacity(0)`.
+- **Created** `public/seo-preview.webp` — converted from `seo-preview.png` (460 KB) to WebP at quality 85, resulting in 34 KB before optimizer (29 KB after). 93% file size reduction for social crawlers.
+- **Updated** `app/lib/meta.ts` — `DEFAULT_OG_IMAGE` changed from `/seo-preview.png` to `/seo-preview.webp`. `seo-preview.png` is kept in `public/` as a fallback for crawlers that don't support WebP.
+- **Deleted** 9 unused/duplicate assets from `app/assets/`: `dashboard-preview.jpg`, `hero-bg.jpg`, `hero-bg.webp` (duplicate of `public/hero-bg.webp`), `business-showcase.png`, `design-showcase.png`, `ecommerce-showcase.png`, `portfolio-1.jpg`, `portfolio-2.jpg`, `portfolio-3.jpg`. All `.webp` versions used in code are unaffected.
+- Build: `✓ built in 17.84s` — exit code 0, no errors. TypeScript: 0 errors.
+
+---
 

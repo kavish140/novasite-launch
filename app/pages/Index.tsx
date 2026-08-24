@@ -7,6 +7,10 @@ import SEO from "@/components/SEO";
 import PageTransition from "@/components/PageTransition";
 import { faqs } from "@/lib/faq-data";
 
+// Static imports — required for SSR (renderToReadableStream).
+// React.lazy() inside Suspense with streaming SSR renders only the fallback
+// in the initial HTML shell, which would hide content from search crawlers.
+// The <Suspense> boundary below is kept for graceful client hydration only.
 import TechMarquee from "@/components/TechMarquee";
 import FeaturesSection from "@/components/FeaturesSection";
 import PortfolioSection from "@/components/PortfolioSection";
@@ -16,6 +20,7 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 import CtaSection from "@/components/CtaSection";
 import FaqSection from "@/components/FaqSection";
 import Footer from "@/components/Footer";
+
 
 
 interface IndexProps {

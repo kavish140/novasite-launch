@@ -1,0 +1,28 @@
+# Cloudflare Workers Static Assets — Cache-Control rules
+# This file is copied verbatim into dist/client/ at build time by Vite.
+# Rules are applied to responses served directly from the Cloudflare asset pipeline.
+# Rules are matched top-to-bottom; first match wins.
+
+# Vite-hashed JS & CSS bundles — content hash in filename → safe to cache forever
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# WebP images in public/ (non-hashed, versioned by deploy)
+/*.webp
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+# PNG assets (favicons etc.) — 30 day cache
+/*.png
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+# SVG assets — 30 day cache
+/*.svg
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+# ICO
+/*.ico
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+# Web manifest
+/site.webmanifest
+  Cache-Control: public, max-age=86400

@@ -232,7 +232,20 @@
   }
 
   .btn-quote-pulse {
-    animation: btn-quote-pulse-anim 2s infinite;
+    position: relative;
+  }
+
+  /* Compositable pulse ring — animates transform + opacity (GPU, zero repaint).
+     The old box-shadow approach forced a full repaint every frame of the 2s loop. */
+  .btn-quote-pulse::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid hsl(var(--primary) / 0.7);
+    animation: btn-quote-pulse-anim 2s ease-out infinite;
+    pointer-events: none;
+    will-change: transform, opacity;
   }
 }
 
@@ -281,15 +294,9 @@
 }
 
 @keyframes btn-quote-pulse-anim {
-  0% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
-  }
+  0%   { transform: scale(1);    opacity: 1; }
+  70%  { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
 }
 
 @keyframes gradient-pan {
