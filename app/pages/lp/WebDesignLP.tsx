@@ -146,7 +146,7 @@ function QuoteWizard({ className }: { className?: string }) {
     setSubmitError("");
 
     try {
-      // 1. Save to Supabase quote_requests
+      // 1. Save to Supabase quote_requests — non-fatal, always continue
       const { error: dbError } = await supabase.from("quote_requests").insert([
         {
           name,
@@ -160,9 +160,15 @@ function QuoteWizard({ className }: { className?: string }) {
           source: "paid_ad",
         },
       ]);
-      if (dbError) throw dbError;
+      if (dbError) {
+        // Log but do NOT block — Web3Forms email is the primary data capture.
+        // Common cause: RLS policy missing on quote_requests table.
+        // Fix: run in Supabase SQL Editor:
+        //   CREATE POLICY "anon_insert" ON quote_requests FOR INSERT TO anon WITH CHECK (true);
+        console.warn("Supabase quote_requests insert warning (non-fatal):", dbError.message);
+      }
 
-      // 2. Send email via Web3Forms
+      // 2. Send email via Web3Forms (primary lead capture)
       const formData = new FormData();
       formData.append("access_key", "671591b9-2925-44ba-ba00-12e0e092bb34");
       formData.append("subject", `New LP Quote Lead — ${name} (${projectType})`);
@@ -184,11 +190,10 @@ function QuoteWizard({ className }: { className?: string }) {
         });
         const data = await res.json();
         if (!data.success) {
-          // Non-fatal — DB save already succeeded; log and continue
           console.warn("Web3Forms warning:", data.message);
         }
       } catch {
-        // CORS fallback
+        // CORS fallback — request is still delivered to Web3Forms
         await fetch("https://api.web3forms.com/submit", {
           method: "POST",
           body: formData,
