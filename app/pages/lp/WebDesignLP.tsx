@@ -212,8 +212,13 @@ function QuoteWizard({ className }: { className?: string }) {
     }
   };
 
-  const stepsLabels = ["Project Type", "Requirements", "Contact"];
-  const linePercent = step === 1 ? "0%" : step === 2 ? "50%" : "100%";
+  const projectChips = [
+    { id: "Landing Page",     label: "Landing Page",  icon: Monitor },
+    { id: "Business Website", label: "Business Site", icon: Globe },
+    { id: "E-commerce Store", label: "E-commerce",    icon: ShoppingCart },
+    { id: "Custom Web App",   label: "Web App",       icon: Code2 },
+    { id: "Website Redesign", label: "Redesign",      icon: RefreshCw },
+  ];
 
   return (
     <div className={className}>
@@ -221,149 +226,120 @@ function QuoteWizard({ className }: { className?: string }) {
         {/* Glow border */}
         <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/40 to-accent/30 rounded-3xl blur opacity-60" />
         <div className="relative bg-card/90 backdrop-blur-xl border border-border/60 rounded-3xl p-6 shadow-2xl">
-          {/* Header */}
-          <div className="mb-5 text-center">
-            <h2 className="text-2xl font-bold font-heading mb-1">
-              Get a Free Quote
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Tell us about your project — we'll get back within{" "}
-              <span className="text-foreground font-semibold">24 hours</span>.
-            </p>
-          </div>
 
-          {/* Step progress */}
-          <div className="mb-5 relative max-w-xs mx-auto">
-            <div className="flex items-center justify-between">
-              {stepsLabels.map((label, idx) => {
-                const stepNum = idx + 1;
-                const isActive = step === stepNum;
-                const isCompleted = step > stepNum;
-                return (
-                  <div key={idx} className="flex flex-col items-center z-10 relative">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
-                        isCompleted
-                          ? "bg-primary text-primary-foreground"
-                          : isActive
-                          ? "bg-primary/20 text-primary border-2 border-primary"
-                          : "bg-secondary text-muted-foreground border border-border"
-                      }`}
-                    >
-                      {isCompleted ? <CheckCircle2 size={14} /> : stepNum}
-                    </div>
-                    <span
-                      className={`text-[10px] mt-1 font-medium transition-colors ${
-                        isActive ? "text-foreground font-semibold" : "text-muted-foreground"
-                      }`}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                );
-              })}
+          {/* Header + slim animated dot progress */}
+          <div className="flex items-start justify-between mb-5">
+            <div>
+              <h2 className="text-xl font-bold font-heading leading-tight">
+                Get a Free Quote
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Reply within{" "}
+                <span className="text-foreground font-semibold">24 hours</span>
+              </p>
             </div>
-            <div className="absolute top-3.5 left-6 right-6 h-[2px] bg-border/40 -z-10" />
-            <div
-              className="absolute top-3.5 left-6 h-[2px] bg-gradient-to-r from-primary to-accent -z-10 transition-all duration-500"
-              style={{
-                width: `calc(${linePercent} - ${step === 1 ? "0px" : step === 2 ? "12px" : "24px"})`,
-              }}
-            />
+            <div className="flex items-center gap-1.5 mt-1 shrink-0">
+              {[1, 2, 3].map((s) => (
+                <div
+                  key={s}
+                  className={`rounded-full transition-all duration-300 ${
+                    s === step
+                      ? "w-5 h-2 bg-primary"
+                      : s < step
+                      ? "w-2 h-2 bg-primary/60"
+                      : "w-2 h-2 bg-border"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
 
-          {/* Steps */}
           <AnimatePresence mode="wait">
-            {/* STEP 1: Project Type */}
+
+            {/* ── STEP 1: Compact 2-col chip grid ── */}
             {step === 1 && (
               <motion.div
                 key="step1"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-2"
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.18 }}
               >
-                <p className="text-xs font-semibold text-muted-foreground text-center mb-3">
+                <p className="text-xs font-semibold text-muted-foreground mb-3">
                   What type of website do you need?
                 </p>
-                <div className="grid grid-cols-1 gap-2">
-                  {projectTypes.map((type) => {
-                    const Icon = type.icon;
-                    const isSelected = projectType === type.id;
-                    return (
-                      <button
-                        type="button"
-                        key={type.id}
-                        onClick={() => {
-                          setProjectType(type.id);
-                          setStep(2);
-                        }}
-                        className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all duration-200 ${
-                          isSelected
-                            ? "border-primary bg-primary/5"
-                            : "border-border/60 bg-card/40 hover:border-primary/50 hover:bg-card/75"
-                        }`}
-                      >
-                        <div
-                          className={`p-2 rounded-lg flex-shrink-0 transition-colors ${
-                            isSelected
-                              ? "bg-primary/20 text-primary"
-                              : "bg-secondary text-muted-foreground"
-                          }`}
-                        >
-                          <Icon size={16} />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-sm leading-tight">{type.title}</p>
-                          <p className="text-[11px] text-muted-foreground leading-tight">
-                            {type.description}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="grid grid-cols-2 gap-2">
+                  {projectChips.map(({ id, label, icon: Icon }) => (
+                    <button
+                      type="button"
+                      key={id}
+                      onClick={() => { setProjectType(id); setStep(2); }}
+                      className="group flex items-center gap-2.5 px-3 py-3 rounded-xl border border-border/60 bg-secondary/20 hover:border-primary/60 hover:bg-primary/5 transition-all duration-150 text-left"
+                    >
+                      <div className="p-1.5 rounded-lg bg-secondary/60 group-hover:bg-primary/10 transition-colors shrink-0">
+                        <Icon size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                      <span className="text-xs font-semibold leading-tight group-hover:text-primary transition-colors">
+                        {label}
+                      </span>
+                    </button>
+                  ))}
                 </div>
+                <p className="text-[11px] text-muted-foreground/60 text-center mt-3">
+                  Tap to select and continue →
+                </p>
               </motion.div>
             )}
 
-            {/* STEP 2: Requirements + Budget + Timeline */}
+            {/* ── STEP 2: Requirements + Budget + Timeline ── */}
             {step === 2 && (
               <motion.div
                 key="step2"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-4"
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.18 }}
+                className="space-y-3.5"
               >
-                <div className="space-y-1.5">
+                {/* Selected type badge + change link */}
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary border border-primary/20 rounded-full px-2.5 py-0.5 font-semibold">
+                    {projectType}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+                  >
+                    change
+                  </button>
+                </div>
+
+                <div className="space-y-1">
                   <label className="text-xs font-semibold text-muted-foreground">
-                    Project Description{" "}
-                    <span className="text-muted-foreground/60">(min. 10 chars)</span>
+                    Briefly describe your project{" "}
+                    <span className="opacity-50">(10+ chars)</span>
                   </label>
                   <textarea
                     value={requirements}
                     onChange={(e) => setRequirements(e.target.value)}
-                    placeholder="e.g., Dental clinic in Mulund — need a hero banner, services section, and enquiry form."
-                    className="w-full h-24 bg-background/50 border border-border/80 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none transition-all"
+                    placeholder="e.g., Dental clinic in Mulund — hero, services section, enquiry form."
+                    className="w-full h-20 bg-background/50 border border-border/80 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl p-3 text-xs text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none transition-all"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="text-xs font-semibold text-muted-foreground block">
-                    Budget
-                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground block">Budget</span>
                   <div className="grid grid-cols-2 gap-1.5">
                     {budgetOptions.map((opt) => (
                       <button
                         type="button"
                         key={opt}
                         onClick={() => setBudget(opt)}
-                        className={`py-2 px-2 text-center text-[11px] font-semibold rounded-xl border transition-all duration-200 ${
+                        className={`py-2 px-2 text-[11px] font-semibold rounded-lg border text-center transition-all duration-150 ${
                           budget === opt
                             ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-secondary/40 border-border/60 hover:bg-secondary/70 text-muted-foreground hover:text-foreground"
+                            : "bg-secondary/30 border-border/60 hover:border-primary/40 text-muted-foreground hover:text-foreground"
                         }`}
                       >
                         {opt}
@@ -373,19 +349,17 @@ function QuoteWizard({ className }: { className?: string }) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="text-xs font-semibold text-muted-foreground block">
-                    Timeline
-                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground block">Timeline</span>
                   <div className="grid grid-cols-3 gap-1.5">
                     {timelineOptions.map((opt) => (
                       <button
                         type="button"
                         key={opt}
                         onClick={() => setTimeline(opt)}
-                        className={`py-2 px-1 text-center text-[11px] font-semibold rounded-xl border transition-all duration-200 ${
+                        className={`py-2 px-1 text-[11px] font-semibold rounded-lg border text-center transition-all duration-150 ${
                           timeline === opt
                             ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-secondary/40 border-border/60 hover:bg-secondary/70 text-muted-foreground hover:text-foreground"
+                            : "bg-secondary/30 border-border/60 hover:border-primary/40 text-muted-foreground hover:text-foreground"
                         }`}
                       >
                         {opt}
@@ -394,42 +368,46 @@ function QuoteWizard({ className }: { className?: string }) {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <ArrowLeft size={13} />
-                    Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStep(3)}
-                    disabled={requirements.trim().length < 10}
-                    className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/95 transition-all disabled:opacity-50 disabled:pointer-events-none"
-                  >
-                    Next
-                    <ArrowRight size={13} />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  disabled={requirements.trim().length < 10}
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/95 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  Next: Contact Details
+                  <ArrowRight size={14} />
+                </button>
               </motion.div>
             )}
 
-            {/* STEP 3: Contact Details */}
+            {/* ── STEP 3: Contact Details ── */}
             {step === 3 && (
               <motion.div
                 key="step3"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.18 }}
               >
-                <p className="text-xs font-semibold text-muted-foreground text-center mb-4">
-                  Where should we send your quote?
-                </p>
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Summary chips + edit link */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                  <span className="text-xs bg-primary/10 text-primary border border-primary/20 rounded-full px-2.5 py-0.5 font-semibold">
+                    {projectType}
+                  </span>
+                  <span className="text-xs bg-secondary text-muted-foreground rounded-full px-2.5 py-0.5 border border-border/50">
+                    {budget}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+                  >
+                    edit
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-2.5">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <div className="space-y-1 text-left">
                       <Label htmlFor="qw-name" className="text-xs">
                         Full Name <span className="text-primary">*</span>
@@ -440,28 +418,12 @@ function QuoteWizard({ className }: { className?: string }) {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="John Doe"
-                        className="bg-background/50 focus:bg-background transition-colors h-10 text-sm"
+                        className="bg-background/50 focus:bg-background h-9 text-sm"
                       />
                     </div>
-                    <div className="space-y-1 text-left">
-                      <Label htmlFor="qw-email" className="text-xs">
-                        Email <span className="text-primary">*</span>
-                      </Label>
-                      <Input
-                        id="qw-email"
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="john@example.com"
-                        className="bg-background/50 focus:bg-background transition-colors h-10 text-sm"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1 text-left">
                       <Label htmlFor="qw-phone" className="text-xs">
-                        Phone / WhatsApp <span className="text-primary">*</span>
+                        Phone <span className="text-primary">*</span>
                       </Label>
                       <Input
                         id="qw-phone"
@@ -470,41 +432,53 @@ function QuoteWizard({ className }: { className?: string }) {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="9876543210"
-                        className="bg-background/50 focus:bg-background transition-colors h-10 text-sm"
+                        className="bg-background/50 focus:bg-background h-9 text-sm"
                       />
                     </div>
-                    <div className="space-y-1 text-left">
-                      <Label htmlFor="qw-biz" className="text-xs">
-                        Business Name{" "}
-                        <span className="text-muted-foreground/60">(optional)</span>
-                      </Label>
-                      <div className="relative">
-                        <Building
-                          size={14}
-                          className="absolute left-3 top-3 text-muted-foreground/60"
-                        />
-                        <Input
-                          id="qw-biz"
-                          value={businessName}
-                          onChange={(e) => setBusinessName(e.target.value)}
-                          placeholder="Acme Corp"
-                          className="bg-background/50 focus:bg-background transition-colors h-10 text-sm pl-8"
-                        />
-                      </div>
+                  </div>
+
+                  <div className="space-y-1 text-left">
+                    <Label htmlFor="qw-email" className="text-xs">
+                      Email <span className="text-primary">*</span>
+                    </Label>
+                    <Input
+                      id="qw-email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="john@example.com"
+                      className="bg-background/50 focus:bg-background h-9 text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-1 text-left">
+                    <Label htmlFor="qw-biz" className="text-xs text-muted-foreground">
+                      Business Name <span className="opacity-50">(optional)</span>
+                    </Label>
+                    <div className="relative">
+                      <Building size={13} className="absolute left-3 top-2.5 text-muted-foreground/50" />
+                      <Input
+                        id="qw-biz"
+                        value={businessName}
+                        onChange={(e) => setBusinessName(e.target.value)}
+                        placeholder="Acme Corp"
+                        className="bg-background/50 focus:bg-background h-9 text-sm pl-8"
+                      />
                     </div>
                   </div>
 
                   {submitError && (
-                    <div className="p-3 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive text-xs font-semibold">
+                    <div className="p-2.5 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive text-xs font-semibold">
                       {submitError}
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                  <div className="flex gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => setStep(2)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center gap-1 px-3 py-2.5 rounded-xl border border-border/60 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
                     >
                       <ArrowLeft size={13} />
                       Back
@@ -512,17 +486,17 @@ function QuoteWizard({ className }: { className?: string }) {
                     <button
                       type="submit"
                       disabled={isSubmitting || !isStep3Valid()}
-                      className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/95 transition-all disabled:opacity-50 disabled:pointer-events-none glow-effect-sm"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/95 transition-all disabled:opacity-40 disabled:pointer-events-none button-shimmer"
                     >
                       {isSubmitting ? (
                         <>
-                          <Loader2 size={13} className="animate-spin" />
-                          Submitting...
+                          <Loader2 size={14} className="animate-spin" />
+                          Sending...
                         </>
                       ) : (
                         <>
-                          Submit Quote
-                          <ArrowRight size={13} />
+                          Get My Quote
+                          <ArrowRight size={14} />
                         </>
                       )}
                     </button>
@@ -532,18 +506,18 @@ function QuoteWizard({ className }: { className?: string }) {
             )}
           </AnimatePresence>
 
-          {/* Trust badges */}
-          <div className="mt-5 flex items-center justify-center gap-5 text-muted-foreground border-t border-border/20 pt-4">
-            <div className="flex items-center gap-1.5 text-xs">
-              <ShieldCheck className="w-4 h-4 text-green-500" />
-              <span>No Commitment</span>
+          {/* Trust strip */}
+          <div className="mt-4 pt-4 border-t border-border/20 flex items-center justify-center gap-4 text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
+              <span>Free</span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs">
-              <Lock className="w-4 h-4 text-primary" />
+            <div className="flex items-center gap-1 text-xs">
+              <Lock className="w-3.5 h-3.5 text-primary" />
               <span>No Spam</span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs">
-              <Clock className="w-4 h-4 text-accent" />
+            <div className="flex items-center gap-1 text-xs">
+              <Clock className="w-3.5 h-3.5 text-accent" />
               <span>24h Reply</span>
             </div>
           </div>
