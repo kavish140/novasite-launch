@@ -22,6 +22,7 @@ export default function Mahalakshmi() {
         "premium web design Mahalakshmi",
         "luxury brand web design"
       ]}
+      geoCoordinates={{ latitude: 18.9830, longitude: 72.8120 }}
     />
   );
 }

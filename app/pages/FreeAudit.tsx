@@ -5,6 +5,7 @@ import { Search, Smartphone, Zap, ArrowRight, CheckCircle2, ShieldCheck, Lock, S
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,7 +94,9 @@ export default function FreeAudit() {
         description="Get a 100% free, no-obligation website audit. SiteNova analyses your site's performance, SEO health, and mobile responsiveness to show you exactly what's holding you back on Google."
         canonicalUrl="/free-audit"
         keywords={["free website audit Mumbai", "website SEO audit", "website performance check", "free site audit India", "website review Mumbai"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -147,8 +150,7 @@ export default function FreeAudit() {
               }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <header>
           <Navbar />

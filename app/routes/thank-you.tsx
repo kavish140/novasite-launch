@@ -6,5 +6,6 @@ export function meta() {
     title: "Request Received | SiteNova",
     description: "Thank you for your request. We will get back to you shortly.",
     canonicalPath: "/thank-you",
+    noindex: true,
   });
 }

@@ -16,6 +16,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 
 // ─── Pricing config ────────────────────────────────────────────────────────────
@@ -128,7 +129,9 @@ export default function WebsiteCostCalculator() {
           "website price calculator",
           "how much does a website cost in Mumbai",
         ]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "FAQPage",
@@ -158,8 +161,7 @@ export default function WebsiteCostCalculator() {
               { "@type": "ListItem", position: 2, name: "Website Cost Calculator", item: "https://sitenova.dev/website-cost-calculator" },
             ],
           },
-        ]}
-      />
+        ]} />
 
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />

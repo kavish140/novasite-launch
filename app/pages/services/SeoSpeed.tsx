@@ -17,6 +17,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import PortfolioSection from "@/components/PortfolioSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -224,7 +225,9 @@ export default function SeoSpeed() {
         description="Is your Mumbai business invisible on Google? SiteNova fixes Core Web Vitals, boosts PageSpeed to 90+, and builds local SEO systems — so you rank higher and get more calls. From ₹8,000."
         canonicalUrl="/services/seo-optimization"
         keywords={["SEO and speed optimization Mumbai", "PageSpeed optimizer Mumbai", "Core Web Vitals specialist Mumbai", "local SEO services Mumbai", "website speed tuning"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -244,8 +247,7 @@ export default function SeoSpeed() {
               { "@type": "ListItem", "position": 3, "name": "SEO & Speed Optimization", "item": "https://sitenova.dev/services/seo-optimization" }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

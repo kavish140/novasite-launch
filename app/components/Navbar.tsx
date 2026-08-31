@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, startTransition } from "react";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed } from "lucide-react";
+import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed, ShoppingCart, Search, Code2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useTheme } from "next-themes";
 
@@ -53,6 +53,27 @@ const nicheLinks = [
     to: "/websites-for-restaurants",
     icon: UtensilsCrossed,
     description: "Cafes, diners & kitchens",
+  },
+];
+
+const coreServiceLinks = [
+  {
+    label: "E-Commerce Stores",
+    to: "/services/ecommerce",
+    icon: ShoppingCart,
+    description: "Razorpay + Stripe, from \u20b918,000",
+  },
+  {
+    label: "SEO & Speed Audits",
+    to: "/services/seo-optimization",
+    icon: Search,
+    description: "Core Web Vitals & rankings",
+  },
+  {
+    label: "Web Applications",
+    to: "/services/web-applications",
+    icon: Code2,
+    description: "Dashboards & custom apps",
   },
 ];
 
@@ -145,6 +166,28 @@ const Navbar = () => {
                   transition={{ duration: 0.15 }}
                   className="absolute top-full right-0 mt-2 w-72 rounded-xl border border-border/60 bg-background/95 backdrop-blur-xl shadow-xl p-2"
                 >
+                  {coreServiceLinks.map((service) => {
+                    const Icon = service.icon;
+                    return (
+                      <Link
+                        key={service.to}
+                        to={service.to}
+                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-secondary/60 transition-colors group"
+                      >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
+                          <Icon size={18} />
+                        </div>
+                        <div>
+                          <span className="font-medium text-foreground">{service.label}</span>
+                          <p className="text-xs text-muted-foreground mt-0.5">{service.description}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  <div className="my-1 mx-3 border-t border-border/40" />
+                  <p className="px-3 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                    By Industry
+                  </p>
                   {nicheLinks.map((niche) => {
                     const Icon = niche.icon;
                     return (
@@ -238,6 +281,23 @@ const Navbar = () => {
               <div className="border-t border-border/30 pt-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3">
                   Services
+                </p>
+                {coreServiceLinks.map((service) => {
+                  const Icon = service.icon;
+                  return (
+                    <Link
+                      key={service.to}
+                      to={service.to}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Icon size={16} className="text-primary shrink-0" />
+                      {service.label}
+                    </Link>
+                  );
+                })}
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 mt-3 mb-2 px-2">
+                  By Industry
                 </p>
                 {nicheLinks.map((niche) => {
                   const Icon = niche.icon;

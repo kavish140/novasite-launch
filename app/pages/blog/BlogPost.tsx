@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import BlogCTA from "@/components/BlogCTA";
 import RelatedPosts from "@/components/RelatedPosts";
@@ -22,7 +23,9 @@ export default function BlogPost() {
         publishedTime={post.published_at}
         modifiedTime={post.published_at}
         author="Kavish Ganatra"
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "BlogPosting",
@@ -94,8 +97,7 @@ export default function BlogPost() {
               { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://sitenova.dev/blog/${post.slug}` }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
 

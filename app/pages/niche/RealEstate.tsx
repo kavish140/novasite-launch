@@ -24,6 +24,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import { buildWhatsAppUrl, PHONE_TEL_LINK, EMAIL } from "@/lib/constants";
 
@@ -119,7 +120,9 @@ export default function RealEstate() {
         description="SiteNova builds lead-generating websites for real estate agents, builders, and property dealers in Mumbai. Property listings, virtual tours, and lead capture forms."
         canonicalUrl="/websites-for-real-estate"
         keywords={["real estate website design Mumbai", "property dealer website", "builder website design", "real estate agent website", "property listing website Mumbai"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -177,8 +180,7 @@ export default function RealEstate() {
               }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

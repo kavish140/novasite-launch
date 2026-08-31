@@ -22,6 +22,7 @@ import {
 import Navbar from "@/components/Navbar";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
 import { buildWhatsAppUrl, PHONE_TEL_LINK, EMAIL } from "@/lib/constants";
@@ -161,7 +162,9 @@ export default function Lawyers() {
         description="SiteNova builds authority-driven, SEO-optimized websites for lawyers, advocates, and law firms in Mumbai. Showcase expertise, build credibility, and generate client inquiries 24/7."
         canonicalUrl="/websites-for-lawyers"
         keywords={["website for lawyers in Mumbai", "law firm website design India", "advocate website Mumbai", "lawyer website designer Mulund", "legal website development"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -193,8 +196,7 @@ export default function Lawyers() {
               },
             })),
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

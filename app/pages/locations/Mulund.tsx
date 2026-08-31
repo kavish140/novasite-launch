@@ -18,6 +18,7 @@ export default function Mulund() {
         "website design company Mulund",
         "affordable website design Mulund",
       ]}
+      geoCoordinates={{ latitude: 19.1726, longitude: 72.9570 }}
     />
   );
 }

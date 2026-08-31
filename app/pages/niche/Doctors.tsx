@@ -23,6 +23,7 @@ import {
 import Navbar from "@/components/Navbar";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
 import drDiptiImage from "@/assets/Drdiptiganatra.webp";
@@ -130,7 +131,9 @@ export default function Doctors() {
         description="SiteNova builds patient-friendly, SEO-optimized websites for doctors, dentists, and clinics in Mumbai. Online appointments, patient testimonials, and mobile-first design."
         canonicalUrl="/websites-for-doctors"
         keywords={["website for doctors Mumbai", "clinic website design", "doctor website designer Mulund", "healthcare website Mumbai", "medical practice website design"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -188,8 +191,7 @@ export default function Doctors() {
               }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

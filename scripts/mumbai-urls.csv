@@ -1,0 +1,14 @@
+# Mumbai Business Website Audit — URL List
+# Format: url, business_name, industry
+# Find URLs: Search Google Maps for "[industry] in [suburb]" and grab the website link
+# Target: 100 URLs across 7 industries (~15 per industry)
+#
+# Industries: Doctors, Finance/CA, Lawyers, Real Estate, Restaurants, Consultants, Startups
+# Suburbs: Mulund, Thane, Bandra, Andheri, Powai, Ghatkopar, Dadar, Lower Parel
+#
+# TIP: Start with your own sites for baseline comparison
+url,business_name,industry
+https://sitenova.dev,SiteNova (Baseline),Web Agency
+https://drdiptiganatra.com,Dr. Dipti Ganatra (SiteNova Client),Doctors
+https://jupiterfastfinance.com,Jupiter Fast Finance (SiteNova Client),Finance
+https://corporatezone.in,Corporate Zone (SiteNova Client),Consultants

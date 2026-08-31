@@ -331,6 +331,16 @@ function QuoteWizard({ className }: { className?: string }) {
                     placeholder="e.g., Dental clinic in Mulund — hero, services section, enquiry form."
                     className="w-full h-20 bg-background/50 border border-border/80 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl p-3 text-xs text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none transition-all"
                   />
+                  <div className="flex justify-between items-center mt-1">
+                    <span className={`text-[11px] transition-colors ${requirements.trim().length < 10 ? "text-destructive/70" : "text-primary/70"}`}>
+                      {requirements.trim().length < 10
+                        ? `${10 - requirements.trim().length} more character${10 - requirements.trim().length !== 1 ? "s" : ""} needed`
+                        : "✓ Looks good"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground/50">
+                      {requirements.trim().length}/10+
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">

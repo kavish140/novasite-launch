@@ -16,6 +16,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import PortfolioSection from "@/components/PortfolioSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -101,7 +102,9 @@ export default function Ecommerce() {
         description="Launch your online store in Mumbai. SiteNova builds fast, mobile-first e-commerce websites with Razorpay integration, coupon systems & SEO — delivered in 14 days. From ₹18,000."
         canonicalUrl="/services/ecommerce"
         keywords={["e-commerce web design Mumbai", "online store developer Mumbai", "Shopify developer Mumbai", "WooCommerce website designer", "custom e-commerce development"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -121,8 +124,7 @@ export default function Ecommerce() {
               { "@type": "ListItem", "position": 3, "name": "E-commerce Website Design", "item": "https://sitenova.dev/services/ecommerce" }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

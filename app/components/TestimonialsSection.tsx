@@ -22,7 +22,7 @@ const testimonials = [
 ];
 
 const TestimonialCard = ({ t }: { t: typeof testimonials[0] }) => (
-	<div className="glass-card p-6 md:p-8 flex flex-col w-[320px] md:w-[450px] shrink-0 interactive-card hover-glow">
+	<div className="glass-card p-6 md:p-8 flex flex-col w-[320px] md:w-[450px] shrink-0 hover-glow">
 		<div className="flex gap-1 mb-4" role="img" aria-label={`${t.rating} out of 5 stars`}>
 			{Array.from({ length: t.rating }).map((_, idx) => (
 				<Star key={idx} size={16} className="fill-accent text-accent" aria-hidden="true" />

@@ -21,6 +21,7 @@ import {
 import Navbar from "@/components/Navbar";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
 import { buildWhatsAppUrl, PHONE_TEL_LINK, EMAIL } from "@/lib/constants";
@@ -156,7 +157,9 @@ export default function Consultants() {
         description="SiteNova builds authority-building, SEO-optimized websites for consultants, business coaches, and advisors in Mumbai. Showcase your expertise, attract premium clients, and book consultations online."
         canonicalUrl="/websites-for-consultants"
         keywords={["website for consultants in Mumbai", "consultant portfolio website India", "business coach website design", "consultant website designer Mumbai", "professional consulting website"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -188,8 +191,7 @@ export default function Consultants() {
               },
             })),
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

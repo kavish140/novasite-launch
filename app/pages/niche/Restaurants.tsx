@@ -22,6 +22,7 @@ import {
 import Navbar from "@/components/Navbar";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
 import { buildWhatsAppUrl, PHONE_TEL_LINK, EMAIL_COMPOSE_LINK, EMAIL, PHONE_NUMBER } from "@/lib/constants";
@@ -109,7 +110,9 @@ export default function Restaurants() {
         description="SiteNova builds stunning, mouth-watering websites for restaurants, cafes, and cloud kitchens in Mumbai. Digital menus, reservations, and local SEO."
         canonicalUrl="/websites-for-restaurants"
         keywords={["restaurant website design Mumbai", "cafe website developer", "cloud kitchen website", "digital menu website", "food business web design"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -159,8 +162,7 @@ export default function Restaurants() {
               }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

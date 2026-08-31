@@ -1,15 +1,29 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
 Disallow: /thank-you
+Disallow: /lp/thank-you-quote
+Disallow: /lp/thank-you-audit
 
 # -----------------------------------------------
 # Standard Search Engine Bots
 # -----------------------------------------------
 User-agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /thank-you
+Disallow: /lp/thank-you-quote
+Disallow: /lp/thank-you-audit
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /thank-you
+Disallow: /lp/thank-you-quote
+Disallow: /lp/thank-you-audit
 
 User-agent: Slurp
 Allow: /

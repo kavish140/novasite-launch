@@ -1,17 +1,12 @@
-import { m as motion, useScroll, useSpring } from "framer-motion";
-
 export default function ScrollProgress() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
-
   return (
-    <motion.div
+    <div
       className="fixed top-0 left-0 right-0 h-1 z-[100] origin-left bg-gradient-to-r from-primary to-accent"
-      style={{ scaleX }}
+      style={{
+        transform: "scaleX(0)",
+        animation: "scroll-progress linear both",
+        animationTimeline: "scroll()",
+      } as React.CSSProperties}
       aria-hidden="true"
     />
   );

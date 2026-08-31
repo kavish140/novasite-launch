@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import { buildOrganizationJsonLd } from "@/lib/seo";
 import {
@@ -136,8 +137,9 @@ const WhyUs = () => {
           "web design agency vs freelancer India",
           "why SiteNova sitenova.dev",
         ]}
-        jsonLd={jsonLd}
+
       />
+      <JsonLd data={jsonLd} />
 
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />

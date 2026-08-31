@@ -310,3 +310,10 @@
     background-position: 0% 50%;
   }
 }
+
+/* Scroll-driven progress bar — replaces JS useScroll + useSpring */
+@keyframes scroll-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+

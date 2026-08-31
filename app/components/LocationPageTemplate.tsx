@@ -9,6 +9,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import PortfolioSection from "@/components/PortfolioSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -21,6 +22,7 @@ interface LocationPageProps {
   regionalFocusText: string;
   nearbySuburbs: string[];
   keywords: string[];
+  geoCoordinates?: { latitude: number; longitude: number };
 }
 
 export default function LocationPageTemplate({
@@ -30,6 +32,7 @@ export default function LocationPageTemplate({
   regionalFocusText,
   nearbySuburbs,
   keywords,
+  geoCoordinates,
 }: LocationPageProps) {
   const navigate = useNavigate();
 
@@ -50,7 +53,9 @@ export default function LocationPageTemplate({
         description={`Looking for a website designer in ${locationName}? SiteNova builds fast, SEO-ready websites for businesses in ${locationName} — delivered in 7–14 days, from ₹10,000. Free audit included.`}
         canonicalUrl={`/location/${locationName.toLowerCase().replace(/\s+/g, '-')}`}
         keywords={keywords}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": ["ProfessionalService", "LocalBusiness"],
@@ -72,8 +77,8 @@ export default function LocationPageTemplate({
             },
             "geo": {
               "@type": "GeoCoordinates",
-              "latitude": 19.1726,
-              "longitude": 72.9570
+              "latitude": geoCoordinates?.latitude ?? 19.1726,
+              "longitude": geoCoordinates?.longitude ?? 72.9570
             },
             "hasMap": "https://share.google/Y6mq6VLzTQj9zN4kr",
             "openingHoursSpecification": [
@@ -136,8 +141,7 @@ export default function LocationPageTemplate({
               { "@type": "ListItem", "position": 2, "name": `Web Design in ${locationName}`, "item": `https://sitenova.dev/location/${locationName.toLowerCase().replace(/\s+/g, '-')}` }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 
@@ -300,6 +304,37 @@ export default function LocationPageTemplate({
                 </summary>
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{item.a}</p>
               </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Niche Services Cross-Links */}
+      <section className="py-16 border-t border-border/20">
+        <div className="mx-auto max-w-7xl px-6">
+          <h3 className="font-heading text-xl font-bold tracking-tight mb-2">
+            Specialised Web Design Services in {locationName}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            We build industry-specific websites tailored for {locationName} businesses:
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {[
+              { name: "Websites for Doctors", path: "/websites-for-doctors" },
+              { name: "Websites for Lawyers", path: "/websites-for-lawyers" },
+              { name: "Websites for Finance", path: "/websites-for-finance" },
+              { name: "Websites for Real Estate", path: "/websites-for-real-estate" },
+              { name: "Websites for Consultants", path: "/websites-for-consultants" },
+              { name: "Websites for Startups", path: "/websites-for-startups" },
+              { name: "Websites for Restaurants", path: "/websites-for-restaurants" },
+            ].map((niche) => (
+              <Link
+                key={niche.path}
+                to={niche.path}
+                className="rounded-xl border border-border/60 bg-secondary/20 px-4 py-3 text-center text-sm font-medium text-foreground hover:bg-secondary hover:border-primary/30 transition-all"
+              >
+                {niche.name}
+              </Link>
             ))}
           </div>
         </div>

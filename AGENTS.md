@@ -807,5 +807,34 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 - **Deleted** 9 unused/duplicate assets from `app/assets/`: `dashboard-preview.jpg`, `hero-bg.jpg`, `hero-bg.webp` (duplicate of `public/hero-bg.webp`), `business-showcase.png`, `design-showcase.png`, `ecommerce-showcase.png`, `portfolio-1.jpg`, `portfolio-2.jpg`, `portfolio-3.jpg`. All `.webp` versions used in code are unaffected.
 - Build: `✓ built in 17.84s` — exit code 0, no errors. TypeScript: 0 errors.
 
+
+### [2026-08-30] — Growth Audit Phase 1: Schema Blackout Fix, Dead-Click Trap, QuoteWizard UX, GEO Disambiguation
+
+- **Fixed** Schema Blackout — `<SEO />` component returns `null`, silently dropping all JSON-LD structured data across the entire site. Added `import { JsonLd } from "@/components/JsonLd"` and `<JsonLd data={...} />` as a sibling to `<SEO>` in 20 page files: `Index.tsx`, `About.tsx`, `FreeAudit.tsx`, `OurProcess.tsx`, `Pricing.tsx`, `WebsiteCostCalculator.tsx`, `WhyUs.tsx`, `BlogIndex.tsx`, `BlogPost.tsx`, `Ecommerce.tsx`, `SeoSpeed.tsx`, `WebApps.tsx`, all 7 niche pages, and `LocationPageTemplate.tsx` (covering all 14 location pages). JSON-LD schemas (LocalBusiness, FAQ, Organization, HowTo, Speakable, Service, Article, BreadcrumbList) are now rendered in the HTML.
+- **Fixed** Dead-Click Trap (42.86% dead clicks in Clarity) — removed `interactive-card hover-glow` from non-clickable elements in `HeroSection.tsx` (announcement badge + preview div), removed `interactive-card` from `TestimonialsSection.tsx` testimonial cards. In `FeaturesSection.tsx`, wrapped 6 feature cards in `<Link>` elements pointing to relevant service routes and added `href` property to each feature data object.
+- **Added** Character counter in `WebDesignLP.tsx` Step 2 textarea — shows "X more characters needed" / "✓ Looks good" with live count. Fixes the invisible validation gate where users couldn't tell why the "Next" button was disabled.
+- **Fixed** GEO Entity Disambiguation — in `Index.tsx` (line ~201) and `About.tsx` (line ~316), replaced JSX comments containing SiteNova ≠ sitenovaagency.com disambiguation with real `<section className="geo-entity-block sr-only">` blocks that are hidden visually but present in the DOM for AI and search crawlers.
+- Build: `tsc --noEmit` — 0 errors.
+
+---
+
+### [2026-08-31] — Growth Audit Phase 2: Technical Infrastructure (robots.txt, noindex, sitemap, navbar, INP)
+
+- **Fixed** `public/robots.txt` RFC 9309 compliance — per RFC 9309, specific `User-agent` blocks override the wildcard block. Added `Disallow: /admin`, `/admin/`, `/thank-you`, `/lp/thank-you-quote`, `/lp/thank-you-audit` to Googlebot and Bingbot blocks. AI bot blocks remain `Allow: /` only (we want them to crawl everything).
+- **Fixed** `app/routes/thank-you.tsx` — added `noindex: true` to `buildMeta()`. LP thank-you routes already had this.
+- **Fixed** `app/routes/sitemap[.]xml.tsx` — replaced `const today = new Date().toISOString().split("T")[0]` (dynamic date on every request, causing Googlebot to distrust lastmod) with a static `lastModified` map per path + `defaultLastMod` fallback.
+- **Updated** `app/components/Navbar.tsx` — added 3 core service links (E-Commerce Stores, SEO & Speed Audits, Web Applications) above the 7 niche links in both desktop dropdown and mobile menu, separated by a "By Industry" divider. Added `ShoppingCart`, `Search`, `Code2` lucide-react icons.
+- **Fixed** INP 310ms — `app/components/IframePreview.tsx` now uses `IntersectionObserver` with `rootMargin: "200px"` to defer iframe `src` until the element scrolls near the viewport. Shows a "Live Preview" placeholder before entering view. Live iframes are preserved (not replaced with screenshots per user requirement).
+- **Fixed** INP — `app/components/ScrollProgress.tsx` replaced Framer Motion `useScroll` + `useSpring` JS physics loop with CSS `animation-timeline: scroll()` (zero JS scroll listener). Added `@keyframes scroll-progress` to `app/index.css`.
+- Build: `tsc --noEmit` — 0 errors.
+
+---
+
+### [2026-08-31] — Growth Audit Phase 3: Location Page Enrichment
+
+- **Updated** `app/components/LocationPageTemplate.tsx` — added optional `geoCoordinates?: { latitude: number; longitude: number }` prop. JSON-LD `geo` block now uses per-location coordinates (falls back to Mulund default if not provided). Added "Specialised Web Design Services in {locationName}" cross-links section linking to all 7 niche pages, inserted between FAQ and "Other Areas We Serve" sections.
+- **Updated** all 14 location page files — added correct `geoCoordinates` prop for each suburb: Mulund (19.1726, 72.9570), Thane (19.2183, 72.9781), Bandra (19.0544, 72.8371), Andheri (19.1197, 72.8464), Powai (19.1176, 72.9060), Bhandup (19.1480, 72.9370), Nahur (19.1530, 72.9490), Ghatkopar (19.0860, 72.9080), Vikhroli (19.1100, 72.9280), Kurla (19.0726, 72.8794), Dadar (19.0178, 72.8478), Lower Parel (18.9981, 72.8318), Mahalakshmi (18.9830, 72.8120), Pedder Road (18.9710, 72.8050). Previously all 14 pages used hardcoded Mulund coordinates (doorway page signal).
+- Build: `tsc --noEmit` — 0 errors.
+
 ---
 

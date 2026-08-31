@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabaseClient";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 
 interface BlogPost {
@@ -52,7 +53,9 @@ export default function BlogIndex() {
         description="Expert articles on web design, local SEO, and digital growth for small businesses in Mumbai, Mulund, Andheri, Thane, and nearby areas. Published by SiteNova."
         canonicalUrl="/blog"
         keywords={["web design blog Mumbai", "local SEO tips Mumbai", "website tips for small business", "Mumbai digital marketing blog"]}
-        jsonLd={{
+
+      />
+      <JsonLd data={{
           "@context": "https://schema.org",
           "@type": "Blog",
           "name": "SiteNova Blog",
@@ -63,8 +66,7 @@ export default function BlogIndex() {
             "name": "SiteNova",
             "url": "https://sitenova.dev"
           }
-        }}
-      />
+        }} />
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
       

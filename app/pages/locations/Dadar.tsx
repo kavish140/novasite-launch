@@ -9,6 +9,7 @@ export default function Dadar() {
       regionalFocusText="Dadar's unique position as the only station connecting Mumbai's Western and Central lines makes it one of the highest-footfall areas in the city. SiteNova leverages this advantage digitally — building fast-loading, locally optimized websites that capture search traffic from the massive population passing through Dadar daily. From Hindmata to Shivaji Park, we ensure your business is the first result customers see."
       nearbySuburbs={["Prabhadevi", "Mahim", "Matunga", "Sion", "Lower Parel", "Shivaji Park"]}
       keywords={["web designer in Dadar", "website design Dadar", "Dadar web developer", "business website Dadar Mumbai", "website designer central Mumbai"]}
+      geoCoordinates={{ latitude: 19.0178, longitude: 72.8478 }}
     />
   );
 }

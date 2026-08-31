@@ -59,14 +59,32 @@ export async function loader({ context }: Route.LoaderArgs) {
     // Sitemap still works without blog posts
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  // Static last-modified dates — update when page content meaningfully changes.
+  // Using today's date on every request tells Googlebot that nothing ever changes,
+  // causing it to distrust and ignore lastmod signals entirely.
+  const lastModified: Record<string, string> = {
+    "/": "2026-08-31",
+    "/pricing": "2026-07-15",
+    "/contact-us": "2026-06-01",
+    "/quote": "2026-07-01",
+    "/about": "2026-06-01",
+    "/our-process": "2026-06-01",
+    "/why-us": "2026-06-01",
+    "/free-audit": "2026-07-01",
+    "/website-cost-calculator": "2026-07-01",
+    "/blog": "2026-08-31",
+    "/services/ecommerce": "2026-06-15",
+    "/services/web-applications": "2026-06-15",
+    "/services/seo-optimization": "2026-06-15",
+  };
+  const defaultLastMod = "2026-06-01";
 
   const urls = [
     ...staticPaths.map(
       (path) => `
   <url>
     <loc>${siteUrl}${path}</loc>
-    <lastmod>${today}</lastmod>
+    <lastmod>${lastModified[path] ?? defaultLastMod}</lastmod>
     <changefreq>${path === "/" ? "daily" : "weekly"}</changefreq>
     <priority>${path === "/" ? "1.0" : "0.8"}</priority>
   </url>`
@@ -75,7 +93,7 @@ export async function loader({ context }: Route.LoaderArgs) {
       (post) => `
   <url>
     <loc>${siteUrl}/blog/${post.slug}</loc>
-    <lastmod>${post.published_at?.split("T")[0] || today}</lastmod>
+    <lastmod>${post.published_at?.split("T")[0] || defaultLastMod}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>`

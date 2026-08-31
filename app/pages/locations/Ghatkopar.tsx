@@ -9,6 +9,7 @@ export default function Ghatkopar() {
       regionalFocusText="Ghatkopar's bustling Vallabh Baug Lane, its thriving street-food scene, and the retail energy around R City Mall create enormous opportunities for businesses that invest in a strong digital presence. SiteNova builds websites optimized for the Ghatkopar micro-market — helping restaurants, jewellers, coaching institutes, and professional services rank higher when locals search on Google and Maps."
       nearbySuburbs={["Vikhroli", "Kurla", "Chembur", "LBS Road", "Tilak Nagar", "Ghatkopar West"]}
       keywords={["web designer in Ghatkopar", "website design Ghatkopar", "Ghatkopar web developer", "business website Ghatkopar", "website designer near R City Mall"]}
+      geoCoordinates={{ latitude: 19.0860, longitude: 72.9080 }}
     />
   );
 }

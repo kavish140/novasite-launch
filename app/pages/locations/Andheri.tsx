@@ -9,6 +9,7 @@ export default function Andheri() {
       regionalFocusText="Andheri's sprawling commercial ecosystem — spanning the corporate offices of Andheri East, the creative agencies of Andheri West, and the entertainment hubs near Oshiwara — requires websites that are as versatile as the businesses they represent. SiteNova creates tailored web solutions with local SEO baked in, so whether a customer searches from the Western Express Highway or the Versova seafront, your business appears first."
       nearbySuburbs={["Andheri East", "Andheri West", "Lokhandwala", "MIDC Andheri", "Versova", "Oshiwara"]}
       keywords={["web designer in Andheri", "website design Andheri", "Andheri web development", "MIDC web company", "business website Andheri"]}
+      geoCoordinates={{ latitude: 19.1197, longitude: 72.8464 }}
     />
   );
 }

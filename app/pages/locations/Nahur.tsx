@@ -9,6 +9,7 @@ export default function Nahur() {
       regionalFocusText="Nahur may be compact, but its commercial potential is expanding fast with new residential complexes and retail outlets. SiteNova creates SEO-optimized websites that help Nahur businesses rank for hyper-local searches, connecting you with customers who live and commute through this central suburb daily. Our schema markup ensures your phone number, directions, and reviews appear prominently in Google results."
       nearbySuburbs={["Bhandup", "Mulund", "Kanjurmarg", "Airoli", "Ghatkopar", "Nahur East"]}
       keywords={["web designer in Nahur", "website design Nahur", "Nahur web developer", "affordable website Nahur", "website designer near Nahur station"]}
+      geoCoordinates={{ latitude: 19.1530, longitude: 72.9490 }}
     />
   );
 }

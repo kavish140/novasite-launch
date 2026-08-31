@@ -1,5 +1,6 @@
 import { m as motion } from "framer-motion";
 import { Zap, Paintbrush, Globe, Shield, Smartphone, HeadphonesIcon } from "lucide-react";
+import { Link } from "react-router";
 
 const features = [
 	{
@@ -7,36 +8,42 @@ const features = [
 		title: "Lightning Fast Delivery",
 		description:
 			"Get your professional website up and running in days. We work fast without compromising quality.",
+		href: "/our-process",
 	},
 	{
 		icon: Paintbrush,
 		title: "Custom Design",
 		description:
 			"Every website is tailor-made for your brand. No cookie-cutter templates — only unique, stunning designs.",
+		href: "/quote",
 	},
 	{
 		icon: Smartphone,
 		title: "Mobile Responsive",
 		description:
 			"Your site looks perfect on every device — phones, tablets, and desktops. Every pixel optimized.",
+		href: "/services/web-applications",
 	},
 	{
 		icon: Globe,
 		title: "SEO Optimized",
 		description:
 			"Built with search engines in mind. Get found by your customers with clean code and fast load times.",
+		href: "/services/seo-optimization",
 	},
 	{
 		icon: Shield,
 		title: "Secure & Reliable",
 		description:
 			"SSL encryption, regular backups, and enterprise-grade hosting. Your website stays safe 24/7.",
+		href: "/why-us",
 	},
 	{
 		icon: HeadphonesIcon,
 		title: "Ongoing Support",
 		description:
 			"We don't disappear after launch. Get dedicated support, updates, and maintenance whenever you need.",
+		href: "/contact-us",
 	},
 ];
 
@@ -95,8 +102,12 @@ const FeaturesSection = () => {
 							<motion.div
 								key={feature.title}
 								variants={item}
-								className={`glass-card p-6 md:p-8 group hover:border-primary/30 transition-all duration-300 interactive-card hover-glow flex flex-col justify-between ${spanClasses} overflow-hidden relative`}
+								className={`${spanClasses} overflow-hidden relative`}
 							>
+								<Link
+									to={feature.href}
+									className="glass-card p-6 md:p-8 group hover:border-primary/30 transition-all duration-300 interactive-card hover-glow flex flex-col justify-between h-full rounded-2xl"
+								>
 								<div className="relative z-10">
 									<div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
 										<feature.icon size={22} className="text-primary" />
@@ -133,6 +144,7 @@ const FeaturesSection = () => {
 										</div>
 									</div>
 								)}
+								</Link>
 							</motion.div>
 						);
 					})}

@@ -22,6 +22,7 @@ export default function PedderRoad() {
         "clinic web design Mumbai",
         "luxury web developer Mumbai"
       ]}
+      geoCoordinates={{ latitude: 18.9710, longitude: 72.8050 }}
     />
   );
 }

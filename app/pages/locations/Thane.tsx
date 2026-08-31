@@ -9,6 +9,7 @@ export default function Thane() {
       regionalFocusText="Thane's commercial landscape — spanning IT hubs like Hiranandani Estate, the busy retail stretches of Majiwada, and the ever-developing Ghodbunder Road corridor — demands a strong digital presence. SiteNova builds SEO-optimized websites that help Thane businesses compete not just locally, but across the entire Mumbai Metropolitan Region. Our local search strategies ensure your business captures customers from Thane's dense residential townships."
       nearbySuburbs={["Wagle Estate", "Hiranandani Estate", "Ghodbunder Road", "Majiwada", "Vartak Nagar", "Kopri"]}
       keywords={["web designer in Thane", "website design Thane", "Thane web developers", "software development Thane", "local SEO Thane"]}
+      geoCoordinates={{ latitude: 19.2183, longitude: 72.9781 }}
     />
   );
 }

@@ -18,6 +18,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import PortfolioSection from "@/components/PortfolioSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -116,7 +117,9 @@ export default function WebApps() {
         description="Need a custom web app for your Mumbai business? SiteNova builds secure dashboards, booking systems & portals using React and Next.js — scalable, fast, and built to convert."
         canonicalUrl="/services/web-applications"
         keywords={["custom web application developer Mumbai", "React developer Mumbai", "Nextjs developer Mumbai", "web software developer Mumbai", "dashboard development Mumbai"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -136,8 +139,7 @@ export default function WebApps() {
               { "@type": "ListItem", "position": 3, "name": "Web Application Development", "item": "https://sitenova.dev/services/web-applications" }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

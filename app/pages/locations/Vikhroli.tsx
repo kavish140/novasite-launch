@@ -9,6 +9,7 @@ export default function Vikhroli() {
       regionalFocusText="Vikhroli's transformation from an industrial zone to a modern business district — anchored by Godrej One and the surrounding IT parks — means businesses here compete on a different level. SiteNova builds sleek, SEO-optimized websites that position your brand alongside Vikhroli's corporate identity, while still capturing hyper-local searches from the surrounding residential neighbourhoods."
       nearbySuburbs={["Powai", "Kanjurmarg", "Bhandup", "Ghatkopar", "Godrej Vikhroli", "LBS Marg"]}
       keywords={["web designer in Vikhroli", "website design Vikhroli", "Vikhroli web developer", "Godrej Vikhroli web design", "business website Vikhroli"]}
+      geoCoordinates={{ latitude: 19.1100, longitude: 72.9280 }}
     />
   );
 }

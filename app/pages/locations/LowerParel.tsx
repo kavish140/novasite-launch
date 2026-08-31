@@ -22,6 +22,7 @@ export default function LowerParel() {
         "business website Kamala Mills",
         "premium web design Mumbai"
       ]}
+      geoCoordinates={{ latitude: 18.9981, longitude: 72.8318 }}
     />
   );
 }

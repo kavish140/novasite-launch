@@ -22,6 +22,7 @@ import {
 import Navbar from "@/components/Navbar";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
 import { buildWhatsAppUrl, PHONE_TEL_LINK, EMAIL_COMPOSE_LINK, EMAIL, PHONE_NUMBER } from "@/lib/constants";
@@ -109,7 +110,9 @@ export default function Startups() {
         description="SiteNova builds high-performance, investor-ready React websites for tech startups and SaaS companies in Mumbai. Launch fast, scale easily, and impress users."
         canonicalUrl="/websites-for-startups"
         keywords={["startup website design Mumbai", "SaaS website development", "React developer for startups", "tech startup web design", "investor ready website"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -159,8 +162,7 @@ export default function Startups() {
               }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

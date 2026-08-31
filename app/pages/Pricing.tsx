@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 
 const pricingTiers = [
@@ -72,7 +73,9 @@ const Pricing = () => {
         description="Transparent website design pricing in Mumbai. SiteNova plans start from ₹10,000 onwards for landing pages, ₹15,000 onwards for business sites, and custom quotes for e-commerce (from ₹18,000) and web apps."
         canonicalUrl="/pricing"
         keywords={["website pricing Mumbai", "web design cost Mumbai", "affordable web design Mumbai", "website package India", "web design 10000 onwards"]}
-        jsonLd={{
+
+      />
+      <JsonLd data={{
           "@context": "https://schema.org",
           "@type": "ProfessionalService",
           "name": "SiteNova",
@@ -100,8 +103,7 @@ const Pricing = () => {
               }
             ]
           }
-        }}
-      />
+        }} />
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <header>
           <Navbar />

@@ -9,6 +9,7 @@ export default function Bhandup() {
       regionalFocusText="Whether you run a hardware store near Bhandup railway station, a tuition class in Bhandup West, or a diagnostic centre along LBS Marg, SiteNova builds websites designed to capture local customers searching for services in your neighbourhood. Our local SEO strategy ensures your Google Business Profile and website work together to dominate search results across the Bhandup–Mulund belt."
       nearbySuburbs={["Mulund", "Nahur", "Kanjurmarg", "Vikhroli", "LBS Marg", "Bhandup West"]}
       keywords={["web designer in Bhandup", "website design Bhandup", "Bhandup web developer", "local business website Bhandup", "website designer near LBS Marg"]}
+      geoCoordinates={{ latitude: 19.1480, longitude: 72.9370 }}
     />
   );
 }

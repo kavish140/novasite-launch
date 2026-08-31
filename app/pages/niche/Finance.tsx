@@ -22,6 +22,7 @@ import {
 import Navbar from "@/components/Navbar";
 import { trackNichePageView, trackWhatsAppClick, trackPhoneClick } from "@/lib/analytics";
 import SEO from "@/components/SEO";
+import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
 import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
@@ -110,7 +111,9 @@ export default function Finance() {
         description="SiteNova builds trust-building, SEO-optimized websites for CAs, financial advisors, and insurance agents in Mumbai. Showcase your expertise and generate leads online."
         canonicalUrl="/websites-for-finance"
         keywords={["website for CA firms", "financial advisor website design Mumbai", "insurance agent website", "CA firm website design", "finance website Mumbai"]}
-        jsonLd={[
+
+      />
+      <JsonLd data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
@@ -168,8 +171,7 @@ export default function Finance() {
               }
             ]
           }
-        ]}
-      />
+        ]} />
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 

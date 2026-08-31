@@ -9,6 +9,7 @@ export default function Bandra() {
       regionalFocusText="Bandra's commercial landscape requires a digital presence that stands out. SiteNova builds bespoke, fast-loading, SEO-optimized websites that help Bandra businesses capture local footfall and premium clientele. Our local search strategies ensure your business dominates searches in Bandra West and surrounding areas."
       nearbySuburbs={["Bandra West", "Bandra East", "BKC", "Khar", "Santacruz", "Mahim"]}
       keywords={["web designer in Bandra", "website design Bandra", "Bandra web developers", "startup website Bandra", "local SEO Bandra Mumbai"]}
+      geoCoordinates={{ latitude: 19.0544, longitude: 72.8371 }}
     />
   );
 }

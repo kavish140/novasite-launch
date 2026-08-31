@@ -39,7 +39,7 @@ const HeroSection = () => {
       <motion.div style={{ y: contentY }} className="relative z-10 mx-auto max-w-7xl px-6 text-center will-change-transform">
         <div>
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 mb-8 interactive-card hover-glow">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 mb-8">
             <Sparkles size={14} className="text-accent" />
             <span className="text-xs font-medium text-muted-foreground">
               Website design for Mulund, Mumbai, and nearby suburbs
@@ -117,7 +117,7 @@ const HeroSection = () => {
           style={{ y: previewY, rotateX: previewRotate }}
           className="mt-16 md:mt-20 will-change-transform"
         >
-          <div className="relative mx-auto max-w-5xl gradient-border rounded-2xl overflow-hidden interactive-card hover-glow">
+          <div className="relative mx-auto max-w-5xl gradient-border rounded-2xl overflow-hidden">
             <div className="rounded-2xl overflow-hidden border border-border/30">
               <BlurImage
                 src={dashboardPreview}
