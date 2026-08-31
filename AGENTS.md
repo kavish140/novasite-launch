@@ -59,6 +59,8 @@
 - E-Commerce Stores (from ₹18,000 — Razorpay + Stripe integration)
 - Custom Web Applications / Dashboards (from ₹30,000)
 - SEO & Speed Audits / Core Web Vitals (from ₹8,000)
+- Google Ads Management (from ₹5,000/month management fee + ₹10,000–₹15,000/month recommended ad spend)
+- Meta Ads Management / Facebook & Instagram Ads (from ₹5,000/month management fee + ₹10,000–₹15,000/month recommended ad spend)
 - Niche websites: Doctors, Lawyers, Finance/CA, Real Estate, Consultants, Startups, Restaurants
 
 ### Geo Service Areas
@@ -162,6 +164,8 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `services.ecommerce.tsx` | `/services/ecommerce` | `pages/services/Ecommerce.tsx` |
 | `services.seo-optimization.tsx` | `/services/seo-optimization` | `pages/services/SeoSpeed.tsx` |
 | `services.web-applications.tsx` | `/services/web-applications` | `pages/services/WebApps.tsx` |
+| `services.google-ads.tsx` | `/services/google-ads` | `pages/services/GoogleAds.tsx` |
+| `services.meta-ads.tsx` | `/services/meta-ads` | `pages/services/MetaAds.tsx` |
 | `websites-for-doctors.tsx` | `/websites-for-doctors` | `pages/niche/Doctors.tsx` |
 | `websites-for-finance.tsx` | `/websites-for-finance` | `pages/niche/Finance.tsx` |
 | `websites-for-lawyers.tsx` | `/websites-for-lawyers` | `pages/niche/Lawyers.tsx` |
@@ -246,6 +250,8 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 | `pages/services/Ecommerce.tsx` | `/services/ecommerce` | E-commerce store service |
 | `pages/services/SeoSpeed.tsx` | `/services/seo-optimization` | SEO & Core Web Vitals service |
 | `pages/services/WebApps.tsx` | `/services/web-applications` | Custom web apps service |
+| `pages/services/GoogleAds.tsx` | `/services/google-ads` | Google Ads management service. Hero + interactive Results Estimator (goal/industry/spend → estimated clicks & leads). Pain points section, full 8-item service breakdown, FAQ, JSON-LD Service + FAQ + BreadcrumbList. Management from ₹5,000/mo. |
+| `pages/services/MetaAds.tsx` | `/services/meta-ads` | Meta (Facebook & Instagram) Ads management service. Hero + interactive Audience Reach Estimator (age group/interest/spend → reach & leads). Pain points section, full 8-item service breakdown, FAQ, JSON-LD Service + FAQ + BreadcrumbList. Management from ₹5,000/mo. |
 
 ### Niche Pages (7 total)
 All live in `pages/niche/`. Each is a full, detailed page targeting a specific industry vertical:
@@ -693,6 +699,17 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 > Format: `## [Date] — [Brief summary]` followed by bullet points of what changed and why.
 
 ---
+
+### [2026-08-31] — Added Google Ads & Meta Ads service pages
+
+- **New** `app/pages/services/GoogleAds.tsx` — Google Ads management service page at `/services/google-ads`. Sections: hero (management from ₹5,000/mo + ₹10,000–₹15,000/mo ad spend callout), interactive Results Estimator (campaign goal × industry × ad spend → estimated clicks/leads/CPL), 8-item full-service breakdown, 6-item pain points grid, 6-item FAQ, JSON-LD (Service + FAQPage + BreadcrumbList). Reuses `PortfolioSection`, `TestimonialsSection`, `CtaSection`.
+- **New** `app/pages/services/MetaAds.tsx` — Meta Ads management service page at `/services/meta-ads`. Same structure as above but with an Audience Reach Estimator (age group × interest × ad spend → Mumbai audience size/reach/leads). JSON-LD (Service + FAQPage + BreadcrumbList).
+- **New** `app/routes/services.google-ads.tsx` — Route file with `buildMeta()` export for `/services/google-ads`.
+- **New** `app/routes/services.meta-ads.tsx` — Route file with `buildMeta()` export for `/services/meta-ads`.
+- **Modified** `app/components/Navbar.tsx` — Added `Target` and `Megaphone` icon imports. Added Google Ads and Meta Ads to `coreServiceLinks` array (auto-renders in both desktop dropdown and mobile menu).
+- **Modified** `app/components/Footer.tsx` — Added Google Ads Management and Meta Ads Management links to "Our Services" footer column.
+- **Modified** `app/routes/sitemap[.]xml.tsx` — Added `/services/google-ads` and `/services/meta-ads` to `staticPaths` and `lastModified` map.
+- **Modified** `AGENTS.md` — Updated §1 Services Offered, §4 Routing System, §5 Pages Catalog.
 
 ### [2026-08-13] — Initial AGENTS.md created
 

@@ -33,6 +33,8 @@ const Footer = () => {
               <li><Link to="/services/ecommerce" className="text-sm text-muted-foreground hover:text-foreground transition-colors">E-commerce Stores</Link></li>
               <li><Link to="/services/web-applications" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Custom Web Apps</Link></li>
               <li><Link to="/services/seo-optimization" className="text-sm text-muted-foreground hover:text-foreground transition-colors">SEO & Speed Tuning</Link></li>
+              <li><Link to="/services/google-ads" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Google Ads Management</Link></li>
+              <li><Link to="/services/meta-ads" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Meta Ads Management</Link></li>
               <li><Link to="/websites-for-doctors" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Doctors</Link></li>
               <li><Link to="/websites-for-lawyers" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Lawyers</Link></li>
               <li><Link to="/websites-for-consultants" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Consultants</Link></li>
@@ -42,6 +44,7 @@ const Footer = () => {
               <li><Link to="/websites-for-restaurants" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Restaurants</Link></li>
             </ul>
           </div>
+
 
           {/* Locations (Wrapped into 2 columns) */}
           <div className="sm:col-span-2 lg:col-span-2">

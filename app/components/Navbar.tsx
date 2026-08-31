@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, startTransition } from "react";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed, ShoppingCart, Search, Code2 } from "lucide-react";
+import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed, ShoppingCart, Search, Code2, Target, Megaphone } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useTheme } from "next-themes";
 
@@ -61,7 +61,7 @@ const coreServiceLinks = [
     label: "E-Commerce Stores",
     to: "/services/ecommerce",
     icon: ShoppingCart,
-    description: "Razorpay + Stripe, from \u20b918,000",
+    description: "Razorpay + Stripe, from ₹18,000",
   },
   {
     label: "SEO & Speed Audits",
@@ -75,7 +75,20 @@ const coreServiceLinks = [
     icon: Code2,
     description: "Dashboards & custom apps",
   },
+  {
+    label: "Google Ads",
+    to: "/services/google-ads",
+    icon: Target,
+    description: "Search & display campaigns",
+  },
+  {
+    label: "Meta Ads",
+    to: "/services/meta-ads",
+    icon: Megaphone,
+    description: "Facebook & Instagram ads",
+  },
 ];
+
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
