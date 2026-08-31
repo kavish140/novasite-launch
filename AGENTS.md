@@ -59,8 +59,8 @@
 - E-Commerce Stores (from ₹18,000 — Razorpay + Stripe integration)
 - Custom Web Applications / Dashboards (from ₹30,000)
 - SEO & Speed Audits / Core Web Vitals (from ₹8,000)
-- Google Ads Management (from ₹5,000/month management fee + ₹10,000–₹15,000/month recommended ad spend)
-- Meta Ads Management / Facebook & Instagram Ads (from ₹5,000/month management fee + ₹10,000–₹15,000/month recommended ad spend)
+- Google Ads Management (recommended ad spend: ₹10,000–₹15,000/month — management priced based on budget)
+- Meta Ads Management / Facebook & Instagram Ads (recommended ad spend: ₹10,000–₹15,000/month — management priced based on budget)
 - Niche websites: Doctors, Lawyers, Finance/CA, Real Estate, Consultants, Startups, Restaurants
 
 ### Geo Service Areas

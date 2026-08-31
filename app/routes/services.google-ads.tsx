@@ -6,7 +6,7 @@ export function meta() {
   return buildMeta({
     title: "Google Ads Management in Mumbai | Get More Leads | SiteNova",
     description:
-      "Run Google Ads that actually convert. SiteNova manages keyword targeting, ad copy, bidding & conversion tracking for Mumbai businesses. Management from ₹5,000/month.",
+      "Run Google Ads that actually convert. SiteNova manages keyword targeting, ad copy, bidding & conversion tracking for Mumbai businesses. Recommended ad spend: ₹10,000–₹15,000/month.",
     canonicalPath: "/services/google-ads",
     keywords: [
       "Google Ads Mumbai",

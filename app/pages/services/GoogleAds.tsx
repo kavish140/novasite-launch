@@ -28,7 +28,7 @@ import CtaSection from "@/components/CtaSection";
 const faqs = [
   {
     q: "How much should I spend on Google Ads per month?",
-    a: "We recommend a minimum ad spend of ₹10,000–₹15,000/month for Google Ads to see meaningful results in Mumbai. This is separate from our management fee of ₹5,000/month. Your ad spend goes directly to Google.",
+    a: "We recommend a minimum ad spend of ₹10,000–₹15,000/month for Google Ads to see meaningful results in Mumbai. This goes directly to Google — contact us to discuss our management pricing based on your budget.",
   },
   {
     q: "How long before I start getting leads from Google Ads?",
@@ -133,7 +133,7 @@ export default function GoogleAds() {
       state: {
         projectType: "Google Ads Management",
         requirements: specsSummary,
-        budget: "₹5,000/month management + ad spend",
+        budget: "Custom pricing based on ad spend",
       },
     });
   };
@@ -142,7 +142,7 @@ export default function GoogleAds() {
     <PageTransition>
       <SEO
         title="Google Ads Management in Mumbai | Get More Leads | SiteNova"
-        description="Run Google Ads that actually convert. SiteNova manages keyword targeting, ad copy, bidding & conversion tracking for Mumbai businesses. Management from ₹5,000/month."
+        description="Run Google Ads that actually convert. SiteNova manages keyword targeting, ad copy, bidding & conversion tracking for Mumbai businesses. Recommended ad spend: ₹10,000–₹15,000/month."
         canonicalUrl="/services/google-ads"
         keywords={[
           "Google Ads Mumbai",
@@ -227,7 +227,7 @@ export default function GoogleAds() {
             </p>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 text-sm font-semibold text-emerald-500">
               <CheckCircle className="h-4 w-4" />
-              Management from ₹5,000/month &nbsp;·&nbsp; Recommended ad spend: ₹10,000–₹15,000/month
+              Recommended ad spend: ₹10,000–₹15,000/month · Contact us for management pricing
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <button

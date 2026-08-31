@@ -28,7 +28,7 @@ import CtaSection from "@/components/CtaSection";
 const faqs = [
   {
     q: "How much should I spend on Meta Ads per month?",
-    a: "We recommend a minimum ad spend of ₹10,000–₹15,000/month on Facebook and Instagram to see consistent results. This goes directly to Meta. Our management fee starts at ₹5,000/month and covers strategy, creatives, and optimisation.",
+    a: "We recommend a minimum ad spend of ₹10,000–₹15,000/month on Facebook and Instagram to see consistent results. This goes directly to Meta — contact us to discuss our management pricing based on your budget.",
   },
   {
     q: "What's the difference between boosting a post and running a real Meta Ads campaign?",
@@ -139,7 +139,7 @@ export default function MetaAds() {
       state: {
         projectType: "Meta Ads Management",
         requirements: specsSummary,
-        budget: "₹5,000/month management + ad spend",
+        budget: "Custom pricing based on ad spend",
       },
     });
   };
@@ -148,7 +148,7 @@ export default function MetaAds() {
     <PageTransition>
       <SEO
         title="Facebook & Instagram Ads in Mumbai | Meta Ads Management | SiteNova"
-        description="Grow your Mumbai business with targeted Meta Ads. SiteNova handles audience research, ad creatives, pixel setup & retargeting. Management from ₹5,000/month."
+        description="Grow your Mumbai business with targeted Meta Ads. SiteNova handles audience research, ad creatives, pixel setup & retargeting. Recommended ad spend: ₹10,000–₹15,000/month."
         canonicalUrl="/services/meta-ads"
         keywords={[
           "Facebook Ads Mumbai",
@@ -233,7 +233,7 @@ export default function MetaAds() {
             </p>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 text-sm font-semibold text-emerald-500">
               <CheckCircle className="h-4 w-4" />
-              Management from ₹5,000/month &nbsp;·&nbsp; Recommended ad spend: ₹10,000–₹15,000/month
+              Recommended ad spend: ₹10,000–₹15,000/month · Contact us for management pricing
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <button
