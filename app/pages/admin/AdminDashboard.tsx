@@ -34,6 +34,7 @@ import {
   MousePointerClick,
   Eye,
   Percent,
+  Target,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line } from "recharts";
