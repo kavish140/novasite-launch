@@ -79,21 +79,21 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl flex items-center justify-between px-6 py-4">
-        <Link to="/" className="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight">
+      <div className="mx-auto max-w-7xl flex items-center justify-between px-4 py-4">
+        <Link to="/" className="flex items-center gap-2 font-heading text-xl font-bold tracking-tight shrink-0">
           <img src="/logo-icon.png" className="h-8 w-8 object-contain" alt="SiteNova Logo" width="32" height="32" />
           <span>Site<span className="gradient-text">Nova</span></span>
         </Link>
 
-        {/* Desktop */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop — only visible at lg+ */}
+        <div className="hidden lg:flex items-center gap-3 xl:gap-5">
           {navLinks.map((link) => (
             <button
               type="button"
               key={link.label}
               onClick={() => scrollToSection(link.id)}
               aria-label={`Scroll to ${link.label} section`}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="hidden xl:block text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap"
             >
               {link.label}
             </button>
@@ -104,7 +104,7 @@ const Navbar = () => {
             <button
               type="button"
               onClick={() => { setServicesOpen(!servicesOpen); setMarketingOpen(false); }}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap"
               aria-expanded={servicesOpen}
               aria-haspopup="true"
             >
@@ -167,7 +167,7 @@ const Navbar = () => {
             <button
               type="button"
               onClick={() => { setMarketingOpen(!marketingOpen); setServicesOpen(false); }}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap"
               aria-expanded={marketingOpen}
               aria-haspopup="true"
             >
@@ -212,27 +212,27 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
 
-          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Blog</Link>
-          <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Pricing</Link>
-          <Link to="/website-cost-calculator" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Cost Calculator</Link>
-          <Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Free Audit</Link>
+          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap">Blog</Link>
+          <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap">Pricing</Link>
+          <Link to="/website-cost-calculator" className="hidden xl:block text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap">Calculator</Link>
+          <Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap">Free Audit</Link>
           <button
             type="button"
             onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-            className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80 transition-colors"
+            className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80 transition-colors shrink-0"
             aria-label="Toggle theme"
           >
             {!mounted ? null : isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <Link to="/quote"
-            className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm btn-quote-pulse">
+            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm btn-quote-pulse whitespace-nowrap shrink-0">
             Get a Quote
           </Link>
         </div>
 
-        {/* Mobile toggle */}
+        {/* Mobile/tablet toggle — shows on md and below lg */}
         <button
-          className="md:hidden text-foreground"
+          className="lg:hidden text-foreground"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
           aria-expanded={mobileOpen}
@@ -250,7 +250,7 @@ const Navbar = () => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden overflow-hidden border-t border-border/40 bg-background/95 backdrop-blur-xl"
+            className="lg:hidden overflow-hidden border-t border-border/40 bg-background/95 backdrop-blur-xl"
           >
             <div className="flex flex-col gap-4 px-6 py-6">
               {navLinks.map((link) => (
