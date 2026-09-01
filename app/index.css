@@ -106,6 +106,10 @@
     @apply border-border;
   }
 
+  ::selection {
+    @apply bg-primary/30 text-foreground;
+  }
+
   html {
   }
 
