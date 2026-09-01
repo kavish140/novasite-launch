@@ -15,15 +15,16 @@ import {
   CheckCircle,
   Users,
   RefreshCw,
+  ClipboardList,
+  Rocket,
+  Settings,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
-import PortfolioSection from "@/components/PortfolioSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
-import CtaSection from "@/components/CtaSection";
 
 const faqs = [
   {
@@ -95,7 +96,33 @@ const whatWeHandle = [
   },
 ];
 
-// Simple estimator: goal + industry + monthly spend → estimated leads
+const processSteps = [
+  {
+    icon: ClipboardList,
+    step: "01",
+    title: "Audit",
+    desc: "We audit your business, competitors, and high-intent keywords. No campaign goes live until we know exactly what will win.",
+  },
+  {
+    icon: Target,
+    step: "02",
+    title: "Strategy",
+    desc: "Campaign structure, match types, ad copy variants, and bidding strategy — all planned before a single rupee is spent.",
+  },
+  {
+    icon: Rocket,
+    step: "03",
+    title: "Launch",
+    desc: "Campaigns go live with full conversion tracking verified. We monitor the first 48 hours closely to catch any early issues.",
+  },
+  {
+    icon: Settings,
+    step: "04",
+    title: "Optimise & Report",
+    desc: "Weekly bid adjustments, negative keyword additions, and A/B test rotations. Monthly report delivered to your inbox.",
+  },
+];
+
 const INDUSTRY_CPC: Record<string, number> = {
   doctors: 18,
   lawyers: 32,
@@ -104,8 +131,6 @@ const INDUSTRY_CPC: Record<string, number> = {
   restaurants: 10,
   general: 15,
 };
-
-const CTR = 0.06; // 6% average CTR on search
 
 export default function GoogleAds() {
   const navigate = useNavigate();
@@ -121,21 +146,8 @@ export default function GoogleAds() {
     goal === "traffic" ? estimatedClicks : Math.floor(estimatedClicks * conversionRate);
   const cpl = goal === "traffic" ? "N/A" : `₹${Math.ceil(spend / estimatedLeads).toLocaleString("en-IN")}`;
 
-  const handleStartQuote = () => {
-    const specsSummary = `Google Ads Campaign Request:
-- Campaign Goal: ${goal === "leads" ? "Lead Generation" : goal === "calls" ? "Phone Calls" : "Website Traffic"}
-- Industry: ${industry}
-- Monthly Ad Spend Budget: ₹${spend.toLocaleString("en-IN")}
-- Estimated Clicks/Month: ~${estimatedClicks}
-- Estimated Leads/Month: ${goal === "traffic" ? estimatedClicks + " visits" : "~" + estimatedLeads}`;
-
-    navigate("/quote", {
-      state: {
-        projectType: "Google Ads Management",
-        requirements: specsSummary,
-        budget: "Custom pricing based on ad spend",
-      },
-    });
+  const handleStartCampaign = () => {
+    navigate("/ads-contact", { state: { platform: "Google Ads" } });
   };
 
   return (
@@ -159,14 +171,9 @@ export default function GoogleAds() {
             "@context": "https://schema.org",
             "@type": "Service",
             name: "Google Ads Management",
-            provider: {
-              "@type": "ProfessionalService",
-              name: "SiteNova",
-              url: "https://sitenova.dev",
-            },
+            provider: { "@type": "ProfessionalService", name: "SiteNova", url: "https://sitenova.dev" },
             areaServed: { "@type": "City", name: "Mumbai" },
-            description:
-              "Google Ads (PPC) campaign setup and management for Mumbai businesses. Keyword research, ad copy, bid optimisation, conversion tracking, and monthly reporting.",
+            description: "Google Ads (PPC) campaign setup and management for Mumbai businesses. Keyword research, ad copy, bid optimisation, conversion tracking, and monthly reporting.",
             url: "https://sitenova.dev/services/google-ads",
             serviceType: "Google Ads Management",
           },
@@ -174,24 +181,9 @@ export default function GoogleAds() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "Home",
-                item: "https://sitenova.dev/",
-              },
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: "Services",
-                item: "https://sitenova.dev/",
-              },
-              {
-                "@type": "ListItem",
-                position: 3,
-                name: "Google Ads Management",
-                item: "https://sitenova.dev/services/google-ads",
-              },
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://sitenova.dev/" },
+              { "@type": "ListItem", position: 2, name: "Marketing", item: "https://sitenova.dev/" },
+              { "@type": "ListItem", position: 3, name: "Google Ads Management", item: "https://sitenova.dev/services/google-ads" },
             ],
           },
           {
@@ -209,32 +201,35 @@ export default function GoogleAds() {
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 
-        {/* Hero */}
+        {/* ── Hero ── */}
         <section className="relative overflow-hidden pt-32 pb-20">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(59,130,246,0.12),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(249,115,22,0.12),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(249,115,22,0.06),transparent_50%)]" />
           <div className="mx-auto max-w-7xl px-6 relative z-10 text-center">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-6">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/25 bg-orange-500/8 px-3 py-1 text-xs font-medium text-orange-500 mb-6">
               <Target className="h-3.5 w-3.5" />
-              Google Search & Display Ads
+              Google Search &amp; Display Ads
             </div>
             <h1 className="font-heading text-4xl font-extrabold tracking-tight sm:text-6xl max-w-4xl mx-auto">
               Get Instant Leads from Google with{" "}
-              <span className="gradient-text">Ads That Actually Convert</span>
+              <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">
+                Ads That Actually Convert
+              </span>
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Stop guessing on Google Ads. SiteNova manages every aspect of your campaign — from keyword research to
               monthly reporting — so you get real leads at a predictable cost.
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 text-sm font-semibold text-emerald-500">
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-orange-500/10 border border-orange-500/20 px-4 py-1.5 text-sm font-semibold text-orange-500">
               <CheckCircle className="h-4 w-4" />
               Recommended ad spend: ₹10,000–₹15,000/month · Contact us for management pricing
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <button
-                onClick={handleStartQuote}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect"
+                onClick={handleStartCampaign}
+                className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-6 py-3 text-sm font-medium text-white hover:bg-orange-500/90 transition-colors shadow-[0_0_20px_rgba(249,115,22,0.3)]"
               >
-                Start a Campaign <ArrowRight className="ml-2 h-4 w-4" />
+                Book a Free Strategy Call <ArrowRight className="ml-2 h-4 w-4" />
               </button>
               <a
                 href="#estimator"
@@ -246,7 +241,7 @@ export default function GoogleAds() {
           </div>
         </section>
 
-        {/* Main Content + Estimator */}
+        {/* ── Estimator + What We Handle ── */}
         <section id="estimator" className="py-16 bg-card/10 border-t border-border/20">
           <div className="mx-auto max-w-7xl px-6 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-start">
 
@@ -259,14 +254,10 @@ export default function GoogleAds() {
                 Most businesses waste 60–70% of their Google Ads budget on irrelevant clicks. We fix that from day
                 one — with tight keyword targeting, compelling ad copy, and weekly bid adjustments.
               </p>
-
               <div className="mt-8 grid sm:grid-cols-2 gap-4">
                 {whatWeHandle.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex gap-4 p-5 rounded-2xl border border-border/40 bg-card/30 backdrop-blur shadow-sm"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <div key={idx} className="flex gap-4 p-5 rounded-2xl border border-orange-500/15 bg-orange-500/5 backdrop-blur shadow-sm">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
                       <item.icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -279,24 +270,18 @@ export default function GoogleAds() {
             </div>
 
             {/* Right: Estimator */}
-            <div className="rounded-3xl border border-border bg-card/60 p-8 shadow-xl backdrop-blur-md relative">
-              <div className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-primary/15 border border-primary/20 px-3.5 py-1 text-xs font-semibold text-primary backdrop-blur">
+            <div className="rounded-3xl border border-orange-500/20 bg-card/60 p-8 shadow-xl backdrop-blur-md relative">
+              <div className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-orange-500/15 border border-orange-500/25 px-3.5 py-1 text-xs font-semibold text-orange-500 backdrop-blur">
                 Results Estimator
               </div>
+              <h3 className="font-heading text-2xl font-bold tracking-tight">Estimate Your Monthly Results</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground">Select your campaign goal, industry, and ad budget.</p>
 
-              <h3 className="font-heading text-2xl font-bold tracking-tight">
-                Estimate Your Monthly Results
-              </h3>
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Select your campaign goal, industry, and ad budget to see projected results.
-              </p>
-
-              <div className="mt-6 space-y-6" id="estimator-widget">
-
+              <div className="mt-6 space-y-6">
                 {/* Goal */}
                 <div>
                   <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <Target className="h-4 w-4 text-primary" /> Campaign Goal
+                    <Target className="h-4 w-4 text-orange-500" /> Campaign Goal
                   </label>
                   <div className="mt-2.5 grid grid-cols-3 gap-2">
                     {([
@@ -304,15 +289,8 @@ export default function GoogleAds() {
                       { id: "calls", label: "Phone Calls" },
                       { id: "traffic", label: "Website Traffic" },
                     ] as const).map((g) => (
-                      <button
-                        key={g.id}
-                        onClick={() => setGoal(g.id)}
-                        className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${
-                          goal === g.id
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-border/60 bg-background/50 hover:bg-background/80"
-                        }`}
-                      >
+                      <button key={g.id} onClick={() => setGoal(g.id)}
+                        className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${goal === g.id ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm" : "border-border/60 bg-background/50 hover:bg-background/80"}`}>
                         {g.label}
                       </button>
                     ))}
@@ -322,48 +300,34 @@ export default function GoogleAds() {
                 {/* Industry */}
                 <div>
                   <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <Sparkles className="h-4 w-4 text-primary" /> Your Industry
+                    <Sparkles className="h-4 w-4 text-orange-500" /> Your Industry
                   </label>
                   <div className="mt-2.5 flex flex-wrap gap-2">
                     {[
                       { id: "general", label: "General Business" },
-                      { id: "doctors", label: "Healthcare / Clinics" },
+                      { id: "doctors", label: "Healthcare" },
                       { id: "lawyers", label: "Legal Services" },
                       { id: "realestate", label: "Real Estate" },
                       { id: "finance", label: "Finance / CA" },
-                      { id: "restaurants", label: "Restaurant / F&B" },
+                      { id: "restaurants", label: "Restaurant" },
                     ].map((ind) => (
-                      <button
-                        key={ind.id}
-                        onClick={() => setIndustry(ind.id)}
-                        className={`rounded-full border px-4 py-2 text-xs font-medium transition-all ${
-                          industry === ind.id
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-border/60 bg-background/50 hover:bg-background/80"
-                        }`}
-                      >
+                      <button key={ind.id} onClick={() => setIndustry(ind.id)}
+                        className={`rounded-full border px-4 py-2 text-xs font-medium transition-all ${industry === ind.id ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm" : "border-border/60 bg-background/50 hover:bg-background/80"}`}>
                         {ind.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Monthly Ad Spend */}
+                {/* Spend */}
                 <div>
                   <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <Zap className="h-4 w-4 text-primary" /> Monthly Ad Spend (your budget to Google)
+                    <Zap className="h-4 w-4 text-orange-500" /> Monthly Ad Spend (goes directly to Google)
                   </label>
                   <div className="mt-2.5 grid grid-cols-3 gap-2">
                     {([10000, 15000, 25000] as const).map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setSpend(s)}
-                        className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${
-                          spend === s
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-border/60 bg-background/50 hover:bg-background/80"
-                        }`}
-                      >
+                      <button key={s} onClick={() => setSpend(s)}
+                        className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${spend === s ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm" : "border-border/60 bg-background/50 hover:bg-background/80"}`}>
                         ₹{s.toLocaleString("en-IN")}
                       </button>
                     ))}
@@ -371,29 +335,17 @@ export default function GoogleAds() {
                 </div>
 
                 {/* Output */}
-                <motion.div
-                  key={`${goal}-${industry}-${spend}`}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="rounded-2xl border border-primary/20 bg-primary/5 p-5"
-                >
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground text-center mb-4">
-                    Estimated Monthly Results
-                  </p>
+                <motion.div key={`${goal}-${industry}-${spend}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl border border-orange-500/20 bg-orange-500/5 p-5">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground text-center mb-4">Estimated Monthly Results</p>
                   <div className="grid grid-cols-3 gap-3 text-center">
                     <div>
-                      <div className="font-heading text-2xl font-extrabold text-foreground">
-                        {estimatedClicks.toLocaleString("en-IN")}
-                      </div>
+                      <div className="font-heading text-2xl font-extrabold text-foreground">{estimatedClicks.toLocaleString("en-IN")}</div>
                       <p className="text-[10px] text-muted-foreground mt-0.5">Clicks</p>
                     </div>
                     <div>
-                      <div className="font-heading text-2xl font-extrabold text-foreground">
-                        {goal === "traffic" ? "—" : `~${estimatedLeads}`}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {goal === "calls" ? "Calls" : goal === "leads" ? "Leads" : "Visits"}
-                      </p>
+                      <div className="font-heading text-2xl font-extrabold text-foreground">{goal === "traffic" ? "—" : `~${estimatedLeads}`}</div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{goal === "calls" ? "Calls" : goal === "leads" ? "Leads" : "Visits"}</p>
                     </div>
                     <div>
                       <div className="font-heading text-2xl font-extrabold text-foreground">{cpl}</div>
@@ -401,65 +353,65 @@ export default function GoogleAds() {
                     </div>
                   </div>
                   <p className="mt-3 text-[10px] text-muted-foreground text-center leading-relaxed">
-                    Estimates based on average Mumbai CPCs. Actual results vary by campaign quality, landing page, and competition.
+                    Estimates based on average Mumbai CPCs. Actual results vary by campaign quality and competition.
                   </p>
                 </motion.div>
 
-                <button
-                  onClick={handleStartQuote}
-                  className="w-full inline-flex items-center justify-center rounded-xl bg-primary py-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm"
-                >
-                  Start My Google Ads Campaign <ArrowRight className="ml-2 h-4 w-4" />
+                <button onClick={handleStartCampaign}
+                  className="w-full inline-flex items-center justify-center rounded-xl bg-orange-500 py-4 text-sm font-semibold text-white hover:bg-orange-500/90 transition-colors shadow-[0_0_20px_rgba(249,115,22,0.25)]">
+                  Book a Free Strategy Call <ArrowRight className="ml-2 h-4 w-4" />
                 </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Pain Points */}
+        {/* ── 4-Step Process ── */}
         <section className="py-20 border-t border-border/20">
           <div className="mx-auto max-w-7xl px-6">
-            <div className="text-center mb-12">
-              <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-                Why Google Ads Fail Without an Expert
-              </h2>
-              <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-                Most business owners set up their own campaigns and burn through budget with nothing to show for it. Here's why.
+            <div className="text-center mb-14">
+              <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">How We Run Your Campaign</h2>
+              <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
+                A structured process that eliminates guesswork and gets measurable results from month one.
               </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {processSteps.map((step, idx) => (
+                <div key={idx} className="relative p-6 rounded-2xl border border-orange-500/15 bg-orange-500/5 backdrop-blur">
+                  <div className="text-5xl font-black text-orange-500/10 font-heading leading-none mb-4">{step.step}</div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 text-orange-500 mb-3">
+                    <step.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-heading font-bold text-lg text-foreground mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                  {idx < processSteps.length - 1 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-3 -translate-y-1/2 text-orange-500/30 text-xl font-bold">›</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Pain Points ── */}
+        <section className="py-20 border-t border-border/20 bg-card/10">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="text-center mb-12">
+              <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">Why Google Ads Fail Without an Expert</h2>
+              <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">Most business owners burn through budget with nothing to show for it. Here's why.</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                {
-                  title: "Broad match keywords bleed budget",
-                  desc: "Without tight match types and negative keywords, your ad shows for 'free doctor near me' and 'doctor salary' — and you pay for every irrelevant click.",
-                },
-                {
-                  title: "No conversion tracking",
-                  desc: "If you don't know which keyword drove a lead, you can't scale what works. Most DIY campaigns fly completely blind.",
-                },
-                {
-                  title: "Weak landing pages kill conversions",
-                  desc: "Sending paid traffic to a slow, generic homepage is like pouring water into a leaking bucket. We ensure your page is built to convert.",
-                },
-                {
-                  title: "No A/B testing on ad copy",
-                  desc: "One set of ads running for months with zero variation is a missed opportunity. Small copy changes can double your click-through rate.",
-                },
-                {
-                  title: "Ignoring search term reports",
-                  desc: "Google shows exactly what people are typing before clicking your ad. Not reviewing this weekly costs you thousands in wasted clicks.",
-                },
-                {
-                  title: "Wrong bidding strategy",
-                  desc: "Using manual CPC when you should be on Target CPA — or vice versa — sends your costs skyrocketing. Strategy matters from day one.",
-                },
+                { title: "Broad match keywords bleed budget", desc: "Without tight match types and negative keywords, your ad shows for irrelevant queries — and you pay for every click." },
+                { title: "No conversion tracking", desc: "If you don't know which keyword drove a lead, you can't scale what works. Most DIY campaigns fly completely blind." },
+                { title: "Weak landing pages kill conversions", desc: "Sending paid traffic to a slow, generic homepage is like pouring water into a leaking bucket." },
+                { title: "No A/B testing on ad copy", desc: "One set of ads running for months with zero variation is a missed opportunity. Small changes can double your CTR." },
+                { title: "Ignoring search term reports", desc: "Google shows exactly what people typed before clicking. Not reviewing this weekly costs thousands in wasted clicks." },
+                { title: "Wrong bidding strategy", desc: "Using manual CPC when you should be on Target CPA — or vice versa — sends your costs skyrocketing." },
               ].map((point, idx) => (
-                <div
-                  key={idx}
-                  className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur interactive-card"
-                >
-                  <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center mb-4">
-                    <span className="text-destructive font-bold text-sm">!</span>
+                <div key={idx} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur interactive-card">
+                  <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center mb-4">
+                    <span className="text-orange-500 font-bold text-sm">!</span>
                   </div>
                   <h3 className="font-semibold text-foreground mb-2">{point.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{point.desc}</p>
@@ -469,35 +421,48 @@ export default function GoogleAds() {
           </div>
         </section>
 
-        {/* FAQ */}
-        <section className="py-20 border-t border-border/20 bg-card/10">
+        {/* ── FAQ ── */}
+        <section className="py-20 border-t border-border/20">
           <div className="mx-auto max-w-3xl px-6">
-            <h2 className="font-heading text-3xl font-bold tracking-tight text-center mb-10">
-              Frequently Asked Questions
-            </h2>
+            <h2 className="font-heading text-3xl font-bold tracking-tight text-center mb-10">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {faqs.map((faq, idx) => (
-                <div key={idx} className="rounded-2xl border border-border/40 bg-card/30 p-6">
+                <div key={idx} className="rounded-2xl border border-orange-500/15 bg-orange-500/5 p-6">
                   <h3 className="font-semibold text-foreground mb-2">{faq.q}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-10 text-center">
-              <p className="text-muted-foreground mb-4 text-sm">Have a question not listed here?</p>
-              <Link
-                to="/contact-us"
-                className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
-              >
-                Ask Us Directly <ArrowRight className="ml-2 h-4 w-4" />
+          </div>
+        </section>
+
+        <TestimonialsSection />
+
+        {/* ── Ads CTA ── */}
+        <section className="py-24 border-t border-orange-500/20 bg-gradient-to-br from-orange-500/8 via-transparent to-amber-500/5">
+          <div className="mx-auto max-w-3xl px-6 text-center">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/25 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-500 mb-6">
+              <Target className="h-3.5 w-3.5" /> Free Strategy Call
+            </div>
+            <h2 className="font-heading text-3xl sm:text-5xl font-extrabold tracking-tight">
+              Ready to Get Real Leads <br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">from Google?</span>
+            </h2>
+            <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Book a free 30-minute strategy call. We'll audit your market, identify your highest-intent keywords, and tell you exactly what a campaign would cost and deliver.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <button onClick={handleStartCampaign}
+                className="inline-flex items-center justify-center rounded-xl bg-orange-500 px-8 py-4 text-base font-semibold text-white hover:bg-orange-500/90 transition-colors shadow-[0_0_30px_rgba(249,115,22,0.35)]">
+                Book Free Strategy Call <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
+              <Link to="/contact-us"
+                className="inline-flex items-center justify-center rounded-xl border border-border bg-secondary px-8 py-4 text-base font-medium text-foreground hover:bg-secondary/80 transition-colors">
+                Ask a Question
               </Link>
             </div>
           </div>
         </section>
-
-        <PortfolioSection />
-        <TestimonialsSection />
-        <CtaSection />
 
         <Footer />
       </div>

@@ -21,6 +21,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     "/services/seo-optimization",
     "/services/google-ads",
     "/services/meta-ads",
+    "/ads-contact",
     "/location/thane",
     "/location/powai",
     "/location/andheri",
@@ -80,6 +81,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     "/services/seo-optimization": "2026-06-15",
     "/services/google-ads": "2026-08-31",
     "/services/meta-ads": "2026-08-31",
+    "/ads-contact": "2026-09-01",
   };
   const defaultLastMod = "2026-06-01";
 

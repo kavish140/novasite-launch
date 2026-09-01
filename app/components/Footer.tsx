@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className="border-t border-border/40 bg-card/30">
       <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-10">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <span className="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight">
@@ -33,8 +33,6 @@ const Footer = () => {
               <li><Link to="/services/ecommerce" className="text-sm text-muted-foreground hover:text-foreground transition-colors">E-commerce Stores</Link></li>
               <li><Link to="/services/web-applications" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Custom Web Apps</Link></li>
               <li><Link to="/services/seo-optimization" className="text-sm text-muted-foreground hover:text-foreground transition-colors">SEO & Speed Tuning</Link></li>
-              <li><Link to="/services/google-ads" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Google Ads Management</Link></li>
-              <li><Link to="/services/meta-ads" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Meta Ads Management</Link></li>
               <li><Link to="/websites-for-doctors" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Doctors</Link></li>
               <li><Link to="/websites-for-lawyers" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Lawyers</Link></li>
               <li><Link to="/websites-for-consultants" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Consultants</Link></li>
@@ -45,8 +43,17 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* Marketing */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold mb-4 text-orange-500">Marketing</h4>
+            <ul className="space-y-2.5">
+              <li><Link to="/services/google-ads" className="text-sm text-muted-foreground hover:text-orange-500 transition-colors">Google Ads Management</Link></li>
+              <li><Link to="/services/meta-ads" className="text-sm text-muted-foreground hover:text-orange-500 transition-colors">Meta Ads Management</Link></li>
+              <li><Link to="/ads-contact" className="text-sm text-muted-foreground hover:text-orange-500 transition-colors">Book a Strategy Call</Link></li>
+            </ul>
+          </div>
 
-          {/* Locations (Wrapped into 2 columns) */}
+          {/* Locations */}
           <div className="sm:col-span-2 lg:col-span-2">
             <h4 className="font-heading text-sm font-semibold mb-4">Service Areas</h4>
             <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5">
@@ -67,7 +74,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Company & Contact (Stacked to balance height) */}
+          {/* Company & Contact */}
           <div>
             <h4 className="font-heading text-sm font-semibold mb-4">Company</h4>
             <ul className="space-y-2.5 mb-10">

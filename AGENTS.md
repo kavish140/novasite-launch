@@ -166,6 +166,7 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `services.web-applications.tsx` | `/services/web-applications` | `pages/services/WebApps.tsx` |
 | `services.google-ads.tsx` | `/services/google-ads` | `pages/services/GoogleAds.tsx` |
 | `services.meta-ads.tsx` | `/services/meta-ads` | `pages/services/MetaAds.tsx` |
+| `ads-contact.tsx` | `/ads-contact` | `pages/AdsContact.tsx` |
 | `websites-for-doctors.tsx` | `/websites-for-doctors` | `pages/niche/Doctors.tsx` |
 | `websites-for-finance.tsx` | `/websites-for-finance` | `pages/niche/Finance.tsx` |
 | `websites-for-lawyers.tsx` | `/websites-for-lawyers` | `pages/niche/Lawyers.tsx` |
@@ -250,8 +251,9 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 | `pages/services/Ecommerce.tsx` | `/services/ecommerce` | E-commerce store service |
 | `pages/services/SeoSpeed.tsx` | `/services/seo-optimization` | SEO & Core Web Vitals service |
 | `pages/services/WebApps.tsx` | `/services/web-applications` | Custom web apps service |
-| `pages/services/GoogleAds.tsx` | `/services/google-ads` | Google Ads management service. Hero + interactive Results Estimator (goal/industry/spend → estimated clicks & leads). Pain points section, full 8-item service breakdown, FAQ, JSON-LD Service + FAQ + BreadcrumbList. Management from ₹5,000/mo. |
-| `pages/services/MetaAds.tsx` | `/services/meta-ads` | Meta (Facebook & Instagram) Ads management service. Hero + interactive Audience Reach Estimator (age group/interest/spend → reach & leads). Pain points section, full 8-item service breakdown, FAQ, JSON-LD Service + FAQ + BreadcrumbList. Management from ₹5,000/mo. |
+| `pages/services/GoogleAds.tsx` | `/services/google-ads` | Google Ads management service. **Orange/amber theme** distinct from web design pages. Hero + interactive Results Estimator (goal/industry/spend → estimated clicks & leads). 4-step Process section (Audit → Strategy → Launch → Optimise & Report). Pain points, FAQ, JSON-LD Service + FAQ + BreadcrumbList. CTA links to `/ads-contact`. No PortfolioSection. |
+| `pages/services/MetaAds.tsx` | `/services/meta-ads` | Meta (Facebook & Instagram) Ads management service. **Orange/amber theme**. Hero + Audience Reach Estimator (age group/interest/spend → Mumbai reach & leads). Same 4-step Process section. Pain points, FAQ, JSON-LD. CTA links to `/ads-contact`. No PortfolioSection. |
+| `pages/AdsContact.tsx` | `/ads-contact` | Ads inquiry form page. 7-field form: name, phone, business, platform (Google/Meta/Both), monthly budget, industry, goals. Saves to Supabase `ads_inquiries` table + Web3Forms email. Orange/amber theme. Success state inline — no separate thank-you page. |
 
 ### Niche Pages (7 total)
 All live in `pages/niche/`. Each is a full, detailed page targeting a specific industry vertical:
@@ -274,8 +276,8 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 ### Layout / Global
 | Component | File | Role |
 |---|---|---|
-| `Navbar` | `components/Navbar.tsx` | Fixed top nav. Scroll-to-section links (Features, Portfolio, How It Works, Testimonials), Services dropdown (niche links), Blog, Pricing, Cost Calculator, Free Audit, dark/light toggle, "Get a Quote" CTA button. |
-| `Footer` | `components/Footer.tsx` | Links to all services, locations, company pages. Contact links (phone, WhatsApp, email, YouTube). Android app download button. |
+| `Navbar` | `components/Navbar.tsx` | Fixed top nav. Scroll-to-section links (Features, Portfolio, How It Works, Testimonials), **Services** dropdown (3 core web services + 7 niche industry links), **Marketing** dropdown (Google Ads + Meta Ads + "Book a Free Strategy Call" → `/ads-contact`), Blog, Pricing, Cost Calculator, Free Audit, dark/light toggle, "Get a Quote" CTA button. Marketing dropdown uses orange/amber accent. |
+| `Footer` | `components/Footer.tsx` | Links to all services, **Marketing** column (Google Ads, Meta Ads, Book a Strategy Call), locations, company pages. Contact links (phone, WhatsApp, email, YouTube). Android app download button. |
 | `PageTransition` | `components/PageTransition.tsx` | Wraps pages in a Framer Motion fade-in transition. |
 | `ScrollProgress` | `components/ScrollProgress.tsx` | Thin progress bar at top of viewport. Lazy-loaded. |
 | `CustomCursor` | `components/CustomCursor.tsx` | Custom cursor effect (desktop only). |
@@ -438,6 +440,23 @@ Managed via Admin Dashboard. Fetched by `BlogIndex.tsx` and `BlogPost.tsx`.
 | `created_at` | timestamptz | Auto-set on insert |
 
 > **Confirmed from Supabase table screenshot (2026-08-14).** There is no `status` or `cover_image` column in the live table. The sitemap loader's `.eq("status", "published")` filter silently returns no rows if the column doesn't exist — this is handled gracefully via try/catch.
+
+#### `ads_inquiries`
+Created by user SQL (2026-09-01). Populated by `pages/AdsContact.tsx` form. Displayed in Admin Dashboard "Ad Inquiries" tab.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid | Primary key (`gen_random_uuid()`) |
+| `name` | text | Contact name |
+| `phone` | text | Phone / WhatsApp number |
+| `business_name` | text | Business name |
+| `platform` | text | `'google_ads'` / `'meta_ads'` / `'both'` |
+| `monthly_budget` | text | Selected budget range (e.g., `'₹10,000–₹15,000'`) |
+| `industry` | text | Business industry / niche |
+| `goals` | text | Comma-separated goals (e.g., `'Leads, Calls'`) |
+| `created_at` | timestamptz | Auto-set |
+| `status` | text | `'new'` / `'contacted'` / `'closed'` (default: `'new'`) |
+
 
 ### `blog.$slug.tsx` Loader — Credential Fallback Quirk
 
@@ -697,6 +716,20 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 
 > **AI agents: append an entry here every time you make a significant change.**
 > Format: `## [Date] — [Brief summary]` followed by bullet points of what changed and why.
+
+---
+
+### [2026-09-01] — Ads pages made visually & structurally distinct; new /ads-contact page & admin tab
+
+- **Rebuilt** `app/pages/services/GoogleAds.tsx` — completely distinct orange/amber theme (no blue primary). Removed `PortfolioSection`. Added 4-step ads Process section (Audit → Strategy → Launch → Optimise & Report). Replaced `CtaSection` with dedicated "Book a Free Strategy Call" CTA linking to `/ads-contact`. All orange accent via inline Tailwind only — no global CSS token changes.
+- **Rebuilt** `app/pages/services/MetaAds.tsx` — same treatment as GoogleAds. Orange/amber theme throughout. Audience Reach Estimator retained. No PortfolioSection. CTA → `/ads-contact`.
+- **New** `app/pages/AdsContact.tsx` — standalone ads inquiry form page at `/ads-contact`. 7 fields: name, phone, business name, platform (Google/Meta/Both), monthly ad budget, industry, campaign goals (multi-select). Saves to Supabase `ads_inquiries` table + Web3Forms email notification. Orange/amber theme. Inline success state — no separate thank-you redirect.
+- **New** `app/routes/ads-contact.tsx` — RR7 route file with `buildMeta()` SEO export.
+- **Rebuilt** `app/components/Navbar.tsx` — Google Ads and Meta Ads moved OUT of `coreServiceLinks` (Services dropdown). New `marketingLinks` array and **Marketing** top-level dropdown added alongside Services. Marketing dropdown: orange/amber accent, Google Ads, Meta Ads, "Book a Free Strategy Call" shortcut. `marketingRef` and `marketingOpen` state added for independent open/close control.
+- **Modified** `app/components/Footer.tsx` — Grid changed from `lg:grid-cols-5` to `lg:grid-cols-6`. Google Ads + Meta Ads removed from "Our Services" column. New **Marketing** column added (Google Ads, Meta Ads, Book a Strategy Call — all link to `/ads-contact`).
+- **Modified** `app/pages/admin/AdminDashboard.tsx` — Added `AdsInquiry` type. Added `adsInquiries` state and fetch from `ads_inquiries` table in `fetchData()`. Added "Ad Inquiries" `navItems` entry with `Target` icon + badge. Added full `ads_inquiries` tab content panel (table with all 10 columns + inline status dropdown: new → contacted → closed). Updated `activeTab` union type.
+- **Modified** `app/routes/sitemap[.]xml.tsx` — Added `/ads-contact` to `staticPaths` and `lastModified` map.
+- **Modified** `AGENTS.md` — Updated §4 Routing, §5 Pages Catalog (GoogleAds, MetaAds descriptions + AdsContact row), §6 Components Catalog (Navbar + Footer descriptions), §9 Supabase (added `ads_inquiries` table schema).
 
 ---
 

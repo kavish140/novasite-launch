@@ -1,14 +1,134 @@
-# Mumbai Business Website Audit — URL List
-# Format: url, business_name, industry
-# Find URLs: Search Google Maps for "[industry] in [suburb]" and grab the website link
-# Target: 100 URLs across 7 industries (~15 per industry)
-#
-# Industries: Doctors, Finance/CA, Lawyers, Real Estate, Restaurants, Consultants, Startups
-# Suburbs: Mulund, Thane, Bandra, Andheri, Powai, Ghatkopar, Dadar, Lower Parel
-#
-# TIP: Start with your own sites for baseline comparison
 url,business_name,industry
 https://sitenova.dev,SiteNova (Baseline),Web Agency
-https://drdiptiganatra.com,Dr. Dipti Ganatra (SiteNova Client),Doctors
+https://drdiptiganatra.com,Dr Dipti Ganatra Homeopathy (SiteNova Client),Doctors
 https://jupiterfastfinance.com,Jupiter Fast Finance (SiteNova Client),Finance
 https://corporatezone.in,Corporate Zone (SiteNova Client),Consultants
+https://sabkadentist.com,Sabka Dentist,Doctors
+https://trisadental.in,Trisa Dental Solutions,Doctors
+https://dentzzmumbai.com,Dentzz Dental Care,Doctors
+https://procaredental.co.in,Procare Dental Clinic,Doctors
+https://wavikareye.com,Wavikar Eye Institute,Doctors
+https://theestheticclinics.com,The Esthetic Clinics,Doctors
+https://drbhartipatel.com,Bella Clinic Dr Bharti Patel,Doctors
+https://holyfamilyhospital.in,Holy Family Hospital Bandra,Doctors
+https://drpallavisule.com,Dr. Pallavi Sule Skin & Hair Clinic,Doctors
+https://drrashmishetty.com,Ra Skin Clinic Dr Rashmi Shetty,Doctors
+https://kokilabenhospital.com,Kokilaben Dhirubhai Ambani Hospital,Doctors
+https://shivanihospital.in,Shivaani Hospital Mulund,Doctors
+https://hiranandanihospital.org,Dr L H Hiranandani Hospital,Doctors
+https://horizonhospital.com,Horizon Prime Hospital Thane,Doctors
+https://drjaykishantripathi.com,Dr Jaykishan Tripathi Clinic,Doctors
+https://draditigodbole.com,Dr Aditi Godbole Clinic,Doctors
+https://reliva.in,ReLiva Physiotherapy & Rehab,Doctors
+https://physioclinic.co.in,Orthocare Physioclinic Mulund,Doctors
+https://r3boot.in,R3BOOT Recovery Centre Dadar,Doctors
+https://nsgokhale.com,NS Gokhale & Company,Finance
+https://bhutashah.com,Bhuta Shah & Co LLP,Finance
+https://ussh.co.in,Utsav Shah & Associates,Finance
+https://caamitjhaveri.com,CA Amit Jhaveri & Associates,Finance
+https://slmco.in,SLM & Co LLP,Finance
+https://maheshwariandco.in,Maheshwari & Co Chartered Accountants,Finance
+https://jainanuragassociates.com,Jain Anurag & Associates,Finance
+https://caselaadvisors.com,Casela Advisors,Finance
+https://capradipshah.com,Pradip K Shah & Co,Finance
+https://ndsadvisors.com,NDS Advisors,Finance
+https://ndsavla.in,N D Savla & Associates,Finance
+https://prnco.in,Pravin R Navandar & Co,Finance
+https://nmd.org.in,NMD & Co Chartered Accountants,Finance
+https://madrecha.com,Madrecha & Co,Finance
+https://taxclue.in,TaxClue Advisors,Finance
+https://kcshah.com,KC Shah & Associates,Finance
+https://ashwineejoshi.co.in,CA Ashwinee Joshi & Associates,Finance
+https://theclassicpartners.com,The Classic Partners,Finance
+https://lawpointindia.com,Law Point India,Lawyers
+https://solomonco.in,Solomon & Co Advocates & Solicitors,Lawyers
+https://augustuslaw.com,Augustus Law BKC,Lawyers
+https://tnalegal.co.in,Thakur & Associates,Lawyers
+https://anaassociates.com,ANA Law Group,Lawyers
+https://mmla.co,M M Legal Associates,Lawyers
+https://pvasco.com,P Vas & Co Advocates,Lawyers
+https://tuli.co.in,Tuli & Co,Lawyers
+https://royzz.com,Royzz & Co,Lawyers
+https://advocateshah.com,Chirag Shah & Co Advocates,Lawyers
+https://solislaw.in,Solis Law,Lawyers
+https://advjigneshnishar.com,Advocate Jignesh Nishar Legal Point,Lawyers
+https://advocateaniketnerurkar.com,Advocate Aniket Nerurkar,Lawyers
+https://trilegal.com,Trilegal,Lawyers
+https://parinamlaw.com,Parinam Law Associates,Lawyers
+https://valslegal.com,VALS Legal,Lawyers
+https://khaitanco.com,Khaitan & Co,Lawyers
+https://dsklegal.com,DSK Legal,Lawyers
+https://wadiaghandy.com,Wadia Ghandy & Co,Lawyers
+https://naiknaik.com,Naik Naik & Company,Lawyers
+https://runwalrealty.com,Runwal Realty,Real Estate
+https://hiranandani.com,Hiranandani Group,Real Estate
+https://oberoirealty.com,Oberoi Realty,Real Estate
+https://thewadhwagroup.com,The Wadhwa Group,Real Estate
+https://ashwinshethgroup.com,Ashwin Sheth Group,Real Estate
+https://ashar.in,Ashar Group,Real Estate
+https://marathonrealty.com,Marathon Realty,Real Estate
+https://puranikbuilders.com,Puranik Builders,Real Estate
+https://gundechabuilders.com,Gundecha Builders,Real Estate
+https://hubtown.co.in,Hubtown Limited,Real Estate
+https://nandivardhan.com,Nandivardhan Group,Real Estate
+https://lakhanibuilders.in,Lakhani Builders,Real Estate
+https://shreemahavirgroup.com,Shree Mahavir Group,Real Estate
+https://group-satellite.com,Group Satellite,Real Estate
+https://promesarealty.com,Promesa Realty,Real Estate
+https://ajmera.com,Ajmera Realty & Infra,Real Estate
+https://lodhagroup.in,Lodha Group Macrotech Developers,Real Estate
+https://kalpataru.com,Kalpataru Limited,Real Estate
+https://rustomjee.com,Rustomjee Group,Real Estate
+https://dostirealty.com,Dosti Realty,Real Estate
+https://bastianhospitality.com,Bastian Hospitality,Restaurants
+https://thebombaycanteen.com,The Bombay Canteen,Restaurants
+https://theobroma.in,Theobroma Foods,Restaurants
+https://subko.coffee,Subko Coffee Roasters,Restaurants
+https://bluetokaicoffee.com,Blue Tokai Coffee Roasters,Restaurants
+https://bayroute.in,Bayroute,Restaurants
+https://mainlandchina.in,Mainland China,Restaurants
+https://ybfc.co.in,Pop Tates and Urban Tadka,Restaurants
+https://planethollywoodthane.com,Planet Hollywood Thane,Restaurants
+https://copperchimney.in,Copper Chimney,Restaurants
+https://bombaysweetshop.com,Bombay Sweet Shop,Restaurants
+https://fooasiantapas.com,Foo Asian Tapas,Restaurants
+https://socialoffline.in,Social Offline Impresario,Restaurants
+https://cafemommyjoon.com,Cafe MommyJoon Bandra,Restaurants
+https://thebeatle.com,Rhythm at The Beatle Powai,Restaurants
+https://speciality.co.in,Speciality Restaurants Limited,Restaurants
+https://smokehousedeli.in,Smoke House Deli,Restaurants
+https://leopoldcafe.com,Leopold Cafe,Restaurants
+https://pqsmitra.com,PQSmitra Management Consultants,Consultants
+https://infraconsults.com,Infra Consults,Consultants
+https://vmcmumbai.in,Vishvas Management Consultants,Consultants
+https://epicons.co.in,Epicons Consultants,Consultants
+https://gpcl.in,GPCL Consulting Services,Consultants
+https://tkc.firm.in,Takshashila Consulting,Consultants
+https://cedar-consulting.com,Cedar Management Consulting,Consultants
+https://consultavalon.com,Avalon Consulting,Consultants
+https://universalconsulting.com,Universal Consulting India,Consultants
+https://promptpersonnel.com,Prompt Personnel,Consultants
+https://cphrservices.in,CP HR Services,Consultants
+https://symphonihr.com,Symphoni HR Executive Search,Consultants
+https://praxisga.com,Praxis Global Alliance,Consultants
+https://technopak.com,Technopak Advisors,Consultants
+https://zepto.com,Zepto,Startups
+https://acko.com,Acko General Insurance,Startups
+https://miko.ai,Miko AI,Startups
+https://faclon.com,Faclon Labs,Startups
+https://gupshup.io,Gupshup,Startups
+https://clevertap.com,CleverTap,Startups
+https://webengage.com,WebEngage,Startups
+https://browserstack.com,BrowserStack,Startups
+https://frappe.io,Frappe Technologies,Startups
+https://turtlemint.com,Turtlemint,Startups
+https://upstox.com,Upstox,Startups
+https://bookmyshow.com,BookMyShow,Startups
+https://pharmeasy.in,PharmEasy,Startups
+https://pepperfry.com,Pepperfry,Startups
+https://rebelfoods.com,Rebel Foods,Startups
+https://eruditus.com,Eruditus Executive Education,Startups
+https://leadschool.in,LEAD School,Startups
+https://ketto.org,Ketto India,Startups
+https://coindcx.com,CoinDCX,Startups
+https://purplle.com,Purplle,Startups

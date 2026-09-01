@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, startTransition } from "react";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed, ShoppingCart, Search, Code2, Target, Megaphone } from "lucide-react";
+import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed, ShoppingCart, Search, Code2, Target, Megaphone, Zap } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useTheme } from "next-themes";
 
@@ -12,115 +12,60 @@ const navLinks = [
 ];
 
 const nicheLinks = [
-  {
-    label: "Websites for Doctors",
-    to: "/websites-for-doctors",
-    icon: Stethoscope,
-    description: "Clinics, dentists & healthcare",
-  },
-  {
-    label: "Websites for Finance",
-    to: "/websites-for-finance",
-    icon: TrendingUp,
-    description: "CAs, advisors & insurance",
-  },
-  {
-    label: "Websites for Real Estate",
-    to: "/websites-for-real-estate",
-    icon: Building2,
-    description: "Agents, builders & dealers",
-  },
-  {
-    label: "Websites for Lawyers",
-    to: "/websites-for-lawyers",
-    icon: Scale,
-    description: "Advocates, firms & legal pros",
-  },
-  {
-    label: "Websites for Consultants",
-    to: "/websites-for-consultants",
-    icon: Briefcase,
-    description: "Coaches, advisors & consultants",
-  },
-  {
-    label: "Websites for Startups",
-    to: "/websites-for-startups",
-    icon: Rocket,
-    description: "SaaS, founders & tech",
-  },
-  {
-    label: "Websites for Restaurants",
-    to: "/websites-for-restaurants",
-    icon: UtensilsCrossed,
-    description: "Cafes, diners & kitchens",
-  },
+  { label: "Websites for Doctors", to: "/websites-for-doctors", icon: Stethoscope, description: "Clinics, dentists & healthcare" },
+  { label: "Websites for Finance", to: "/websites-for-finance", icon: TrendingUp, description: "CAs, advisors & insurance" },
+  { label: "Websites for Real Estate", to: "/websites-for-real-estate", icon: Building2, description: "Agents, builders & dealers" },
+  { label: "Websites for Lawyers", to: "/websites-for-lawyers", icon: Scale, description: "Advocates, firms & legal pros" },
+  { label: "Websites for Consultants", to: "/websites-for-consultants", icon: Briefcase, description: "Coaches, advisors & consultants" },
+  { label: "Websites for Startups", to: "/websites-for-startups", icon: Rocket, description: "SaaS, founders & tech" },
+  { label: "Websites for Restaurants", to: "/websites-for-restaurants", icon: UtensilsCrossed, description: "Cafes, diners & kitchens" },
 ];
 
 const coreServiceLinks = [
-  {
-    label: "E-Commerce Stores",
-    to: "/services/ecommerce",
-    icon: ShoppingCart,
-    description: "Razorpay + Stripe, from ₹18,000",
-  },
-  {
-    label: "SEO & Speed Audits",
-    to: "/services/seo-optimization",
-    icon: Search,
-    description: "Core Web Vitals & rankings",
-  },
-  {
-    label: "Web Applications",
-    to: "/services/web-applications",
-    icon: Code2,
-    description: "Dashboards & custom apps",
-  },
-  {
-    label: "Google Ads",
-    to: "/services/google-ads",
-    icon: Target,
-    description: "Search & display campaigns",
-  },
-  {
-    label: "Meta Ads",
-    to: "/services/meta-ads",
-    icon: Megaphone,
-    description: "Facebook & Instagram ads",
-  },
+  { label: "E-Commerce Stores", to: "/services/ecommerce", icon: ShoppingCart, description: "Razorpay + Stripe, from ₹18,000" },
+  { label: "SEO & Speed Audits", to: "/services/seo-optimization", icon: Search, description: "Core Web Vitals & rankings" },
+  { label: "Web Applications", to: "/services/web-applications", icon: Code2, description: "Dashboards & custom apps" },
 ];
 
+const marketingLinks = [
+  { label: "Google Ads", to: "/services/google-ads", icon: Target, description: "Search & display ad campaigns" },
+  { label: "Meta Ads", to: "/services/meta-ads", icon: Megaphone, description: "Facebook & Instagram ads" },
+];
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [marketingOpen, setMarketingOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const isDarkMode = resolvedTheme !== "light";
   const location = useLocation();
   const navigate = useNavigate();
   const servicesRef = useRef<HTMLDivElement>(null);
+  const marketingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    startTransition(() => {
-      setMounted(true);
-    });
+    startTransition(() => { setMounted(true); });
   }, []);
 
-  // Close services dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (!servicesOpen) return;
-      if (servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
+      if (servicesOpen && servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
         setServicesOpen(false);
+      }
+      if (marketingOpen && marketingRef.current && !marketingRef.current.contains(e.target as Node)) {
+        setMarketingOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [servicesOpen]);
+  }, [servicesOpen, marketingOpen]);
 
-  // Close dropdown on route change
+  // Close dropdowns on route change
   useEffect(() => {
     setServicesOpen(false);
+    setMarketingOpen(false);
     setMobileOpen(false);
   }, [location.pathname]);
 
@@ -158,18 +103,14 @@ const Navbar = () => {
           <div ref={servicesRef} className="relative">
             <button
               type="button"
-              onClick={() => setServicesOpen(!servicesOpen)}
+              onClick={() => { setServicesOpen(!servicesOpen); setMarketingOpen(false); }}
               className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
               aria-expanded={servicesOpen}
               aria-haspopup="true"
             >
               Services
-              <ChevronDown
-                size={14}
-                className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`}
-              />
+              <ChevronDown size={14} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
             </button>
-
             <AnimatePresence>
               {servicesOpen && (
                 <motion.div
@@ -179,14 +120,14 @@ const Navbar = () => {
                   transition={{ duration: 0.15 }}
                   className="absolute top-full right-0 mt-2 w-72 rounded-xl border border-border/60 bg-background/95 backdrop-blur-xl shadow-xl p-2"
                 >
+                  <p className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                    Web Services
+                  </p>
                   {coreServiceLinks.map((service) => {
                     const Icon = service.icon;
                     return (
-                      <Link
-                        key={service.to}
-                        to={service.to}
-                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-secondary/60 transition-colors group"
-                      >
+                      <Link key={service.to} to={service.to}
+                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-secondary/60 transition-colors group">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
                           <Icon size={18} />
                         </div>
@@ -204,11 +145,8 @@ const Navbar = () => {
                   {nicheLinks.map((niche) => {
                     const Icon = niche.icon;
                     return (
-                      <Link
-                        key={niche.to}
-                        to={niche.to}
-                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-secondary/60 transition-colors group"
-                      >
+                      <Link key={niche.to} to={niche.to}
+                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-secondary/60 transition-colors group">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
                           <Icon size={18} />
                         </div>
@@ -224,18 +162,60 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
 
-          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
-            Blog
-          </Link>
-          <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
-            Pricing
-          </Link>
-          <Link to="/website-cost-calculator" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
-            Cost Calculator
-          </Link>
-          <Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">
-            Free Audit
-          </Link>
+          {/* Marketing Dropdown — separate top-level item */}
+          <div ref={marketingRef} className="relative">
+            <button
+              type="button"
+              onClick={() => { setMarketingOpen(!marketingOpen); setServicesOpen(false); }}
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+              aria-expanded={marketingOpen}
+              aria-haspopup="true"
+            >
+              Marketing
+              <ChevronDown size={14} className={`transition-transform duration-200 ${marketingOpen ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence>
+              {marketingOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full right-0 mt-2 w-64 rounded-xl border border-orange-500/20 bg-background/95 backdrop-blur-xl shadow-xl p-2"
+                >
+                  <p className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-orange-500/70">
+                    Paid Advertising
+                  </p>
+                  {marketingLinks.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link key={item.to} to={item.to}
+                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-orange-500/8 transition-colors group">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500 group-hover:bg-orange-500/15 transition-colors">
+                          <Icon size={18} />
+                        </div>
+                        <div>
+                          <span className="font-medium text-foreground">{item.label}</span>
+                          <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  <div className="my-1 mx-3 border-t border-orange-500/15" />
+                  <Link to="/ads-contact"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-semibold text-orange-500 hover:bg-orange-500/8 transition-colors">
+                    <Zap size={14} />
+                    Book a Free Strategy Call →
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Blog</Link>
+          <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Pricing</Link>
+          <Link to="/website-cost-calculator" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Cost Calculator</Link>
+          <Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Free Audit</Link>
           <button
             type="button"
             onClick={() => setTheme(isDarkMode ? "light" : "dark")}
@@ -244,10 +224,8 @@ const Navbar = () => {
           >
             {!mounted ? null : isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
-          <Link
-            to="/quote"
-            className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm btn-quote-pulse"
-          >
+          <Link to="/quote"
+            className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm btn-quote-pulse">
             Get a Quote
           </Link>
         </div>
@@ -279,48 +257,33 @@ const Navbar = () => {
                 <button
                   type="button"
                   key={link.label}
-                  onClick={() => {
-                    scrollToSection(link.id);
-                    setMobileOpen(false);
-                  }}
+                  onClick={() => { scrollToSection(link.id); setMobileOpen(false); }}
                   aria-label={`Scroll to ${link.label} section`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
                   {link.label}
                 </button>
               ))}
 
-              {/* Mobile services section */}
+              {/* Mobile Services */}
               <div className="border-t border-border/30 pt-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3">
-                  Services
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3">Services</p>
                 {coreServiceLinks.map((service) => {
                   const Icon = service.icon;
                   return (
-                    <Link
-                      key={service.to}
-                      to={service.to}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Link key={service.to} to={service.to} onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
                       <Icon size={16} className="text-primary shrink-0" />
                       {service.label}
                     </Link>
                   );
                 })}
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 mt-3 mb-2 px-2">
-                  By Industry
-                </p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 mt-3 mb-2 px-2">By Industry</p>
                 {nicheLinks.map((niche) => {
                   const Icon = niche.icon;
                   return (
-                    <Link
-                      key={niche.to}
-                      to={niche.to}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Link key={niche.to} to={niche.to} onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
                       <Icon size={16} className="text-primary shrink-0" />
                       {niche.label}
                     </Link>
@@ -328,34 +291,29 @@ const Navbar = () => {
                 })}
               </div>
 
-              <Link
-                to="/blog"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Blog
-              </Link>
-              <Link
-                to="/pricing"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Pricing
-              </Link>
-              <Link
-                to="/website-cost-calculator"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Cost Calculator
-              </Link>
-              <Link
-                to="/free-audit"
-                onClick={() => setMobileOpen(false)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Free Audit
-              </Link>
+              {/* Mobile Marketing */}
+              <div className="border-t border-orange-500/20 pt-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-orange-500/70 mb-3">Marketing</p>
+                {marketingLinks.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      <Icon size={16} className="text-orange-500 shrink-0" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+                <Link to="/ads-contact" onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm font-semibold text-orange-500 hover:text-orange-400 transition-colors">
+                  <Zap size={15} /> Book a Free Strategy Call
+                </Link>
+              </div>
+
+              <Link to="/blog" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
+              <Link to="/pricing" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
+              <Link to="/website-cost-calculator" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Cost Calculator</Link>
+              <Link to="/free-audit" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Free Audit</Link>
               <button
                 type="button"
                 onClick={() => setTheme(isDarkMode ? "light" : "dark")}
@@ -368,11 +326,8 @@ const Navbar = () => {
                   <span className="inline-flex items-center gap-2"><Moon size={16} /> Dark Mode</span>
                 )}
               </button>
-              <Link
-                to="/quote"
-                onClick={() => setMobileOpen(false)}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground btn-quote-pulse"
-              >
+              <Link to="/quote" onClick={() => setMobileOpen(false)}
+                className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground btn-quote-pulse">
                 Get a Quote
               </Link>
             </div>

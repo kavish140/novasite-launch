@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "generated": "2026-08-31T11:25:41.934Z",
+    "totalSites": 127,
+    "dateRange": "September 2026"
+  },
+  "overall": {
+    "avgMobileScore": 54,
+    "avgDesktopScore": 69,
+    "avgMobileLcp": 12,
+    "pctFailingMobile": 38,
+    "pctPassingMobile": 7,
+    "pctNoSchema": 36,
+    "pctNoSSL": 0,
+    "pctNoMobileViewport": 3
+  },
+  "byIndustry": {
+    "avgMobileScore": {
+      "Web Agency": 69,
+      "Doctors": 53,
+      "Finance": 57,
+      "Consultants": 59,
+      "Lawyers": 54,
+      "Real Estate": 46,
+      "Restaurants": 51,
+      "Startups": 58
+    },
+    "pctNoSchema": {
+      "Web Agency": 0,
+      "Doctors": 15,
+      "Finance": 42,
+      "Consultants": 33,
+      "Lawyers": 53,
+      "Real Estate": 18,
+      "Restaurants": 47,
+      "Startups": 47
+    }
+  },
+  "platforms": [
+    {
+      "name": "WordPress",
+      "count": 54,
+      "pct": 43
+    },
+    {
+      "name": "Custom/Unknown",
+      "count": 53,
+      "pct": 42
+    },
+    {
+      "name": "Next.js",
+      "count": 7,
+      "pct": 6
+    },
+    {
+      "name": "Shopify",
+      "count": 7,
+      "pct": 6
+    },
+    {
+      "name": "GoDaddy",
+      "count": 4,
+      "pct": 3
+    },
+    {
+      "name": "Error",
+      "count": 1,
+      "pct": 1
+    },
+    {
+      "name": "Webflow",
+      "count": 1,
+      "pct": 1
+    }
+  ]
+}

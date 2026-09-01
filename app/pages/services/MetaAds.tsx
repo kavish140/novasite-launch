@@ -15,15 +15,16 @@ import {
   TrendingUp,
   CheckCircle,
   ShieldCheck,
+  ClipboardList,
+  Rocket,
+  Settings,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
-import PortfolioSection from "@/components/PortfolioSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
-import CtaSection from "@/components/CtaSection";
 
 const faqs = [
   {
@@ -53,49 +54,43 @@ const faqs = [
 ];
 
 const whatWeHandle = [
+  { icon: Image, title: "Ad Creative Design", desc: "Static images, carousels, and story ads designed to stop the scroll — built to your brand's look and feel." },
+  { icon: Users, title: "Audience Segmentation", desc: "Precise targeting by age, gender, location (down to Mumbai pin codes), interests, and behaviours." },
+  { icon: ShieldCheck, title: "Meta Pixel Setup", desc: "We install and configure the Meta Pixel on your website to track page views, leads, purchases, and build custom audiences." },
+  { icon: RefreshCw, title: "Retargeting Campaigns", desc: "We serve ads to people who visited your site but didn't convert — recovering lost leads at a fraction of cold audience cost." },
+  { icon: MousePointerClick, title: "Lookalike Audiences", desc: "We build audiences that 'look like' your existing best customers so Meta finds you more people just like them." },
+  { icon: BarChart3, title: "A/B Creative Testing", desc: "Multiple ad versions tested simultaneously — we identify winning creatives quickly and scale what works." },
+  { icon: TrendingUp, title: "Campaign Scaling", desc: "Once a campaign is profitable, we scale spend in a controlled manner so leads increase without destroying cost-per-lead." },
+  { icon: Megaphone, title: "Monthly Reporting", desc: "Clear reports covering reach, impressions, clicks, leads, cost-per-lead, and our strategy for the next month." },
+];
+
+const processSteps = [
   {
-    icon: Image,
-    title: "Ad Creative Design",
-    desc: "Static images, carousels, and story ads designed to stop the scroll — built to your brand's look and feel.",
-  },
-  {
-    icon: Users,
-    title: "Audience Segmentation",
-    desc: "Precise targeting by age, gender, location (down to Mumbai pin codes), interests, and behaviours.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Meta Pixel Setup",
-    desc: "We install and configure the Meta Pixel on your website to track page views, leads, purchases, and build custom audiences.",
-  },
-  {
-    icon: RefreshCw,
-    title: "Retargeting Campaigns",
-    desc: "We serve ads to people who visited your site but didn't convert — recovering lost leads at a fraction of the cold audience cost.",
-  },
-  {
-    icon: MousePointerClick,
-    title: "Lookalike Audiences",
-    desc: "We build audiences that 'look like' your existing best customers so Meta finds you more people just like them.",
-  },
-  {
-    icon: BarChart3,
-    title: "A/B Creative Testing",
-    desc: "Multiple ad versions tested simultaneously — we identify winning creatives quickly and scale what works.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Campaign Scaling",
-    desc: "Once a campaign is profitable, we scale spend in a controlled manner so leads increase without destroying cost-per-lead.",
+    icon: ClipboardList,
+    step: "01",
+    title: "Audit",
+    desc: "We audit your target audience, competitor ads, and existing Meta presence. Pixel health check included.",
   },
   {
     icon: Megaphone,
-    title: "Monthly Reporting",
-    desc: "Clear reports covering reach, impressions, clicks, leads, cost-per-lead, and our strategy for the next month.",
+    step: "02",
+    title: "Strategy",
+    desc: "Audience segments, creative brief, campaign objective, and budget split — all mapped before a single rupee is spent.",
+  },
+  {
+    icon: Rocket,
+    step: "03",
+    title: "Launch",
+    desc: "Campaigns go live with Pixel tracking verified. We watch the first 48–72 hours closely as Meta learns your audience.",
+  },
+  {
+    icon: Settings,
+    step: "04",
+    title: "Optimise & Report",
+    desc: "Weekly creative rotations, audience refinements, and scaling winners. Monthly report delivered to your inbox.",
   },
 ];
 
-// Audience reach estimator
 const MUMBAI_AUDIENCE: Record<string, number> = {
   "18-24": 2_100_000,
   "25-34": 3_800_000,
@@ -112,7 +107,7 @@ const INTEREST_MULTIPLIER: Record<string, number> = {
   fashion: 0.22,
 };
 
-const CPM = 120; // ₹120 per 1000 impressions (Mumbai average)
+const CPM = 120;
 
 export default function MetaAds() {
   const navigate = useNavigate();
@@ -127,21 +122,8 @@ export default function MetaAds() {
   const estimatedReach = Math.floor(estimatedImpressions * 0.6);
   const estimatedLeads = Math.floor(estimatedReach * 0.008);
 
-  const handleStartQuote = () => {
-    const specsSummary = `Meta Ads Campaign Request:
-- Target Age Group: ${ageGroup}
-- Interest Category: ${interest}
-- Monthly Ad Spend Budget: ₹${spend.toLocaleString("en-IN")}
-- Estimated Reach: ~${estimatedReach.toLocaleString("en-IN")} people
-- Estimated Leads/Month: ~${estimatedLeads}`;
-
-    navigate("/quote", {
-      state: {
-        projectType: "Meta Ads Management",
-        requirements: specsSummary,
-        budget: "Custom pricing based on ad spend",
-      },
-    });
+  const handleStartCampaign = () => {
+    navigate("/ads-contact", { state: { platform: "Meta Ads" } });
   };
 
   return (
@@ -165,14 +147,9 @@ export default function MetaAds() {
             "@context": "https://schema.org",
             "@type": "Service",
             name: "Meta Ads Management (Facebook & Instagram)",
-            provider: {
-              "@type": "ProfessionalService",
-              name: "SiteNova",
-              url: "https://sitenova.dev",
-            },
+            provider: { "@type": "ProfessionalService", name: "SiteNova", url: "https://sitenova.dev" },
             areaServed: { "@type": "City", name: "Mumbai" },
-            description:
-              "Facebook and Instagram ad campaign management for Mumbai businesses. Audience targeting, creative design, pixel setup, retargeting, and monthly reporting.",
+            description: "Facebook and Instagram ad campaign management for Mumbai businesses. Audience targeting, creative design, pixel setup, retargeting, and monthly reporting.",
             url: "https://sitenova.dev/services/meta-ads",
             serviceType: "Meta Ads Management",
           },
@@ -180,24 +157,9 @@ export default function MetaAds() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "Home",
-                item: "https://sitenova.dev/",
-              },
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: "Services",
-                item: "https://sitenova.dev/",
-              },
-              {
-                "@type": "ListItem",
-                position: 3,
-                name: "Meta Ads Management",
-                item: "https://sitenova.dev/services/meta-ads",
-              },
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://sitenova.dev/" },
+              { "@type": "ListItem", position: 2, name: "Marketing", item: "https://sitenova.dev/" },
+              { "@type": "ListItem", position: 3, name: "Meta Ads Management", item: "https://sitenova.dev/services/meta-ads" },
             ],
           },
           {
@@ -215,64 +177,57 @@ export default function MetaAds() {
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
 
-        {/* Hero */}
+        {/* ── Hero ── */}
         <section className="relative overflow-hidden pt-32 pb-20">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(139,92,246,0.12),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(249,115,22,0.12),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(249,115,22,0.06),transparent_50%)]" />
           <div className="mx-auto max-w-7xl px-6 relative z-10 text-center">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-6">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/25 bg-orange-500/8 px-3 py-1 text-xs font-medium text-orange-500 mb-6">
               <Megaphone className="h-3.5 w-3.5" />
-              Facebook & Instagram Ads
+              Facebook &amp; Instagram Ads
             </div>
             <h1 className="font-heading text-4xl font-extrabold tracking-tight sm:text-6xl max-w-4xl mx-auto">
               Reach Your Ideal Customers on{" "}
-              <span className="gradient-text">Facebook & Instagram</span>
+              <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">
+                Facebook &amp; Instagram
+              </span>
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Mumbai has over 8 million active Meta users. We put your business in front of exactly the right people —
               the right age, area, and interests — so every rupee of ad spend works harder.
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 text-sm font-semibold text-emerald-500">
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-orange-500/10 border border-orange-500/20 px-4 py-1.5 text-sm font-semibold text-orange-500">
               <CheckCircle className="h-4 w-4" />
               Recommended ad spend: ₹10,000–₹15,000/month · Contact us for management pricing
             </div>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <button
-                onClick={handleStartQuote}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect"
-              >
-                Start a Campaign <ArrowRight className="ml-2 h-4 w-4" />
+              <button onClick={handleStartCampaign}
+                className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-6 py-3 text-sm font-medium text-white hover:bg-orange-500/90 transition-colors shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                Book a Free Strategy Call <ArrowRight className="ml-2 h-4 w-4" />
               </button>
-              <a
-                href="#estimator"
-                className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
-              >
+              <a href="#estimator"
+                className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors">
                 Estimate My Reach
               </a>
             </div>
           </div>
         </section>
 
-        {/* Main Content + Estimator */}
+        {/* ── Estimator + What We Handle ── */}
         <section id="estimator" className="py-16 bg-card/10 border-t border-border/20">
           <div className="mx-auto max-w-7xl px-6 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-start">
 
-            {/* Left: What We Handle */}
+            {/* Left */}
             <div>
-              <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-                Full-Service Meta Ads Management
-              </h2>
+              <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">Full-Service Meta Ads Management</h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
                 Running a profitable Meta Ads campaign isn't just hitting "Boost Post". It requires pixel setup,
                 audience strategy, creative testing, and weekly optimisation. We handle all of it.
               </p>
-
               <div className="mt-8 grid sm:grid-cols-2 gap-4">
                 {whatWeHandle.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex gap-4 p-5 rounded-2xl border border-border/40 bg-card/30 backdrop-blur shadow-sm"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <div key={idx} className="flex gap-4 p-5 rounded-2xl border border-orange-500/15 bg-orange-500/5 backdrop-blur shadow-sm">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
                       <item.icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -284,37 +239,24 @@ export default function MetaAds() {
               </div>
             </div>
 
-            {/* Right: Audience Reach Estimator */}
-            <div className="rounded-3xl border border-border bg-card/60 p-8 shadow-xl backdrop-blur-md relative">
-              <div className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-primary/15 border border-primary/20 px-3.5 py-1 text-xs font-semibold text-primary backdrop-blur">
+            {/* Right: Estimator */}
+            <div className="rounded-3xl border border-orange-500/20 bg-card/60 p-8 shadow-xl backdrop-blur-md relative">
+              <div className="absolute top-0 right-8 -translate-y-1/2 rounded-full bg-orange-500/15 border border-orange-500/25 px-3.5 py-1 text-xs font-semibold text-orange-500 backdrop-blur">
                 Reach Estimator
               </div>
-
-              <h3 className="font-heading text-2xl font-bold tracking-tight">
-                Estimate Your Audience Reach
-              </h3>
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Select your target audience and budget to see projected reach and leads in Mumbai.
-              </p>
+              <h3 className="font-heading text-2xl font-bold tracking-tight">Estimate Your Audience Reach</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground">Select your target audience and budget for Mumbai.</p>
 
               <div className="mt-6 space-y-6">
-
-                {/* Age Group */}
+                {/* Age */}
                 <div>
                   <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <Users className="h-4 w-4 text-primary" /> Target Age Group
+                    <Users className="h-4 w-4 text-orange-500" /> Target Age Group
                   </label>
                   <div className="mt-2.5 grid grid-cols-2 gap-2">
                     {Object.keys(MUMBAI_AUDIENCE).map((age) => (
-                      <button
-                        key={age}
-                        onClick={() => setAgeGroup(age)}
-                        className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${
-                          ageGroup === age
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-border/60 bg-background/50 hover:bg-background/80"
-                        }`}
-                      >
+                      <button key={age} onClick={() => setAgeGroup(age)}
+                        className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${ageGroup === age ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm" : "border-border/60 bg-background/50 hover:bg-background/80"}`}>
                         Age {age}
                       </button>
                     ))}
@@ -324,7 +266,7 @@ export default function MetaAds() {
                 {/* Interest */}
                 <div>
                   <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <Heart className="h-4 w-4 text-primary" /> Interest Category
+                    <Heart className="h-4 w-4 text-orange-500" /> Interest Category
                   </label>
                   <div className="mt-2.5 flex flex-wrap gap-2">
                     {[
@@ -335,37 +277,23 @@ export default function MetaAds() {
                       { id: "food", label: "Food & Dining" },
                       { id: "fashion", label: "Fashion & Lifestyle" },
                     ].map((int) => (
-                      <button
-                        key={int.id}
-                        onClick={() => setInterest(int.id)}
-                        className={`rounded-full border px-4 py-2 text-xs font-medium transition-all ${
-                          interest === int.id
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-border/60 bg-background/50 hover:bg-background/80"
-                        }`}
-                      >
+                      <button key={int.id} onClick={() => setInterest(int.id)}
+                        className={`rounded-full border px-4 py-2 text-xs font-medium transition-all ${interest === int.id ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm" : "border-border/60 bg-background/50 hover:bg-background/80"}`}>
                         {int.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Monthly Ad Spend */}
+                {/* Spend */}
                 <div>
                   <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <Zap className="h-4 w-4 text-primary" /> Monthly Ad Spend (your budget to Meta)
+                    <Zap className="h-4 w-4 text-orange-500" /> Monthly Ad Spend (goes directly to Meta)
                   </label>
                   <div className="mt-2.5 grid grid-cols-3 gap-2">
                     {([10000, 15000, 25000] as const).map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setSpend(s)}
-                        className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${
-                          spend === s
-                            ? "border-primary bg-primary/5 text-primary shadow-sm"
-                            : "border-border/60 bg-background/50 hover:bg-background/80"
-                        }`}
-                      >
+                      <button key={s} onClick={() => setSpend(s)}
+                        className={`rounded-xl border px-3 py-3 text-xs font-medium transition-all ${spend === s ? "border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm" : "border-border/60 bg-background/50 hover:bg-background/80"}`}>
                         ₹{s.toLocaleString("en-IN")}
                       </button>
                     ))}
@@ -373,95 +301,81 @@ export default function MetaAds() {
                 </div>
 
                 {/* Output */}
-                <motion.div
-                  key={`${ageGroup}-${interest}-${spend}`}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="rounded-2xl border border-primary/20 bg-primary/5 p-5"
-                >
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground text-center mb-4">
-                    Estimated Monthly Results
-                  </p>
+                <motion.div key={`${ageGroup}-${interest}-${spend}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl border border-orange-500/20 bg-orange-500/5 p-5">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground text-center mb-4">Estimated Monthly Results</p>
                   <div className="grid grid-cols-3 gap-3 text-center">
                     <div>
-                      <div className="font-heading text-xl font-extrabold text-foreground">
-                        {targetAudience.toLocaleString("en-IN")}
-                      </div>
+                      <div className="font-heading text-xl font-extrabold text-foreground">{targetAudience.toLocaleString("en-IN")}</div>
                       <p className="text-[10px] text-muted-foreground mt-0.5">Mumbai Audience Size</p>
                     </div>
                     <div>
-                      <div className="font-heading text-xl font-extrabold text-foreground">
-                        ~{estimatedReach.toLocaleString("en-IN")}
-                      </div>
+                      <div className="font-heading text-xl font-extrabold text-foreground">~{estimatedReach.toLocaleString("en-IN")}</div>
                       <p className="text-[10px] text-muted-foreground mt-0.5">Est. Reach</p>
                     </div>
                     <div>
-                      <div className="font-heading text-xl font-extrabold text-foreground">
-                        ~{estimatedLeads}
-                      </div>
+                      <div className="font-heading text-xl font-extrabold text-foreground">~{estimatedLeads}</div>
                       <p className="text-[10px] text-muted-foreground mt-0.5">Est. Leads</p>
                     </div>
                   </div>
                   <p className="mt-3 text-[10px] text-muted-foreground text-center leading-relaxed">
-                    Estimates based on Mumbai Meta CPMs and average conversion rates. Actual results depend on creative quality, landing page, and audience match.
+                    Estimates based on Mumbai Meta CPMs. Actual results depend on creative quality and audience match.
                   </p>
                 </motion.div>
 
-                <button
-                  onClick={handleStartQuote}
-                  className="w-full inline-flex items-center justify-center rounded-xl bg-primary py-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm"
-                >
-                  Start My Meta Ads Campaign <ArrowRight className="ml-2 h-4 w-4" />
+                <button onClick={handleStartCampaign}
+                  className="w-full inline-flex items-center justify-center rounded-xl bg-orange-500 py-4 text-sm font-semibold text-white hover:bg-orange-500/90 transition-colors shadow-[0_0_20px_rgba(249,115,22,0.25)]">
+                  Book a Free Strategy Call <ArrowRight className="ml-2 h-4 w-4" />
                 </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Why Boosting Fails */}
+        {/* ── 4-Step Process ── */}
         <section className="py-20 border-t border-border/20">
           <div className="mx-auto max-w-7xl px-6">
+            <div className="text-center mb-14">
+              <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">How We Run Your Campaign</h2>
+              <p className="mt-4 text-muted-foreground max-w-xl mx-auto">A structured process that eliminates guesswork and delivers results from month one.</p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {processSteps.map((step, idx) => (
+                <div key={idx} className="relative p-6 rounded-2xl border border-orange-500/15 bg-orange-500/5 backdrop-blur">
+                  <div className="text-5xl font-black text-orange-500/10 font-heading leading-none mb-4">{step.step}</div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 text-orange-500 mb-3">
+                    <step.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-heading font-bold text-lg text-foreground mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                  {idx < processSteps.length - 1 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-3 -translate-y-1/2 text-orange-500/30 text-xl font-bold">›</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Pain Points ── */}
+        <section className="py-20 border-t border-border/20 bg-card/10">
+          <div className="mx-auto max-w-7xl px-6">
             <div className="text-center mb-12">
-              <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-                Why Most Boosted Posts Waste Money
-              </h2>
-              <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-                Clicking "Boost Post" is not Meta Ads. Here's what you're missing without a proper campaign setup.
-              </p>
+              <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">Why Most Boosted Posts Waste Money</h2>
+              <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">Clicking "Boost Post" is not Meta Ads. Here's what you're missing.</p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                {
-                  title: "No pixel tracking",
-                  desc: "Without the Meta Pixel, you can't track website visits, leads, or purchases — so you can't optimise for what matters.",
-                },
-                {
-                  title: "Audience is too broad",
-                  desc: "Boosted posts target your existing followers and their friends — not the specific income group, area, or interest segment that will actually buy from you.",
-                },
-                {
-                  title: "No retargeting",
-                  desc: "People who visited your website but didn't convert are your warmest leads. Without retargeting, you'll never reach them again.",
-                },
-                {
-                  title: "Single creative, no testing",
-                  desc: "Running one image ad for weeks with no variation means missed optimisation. The right creative can cut your cost-per-lead in half.",
-                },
-                {
-                  title: "Wrong campaign objective",
-                  desc: "Boosting for 'engagement' optimises for likes. You want 'leads' or 'conversions'. The wrong objective sends your budget to the wrong people.",
-                },
-                {
-                  title: "No lookalike audiences",
-                  desc: "Meta can find people who 'look like' your best customers — but only if your pixel has enough data and you know how to set it up.",
-                },
+                { title: "No pixel tracking", desc: "Without the Meta Pixel, you can't track website visits, leads, or purchases — so you can't optimise for what matters." },
+                { title: "Audience is too broad", desc: "Boosted posts target your followers and their friends — not the specific income group or interest segment that will actually buy." },
+                { title: "No retargeting", desc: "People who visited your website but didn't convert are your warmest leads. Without retargeting, you'll never reach them again." },
+                { title: "Single creative, no testing", desc: "Running one image ad for weeks with zero variation is a missed optimisation. The right creative can halve your cost-per-lead." },
+                { title: "Wrong campaign objective", desc: "Boosting for 'engagement' optimises for likes. You want 'leads' or 'conversions'. The wrong objective sends budget to wrong people." },
+                { title: "No lookalike audiences", desc: "Meta can find people who 'look like' your best customers — but only if your pixel has enough data and you know how to set it up." },
               ].map((point, idx) => (
-                <div
-                  key={idx}
-                  className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur interactive-card"
-                >
-                  <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center mb-4">
-                    <span className="text-destructive font-bold text-sm">!</span>
+                <div key={idx} className="p-6 rounded-2xl border border-border/40 bg-card/30 backdrop-blur interactive-card">
+                  <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center mb-4">
+                    <span className="text-orange-500 font-bold text-sm">!</span>
                   </div>
                   <h3 className="font-semibold text-foreground mb-2">{point.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{point.desc}</p>
@@ -471,35 +385,48 @@ export default function MetaAds() {
           </div>
         </section>
 
-        {/* FAQ */}
-        <section className="py-20 border-t border-border/20 bg-card/10">
+        {/* ── FAQ ── */}
+        <section className="py-20 border-t border-border/20">
           <div className="mx-auto max-w-3xl px-6">
-            <h2 className="font-heading text-3xl font-bold tracking-tight text-center mb-10">
-              Frequently Asked Questions
-            </h2>
+            <h2 className="font-heading text-3xl font-bold tracking-tight text-center mb-10">Frequently Asked Questions</h2>
             <div className="space-y-4">
               {faqs.map((faq, idx) => (
-                <div key={idx} className="rounded-2xl border border-border/40 bg-card/30 p-6">
+                <div key={idx} className="rounded-2xl border border-orange-500/15 bg-orange-500/5 p-6">
                   <h3 className="font-semibold text-foreground mb-2">{faq.q}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-10 text-center">
-              <p className="text-muted-foreground mb-4 text-sm">Have a question not listed here?</p>
-              <Link
-                to="/contact-us"
-                className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
-              >
-                Ask Us Directly <ArrowRight className="ml-2 h-4 w-4" />
+          </div>
+        </section>
+
+        <TestimonialsSection />
+
+        {/* ── Ads CTA ── */}
+        <section className="py-24 border-t border-orange-500/20 bg-gradient-to-br from-orange-500/8 via-transparent to-amber-500/5">
+          <div className="mx-auto max-w-3xl px-6 text-center">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/25 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-500 mb-6">
+              <Megaphone className="h-3.5 w-3.5" /> Free Strategy Call
+            </div>
+            <h2 className="font-heading text-3xl sm:text-5xl font-extrabold tracking-tight">
+              Ready to Grow on <br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">Facebook &amp; Instagram?</span>
+            </h2>
+            <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Book a free 30-minute strategy call. We'll map your audience, review your current social presence, and show you exactly what a Meta Ads campaign would deliver for your business.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <button onClick={handleStartCampaign}
+                className="inline-flex items-center justify-center rounded-xl bg-orange-500 px-8 py-4 text-base font-semibold text-white hover:bg-orange-500/90 transition-colors shadow-[0_0_30px_rgba(249,115,22,0.35)]">
+                Book Free Strategy Call <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
+              <Link to="/contact-us"
+                className="inline-flex items-center justify-center rounded-xl border border-border bg-secondary px-8 py-4 text-base font-medium text-foreground hover:bg-secondary/80 transition-colors">
+                Ask a Question
               </Link>
             </div>
           </div>
         </section>
-
-        <PortfolioSection />
-        <TestimonialsSection />
-        <CtaSection />
 
         <Footer />
       </div>

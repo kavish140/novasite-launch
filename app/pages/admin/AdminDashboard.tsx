@@ -56,6 +56,19 @@ type BlogPost = {
   created_at: string;
 };
 
+type AdsInquiry = {
+  id: string;
+  name: string;
+  phone: string;
+  business_name: string;
+  platform: string;
+  monthly_budget: string;
+  industry: string;
+  goals: string;
+  status: 'new' | 'contacted' | 'closed';
+  created_at: string;
+};
+
 type PageView = {
   id: string;
   page: string;
@@ -109,10 +122,11 @@ const PhoneCell = ({ mobile, className }: { mobile: string, className?: string }
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'ad_leads' | 'analytics' | 'blogs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'ad_leads' | 'ads_inquiries' | 'analytics' | 'blogs'>('overview');
   const [requests, setRequests] = useState<AuditRequest[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [pageViews, setPageViews] = useState<PageView[]>([]);
+  const [adsInquiries, setAdsInquiries] = useState<AdsInquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -127,10 +141,11 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [requestsResponse, postsResponse, pageViewsResponse] = await Promise.all([
+      const [requestsResponse, postsResponse, pageViewsResponse, adsInquiriesResponse] = await Promise.all([
         supabase.from("audit_requests").select("*").order("created_at", { ascending: false }),
         supabase.from("blog_posts").select("id, title, slug, created_at").order("created_at", { ascending: false }),
         supabase.from("page_views").select("*").eq("page", "/lp/web-design").order("created_at", { ascending: false }),
+        supabase.from("ads_inquiries").select("*").order("created_at", { ascending: false }),
       ]);
 
       if (requestsResponse.error) throw requestsResponse.error;
@@ -138,6 +153,10 @@ export default function AdminDashboard() {
       // page_views is optional — gracefully handle if table doesn't exist yet
       if (!pageViewsResponse.error) {
         setPageViews(pageViewsResponse.data || []);
+      }
+      // ads_inquiries is optional — gracefully handle
+      if (!adsInquiriesResponse.error) {
+        setAdsInquiries(adsInquiriesResponse.data || []);
       }
 
       setRequests(requestsResponse.data || []);
@@ -321,6 +340,7 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'leads', label: 'Audit Requests', icon: Users, badge: requests.filter(r => r.status !== 'completed' && r.source !== 'paid_ad').length },
     { id: 'ad_leads', label: 'Ad Leads', icon: Megaphone, badge: allAdLeads.filter(r => r.status !== 'completed').length },
+    { id: 'ads_inquiries', label: 'Ad Inquiries', icon: Target, badge: adsInquiries.filter(i => i.status === 'new').length },
     { id: 'analytics', label: 'LP Analytics', icon: TrendingUp },
     { id: 'blogs', label: 'Blog Posts', icon: FileText },
   ] as const;
@@ -395,7 +415,7 @@ export default function AdminDashboard() {
         {/* Top Header Actions */}
         <header className="h-16 flex flex-shrink-0 items-center justify-between px-6 lg:px-8 border-b border-border/40 bg-background/95 backdrop-blur z-10">
           <h2 className="text-xl font-bold tracking-tight capitalize">
-            {activeTab === 'leads' ? 'Audit Requests' : activeTab === 'ad_leads' ? 'Ad Leads' : activeTab === 'analytics' ? 'LP Analytics' : activeTab}
+            {activeTab === 'leads' ? 'Audit Requests' : activeTab === 'ad_leads' ? 'Ad Leads' : activeTab === 'ads_inquiries' ? 'Ad Inquiries' : activeTab === 'analytics' ? 'LP Analytics' : activeTab}
           </h2>
           <div className="flex items-center gap-2">
             <Button onClick={fetchData} variant="ghost" size="icon" title="Refresh Data">
@@ -740,6 +760,92 @@ export default function AdminDashboard() {
                         </TableBody>
                       </Table>
                     </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ADS INQUIRIES TAB */}
+          {activeTab === 'ads_inquiries' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-sm text-orange-500">
+                <Target className="w-4 h-4 flex-shrink-0" />
+                <span>Showing inquiries from <strong>/ads-contact</strong> — leads who want Google Ads or Meta Ads management.</span>
+              </div>
+
+              {loading ? (
+                <div className="p-8 text-center text-muted-foreground">Loading...</div>
+              ) : adsInquiries.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground bg-secondary/10 rounded-xl">No ad inquiries yet.</div>
+              ) : (
+                <div className="bg-card/40 border border-orange-500/20 rounded-xl overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader className="bg-orange-500/5">
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Business</TableHead>
+                          <TableHead>Platform</TableHead>
+                          <TableHead>Budget</TableHead>
+                          <TableHead>Industry</TableHead>
+                          <TableHead>Goals</TableHead>
+                          <TableHead className="text-right">Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {adsInquiries.map((inq) => (
+                          <TableRow key={inq.id}>
+                            <TableCell className="whitespace-nowrap text-muted-foreground text-xs">
+                              {format(new Date(inq.created_at), "MMM d, yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  inq.status === 'new'
+                                    ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+                                    : inq.status === 'contacted'
+                                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                    : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                }
+                              >
+                                {inq.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-medium">{inq.name}</TableCell>
+                            <TableCell><PhoneCell mobile={inq.phone} /></TableCell>
+                            <TableCell>{inq.business_name}</TableCell>
+                            <TableCell>
+                              <Badge variant="secondary" className="capitalize text-xs">
+                                {inq.platform.replace('_', ' ')}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{inq.monthly_budget}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{inq.industry}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate" title={inq.goals}>{inq.goals}</TableCell>
+                            <TableCell className="text-right">
+                              <select
+                                value={inq.status}
+                                onChange={async (e) => {
+                                  const newStatus = e.target.value as AdsInquiry['status'];
+                                  const { error } = await supabase.from('ads_inquiries').update({ status: newStatus }).eq('id', inq.id);
+                                  if (!error) setAdsInquiries(adsInquiries.map(i => i.id === inq.id ? { ...i, status: newStatus } : i));
+                                }}
+                                className="rounded-md border border-border/60 bg-background text-xs px-2 py-1.5 text-foreground"
+                              >
+                                <option value="new">New</option>
+                                <option value="contacted">Contacted</option>
+                                <option value="closed">Closed</option>
+                              </select>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
               )}

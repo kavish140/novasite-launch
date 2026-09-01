@@ -1,0 +1,134 @@
+url,business_name,industry,mobile_score,mobile_lcp,mobile_cls,mobile_tbt,mobile_fcp,mobile_si,mobile_inp_crux,desktop_score,desktop_lcp,desktop_cls,desktop_tbt,desktop_fcp,desktop_si,platform,has_ssl,has_schema,schema_types,mobile_viewport
+https://sitenova.dev,SiteNova (Baseline),Web Agency,69,3.60,0.000,530,3.30,3.67,N/A,97,0.80,0.000,130,0.72,0.72,WordPress,Yes,Yes,FAQPage; Organization; AboutPage; HowTo; WebPage,Yes
+https://drdiptiganatra.com,Dr Dipti Ganatra Homeopathy (SiteNova Client),Doctors,90,3.18,0.000,74,2.28,3.09,N/A,100,0.65,0.000,16,0.49,0.72,Custom/Unknown,Yes,Yes,Person,Yes
+https://jupiterfastfinance.com,Jupiter Fast Finance (SiteNova Client),Finance,59,9.08,0.026,218,4.68,5.26,N/A,89,1.64,0.008,144,0.85,1.26,Custom/Unknown,Yes,Yes,Organization; FinancialService; WebSite; FAQPage,Yes
+https://corporatezone.in,Corporate Zone (SiteNova Client),Consultants,79,4.09,0.007,10,3.34,3.93,N/A,99,0.87,0.000,12,0.81,0.87,Custom/Unknown,Yes,Yes,Organization; WebSite; LocalBusiness; BreadcrumbList,Yes
+https://sabkadentist.com,Sabka Dentist,Doctors,46,6.30,0.078,580,4.05,8.46,187,70,1.00,0.027,561,0.84,2.25,WordPress,Yes,Yes,None,Yes
+https://trisadental.in,Trisa Dental Solutions,Doctors,36,52.45,0.237,340,7.45,14.48,N/A,39,6.49,0.000,648,1.32,3.79,WordPress,Yes,Yes,LocalBusiness; Dentist; BreadcrumbList,Yes
+https://dentzzmumbai.com,Dentzz Dental Care,Doctors,52,4.53,0.372,131,3.21,7.04,N/A,85,1.11,0.154,53,0.93,2.62,Custom/Unknown,Yes,No,None,Yes
+https://procaredental.co.in,Procare Dental Clinic,Doctors,36,30.87,0.006,1033,3.52,12.79,N/A,37,8.46,0.040,884,0.81,5.67,WordPress,Yes,Yes,None,Yes
+https://wavikareye.com,Wavikar Eye Institute,Doctors,67,7.35,0.035,N/A,3.31,4.39,166,85,0.99,0.232,N/A,0.73,1.55,Custom/Unknown,Yes,Yes,MedicalOrganization; ItemList; WebSite; FAQPage; BreadcrumbList,Yes
+https://theestheticclinics.com,The Esthetic Clinics,Doctors,28,34.88,0.008,3815,3.98,37.25,241,48,2.09,0.018,2014,1.08,10.42,WordPress,Yes,Yes,None,Yes
+https://drbhartipatel.com,Bella Clinic Dr Bharti Patel,Doctors,57,11.64,0.081,350,1.67,7.63,N/A,62,1.40,0.376,222,0.45,3.49,GoDaddy,Yes,Yes,Organization; FAQPage,Yes
+https://holyfamilyhospital.in,Holy Family Hospital Bandra,Doctors,20,13.49,0.452,1279,2.71,6.42,72,62,1.30,0.582,171,0.84,3.30,GoDaddy,Yes,Yes,HealthClub; FAQPage; BreadcrumbList,Yes
+https://drpallavisule.com,Dr. Pallavi Sule Skin & Hair Clinic,Doctors,28,21.06,0.339,431,5.89,13.50,N/A,34,4.49,0.285,381,1.24,4.64,WordPress,Yes,Yes,Dermatology; Product,Yes
+https://drrashmishetty.com,Ra Skin Clinic Dr Rashmi Shetty,Doctors,34,18.04,0.393,176,8.65,25.62,114,55,3.61,0.012,258,1.84,5.10,WordPress,Yes,Yes,None,Yes
+https://kokilabenhospital.com,Kokilaben Dhirubhai Ambani Hospital,Doctors,44,7.47,0.016,985,2.14,8.58,110,52,2.95,0.000,577,0.66,3.19,Custom/Unknown,Yes,Yes,None,Yes
+https://shivanihospital.in,Shivaani Hospital Mulund,Doctors,47,11.09,0.130,268,6.22,8.96,N/A,77,1.46,0.013,274,0.89,2.85,Custom/Unknown,Yes,Yes,Organization,Yes
+https://hiranandanihospital.org,Dr L H Hiranandani Hospital,Doctors,24,10.82,0.162,1861,4.16,10.45,129,68,1.97,0.003,337,1.10,2.92,Custom/Unknown,Yes,Yes,None,Yes
+https://horizonhospital.com,Horizon Prime Hospital Thane,Doctors,83,2.59,0.077,17,2.44,10.56,122,88,1.12,0.000,33,0.92,4.18,WordPress,Yes,No,None,Yes
+https://drjaykishantripathi.com,Dr Jaykishan Tripathi Clinic,Doctors,55,13.77,0.000,5,11.37,20.56,N/A,55,2.87,0.231,34,2.37,4.22,Custom/Unknown,Yes,No,None,No
+https://draditigodbole.com,Dr Aditi Godbole Clinic,Doctors,99,1.66,0.019,N/A,1.66,1.71,N/A,100,0.64,0.000,N/A,0.45,0.63,WordPress,Yes,Yes,Gynecologic; MedicalOrganization; WebSite; Physician; MedicalClinic; BreadcrumbList,Yes
+https://reliva.in,ReLiva Physiotherapy & Rehab,Doctors,90,3.17,0.002,8,1.93,3.86,100,94,1.26,0.014,8,0.74,1.73,WordPress,Yes,Yes,None,Yes
+https://physioclinic.co.in,Orthocare Physioclinic Mulund,Doctors,65,11.63,0.000,N/A,3.91,4.11,N/A,85,2.26,0.046,N/A,0.93,1.59,GoDaddy,Yes,Yes,MedicalBusiness,Yes
+https://r3boot.in,R3BOOT Recovery Centre Dadar,Doctors,55,5.93,0.000,510,1.98,10.36,N/A,73,2.42,0.000,318,0.51,1.33,Next.js,Yes,Yes,MedicalBusiness; PhysicalTherapist; HealthClub,Yes
+https://nsgokhale.com,NS Gokhale & Company,Finance,60,6.15,0.003,N/A,5.59,9.24,N/A,89,1.36,0.000,N/A,1.25,2.08,Custom/Unknown,Yes,No,None,Yes
+https://bhutashah.com,Bhuta Shah & Co LLP,Finance,53,10.67,0.014,178,6.54,20.63,137,50,1.88,0.867,140,1.54,8.44,WordPress,Yes,No,None,Yes
+https://ussh.co.in,Utsav Shah & Associates,Finance,54,8.14,0.188,N/A,3.00,7.63,N/A,70,1.84,0.348,N/A,0.99,1.89,Custom/Unknown,Yes,No,None,Yes
+https://caamitjhaveri.com,CA Amit Jhaveri & Associates,Finance,66,4.80,0.000,64,3.66,11.31,N/A,96,1.24,0.000,20,0.80,1.15,Custom/Unknown,Yes,No,None,Yes
+https://slmco.in,SLM & Co LLP,Finance,57,7.75,0.000,N/A,6.59,10.00,N/A,86,1.60,0.001,N/A,1.33,2.20,Custom/Unknown,Yes,No,None,Yes
+https://maheshwariandco.in,Maheshwari & Co Chartered Accountants,Finance,48,12.15,0.164,N/A,7.24,28.05,N/A,59,2.46,0.408,N/A,1.40,2.40,Custom/Unknown,Yes,No,None,Yes
+https://jainanuragassociates.com,Jain Anurag & Associates,Finance,38,4.08,1.362,570,2.89,5.56,N/A,54,0.80,0.355,791,0.76,1.23,Custom/Unknown,Yes,Yes,AccountingService,Yes
+https://caselaadvisors.com,Casela Advisors,Finance,53,33.30,0.000,492,3.64,4.37,N/A,77,3.08,0.000,194,0.68,1.15,WordPress,Yes,Yes,None,Yes
+https://capradipshah.com,Pradip K Shah & Co,Finance,88,3.10,0.003,N/A,3.10,3.10,N/A,99,0.74,0.001,N/A,0.74,0.74,Custom/Unknown,Yes,No,None,Yes
+https://ndsadvisors.com,NDS Advisors,Finance,55,8.55,0.000,252,4.85,6.52,N/A,82,1.87,0.001,210,0.99,1.53,WordPress,Yes,Yes,FAQPage,Yes
+https://ndsavla.in,N D Savla & Associates,Finance,47,7.28,0.240,86,4.24,9.02,N/A,74,1.58,0.303,21,0.91,2.05,WordPress,Yes,Yes,AccountingService; WebSite; FAQPage,Yes
+https://prnco.in,Pravin R Navandar & Co,Finance,35,8.03,0.540,1,6.20,9.90,N/A,64,1.60,0.670,19,1.29,2.15,Custom/Unknown,Yes,No,None,Yes
+https://nmd.org.in,NMD & Co Chartered Accountants,Finance,25,14.10,0.537,467,3.79,15.20,N/A,20,5.20,0.578,650,0.77,4.26,WordPress,Yes,Yes,None,Yes
+https://madrecha.com,Madrecha & Co,Finance,89,3.45,0.000,132,1.38,2.79,N/A,94,0.83,0.000,104,0.40,2.07,Custom/Unknown,Yes,Yes,None,Yes
+https://taxclue.in,TaxClue Advisors,Finance,57,4.24,0.003,631,3.34,6.83,144,35,1.18,0.798,881,0.92,5.17,GoDaddy,Yes,Yes,ProfessionalService; FAQPage,Yes
+https://kcshah.com,KC Shah & Associates,Finance,93,3.09,0.001,27,0.88,3.08,N/A,92,0.53,0.179,N/A,0.33,0.64,Custom/Unknown,Yes,Yes,FAQPage,Yes
+https://ashwineejoshi.co.in,CA Ashwinee Joshi & Associates,Finance,50,18.20,0.000,327,5.46,9.34,N/A,59,3.29,0.000,413,1.15,1.89,WordPress,Yes,Yes,None,Yes
+https://theclassicpartners.com,The Classic Partners,Finance,56,28.22,0.000,N/A,5.45,12.38,N/A,65,4.84,0.008,N/A,1.34,3.88,WordPress,Yes,Yes,AccountingService; FAQPage,Yes
+https://lawpointindia.com,Law Point India,Lawyers,Error,,,,,,,Error,,,,,,,,,,
+https://solomonco.in,Solomon & Co Advocates & Solicitors,Lawyers,62,7.65,0.000,216,3.05,5.81,102,91,1.76,0.027,74,0.59,1.33,WordPress,Yes,Yes,None,Yes
+https://augustuslaw.com,Augustus Law BKC,Lawyers,65,12.93,0.011,48,2.19,8.65,N/A,49,2.42,0.000,1688,0.57,3.40,Custom/Unknown,Yes,Yes,WebSite; BlogPosting; Organization,Yes
+https://tnalegal.co.in,Thakur & Associates,Lawyers,72,3.33,0.171,N/A,3.11,7.51,N/A,72,2.08,0.312,40,0.77,1.64,Custom/Unknown,Yes,No,None,Yes
+https://anaassociates.com,ANA Law Group,Lawyers,51,15.72,0.097,279,3.55,11.57,N/A,39,3.43,0.015,1966,1.24,5.66,WordPress,Yes,Yes,None,Yes
+https://mmla.co,M M Legal Associates,Lawyers,95,2.46,0.001,N/A,1.11,4.03,N/A,100,0.72,0.007,N/A,0.42,0.96,WordPress,Yes,No,None,Yes
+https://pvasco.com,P Vas & Co Advocates,Lawyers,64,18.91,0.015,3,3.11,6.22,N/A,78,3.08,0.002,N/A,0.67,2.28,Custom/Unknown,Yes,No,None,Yes
+https://tuli.co.in,Tuli & Co,Lawyers,46,8.15,0.013,545,4.27,8.11,N/A,72,4.64,0.000,117,0.83,1.95,Custom/Unknown,Yes,No,None,Yes
+https://royzz.com,Royzz & Co,Lawyers,31,22.81,0.032,1745,3.80,12.34,N/A,83,2.58,0.023,22,0.88,1.64,WordPress,Yes,Yes,LocalBusiness; WebSite,Yes
+https://advocateshah.com,Chirag Shah & Co Advocates,Lawyers,28,16.88,1.044,215,5.86,10.35,N/A,41,1.89,0.280,706,1.37,2.84,Custom/Unknown,Yes,No,None,Yes
+https://solislaw.in,Solis Law,Lawyers,51,20.00,0.153,77,4.65,9.31,N/A,56,3.97,0.307,14,1.04,2.50,WordPress,Yes,No,None,Yes
+https://advjigneshnishar.com,Advocate Jignesh Nishar Legal Point,Lawyers,55,11.40,0.036,28,6.90,12.33,N/A,46,3.34,0.246,216,1.94,4.83,Custom/Unknown,Yes,Yes,Attorney,Yes
+https://advocateaniketnerurkar.com,Advocate Aniket Nerurkar,Lawyers,64,25.77,0.012,N/A,3.77,5.16,N/A,73,1.20,0.552,N/A,1.06,1.23,Custom/Unknown,Yes,No,None,Yes
+https://trilegal.com,Trilegal,Lawyers,39,8.81,0.011,2041,2.86,4.80,86,99,0.97,0.010,19,0.48,0.84,WordPress,Yes,Yes,None,Yes
+https://parinamlaw.com,Parinam Law Associates,Lawyers,68,3.60,0.215,25,2.29,9.52,115,68,0.62,1.500,10,0.62,2.81,WordPress,Yes,No,None,Yes
+https://valslegal.com,VALS Legal,Lawyers,32,15.09,0.989,3,6.49,8.90,N/A,70,2.41,0.162,5,1.44,2.54,Custom/Unknown,Yes,No,None,Yes
+https://khaitanco.com,Khaitan & Co,Lawyers,50,7.02,0.367,117,1.75,6.98,84,98,0.69,0.000,75,0.41,1.46,Custom/Unknown,Yes,Yes,Organization,Yes
+https://dsklegal.com,DSK Legal,Lawyers,54,21.31,0.001,138,5.90,13.60,105,76,2.29,0.000,9,1.21,5.57,WordPress,Yes,No,None,Yes
+https://wadiaghandy.com,Wadia Ghandy & Co,Lawyers,62,4.08,0.246,41,2.29,18.49,98,90,0.96,0.000,N/A,0.70,3.46,WordPress,Yes,Yes,None,Yes
+https://naiknaik.com,Naik Naik & Company,Lawyers,29,8.25,1.000,340,3.32,8.93,97,88,1.60,0.006,46,0.81,2.54,WordPress,Yes,Yes,None,Yes
+https://runwalrealty.com,Runwal Realty,Real Estate,70,6.26,0.118,N/A,2.26,3.79,84,90,1.01,0.072,N/A,0.79,2.75,WordPress,Yes,Yes,Organization; WebSite; RealEstateAgent; LocalBusiness,Yes
+https://hiranandani.com,Hiranandani Group,Real Estate,39,9.75,0.319,123,6.75,11.86,N/A,42,4.20,0.865,55,1.39,3.68,Custom/Unknown,Yes,Yes,Corporation; HomeAndConstructionBusiness,Yes
+https://oberoirealty.com,Oberoi Realty,Real Estate,20,5.06,0.419,2898,3.03,8.37,301,63,1.17,0.002,2115,0.67,2.15,Custom/Unknown,Yes,Yes,Organization; WebSite,Yes
+https://thewadhwagroup.com,The Wadhwa Group,Real Estate,Error,,,,,,,Error,,,,,,,,,,
+https://ashwinshethgroup.com,Ashwin Sheth Group,Real Estate,70,4.53,0.000,104,2.46,12.92,155,91,1.07,0.001,30,0.69,2.77,WordPress,Yes,Yes,None,Yes
+https://ashar.in,Ashar Group,Real Estate,84,3.03,0.008,2,2.80,6.40,100,88,1.80,0.021,N/A,0.87,2.05,WordPress,Yes,Yes,None,Yes
+https://marathonrealty.com,Marathon Realty,Real Estate,8,34.39,0.411,2059,9.52,21.50,177,39,2.19,0.126,1531,1.99,4.70,WordPress,Yes,Yes,None,Yes
+https://puranikbuilders.com,Puranik Builders,Real Estate,55,10.96,0.006,90,8.28,12.24,81,65,3.95,0.001,65,1.56,4.52,WordPress,Yes,No,None,Yes
+https://gundechabuilders.com,Gundecha Builders,Real Estate,65,4.95,0.000,168,3.19,9.53,N/A,90,1.67,0.001,N/A,0.83,1.72,WordPress,Yes,Yes,None,Yes
+https://hubtown.co.in,Hubtown Limited,Real Estate,Error,,,,,,,Error,,,,,,,,,,
+https://nandivardhan.com,Nandivardhan Group,Real Estate,85,3.03,0.000,164,1.74,6.56,N/A,71,0.79,0.000,528,0.72,2.63,Next.js,Yes,Yes,None,Yes
+https://lakhanibuilders.in,Lakhani Builders,Real Estate,19,69.01,0.514,910,2.74,13.89,95,30,6.71,0.426,362,1.10,3.77,WordPress,Yes,Yes,None,Yes
+https://shreemahavirgroup.com,Shree Mahavir Group,Real Estate,71,8.04,0.000,N/A,2.59,3.34,N/A,96,1.19,0.000,N/A,0.81,1.31,Custom/Unknown,Yes,No,None,Yes
+https://group-satellite.com,Group Satellite,Real Estate,50,10.15,0.051,358,3.53,13.52,108,51,1.84,0.054,1548,0.88,10.67,Custom/Unknown,Yes,Yes,None,Yes
+https://promesarealty.com,Promesa Realty,Real Estate,0,N/A,0.000,N/A,1.99,11.94,132,0,N/A,0.000,N/A,0.45,2.67,WordPress,Yes,Yes,None,Yes
+https://ajmera.com,Ajmera Realty & Infra,Real Estate,33,19.86,0.040,2256,2.44,19.08,278,54,1.76,0.020,1205,0.59,4.90,Error,Yes,No,Error,No
+https://lodhagroup.in,Lodha Group Macrotech Developers,Real Estate,52,6.21,0.000,601,3.37,5.08,234,62,3.34,0.006,356,0.95,1.87,Custom/Unknown,Yes,Yes,Organization,Yes
+https://kalpataru.com,Kalpataru Limited,Real Estate,Error,,,,,,,Error,,,,,,,,,,
+https://rustomjee.com,Rustomjee Group,Real Estate,43,4.01,0.000,3285,3.58,8.90,233,61,1.01,0.000,3635,0.95,2.72,Next.js,Yes,Yes,None,Yes
+https://dostirealty.com,Dosti Realty,Real Estate,22,29.21,0.744,540,3.16,12.76,124,26,7.17,0.352,558,0.70,4.13,WordPress,Yes,Yes,LocalBusiness; Organization,Yes
+https://bastianhospitality.com,Bastian Hospitality,Restaurants,31,22.58,0.999,51,10.27,26.85,196,56,15.32,0.004,55,2.91,7.40,Custom/Unknown,Yes,No,None,Yes
+https://thebombaycanteen.com,The Bombay Canteen,Restaurants,61,11.63,0.000,135,3.62,6.27,79,89,2.18,0.000,51,0.54,1.05,Shopify,Yes,Yes,WebSite; Organization; BreadcrumbList,Yes
+https://theobroma.in,Theobroma Foods,Restaurants,45,29.30,0.000,407,9.19,13.60,117,22,4.24,0.347,1287,0.83,4.38,Shopify,Yes,Yes,Organization; ItemList; WebSite,Yes
+https://subko.coffee,Subko Coffee Roasters,Restaurants,45,5.13,0.000,1236,3.63,5.68,118,80,1.19,0.001,353,0.93,1.50,Shopify,Yes,Yes,WebSite; Organization; BreadcrumbList,Yes
+https://bluetokaicoffee.com,Blue Tokai Coffee Roasters,Restaurants,8,25.79,0.484,1516,6.25,16.50,187,35,1.95,0.309,5258,0.80,7.54,Shopify,Yes,No,None,Yes
+https://bayroute.in,Bayroute,Restaurants,56,57.08,0.179,59,1.98,17.96,108,66,9.68,0.001,70,0.47,4.08,WordPress,Yes,Yes,None,Yes
+https://mainlandchina.in,Mainland China,Restaurants,76,3.43,0.004,N/A,3.43,10.16,N/A,87,1.49,0.005,N/A,0.81,3.21,Custom/Unknown,Yes,No,None,Yes
+https://ybfc.co.in,Pop Tates and Urban Tadka,Restaurants,28,12.48,0.000,10337,3.64,32.65,N/A,80,2.03,0.110,N/A,0.95,2.56,WordPress,Yes,No,None,Yes
+https://planethollywoodthane.com,Planet Hollywood Thane,Restaurants,61,4.05,0.057,365,3.78,13.77,127,71,0.84,0.018,411,0.77,4.58,WordPress,Yes,Yes,None,Yes
+https://copperchimney.in,Copper Chimney,Restaurants,59,17.94,0.000,174,2.77,11.92,N/A,46,3.39,0.072,735,0.81,3.48,Custom/Unknown,Yes,Yes,None,Yes
+https://bombaysweetshop.com,Bombay Sweet Shop,Restaurants,35,14.41,0.012,1108,3.84,14.72,156,71,1.88,0.011,304,0.62,3.59,Shopify,Yes,Yes,Organization; WebSite,Yes
+https://fooasiantapas.com,Foo Asian Tapas,Restaurants,49,21.88,0.000,490,2.94,9.65,124,47,2.60,0.000,2097,0.37,3.80,Custom/Unknown,Yes,Yes,Organization,Yes
+https://socialoffline.in,Social Offline Impresario,Restaurants,46,20.78,0.151,530,1.50,10.03,170,46,3.46,0.003,1257,0.36,2.43,WordPress,Yes,Yes,None,Yes
+https://cafemommyjoon.com,Cafe MommyJoon Bandra,Restaurants,60,10.61,0.000,121,3.78,7.47,N/A,87,1.68,0.006,93,0.99,2.21,Custom/Unknown,Yes,No,None,Yes
+https://thebeatle.com,Rhythm at The Beatle Powai,Restaurants,100,0.79,0.000,N/A,0.79,1.51,N/A,100,0.23,0.000,N/A,0.23,0.47,Custom/Unknown,Yes,No,None,Yes
+https://speciality.co.in,Speciality Restaurants Limited,Restaurants,58,71.91,0.000,N/A,4.35,8.60,84,68,14.52,0.000,N/A,1.02,2.47,Custom/Unknown,Yes,No,None,Yes
+https://smokehousedeli.in,Smoke House Deli,Restaurants,41,33.38,0.000,740,3.48,11.42,134,51,3.91,0.016,435,0.91,3.44,WordPress,Yes,No,None,Yes
+https://leopoldcafe.com,Leopold Cafe,Restaurants,Error,,,,,,,Error,,,,,,,,,,
+https://pqsmitra.com,PQSmitra Management Consultants,Consultants,10,16.61,1.019,967,4.56,22.12,N/A,13,5.73,1.076,1033,0.71,7.93,WordPress,Yes,Yes,Organization,Yes
+https://infraconsults.com,Infra Consults,Consultants,52,13.84,0.230,N/A,3.14,6.49,N/A,78,3.46,0.005,N/A,0.92,1.69,Custom/Unknown,Yes,No,None,Yes
+https://vmcmumbai.in,Vishvas Management Consultants,Consultants,68,4.69,0.003,N/A,3.19,12.40,N/A,90,1.08,0.001,12,0.79,3.26,Custom/Unknown,Yes,No,None,Yes
+https://epicons.co.in,Epicons Consultants,Consultants,32,6.72,0.437,309,5.06,13.54,N/A,65,1.73,0.260,197,1.24,2.50,WordPress,Yes,Yes,Corporation; Website,Yes
+https://gpcl.in,GPCL Consulting Services,Consultants,55,22.90,0.045,N/A,7.55,16.82,N/A,71,3.38,0.029,27,1.64,2.45,Custom/Unknown,Yes,No,None,Yes
+https://tkc.firm.in,Takshashila Consulting,Consultants,71,6.38,0.000,N/A,2.60,4.37,92,93,1.38,0.000,N/A,0.71,1.72,Custom/Unknown,Yes,No,None,Yes
+https://cedar-consulting.com,Cedar Management Consulting,Consultants,62,28.21,0.000,331,1.10,5.90,92,58,5.02,0.020,352,0.42,1.89,Custom/Unknown,Yes,No,None,Yes
+https://consultavalon.com,Avalon Consulting,Consultants,41,6.93,0.000,923,3.67,8.20,161,76,1.31,0.009,313,0.95,2.72,WordPress,Yes,Yes,None,Yes
+https://universalconsulting.com,Universal Consulting India,Consultants,73,5.85,0.001,46,2.12,5.18,N/A,66,1.38,0.001,696,0.48,2.15,WordPress,Yes,Yes,ProfessionalService,Yes
+https://promptpersonnel.com,Prompt Personnel,Consultants,92,2.90,0.007,75,2.01,3.65,183,92,1.05,0.025,160,0.58,1.61,WordPress,Yes,Yes,Product; WebSite; Organization; FAQPage; LocalBusiness,Yes
+https://cphrservices.in,CP HR Services,Consultants,60,6.63,0.000,113,3.80,10.20,140,66,4.17,0.044,148,0.88,3.62,WordPress,Yes,Yes,LocalBusiness,Yes
+https://symphonihr.com,Symphoni HR Executive Search,Consultants,90,2.59,0.009,46,1.82,6.73,N/A,97,0.68,0.009,66,0.34,1.77,Custom/Unknown,Yes,Yes,None,Yes
+https://praxisga.com,Praxis Global Alliance,Consultants,46,4.26,0.011,2831,1.82,11.54,207,63,2.98,0.002,444,0.52,1.16,Next.js,Yes,Yes,Organization,Yes
+https://technopak.com,Technopak Advisors,Consultants,56,13.26,0.000,131,4.43,15.33,N/A,67,3.24,0.000,118,1.54,4.37,WordPress,Yes,Yes,None,Yes
+https://zepto.com,Zepto,Startups,56,5.98,0.015,481,3.19,5.72,320,77,1.21,0.000,378,0.84,1.86,Custom/Unknown,Yes,No,None,No
+https://acko.com,Acko General Insurance,Startups,42,6.54,0.000,1501,3.07,5.51,141,65,1.29,0.001,951,0.81,1.74,Next.js,Yes,Yes,Organization; WebSite,Yes
+https://miko.ai,Miko AI,Startups,55,16.68,0.000,217,5.04,7.60,292,57,2.07,0.540,265,0.68,1.27,Shopify,Yes,Yes,Organization; WebSite,Yes
+https://faclon.com,Faclon Labs,Startups,62,7.69,0.007,70,5.21,5.21,99,87,1.76,0.003,79,1.31,1.52,Webflow,Yes,Yes,Organization,Yes
+https://gupshup.io,Gupshup,Startups,69,5.43,0.048,46,2.73,6.60,192,92,1.63,0.053,76,0.69,1.35,Shopify,Yes,No,None,Yes
+https://clevertap.com,CleverTap,Startups,43,12.72,0.055,800,3.00,7.34,245,59,1.02,0.144,893,0.64,2.45,WordPress,Yes,Yes,None,Yes
+https://webengage.com,WebEngage,Startups,25,11.22,0.003,11719,10.92,15.80,306,42,2.35,0.006,3675,1.83,4.75,WordPress,Yes,Yes,ItemList,Yes
+https://browserstack.com,BrowserStack,Startups,83,4.11,0.000,17,2.41,2.81,118,66,1.68,0.000,760,0.60,1.45,WordPress,Yes,Yes,None,Yes
+https://frappe.io,Frappe Technologies,Startups,81,3.76,0.002,15,3.60,3.71,64,94,1.05,0.001,136,1.04,1.13,Custom/Unknown,Yes,No,None,Yes
+https://turtlemint.com,Turtlemint,Startups,77,4.37,0.000,43,1.98,6.45,111,94,1.53,0.016,43,0.54,1.20,WordPress,Yes,Yes,None,Yes
+https://upstox.com,Upstox,Startups,64,3.60,0.000,1601,1.20,2.52,292,79,1.37,0.024,395,0.29,0.68,Next.js,Yes,Yes,Organization; Product,Yes
+https://bookmyshow.com,BookMyShow,Startups,42,4.11,0.000,2985,3.54,10.37,578,60,1.54,0.001,759,0.91,3.26,Custom/Unknown,Yes,No,None,Yes
+https://pharmeasy.in,PharmEasy,Startups,65,3.78,0.000,762,3.02,3.02,184,69,1.33,0.000,769,0.70,0.94,WordPress,Yes,Yes,None,Yes
+https://pepperfry.com,Pepperfry,Startups,31,8.06,0.028,2428,3.48,12.11,237,38,4.01,0.036,2936,0.87,7.07,Custom/Unknown,Yes,No,None,No
+https://rebelfoods.com,Rebel Foods,Startups,Error,,,,,,,Error,,,,,,,,,,
+https://eruditus.com,Eruditus Executive Education,Startups,50,6.35,0.238,262,2.88,6.41,152,90,1.57,0.049,144,0.67,1.43,Next.js,Yes,No,None,Yes
+https://leadschool.in,LEAD School,Startups,78,4.58,0.000,N/A,2.55,4.25,361,88,2.14,0.081,N/A,0.52,0.89,WordPress,Yes,Yes,None,Yes
+https://ketto.org,Ketto India,Startups,11,13.31,0.773,1155,5.81,7.66,213,43,2.22,0.241,1576,0.77,1.94,Custom/Unknown,Yes,No,None,Yes
+https://coindcx.com,CoinDCX,Startups,100,1.54,0.000,N/A,1.54,1.54,178,100,0.41,0.000,N/A,0.41,0.41,Custom/Unknown,Yes,No,None,Yes
+https://purplle.com,Purplle,Startups,66,4.44,0.000,433,3.55,3.55,238,98,0.92,0.000,N/A,0.82,0.82,Custom/Unknown,Yes,No,None,Yes
