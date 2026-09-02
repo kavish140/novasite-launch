@@ -18,18 +18,19 @@ export function links() {
 
 export function meta() {
   return buildMeta({
-    title: "Website Designer in Mulund, Mumbai | From ₹10,000 | SiteNova",
+    title: "Website Designer in Mumbai | From ₹10,000 | SiteNova",
     description:
-      "Is your website losing you customers? SiteNova builds fast, SEO-ready websites for businesses in Mulund, Bhandup & Mumbai — mobile-first, delivered in 7–14 days. From ₹10,000.",
+      "SiteNova builds fast, SEO-ready websites for Mumbai businesses — mobile-first, delivered in 7–14 days, from ₹10,000. Serving Mulund, Bhandup, Thane, Bandra & all of Mumbai.",
     canonicalPath: "/",
     keywords: [
-      "website designer in Mulund",
-      "web design Mulund Mumbai",
-      "best website designer in Mulund",
-      "website design company Mumbai",
+      "website designer in Mumbai",
+      "web design company Mumbai",
+      "business website design Mumbai",
       "affordable web design Mumbai",
+      "website developer Mumbai",
       "local SEO Mumbai",
-      "website designer near me Mumbai",
+      "website designer near me",
+      "web development company Mumbai",
     ],
   });
 }

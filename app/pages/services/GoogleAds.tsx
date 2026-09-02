@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { m as motion } from "framer-motion";
 import {
@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -152,39 +151,70 @@ export default function GoogleAds() {
 
   return (
     <PageTransition>
-      <SEO
-        title="Google Ads Management in Mumbai | Get More Leads | SiteNova"
-        description="Run Google Ads that actually convert. SiteNova manages keyword targeting, ad copy, bidding & conversion tracking for Mumbai businesses. Recommended ad spend: ₹10,000–₹15,000/month."
-        canonicalUrl="/services/google-ads"
-        keywords={[
-          "Google Ads Mumbai",
-          "PPC management Mumbai",
-          "Google Ads agency Mumbai",
-          "pay per click Mumbai",
-          "Google search ads Mumbai",
-          "lead generation Google Ads Mumbai",
-        ]}
-      />
       <JsonLd
         data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
             name: "Google Ads Management",
-            provider: { "@type": "ProfessionalService", name: "SiteNova", url: "https://sitenova.dev" },
-            areaServed: { "@type": "City", name: "Mumbai" },
-            description: "Google Ads (PPC) campaign setup and management for Mumbai businesses. Keyword research, ad copy, bid optimisation, conversion tracking, and monthly reporting.",
+            provider: {
+              "@type": "LocalBusiness",
+              name: "SiteNova",
+              url: "https://sitenova.dev",
+              telephone: "+919326060621",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Mulund",
+                addressLocality: "Mumbai",
+                addressRegion: "Maharashtra",
+                postalCode: "400080",
+                addressCountry: "IN",
+              },
+            },
+            areaServed: [
+              { "@type": "City", name: "Mumbai" },
+              { "@type": "City", name: "Thane" },
+            ],
+            description:
+              "Google Ads (PPC) campaign setup and management for Mumbai businesses. Keyword research, ad copy, bid optimisation, conversion tracking, and monthly reporting.",
             url: "https://sitenova.dev/services/google-ads",
             serviceType: "Google Ads Management",
+            hasOfferCatalog: {
+              "@type": "OfferCatalog",
+              name: "Google Ads Management Plans",
+              itemListElement: [
+                {
+                  "@type": "Offer",
+                  name: "Google Ads Management",
+                  description:
+                    "Full-service Google Ads campaign management including keyword research, ad copywriting, A/B testing, bid optimisation, conversion tracking, and monthly reporting.",
+                  priceCurrency: "INR",
+                  eligibleRegion: { "@type": "City", name: "Mumbai" },
+                },
+              ],
+            },
           },
           {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
               { "@type": "ListItem", position: 1, name: "Home", item: "https://sitenova.dev/" },
-              { "@type": "ListItem", position: 2, name: "Marketing", item: "https://sitenova.dev/" },
+              { "@type": "ListItem", position: 2, name: "Services", item: "https://sitenova.dev/services/google-ads" },
               { "@type": "ListItem", position: 3, name: "Google Ads Management", item: "https://sitenova.dev/services/google-ads" },
             ],
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            name: "How SiteNova Runs Your Google Ads Campaign",
+            description:
+              "A structured 4-step process for Mumbai businesses to get real leads from Google Ads with measurable results from month one.",
+            step: processSteps.map((s, i) => ({
+              "@type": "HowToStep",
+              position: i + 1,
+              name: s.title,
+              text: s.desc,
+            })),
           },
           {
             "@context": "https://schema.org",
@@ -437,6 +467,19 @@ export default function GoogleAds() {
         </section>
 
         <TestimonialsSection />
+
+        {/* ── Geo Entity Block (GEO crawler targeting) ── */}
+        <section className="geo-entity-block py-10 border-t border-border/10 bg-card/5">
+          <div className="mx-auto max-w-4xl px-6 text-center">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              SiteNova provides <strong>Google Ads management</strong> for businesses across{" "}
+              <strong>Mumbai, Thane, Mulund, Bhandup, Andheri, Bandra, Ghatkopar, Vikhroli, Kurla, Dadar, Lower Parel, Powai</strong>,
+              and surrounding areas. We run targeted PPC campaigns for doctors, lawyers, real estate agents, restaurants,
+              finance professionals, and general businesses — helping Mumbai companies generate qualified leads through
+              Google Search Ads and Display Ads.
+            </p>
+          </div>
+        </section>
 
         {/* ── Ads CTA ── */}
         <section className="py-24 border-t border-orange-500/20 bg-gradient-to-br from-orange-500/8 via-transparent to-amber-500/5">

@@ -4,7 +4,6 @@ import { m as motion } from "framer-motion";
 import { Target, Megaphone, CheckCircle2, ArrowRight, Phone, Building2, Zap } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
@@ -109,20 +108,41 @@ export default function AdsContact() {
 
   return (
     <PageTransition>
-      <SEO
-        title="Book a Free Ad Strategy Call | Google & Meta Ads | SiteNova"
-        description="Tell us about your business and ad goals. SiteNova will analyse your market and create a custom Google Ads or Meta Ads strategy — completely free, no obligation."
-        canonicalUrl="/ads-contact"
-        keywords={["Google Ads Mumbai", "Meta Ads Mumbai", "Facebook Ads consultation", "Google Ads strategy call Mumbai"]}
-      />
-      <JsonLd data={[{
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: "https://sitenova.dev/" },
-          { "@type": "ListItem", position: 2, name: "Book Ad Strategy Call", item: "https://sitenova.dev/ads-contact" },
-        ],
-      }]} />
+      <JsonLd data={[
+        {
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          name: "Book a Free Ad Strategy Call — SiteNova",
+          description:
+            "Book a free 30-minute Google Ads or Meta Ads strategy call with SiteNova. We'll analyse your market and create a custom campaign plan for your Mumbai business.",
+          url: "https://sitenova.dev/ads-contact",
+          provider: {
+            "@type": "LocalBusiness",
+            name: "SiteNova",
+            url: "https://sitenova.dev",
+            telephone: "+919326060621",
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: "Mulund",
+              addressLocality: "Mumbai",
+              addressRegion: "Maharashtra",
+              postalCode: "400080",
+              addressCountry: "IN",
+            },
+          },
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://sitenova.dev/" },
+            { "@type": "ListItem", position: 2, name: "Google Ads", item: "https://sitenova.dev/services/google-ads" },
+            { "@type": "ListItem", position: 3, name: "Book a Free Strategy Call", item: "https://sitenova.dev/ads-contact" },
+          ],
+        },
+      ]} />
+
+
 
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />

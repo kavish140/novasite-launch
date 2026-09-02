@@ -16,6 +16,10 @@ export function meta() {
       "web development cost Mumbai",
       "website price calculator",
       "how much does a website cost in Mumbai",
+      "free website cost calculator",
+      "website cost estimator",
+      "website design cost calculator",
     ],
   });
 }
+

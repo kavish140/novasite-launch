@@ -85,6 +85,14 @@ export async function loader({ context }: Route.LoaderArgs) {
   };
   const defaultLastMod = "2026-06-01";
 
+  // Higher-priority pages get 0.9, others default to 0.8, homepage is 1.0
+  const priorities: Record<string, string> = {
+    "/": "1.0",
+    "/services/google-ads": "0.9",
+    "/services/meta-ads": "0.9",
+    "/ads-contact": "0.9",
+  };
+
   const urls = [
     ...staticPaths.map(
       (path) => `
@@ -92,7 +100,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     <loc>${siteUrl}${path}</loc>
     <lastmod>${lastModified[path] ?? defaultLastMod}</lastmod>
     <changefreq>${path === "/" ? "daily" : "weekly"}</changefreq>
-    <priority>${path === "/" ? "1.0" : "0.8"}</priority>
+    <priority>${priorities[path] ?? "0.8"}</priority>
   </url>`
     ),
     ...blogEntries.map(

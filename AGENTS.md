@@ -719,7 +719,18 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 
 ---
 
+### [2026-09-02] — SEO click-maximization fixes (GSC-data-driven)
+
+- **Modified** `app/routes/_index.tsx` — Fixed keyword cannibalization between Homepage and `/location/mulund`. Homepage title/description now targets Mumbai-wide searches (`"Website Designer in Mumbai"`). Mulund-specific hyper-local keywords moved exclusively to `app/routes/location.mulund.tsx`.
+- **Modified** `app/pages/WebsiteCostCalculator.tsx` — Added `WebApplication` JSON-LD schema to the existing `<JsonLd>` array. Improves rich-result eligibility for the cost calculator page.
+- **Verified** `workers/app.ts` — Trailing-slash 301 redirect already implemented. No change needed.
+- **Verified** all 14 location pages — Each passes unique, accurate `geoCoordinates` props. No coordinates bug in practice.
+- **Verified** `app/root.tsx` hreflang — Correctly points to homepage canonical. No change made.
+
+---
+
 ### [2026-09-01] — Ads pages made visually & structurally distinct; new /ads-contact page & admin tab
+
 
 - **Rebuilt** `app/pages/services/GoogleAds.tsx` — completely distinct orange/amber theme (no blue primary). Removed `PortfolioSection`. Added 4-step ads Process section (Audit → Strategy → Launch → Optimise & Report). Replaced `CtaSection` with dedicated "Book a Free Strategy Call" CTA linking to `/ads-contact`. All orange accent via inline Tailwind only — no global CSS token changes.
 - **Rebuilt** `app/pages/services/MetaAds.tsx` — same treatment as GoogleAds. Orange/amber theme throughout. Audience Reach Estimator retained. No PortfolioSection. CTA → `/ads-contact`.
@@ -887,4 +898,31 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 - Build: `tsc --noEmit` — 0 errors.
 
 ---
+
+### [2026-09-02] — SEO Maximisation: Marketing Pages (Google Ads, Meta Ads, Ads Contact)
+
+**Objective**: Fix critical duplicate meta tag issue, upgrade all JSON-LD schemas, expand keyword sets, add GEO entity blocks, and raise sitemap priorities for the 3 marketing pages.
+
+#### Critical Fixes
+- **Removed legacy `<SEO>` component** from all 3 marketing page files (`GoogleAds.tsx`, `MetaAds.tsx`, `AdsContact.tsx`). The `<SEO>` component renders `null` and was causing duplicate `<title>` / `<meta description>` tags in the SSR output (both the `<SEO>` client render AND the route `buildMeta()` export were firing). Single `<title>` per page is now guaranteed.
+- **Fixed broken BreadcrumbList JSON-LD** — the "Marketing" breadcrumb item position 2 incorrectly pointed to `https://sitenova.dev/` (the homepage). Google ignores invalid breadcrumb items. All 3 pages now have valid, unique breadcrumb URLs at every level.
+
+#### Schema Upgrades
+- **`provider` type** changed from `ProfessionalService` → `LocalBusiness` with full `PostalAddress` (Mulund, Mumbai, 400080, IN) and `telephone` in `GoogleAds.tsx` and `MetaAds.tsx`.
+- **Added `hasOfferCatalog` + `Offer`** schema inside the `Service` JSON-LD on both `GoogleAds.tsx` and `MetaAds.tsx` — enables pricing/offer rich results.
+- **Added `HowTo` schema** for the 4-step process section (Audit → Strategy → Launch → Optimise & Report) on both `GoogleAds.tsx` and `MetaAds.tsx` — eligible for HowTo rich results in SERPs.
+- **Added `ContactPage` schema** in `AdsContact.tsx` with `LocalBusiness` provider — replaces the minimal bare `BreadcrumbList`-only schema.
+- **`areaServed`** upgraded from single `City: Mumbai` to an array `[Mumbai, Thane]` on both service pages.
+
+#### GEO Entity Blocks
+- **Added `<section className="geo-entity-block">` sections** to `GoogleAds.tsx` (between TestimonialsSection and CTA) and `MetaAds.tsx` (same position). These contain geo-rich prose naming all 14 service areas and key industry verticals — consistent with the pattern used on the homepage and location pages for AI crawler targeting.
+
+#### Keyword Expansion
+- **`services.google-ads.tsx`** — 6 → 22 keywords: added long-tail ("hire Google Ads expert Mumbai", "Google Ads for small business Mumbai"), geographic ("Google Ads agency Mulund", "Google Ads Thane", "PPC agency Andheri Mumbai", "Google Ads Bandra Mumbai"), and industry-specific variants.
+- **`services.meta-ads.tsx`** — 6 → 22 keywords: added Facebook/Instagram-specific long-tail, geographic, and industry variants.
+- **`ads-contact.tsx`** — 4 → 13 keywords: added consultation/booking-intent queries ("free Google Ads consultation Mumbai", "book Google Ads expert Mumbai") and problem-aware queries.
+- **Added `modifiedTime`** to all 3 route `buildMeta()` calls for freshness signals.
+
+#### Sitemap
+- **`sitemap[.]xml.tsx`** — added `priorities` map. `/services/google-ads`, `/services/meta-ads`, and `/ads-contact` now get `priority: 0.9` (up from the generic `0.8`). Implemented via a lookup map rather than the old single ternary, allowing easy per-path overrides in future.
 

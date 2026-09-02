@@ -134,6 +134,27 @@ export default function WebsiteCostCalculator() {
       <JsonLd data={[
           {
             "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: "SiteNova Website Cost Calculator",
+            url: "https://sitenova.dev/website-cost-calculator",
+            description:
+              "Free interactive tool to estimate website design and development costs in India. Get an instant quote for business websites, e-commerce stores, and web apps.",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "All",
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "INR",
+              description: "Free to use — no sign-up required",
+            },
+            provider: {
+              "@type": "Organization",
+              name: "SiteNova",
+              url: "https://sitenova.dev",
+            },
+          },
+          {
+            "@context": "https://schema.org",
             "@type": "FAQPage",
             mainEntity: FAQS.map((f) => ({
               "@type": "Question",
@@ -162,6 +183,7 @@ export default function WebsiteCostCalculator() {
             ],
           },
         ]} />
+
 
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />

@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -128,39 +127,70 @@ export default function MetaAds() {
 
   return (
     <PageTransition>
-      <SEO
-        title="Facebook & Instagram Ads in Mumbai | Meta Ads Management | SiteNova"
-        description="Grow your Mumbai business with targeted Meta Ads. SiteNova handles audience research, ad creatives, pixel setup & retargeting. Recommended ad spend: ₹10,000–₹15,000/month."
-        canonicalUrl="/services/meta-ads"
-        keywords={[
-          "Facebook Ads Mumbai",
-          "Instagram Ads Mumbai",
-          "Meta Ads agency Mumbai",
-          "Facebook advertising Mumbai",
-          "Instagram marketing Mumbai",
-          "social media ads Mumbai",
-        ]}
-      />
       <JsonLd
         data={[
           {
             "@context": "https://schema.org",
             "@type": "Service",
             name: "Meta Ads Management (Facebook & Instagram)",
-            provider: { "@type": "ProfessionalService", name: "SiteNova", url: "https://sitenova.dev" },
-            areaServed: { "@type": "City", name: "Mumbai" },
-            description: "Facebook and Instagram ad campaign management for Mumbai businesses. Audience targeting, creative design, pixel setup, retargeting, and monthly reporting.",
+            provider: {
+              "@type": "LocalBusiness",
+              name: "SiteNova",
+              url: "https://sitenova.dev",
+              telephone: "+919326060621",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Mulund",
+                addressLocality: "Mumbai",
+                addressRegion: "Maharashtra",
+                postalCode: "400080",
+                addressCountry: "IN",
+              },
+            },
+            areaServed: [
+              { "@type": "City", name: "Mumbai" },
+              { "@type": "City", name: "Thane" },
+            ],
+            description:
+              "Facebook and Instagram ad campaign management for Mumbai businesses. Audience targeting, creative design, pixel setup, retargeting, and monthly reporting.",
             url: "https://sitenova.dev/services/meta-ads",
             serviceType: "Meta Ads Management",
+            hasOfferCatalog: {
+              "@type": "OfferCatalog",
+              name: "Meta Ads Management Plans",
+              itemListElement: [
+                {
+                  "@type": "Offer",
+                  name: "Meta Ads Management",
+                  description:
+                    "Full-service Facebook and Instagram ad campaign management including audience research, creative design, pixel setup, retargeting, A/B testing, and monthly reporting.",
+                  priceCurrency: "INR",
+                  eligibleRegion: { "@type": "City", name: "Mumbai" },
+                },
+              ],
+            },
           },
           {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
               { "@type": "ListItem", position: 1, name: "Home", item: "https://sitenova.dev/" },
-              { "@type": "ListItem", position: 2, name: "Marketing", item: "https://sitenova.dev/" },
+              { "@type": "ListItem", position: 2, name: "Services", item: "https://sitenova.dev/services/meta-ads" },
               { "@type": "ListItem", position: 3, name: "Meta Ads Management", item: "https://sitenova.dev/services/meta-ads" },
             ],
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            name: "How SiteNova Runs Your Meta Ads Campaign",
+            description:
+              "A structured 4-step process for Mumbai businesses to grow on Facebook and Instagram with measurable results from month one.",
+            step: processSteps.map((s, i) => ({
+              "@type": "HowToStep",
+              position: i + 1,
+              name: s.title,
+              text: s.desc,
+            })),
           },
           {
             "@context": "https://schema.org",
@@ -173,6 +203,8 @@ export default function MetaAds() {
           },
         ]}
       />
+
+
 
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
@@ -401,6 +433,19 @@ export default function MetaAds() {
         </section>
 
         <TestimonialsSection />
+
+        {/* ── Geo Entity Block (GEO crawler targeting) ── */}
+        <section className="geo-entity-block py-10 border-t border-border/10 bg-card/5">
+          <div className="mx-auto max-w-4xl px-6 text-center">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              SiteNova provides <strong>Facebook and Instagram Ads management</strong> for businesses across{" "}
+              <strong>Mumbai, Thane, Mulund, Bhandup, Andheri, Bandra, Ghatkopar, Vikhroli, Kurla, Dadar, Lower Parel, Powai</strong>,
+              and surrounding areas. We run targeted Meta Ads campaigns for doctors, restaurants, fashion brands,
+              real estate agents, finance professionals, and service businesses — helping Mumbai companies grow
+              their audience and generate consistent leads through Facebook and Instagram advertising.
+            </p>
+          </div>
+        </section>
 
         {/* ── Ads CTA ── */}
         <section className="py-24 border-t border-orange-500/20 bg-gradient-to-br from-orange-500/8 via-transparent to-amber-500/5">
