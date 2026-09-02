@@ -35,6 +35,7 @@ import {
   Eye,
   Percent,
   Target,
+  Copy,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line } from "recharts";
@@ -54,6 +55,8 @@ type BlogPost = {
   id: string;
   title: string;
   slug: string;
+  excerpt?: string;
+  content?: string;
   created_at: string;
 };
 
@@ -144,7 +147,7 @@ export default function AdminDashboard() {
     try {
       const [requestsResponse, postsResponse, pageViewsResponse, adsInquiriesResponse] = await Promise.all([
         supabase.from("audit_requests").select("*").order("created_at", { ascending: false }),
-        supabase.from("blog_posts").select("id, title, slug, created_at").order("created_at", { ascending: false }),
+        supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
         supabase.from("page_views").select("*").eq("page", "/lp/web-design").order("created_at", { ascending: false }),
         supabase.from("ads_inquiries").select("*").order("created_at", { ascending: false }),
       ]);
@@ -251,6 +254,31 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(url);
     
     toast({ title: "Success", description: "Export started successfully." });
+  };
+
+  const handleCopyBlogs = () => {
+    if (posts.length === 0) {
+      toast({ title: "No Data", description: "There are no blog posts to copy." });
+      return;
+    }
+
+    const blogsData = posts.map(post => ({
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      created_at: post.created_at
+    }));
+
+    navigator.clipboard.writeText(JSON.stringify(blogsData, null, 2))
+      .then(() => {
+        toast({ title: "Copied!", description: "All blog data copied to clipboard in JSON format." });
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+        toast({ title: "Error", description: "Failed to copy to clipboard.", variant: "destructive" });
+      });
   };
 
   // --- Derived Data ---
@@ -429,12 +457,18 @@ export default function AdminDashboard() {
               </Button>
             )}
             {activeTab === 'blogs' && (
-              <Button asChild size="sm" className="gap-2">
-                <Link to="/admin/blog/new">
-                  <Plus className="w-4 h-4" />
-                  New Post
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button onClick={handleCopyBlogs} variant="outline" size="sm" className="gap-2">
+                  <Copy className="w-4 h-4" />
+                  <span className="hidden sm:inline">Copy All</span>
+                </Button>
+                <Button asChild size="sm" className="gap-2">
+                  <Link to="/admin/blog/new">
+                    <Plus className="w-4 h-4" />
+                    New Post
+                  </Link>
+                </Button>
+              </div>
             )}
           </div>
         </header>
