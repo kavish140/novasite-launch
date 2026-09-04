@@ -383,6 +383,7 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 | `faq-data.ts` | Exports `faqs` array used by `FaqSection` and FAQ JSON-LD builder. |
 | `portfolio-meta.ts` | Exports `showcaseProjects` and `customerProjects` arrays. Portfolio projects: AI SmartKit, Business Showcase, Design Showcase, E-commerce Showcase (all SiteNova sub-domains), plus Dr. Dipti Ganatra and Jupiter Fast Finance (real clients). |
 | `supabaseClient.ts` | Dual client exports (see §2 Architecture). |
+| `relatedPosts.ts` | `PostSummary` interface + `rankPosts(candidates, currentTags, limit)` — pure ranking function for the "Continue Reading" section. Scores candidates by tag overlap, then view count, then recency. No Supabase imports — fully testable. |
 | `seoRoutes.js` | **Legacy** — build-time SEO route injection. No longer used (replaced by RR7 `meta()` exports). Do not modify unless you know what you're doing. |
 | `utils.ts` | `cn()` utility (clsx + tailwind-merge). |
 
@@ -436,10 +437,25 @@ Managed via Admin Dashboard. Fetched by `BlogIndex.tsx` and `BlogPost.tsx`.
 | `slug` | text | URL slug (unique) |
 | `excerpt` | text | Short summary shown in listing cards and used as meta description fallback |
 | `content` | text | Full HTML content (sanitized server-side before rendering) |
+| `tags` | text[] | Array of topic tags (e.g. `["SEO", "Google Ads"]`). Added 2026-09-04. Used by `RelatedPosts` for semantic matching. Set via comma-separated input in `AdminBlogEditor`. Default `'{}'`. |
 | `published_at` | timestamptz | Publication date — distinct from `created_at`. Used in sitemap + OG meta |
 | `created_at` | timestamptz | Auto-set on insert |
 
 > **Confirmed from Supabase table screenshot (2026-08-14).** There is no `status` or `cover_image` column in the live table. The sitemap loader's `.eq("status", "published")` filter silently returns no rows if the column doesn't exist — this is handled gracefully via try/catch.
+
+#### `blog_post_views`
+Created 2026-09-04. Records one row per blog page load (server-side, fire-and-forget). Used by `RelatedPosts` to compute all-time view counts as a ranking tiebreaker.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | bigserial | Primary key |
+| `slug` | text | Blog post slug being viewed |
+| `viewed_at` | timestamptz | Auto-set to `now()` on insert |
+
+- RLS enabled. Anon INSERT allowed (needed by the SSR loader). Authenticated SELECT allowed (for future admin analytics).
+- Index: `idx_blog_post_views_slug` on `slug` for fast `GROUP BY` aggregation.
+- Migration: `supabase/migrations/20260904_blog_tags_and_views.sql`
+
 
 #### `ads_inquiries`
 Created by user SQL (2026-09-01). Populated by `pages/AdsContact.tsx` form. Displayed in Admin Dashboard "Ad Inquiries" tab.
@@ -716,6 +732,18 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 
 > **AI agents: append an entry here every time you make a significant change.**
 > Format: `## [Date] — [Brief summary]` followed by bullet points of what changed and why.
+
+---
+
+### [2026-09-04] — Smart blog post suggestions (tags + view count hybrid ranking)
+
+- **New** `supabase/migrations/20260904_blog_tags_and_views.sql` — adds `tags text[]` column to `blog_posts` and creates `blog_post_views` table (bigserial id, slug, viewed_at). RLS: anon INSERT + authenticated SELECT.
+- **New** `app/lib/relatedPosts.ts` — pure `rankPosts(candidates, currentTags, limit)` utility. Scores candidates by tag overlap (primary), view count (tiebreaker 1), recency (tiebreaker 2). No Supabase dependency — fully testable.
+- **Modified** `app/routes/blog.$slug.tsx` — added fire-and-forget `blog_post_views` insert after each page load. Not awaited; does not affect response latency.
+- **Modified** `app/components/RelatedPosts.tsx` — now accepts `currentTags: string[]` prop. Runs two parallel Supabase queries (all posts with tags + all view counts), merges them, calls `rankPosts()`. Fallback: if no tag matches, ranks purely by view count then recency. Shows view count badge (e.g. "1,234 views") only when a post has ≥ 100 views, using `TrendingUp` Lucide icon.
+- **Modified** `app/pages/blog/BlogPost.tsx` — passes `post.tags ?? []` as `currentTags` prop to `RelatedPosts`.
+- **Modified** `app/pages/admin/AdminBlogEditor.tsx` — added `tags` state (comma-separated string), "Tags (comma-separated)" `Input` field between Excerpt and Content. On load: joins `string[]` to display string. On save: splits/trims/filters to `string[]` stored in the `tags` column.
+- **Modified** `AGENTS.md` — updated §8 (added `relatedPosts.ts`), §9 (`blog_posts` tags column + new `blog_post_views` table).
 
 ---
 

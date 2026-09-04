@@ -171,7 +171,7 @@ export default function BlogPost() {
           <BlogCTA variant="end" />
 
           {/* Related posts */}
-          <RelatedPosts currentSlug={post.slug} />
+          <RelatedPosts currentSlug={post.slug} currentTags={post.tags ?? []} />
         </main>
 
         <Footer />

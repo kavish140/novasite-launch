@@ -63,6 +63,11 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
+  // Fire-and-forget: record this page view without blocking the response
+  supabase.from("blog_post_views").insert({ slug: params.slug }).then(() => {
+    // intentionally not awaited
+  });
+
   return { post: { ...post, content: edgeSanitize(post.content) } };
 }
 

@@ -1,4 +1,4 @@
-# Project: SiteNova Growth Audit & 90-Day Execution Roadmap
+# Project: SiteNova SEO Strategy & Implementation Plan
 
 ## Architecture
 - Site: SiteNova (https://sitenova.dev)
@@ -8,26 +8,24 @@
 ## Feature Inventory
 | # | Feature / Area | Description | Milestone | Source |
 |---|---|---|---|---|
-| 1 | Technical & On-Page SEO | Crawlability, robots, sitemap, meta tags, INP 310ms root cause, headings, 14 location pages | M1, M2 | Request R1 |
-| 2 | GEO & AI Citation Audit | 0 citations diagnosis, schema (`app/lib/seo.ts`), speakable, E-E-A-T, 3 Mumbai competitor benchmark | M1, M3 | Request R2 |
-| 3 | Content Strategy & Keywords | High-ranking pages, 20 target keywords with volume/difficulty, clusters, content quality | M1, M4 | Request R3 |
-| 4 | Conversion & Dead-Click Audit | 42.86% dead clicks, 42.86% quick-backs, paid LP `/lp/web-design` funnel, lead capture | M1, M5 | Request R4 |
-| 5 | 90-Day Action Roadmap | Week-by-week prioritized plan with 8 zero-budget quick wins, medium effort, sustained effort | M6 | Request R5 |
+| 1 | GSC Data Deep Dive | Analysis of impressions, clicks, CTR, and average positions across queries, pages, countries, devices | M1 | Request R1 |
+| 2 | High-Priority Opportunity Identification | Identify at least 5 priority pages/queries stuck on page 2/3 or with high impressions and poor CTR with root-cause hypotheses | M1, M2 | Request R1 |
+| 3 | SEO Strategy Document (`seo_strategy.md`) | Comprehensive strategy: GSC diagnostics, CTR snippet optimization, URL normalization, Schema & entity signals, content upgrades, 90-day roadmap | M2 | Request R2 |
+| 4 | Technical Implementation Plan (`seo_implementation_plan.md`) | Detailed step-by-step codebase changes (meta exports, schemas, headings, routes) compatible with RR7 and Cloudflare Workers SSR | M2 | Request R2 |
+| 5 | Independent Technical Review & Forensic Audit | Reviewer verification of RR7/Cloudflare compatibility & AGENTS.md rules + Forensic integrity check (codebase untouched) | M3 | Acceptance Criteria |
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|---|---|---|---|
-| 1 | Survey & Technical Investigation | Parallel exploration across codebase, SEO/GEO architecture, UX and competitors | none | DONE |
-| 2 | R1: Full SEO Audit Synthesis | Detailed Technical, On-Page, Off-Page, and Local SEO Audit | M1 | DONE |
-| 3 | R2: GEO & AI Visibility Audit | Schema audit, AI citation factors, competitor analysis | M1 | DONE |
-| 4 | R3: Content Strategy & Keyword Map | 20 keyword opportunities, topical clusters, page potential | M1 | DONE |
-| 5 | R4: Conversion & UX Audit | Dead-click root causes, quick-back remedies, LP optimization | M1 | DONE |
-| 6 | R5: 90-Day Prioritised Roadmap | Consolidated week-by-week actionable roadmap | M2, M3, M4, M5 | DONE |
-| 7 | Verification & Delivery | Independent review and final comprehensive report delivery | M6 | DONE |
+| 1 | GSC & Codebase Survey | Parallel Explorers analyzing GSC dataset and codebase architecture | none | DONE |
+| 2 | Strategy & Implementation Plan Drafting | Specialist Worker drafting `seo_strategy.md` & `seo_implementation_plan.md` | M1 | DONE |
+| 3 | Independent Review & Forensic Audit | Agent-as-Judge verification of compatibility, AGENTS.md compliance, and zero codebase modifications | M2 | DONE |
+| 4 | Gate Evaluation & Sentinel Reporting | Orchestrator gate check, synthesis, and final reporting | M3 | DONE |
 
 ## Code Layout & Audit File Targets
-- `app/routes/*` — Route entry points and meta configurations
+- `app/routes/*` — Route entry points and meta configurations (`meta()` exports)
 - `app/lib/meta.ts` & `app/lib/seo.ts` — Metadata and Schema.org JSON-LD builders
 - `app/pages/*` — Full page templates (niche, locations, services, blog, lp)
 - `app/components/*` — Interactive UI components, CTAs, popups, hero, portfolio
 - `workers/app.ts` & `wrangler.jsonc` — SSR & edge routing configuration
+

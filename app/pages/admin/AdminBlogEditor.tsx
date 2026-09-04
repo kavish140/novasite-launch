@@ -16,6 +16,7 @@ export default function AdminBlogEditor() {
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
+  const [tags, setTags] = useState(""); // comma-separated string in the UI
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditing);
   
@@ -44,6 +45,7 @@ export default function AdminBlogEditor() {
         setSlug(data.slug);
         setExcerpt(data.excerpt);
         setContent(data.content);
+        setTags(Array.isArray(data.tags) ? data.tags.join(", ") : "");
       }
     } catch (error) {
       console.error("Error fetching post:", error);
@@ -73,7 +75,11 @@ export default function AdminBlogEditor() {
     e.preventDefault();
     setLoading(true);
 
-    const postData = { title, slug, excerpt, content };
+    const parsedTags = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const postData = { title, slug, excerpt, content, tags: parsedTags };
 
     try {
       if (isEditing) {
@@ -162,6 +168,20 @@ export default function AdminBlogEditor() {
                 placeholder="A brief 1-2 sentence summary of the post..."
                 className="bg-background resize-none h-20"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Input
+                id="tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="e.g. SEO, Google Ads, E-Commerce, Web Design"
+                className="bg-background"
+              />
+              <p className="text-xs text-muted-foreground">
+                Tags are used to surface related posts. Use consistent labels across posts.
+              </p>
             </div>
 
             <div className="space-y-2">

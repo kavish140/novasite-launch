@@ -1,44 +1,53 @@
-# SiteNova Comprehensive Growth Audit Plan
+# SiteNova SEO Strategy & Technical Implementation Plan
 
 ## Objective
-Deliver a comprehensive, deep, actionable Growth Audit across SEO, GEO, Content, Conversion, and a 90-Day Execution Roadmap for SiteNova (sitenova.dev) to scale organic traffic, local dominance across Mumbai/Thane, AI engine visibility, and client conversion rates.
+Analyze Google Search Console performance data, identify high-impression low-click opportunities, formulate a breakthrough SEO strategy (`seo_strategy.md`), and design an exact, fully compatible technical implementation plan (`seo_implementation_plan.md`) for React Router v7 and Cloudflare Workers edge SSR architecture without modifying source code prematurely.
 
-## Architecture & Work Packages
+---
 
-### Package 1: Technical, On-Page & Local SEO Deep Dive (R1)
-- Crawlability & Indexation: robots.txt, sitemap.xml implementation, Cloudflare Workers trailing slash routing, React Router v7 SSR hydration.
-- Web Vitals & Performance: Deep dive on INP 310ms root causes (main-thread blocking tasks, Framer Motion hydration, event handlers, Radix/next-themes overhead).
-- On-Page Architecture: Meta tags generation (`buildMeta` in `app/lib/meta.ts`), heading structure (H1-H4 hierarchy), internal linking graph, orphan pages.
-- Local SEO & Multi-Location: Evaluation of 14 location pages (`app/pages/locations/*`), NAP consistency against external profiles (Clutch, TechBehemoths, Crunchbase, Google Business), local keyword integration.
+## Phase 1: Deep GSC & Codebase Survey (Parallel Explorers)
+- **Explorer 1 (`explorer_gsc_1`)**:
+  - Quantitative & qualitative analysis of GSC data export (impressions, clicks, CTR, average position trends).
+  - Identification of 5+ high-priority pages/queries (e.g., `/location/bandra`, `/website-cost-calculator`, `/location/thane`, `/location/powai`, `/location/mulund`, `/websites-for-restaurants`, `web development`, `business webdesign`, `website designer in mulund`).
+  - Evidence-backed root cause hypotheses for low clicks (low position, poor SERP title snippet, missing structured data, search intent mismatch, trailing slash URL cannibalization).
+- **Explorer 2 (`explorer_code_1`)**:
+  - Audit codebase architecture: React Router v7 routes (`app/routes/`), `buildMeta()` in `app/lib/meta.ts`, JSON-LD structured data in `app/lib/seo.ts` / `app/components/JsonLd.tsx`, Cloudflare Worker routing & trailing-slash handling in `workers/app.ts`, `sitemap[.]xml.tsx`, headings and content across priority pages.
+  - Establish technical compatibility constraints for React Router v7 `meta()` exports and Cloudflare Workers SSR.
 
-### Package 2: GEO & AI Generative Engine Visibility (R2)
-- Zero Citation Analysis: Why Perplexity, ChatGPT/SearchGPT, Claude, Gemini aren't citing sitenova.dev.
-- Schema & Structured Data: Deep audit of `app/lib/seo.ts` (LocalBusiness, Organization, Speakable, Service, FAQ, HowTo).
-- AI Engine Ingestion Signals: Information gain, entity extraction, geo-entity-blocks markup, direct-answer definitions.
-- E-E-A-T Profiling: Founder attribution, case studies, client testimonials, proof of local work.
-- Competitor Benchmark: Reverse engineer 3 real Mumbai digital/web agencies ranking and cited in AI overviews.
+---
 
-### Package 3: Content Strategy & High-Intent Keyword Map (R3)
-- Page Potential Matrix: Assessment of homepage, 7 niche pages (`app/pages/niche/*`), 3 service pages (`app/pages/services/*`), and blog engine (`app/pages/blog/*`).
-- 15–25 High-Intent Keywords: Target queries with monthly search volume, keyword difficulty (KD), intent, and exact target URL mapping.
-- Topical Authority & Content Clusters: Pillar-cluster model for web design, e-commerce, custom apps, and niche verticals in Mumbai.
-- Programmatic & Template Quality: Unique content vs template duplication across 14 location pages and 7 niche pages.
+## Phase 2: SEO Strategy & Technical Implementation Plan Drafting (Specialist Worker)
+- **Worker (`worker_strategy_1`)**:
+  - Formulate and draft `seo_strategy.md`:
+    - Executive Summary & GSC Performance Analysis.
+    - Deep Dive on 5+ High-Priority Pages & Queries with Root Cause Hypotheses.
+    - CTR & Snippet Optimization Engine (Title/Description formulas, SERP intent alignment).
+    - Technical SEO & Trailing-Slash URL Normalization Strategy.
+    - Structured Data & Rich Snippet Enhancement (LocalBusiness, Service, WebApp, FAQ, Breadcrumbs).
+    - Content & Heading Hierarchy Optimization across Target Pages.
+    - Local & Niche Landing Page Authority Strategy.
+    - 90-Day Roadmap & Measurement Framework.
+  - Formulate and draft `seo_implementation_plan.md`:
+    - Codebase architecture overview & constraints.
+    - Exact file-by-file specification of proposed changes (meta exports, schemas, headings, routes).
+    - React Router v7 `meta()` export signatures and types.
+    - Cloudflare Workers SSR & edge considerations.
+    - Strict compliance with `AGENTS.md` (no code modified prematurely).
 
-### Package 4: Conversion Rate Optimization & Funnel UX (R4)
-- 42.86% Dead-Click Analysis: Code-level inspection of interactive elements lacking affordance, unclickable cards, fake buttons, non-responsive spans.
-- 42.86% Quick-Back / Bounce Analysis: Above-the-fold value proposition, page speed, mobile layout shifts, cognitive friction.
-- Paid Landing Page Funnel: Deep review of `/lp/web-design` (`app/pages/lp/WebDesignLP.tsx`), QuoteWizard 3-step form, exit popups, sticky mobile CTA.
-- Trust Signals & Micro-Conversions: WhatsApp floating triggers, phone tap targets, pricing clarity.
+---
 
-### Package 5: 90-Day Step-by-Step Execution Roadmap (R5)
-- Week 1–2: Quick Wins (>= 5 zero-budget, high-impact fixes).
-- Week 3–6: Medium-Effort High-Return Implementation (schema overhaul, INP fixes, content upgrades, LP optimization).
-- Week 7–12: Sustained Growth & Authority Building (topical cluster rollout, citation building, link acquisition, continuous conversion tuning).
-- Prioritization Matrix: Impact (High/Med/Low), Effort (Hours/Days), Cost (₹ / Free).
+## Phase 3: Independent Technical Review & Forensic Audit (Agent-as-Judge)
+- **Reviewer (`reviewer_1`)**:
+  - Independent review of `seo_implementation_plan.md` against RR7 `meta()` conventions, Cloudflare Workers SSR, TypeScript types, and `AGENTS.md` rules.
+  - Verify acceptance criteria: R1 (at least 5 high-priority queries/pages identified with root cause hypotheses), R2 (both docs generated, codebase untouched), RR7 & Cloudflare compatibility, no AGENTS.md rule violations.
+- **Forensic Auditor (`auditor_1`)**:
+  - Forensic verification that codebase source files (`app/`, `workers/`) remain unmodified.
+  - Verify authenticity of GSC data citations and code references.
 
-## Subagent Dispatch Strategy
-- Explorer 1 (`teamwork_preview_explorer`): Technical SEO, Codebase Architecture & Performance Audit (INP, Crawlability, Meta, Indexation, Location Pages).
-- Explorer 2 (`teamwork_preview_explorer`): GEO, AI Visibility, Schema & Competitor Intelligence (Perplexity/ChatGPT visibility, `app/lib/seo.ts`, Schema markup, 3 Mumbai competitors).
-- Explorer 3 (`teamwork_preview_explorer`): Content Strategy, Keyword Research, CRO & Funnel UX (Keyword mapping, dead-click analysis, LP funnel, quick-back causes).
-- Lead Strategist Worker / Specialist (`teamwork_preview_worker`): Comprehensive Audit Synthesis & 90-Day Roadmap Formulation.
-- Reviewer & Auditor (`teamwork_preview_reviewer`, `teamwork_preview_auditor`): Independent verification of recommendations, technical accuracy, and integrity check.
+---
+
+## Phase 4: Gate Evaluation, Synthesis & Sentinel Reporting
+- Evaluate reviewer and auditor reports in `GATE_STATUS.md`.
+- Update `progress.md`, `BRIEFING.md`, and `handoff.md`.
+- Report final synthesized results to the Sentinel.
+

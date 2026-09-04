@@ -1,18 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { supabase } from "@/lib/supabaseClient";
-import { ArrowRight } from "lucide-react";
-
-interface PostSummary {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  published_at: string;
-}
+import { rankPosts, type PostSummary } from "@/lib/relatedPosts";
+import { ArrowRight, TrendingUp } from "lucide-react";
 
 interface RelatedPostsProps {
   currentSlug: string;
+  currentTags?: string[];
 }
 
 const SERVICE_LINKS = [
@@ -46,25 +40,61 @@ const LOCATION_LINKS = [
   { name: "Web Design in Bandra", href: "/location/bandra" },
 ];
 
-export default function RelatedPosts({ currentSlug }: RelatedPostsProps) {
+/** Format view count for display: 1234 → "1,234 views" */
+function formatViews(n: number): string {
+  return n.toLocaleString("en-IN") + " views";
+}
+
+export default function RelatedPosts({
+  currentSlug,
+  currentTags = [],
+}: RelatedPostsProps) {
   const [posts, setPosts] = useState<PostSummary[]>([]);
 
   useEffect(() => {
     async function fetchRelated() {
       try {
-        const { data } = await supabase
+        // 1. Fetch all posts except the current one (including tags)
+        const { data: allPosts } = await supabase
           .from("blog_posts")
-          .select("id, title, slug, excerpt, published_at")
-          .neq("slug", currentSlug)
-          .order("published_at", { ascending: false })
-          .limit(3);
-        if (data) setPosts(data);
+          .select("id, title, slug, excerpt, published_at, tags")
+          .neq("slug", currentSlug);
+
+        if (!allPosts?.length) return;
+
+        // 2. Fetch aggregated view counts for all slugs in one query
+        const slugs = allPosts.map((p) => p.slug);
+        const { data: viewRows } = await supabase
+          .from("blog_post_views")
+          .select("slug")
+          .in("slug", slugs);
+
+        // Build a slug → count map
+        const viewMap: Record<string, number> = {};
+        for (const row of viewRows ?? []) {
+          viewMap[row.slug] = (viewMap[row.slug] ?? 0) + 1;
+        }
+
+        // 3. Merge view counts into posts
+        const candidates: PostSummary[] = allPosts.map((p) => ({
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          excerpt: p.excerpt ?? null,
+          published_at: p.published_at,
+          tags: Array.isArray(p.tags) ? p.tags : [],
+          view_count: viewMap[p.slug] ?? 0,
+        }));
+
+        // 4. Rank: tag overlap → view count → recency
+        const ranked = rankPosts(candidates, currentTags, 3);
+        setPosts(ranked);
       } catch (err) {
         console.error("RelatedPosts fetch error:", err);
       }
     }
     fetchRelated();
-  }, [currentSlug]);
+  }, [currentSlug, currentTags]);
 
   return (
     <aside className="mt-16 border-t border-border/40 pt-12" aria-label="Continue reading and explore SiteNova services">
@@ -89,6 +119,13 @@ export default function RelatedPosts({ currentSlug }: RelatedPostsProps) {
                 <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-3 flex-1">
                   {post.title}
                 </h3>
+                {/* View count badge — only shown when ≥ 100 views */}
+                {post.view_count >= 100 && (
+                  <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <TrendingUp className="h-3 w-3 text-primary" aria-hidden="true" />
+                    {formatViews(post.view_count)}
+                  </p>
+                )}
                 <span className="mt-3 inline-flex items-center text-xs font-medium text-primary">
                   Read <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
                 </span>
