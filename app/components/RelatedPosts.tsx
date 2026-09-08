@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { supabase } from "@/lib/supabaseClient";
 import { rankPosts, type PostSummary } from "@/lib/relatedPosts";
-import { ArrowRight, TrendingUp } from "lucide-react";
+import { ArrowRight, Clock, TrendingUp } from "lucide-react";
 
 interface RelatedPostsProps {
   currentSlug: string;
@@ -30,7 +30,6 @@ const SERVICE_LINKS = [
   },
 ];
 
-// Location cross-links — displayed below service links to boost location page authority
 const LOCATION_LINKS = [
   { name: "Web Design in Mulund", href: "/location/mulund" },
   { name: "Web Design in Bhandup", href: "/location/bhandup" },
@@ -40,21 +39,21 @@ const LOCATION_LINKS = [
   { name: "Web Design in Bandra", href: "/location/bandra" },
 ];
 
-/** Format view count for display: 1234 → "1,234 views" */
 function formatViews(n: number): string {
   return n.toLocaleString("en-IN") + " views";
 }
 
-export default function RelatedPosts({
-  currentSlug,
-  currentTags = [],
-}: RelatedPostsProps) {
+function readingTime(excerpt: string | null): number {
+  if (!excerpt) return 1;
+  return Math.max(1, Math.ceil(excerpt.split(/\s+/).filter(Boolean).length / 40));
+}
+
+export default function RelatedPosts({ currentSlug, currentTags = [] }: RelatedPostsProps) {
   const [posts, setPosts] = useState<PostSummary[]>([]);
 
   useEffect(() => {
     async function fetchRelated() {
       try {
-        // 1. Fetch all posts except the current one (including tags)
         const { data: allPosts } = await supabase
           .from("blog_posts")
           .select("id, title, slug, excerpt, published_at, tags")
@@ -62,20 +61,17 @@ export default function RelatedPosts({
 
         if (!allPosts?.length) return;
 
-        // 2. Fetch aggregated view counts for all slugs in one query
         const slugs = allPosts.map((p) => p.slug);
         const { data: viewRows } = await supabase
           .from("blog_post_views")
           .select("slug")
           .in("slug", slugs);
 
-        // Build a slug → count map
         const viewMap: Record<string, number> = {};
         for (const row of viewRows ?? []) {
           viewMap[row.slug] = (viewMap[row.slug] ?? 0) + 1;
         }
 
-        // 3. Merge view counts into posts
         const candidates: PostSummary[] = allPosts.map((p) => ({
           id: p.id,
           title: p.title,
@@ -86,7 +82,6 @@ export default function RelatedPosts({
           view_count: viewMap[p.slug] ?? 0,
         }));
 
-        // 4. Rank: tag overlap → view count → recency
         const ranked = rankPosts(candidates, currentTags, 3);
         setPosts(ranked);
       } catch (err) {
@@ -98,52 +93,72 @@ export default function RelatedPosts({
 
   return (
     <aside className="mt-16 border-t border-border/40 pt-12" aria-label="Continue reading and explore SiteNova services">
+
       {/* Related Articles */}
       {posts.length > 0 && (
         <div className="mb-12">
-          <h2 className="text-xl font-bold tracking-tight text-foreground mb-6">Continue Reading</h2>
+          <h2 className="font-heading text-xl font-bold tracking-tight text-foreground mb-6">Continue Reading</h2>
           <div className="grid gap-4 sm:grid-cols-3">
-            {posts.map((post) => (
-              <Link
-                key={post.id}
-                to={`/blog/${post.slug}`}
-                className="group flex flex-col rounded-2xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-md hover:border-primary/20 transition-all"
-              >
-                <p className="text-xs text-muted-foreground mb-2" suppressHydrationWarning>
-                  {new Date(post.published_at || Date.now()).toLocaleDateString("en-IN", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
-                <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-3 flex-1">
-                  {post.title}
-                </h3>
-                {/* View count badge — only shown when ≥ 100 views */}
-                {post.view_count >= 100 && (
-                  <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <TrendingUp className="h-3 w-3 text-primary" aria-hidden="true" />
-                    {formatViews(post.view_count)}
-                  </p>
-                )}
-                <span className="mt-3 inline-flex items-center text-xs font-medium text-primary">
-                  Read <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
-                </span>
-              </Link>
-            ))}
+            {posts.map((post) => {
+              const mins = readingTime(post.excerpt);
+              return (
+                <Link
+                  key={post.id}
+                  to={`/blog/${post.slug}`}
+                  className="group flex flex-col rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:border-primary/25 hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.2)] interactive-card"
+                >
+                  {/* Meta row */}
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+                      {new Date(post.published_at || Date.now()).toLocaleDateString("en-IN", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock size={11} />
+                      {mins} min
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-3 flex-1 leading-snug">
+                    {post.title}
+                  </h3>
+
+                  {post.excerpt && (
+                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      {post.excerpt}
+                    </p>
+                  )}
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="inline-flex items-center text-xs font-medium text-primary">
+                      Read <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                    </span>
+                    {post.view_count >= 100 && (
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <TrendingUp className="h-3 w-3 text-primary" aria-hidden="true" />
+                        {formatViews(post.view_count)}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Service / Money Page Cross-links */}
+      {/* Service cross-links */}
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-foreground mb-6">Explore SiteNova Services</h2>
+        <h2 className="font-heading text-xl font-bold tracking-tight text-foreground mb-6">Explore SiteNova Services</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {SERVICE_LINKS.map((item) => (
             <Link
               key={item.href}
               to={item.href}
-              className="group flex flex-col rounded-2xl border border-border/60 bg-card/50 p-5 hover:border-primary/30 hover:bg-card transition-all"
+              className="group flex flex-col rounded-2xl border border-border/60 bg-card/50 p-5 hover:border-primary/30 hover:bg-card transition-all interactive-card"
             >
               <div className="flex items-center gap-2 mb-2">
                 <span className="inline-block rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
@@ -162,7 +177,7 @@ export default function RelatedPosts({
         </div>
       </div>
 
-      {/* Location cross-links — internal linking from blog to location pages */}
+      {/* Location cross-links */}
       <div className="mt-10">
         <h2 className="text-base font-semibold tracking-tight text-foreground mb-4">Areas We Serve in Mumbai</h2>
         <div className="flex flex-wrap gap-2">

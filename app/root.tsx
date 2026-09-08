@@ -92,17 +92,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           }}
         />
 
-        {/* Google Analytics 4 (Deferred) */}
+        {/* Google Analytics 4 + Google Ads (Deferred — combined so window.gtag is set once) */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.addEventListener("load",function(){setTimeout(function(){var s=document.createElement('script');s.src='https://www.googletagmanager.com/gtag/js?id=G-EBZGS65QQH';s.async=true;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function g(){dataLayer.push(arguments)}g('js',new Date());g('config','G-EBZGS65QQH')},2000)});`,
-          }}
-        />
-
-        {/* Google Ads (Deferred to prevent hydration mismatches) */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.addEventListener("load",function(){setTimeout(function(){var s=document.createElement('script');s.src='https://www.googletagmanager.com/gtag/js?id=AW-18182593308';s.async=true;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function gtag(){window.dataLayer.push(arguments)}window.gtag=gtag;gtag('js',new Date());gtag('config','AW-18182593308');gtag('config','AW-18182593308/SzalCITh_skcEJy2kd5D',{'phone_conversion_number':'9326060621'})},2500)});`,
+            __html: `window.addEventListener("load",function(){setTimeout(function(){window.dataLayer=window.dataLayer||[];function gtag(){window.dataLayer.push(arguments)}window.gtag=gtag;gtag('js',new Date());gtag('config','G-EBZGS65QQH');gtag('config','AW-18182593308');gtag('config','AW-18182593308/SzalCITh_skcEJy2kd5D',{'phone_conversion_number':'9326060621'});var ga=document.createElement('script');ga.src='https://www.googletagmanager.com/gtag/js?id=G-EBZGS65QQH';ga.async=true;document.head.appendChild(ga);var aw=document.createElement('script');aw.src='https://www.googletagmanager.com/gtag/js?id=AW-18182593308';aw.async=true;document.head.appendChild(aw);},2000)})`,
           }}
         />
 

@@ -735,6 +735,15 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 
 ---
 
+### [2026-09-06] — Blog pages redesign (UX overhaul)
+
+- **Modified** `app/pages/blog/BlogIndex.tsx` — Complete rewrite. Most recent post is now rendered as a full-width featured hero card (`FeaturedCard`) with a "Latest post" badge, full excerpt, primary CTA button, and gradient accent glow. Remaining posts use an improved `PostCard` with reading-time badge, `Clock` icon meta, and `interactive-card` hover lift. Header now shows live article count pill. Skeleton loaders match the actual layout. Empty state has an icon, message, and CTA instead of a plain text line. Added `readingTime()` and `formatDate()` helpers extracted as module-level functions.
+- **Modified** `app/pages/blog/BlogPost.tsx` — Complete rewrite. Added `ReadingProgress` component: a fixed 3px top bar driven by `scroll` event, showing read progress from 0–100% in the primary-to-accent gradient. Added `TableOfContents` component: parses `<h2>`/`<h3>` tags from the post HTML client-side, injects IDs into the rendered headings, tracks the active heading with `IntersectionObserver`, and renders a sticky sidebar on desktop (`lg:` only) with smooth-scroll on click. Hides automatically when the post has fewer than 2 headings. Article header now has a bottom border (`border-b border-border/40`) visually separating it from the content, plus word count shown alongside read time. Author bio now has a larger avatar with `ring-2 ring-primary/20`, gradient background tint (`bg-gradient-to-r from-primary/5`), and an `ExternalLink` icon next to the name.
+- **Modified** `app/components/BlogCTA.tsx` — Removed `"Free for Mumbai businesses"` uppercase eyebrow from the `mid` variant. Heading now stands alone.
+- **Modified** `app/components/RelatedPosts.tsx` — Related article cards now show a 2-line excerpt preview and a reading-time badge with `Clock` icon. Cards use `interactive-card` hover lift + primary glow shadow instead of plain `hover:shadow-md`. View count badge moved to the bottom-right of the card.
+
+---
+
 ### [2026-09-04] — Smart blog post suggestions (tags + view count hybrid ranking)
 
 - **New** `supabase/migrations/20260904_blog_tags_and_views.sql` — adds `tags text[]` column to `blog_posts` and creates `blog_post_views` table (bigserial id, slug, viewed_at). RLS: anon INSERT + authenticated SELECT.
@@ -953,4 +962,20 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 
 #### Sitemap
 - **`sitemap[.]xml.tsx`** — added `priorities` map. `/services/google-ads`, `/services/meta-ads`, and `/ads-contact` now get `priority: 0.9` (up from the generic `0.8`). Implemented via a lookup map rather than the old single ternary, allowing easy per-path overrides in future.
+
+---
+
+### 2026-09-08 — LP Analytics Bug Fixes
+
+**Files changed**: `app/root.tsx`, `app/pages/lp/WebDesignLP.tsx`
+
+#### Bug 1 — GA4 script never set `window.gtag` (Critical)
+The GA4 deferred script used a local variable `g` instead of assigning `window.gtag`, so all `trackEvent()` calls in `analytics.ts` silently dropped on GA4 (they only worked through the Ads script which loaded 500ms later). Both deferred scripts were merged into a single `setTimeout(2000)` block in `root.tsx` that initialises `window.dataLayer` and `window.gtag` once, calls `gtag('config', ...)` for both properties, then dynamically loads both library scripts. Eliminates the race window and guarantees `window.gtag` is available for all subsequent tracking calls.
+
+#### Bug 2 — `trackAuditSubmit()` fired twice per audit submission
+`LeadForm.handleSubmit` in `WebDesignLP.tsx` called `trackAuditSubmit()` immediately before navigating to `/lp/thank-you-audit`, which itself calls `trackAuditSubmit()` again on mount. Every audit submission was double-counted. Fixed by removing the call from `LeadForm.handleSubmit` — the event now fires exactly once on the thank-you page (consistent with how `trackQuoteSubmit` works for the QuoteWizard flow).
+
+#### Note on Google Ads conversions
+Google Ads conversions are tracked via GTM triggers (GTM-P587639R), not direct `trackGoogleAdsConversion()` calls. GTM picks up GA4 custom events from `dataLayer` and fires its own conversion tags.
+
 

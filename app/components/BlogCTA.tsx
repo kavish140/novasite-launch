@@ -19,9 +19,6 @@ export default function BlogCTA({ variant = "end" }: BlogCTAProps) {
             <Zap className="h-6 w-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
-              Free for Mumbai businesses
-            </p>
             <h3 className="text-lg font-bold text-foreground leading-snug">
               Is your website losing you customers?
             </h3>

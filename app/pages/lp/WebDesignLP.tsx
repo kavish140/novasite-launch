@@ -36,9 +36,6 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
-import {
-  trackAuditSubmit,
-} from "@/lib/analytics";
 import { PHONE_TEL_LINK, PHONE_NUMBER, WHATSAPP_URL } from "@/lib/constants";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -597,8 +594,7 @@ function LeadForm({ className }: { className?: string }) {
 
       if (error) throw error;
 
-      trackAuditSubmit();
-
+      // trackAuditSubmit() fires in LpThankYouAudit on mount — don't double-fire here.
       navigate("/lp/thank-you-audit", {
         state: { name, email, website },
       });
