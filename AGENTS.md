@@ -381,7 +381,7 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 | `locationMeta.ts` | `buildLocationMeta()` + `buildLocationJsonLd()` — factory functions for location page meta and JSON-LD. Keeps all 14 location pages consistent. |
 | `analytics.ts` | GA4 event tracking. ID: `G-EBZGS65QQH`. Typed `ConversionEvent` union. Functions: `trackEvent()`, `trackPageView()`, `trackGoogleAdsConversion()`, `trackWhatsAppClick()`, `trackPhoneClick()`, `trackBookCallClick()`, `trackQuoteSubmit()`, `trackAuditSubmit()`, `trackExitPopupSubmit()`, `trackNichePageView()`. Google Ads tag: `AW-18182593308`. |
 | `faq-data.ts` | Exports `faqs` array used by `FaqSection` and FAQ JSON-LD builder. |
-| `portfolio-meta.ts` | Exports `showcaseProjects` and `customerProjects` arrays. Portfolio projects: AI SmartKit, Business Showcase, Design Showcase, E-commerce Showcase (all SiteNova sub-domains), plus Dr. Dipti Ganatra and Jupiter Fast Finance (real clients). |
+| `portfolio-meta.ts` | Exports `showcaseProjects` and `customerProjects` arrays. Showcase projects: AI SmartKit, Business Showcase, Design Showcase, E-commerce Showcase, Sanitaryware Showcase, Nuts Design Golden Showcase (all SiteNova sub-domains, all `useIframePreview: true`), plus Dr. Dipti Ganatra, Jupiter Fast Finance, and CorporateZone (real clients). |
 | `supabaseClient.ts` | Dual client exports (see §2 Architecture). |
 | `relatedPosts.ts` | `PostSummary` interface + `rankPosts(candidates, currentTags, limit)` — pure ranking function for the "Continue Reading" section. Scores candidates by tag overlap, then view count, then recency. No Supabase imports — fully testable. |
 | `seoRoutes.js` | **Legacy** — build-time SEO route injection. No longer used (replaced by RR7 `meta()` exports). Do not modify unless you know what you're doing. |
@@ -732,6 +732,14 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 
 > **AI agents: append an entry here every time you make a significant change.**
 > Format: `## [Date] — [Brief summary]` followed by bullet points of what changed and why.
+
+---
+
+### [2026-09-08] — Added Sanitaryware and Nuts Design Golden showcase sites
+
+- **Added** `sanitaryware-showcase` entry to `showcaseProjects` in `app/lib/portfolio-meta.ts` — links to `https://sanitaryware-showcase.sitenova.dev/`, `useIframePreview: true`, fallback image reuses `ecommerce-showcase.webp`.
+- **Added** `nuts-design-golden-showcase` entry to `showcaseProjects` in `app/lib/portfolio-meta.ts` — links to `https://nuts-design-golden-showcase.sitenova.dev/`, `useIframePreview: true`, fallback image reuses `design-showcase.webp`.
+- **Updated** `app/components/PortfolioSection.tsx` — added both new slugs to the `imageBySlug` fallback map.
 
 ---
 

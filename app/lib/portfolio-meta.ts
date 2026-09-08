@@ -56,6 +56,26 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     localFocus: "High-speed conversion checkout layout showing transaction flow and design templates.",
     useIframePreview: true,
   },
+  {
+    slug: "sanitaryware-showcase",
+    title: "Sanitaryware Showcase",
+    description:
+      "A premium sanitary ware product showcase with elegant category browsing, high-res visuals, and a clean e-commerce-style layout.",
+    image: ecommerceShowcaseImg,
+    liveUrl: "https://sanitaryware-showcase.sitenova.dev/",
+    localFocus: "Product-focused showcase template ideal for hardware, home décor, and building materials businesses.",
+    useIframePreview: true,
+  },
+  {
+    slug: "nuts-design-golden-showcase",
+    title: "Nuts Design Golden Showcase",
+    description:
+      "A luxurious golden-themed design showcase with bold typography, rich visuals, and a refined aesthetic perfect for premium brands.",
+    image: designShowcaseImg,
+    liveUrl: "https://nuts-design-golden-showcase.sitenova.dev/",
+    localFocus: "Premium brand design template for luxury products, jewellery, and high-end retail experiences.",
+    useIframePreview: true,
+  },
 ];
 
 export const customerProjects: PortfolioProjectMeta[] = [

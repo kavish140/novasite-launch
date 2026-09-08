@@ -20,6 +20,8 @@ const imageBySlug = {
   "business-showcase": businessShowcaseImage,
   "design-showcase": designShowcaseImage,
   "ecommerce-showcase": ecommerceShowcaseImage,
+  "sanitaryware-showcase": ecommerceShowcaseImage,
+  "nuts-design-golden-showcase": designShowcaseImage,
 } as const;
 
 
