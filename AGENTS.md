@@ -440,22 +440,23 @@ Stores leads from: Free Audit form, Exit Intent Popup, Contact form submissions,
 | `created_at` | timestamptz | Auto-set |
 
 #### `quote_requests`
-Stores quote leads from the LP quote wizard (`/lp/web-design` hero form). Created 2026-08-24.
+Stores quote leads from the LP quote wizard (`/lp/web-design` hero form). Managed via the **Quote Requests** tab in the admin dashboard.
 
 | Column | Type | Notes |
 |---|---|---|
-| `id` | uuid | Primary key |
+| `id` | uuid | Primary key (`gen_random_uuid()`) |
 | `name` | text | Lead's full name |
 | `email` | text | Lead's email address |
-| `phone` | text | Phone / WhatsApp number |
-| `business_name` | text (nullable) | Business name (optional) |
-| `project_type` | text | Selected project type (e.g., "Business Website") |
-| `requirements` | text (nullable) | Project description from Step 2 |
+| `mobile` | text (nullable) | Phone / WhatsApp number |
+| `project_type` | text (nullable) | Selected project type (e.g., "Business Website") |
+| `requirements` | text (nullable) | Project description |
 | `budget` | text (nullable) | Selected budget range |
 | `timeline` | text (nullable) | Selected timeline preference |
-| `source` | text | Always `'paid_ad'` (from LP) |
-| `status` | text | `'pending'` or `'completed'` |
-| `created_at` | timestamptz | Auto-set |
+| `status` | text | CHECK constraint: `'new' \| 'contacted' \| 'converted' \| 'lost'`. Default `'new'`. |
+| `created_at` | timestamptz | Auto-set to `now()` UTC |
+
+RLS: anon INSERT allowed (LP form). Authenticated full access (admin dashboard).
+Index: `quote_requests_created_at_idx` DESC for fast admin load.
 
 #### `blog_posts`
 Managed via Admin Dashboard. Fetched by `BlogIndex.tsx` and `BlogPost.tsx`.
