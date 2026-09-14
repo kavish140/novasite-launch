@@ -1,74 +1,38 @@
-import { useEffect, useState, useRef, useMemo } from "react";
-import { useNavigate, Link } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { supabase } from "@/lib/supabaseClient";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuBadge,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarInset,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { format, subDays } from "date-fns";
-import { 
-  CheckCircle2, 
-  RotateCcw, 
-  Pencil, 
-  Trash2, 
-  Plus, 
-  Download, 
-  Search, 
-  LayoutDashboard, 
-  Users, 
-  FileText, 
-  LogOut, 
-  Clock,
-  RefreshCw,
-  AlertTriangle,
-  Megaphone,
-  TrendingUp,
-  MousePointerClick,
-  Eye,
-  Percent,
-  Target,
-  Copy,
-} from "lucide-react";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line } from "recharts";
+import { format } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
 
-type AuditRequest = {
+// Shared components
+import AdminSidebar, { AdminTab } from "./components/AdminSidebar";
+import AdminHeader from "./components/AdminHeader";
+import ConfirmDialog from "./components/ConfirmDialog";
+
+// Tab components
+import OverviewTab from "./tabs/OverviewTab";
+import LeadsTab from "./tabs/LeadsTab";
+import AdLeadsTab from "./tabs/AdLeadsTab";
+import AdsInquiriesTab from "./tabs/AdsInquiriesTab";
+import AnalyticsTab from "./tabs/AnalyticsTab";
+import BlogsTab from "./tabs/BlogsTab";
+import QuoteRequestsTab from "./tabs/QuoteRequestsTab";
+
+// ─── Shared types (exported so tab files can import them) ────────────────────
+export type AuditRequest = {
   id: string;
   name: string;
   email: string;
   mobile: string;
   website_url: string;
-  status: 'pending' | 'completed';
+  status: "pending" | "completed";
   source?: string | null;
   created_at: string;
 };
 
-type BlogPost = {
+export type BlogPost = {
   id: string;
   title: string;
   slug: string;
@@ -78,7 +42,7 @@ type BlogPost = {
   created_at: string;
 };
 
-type AdsInquiry = {
+export type AdsInquiry = {
   id: string;
   name: string;
   phone: string;
@@ -87,70 +51,43 @@ type AdsInquiry = {
   monthly_budget: string;
   industry: string;
   goals: string;
-  status: 'new' | 'contacted' | 'closed';
+  status: "new" | "contacted" | "closed";
   created_at: string;
 };
 
-type PageView = {
+export type PageView = {
   id: string;
   page: string;
   referrer: string | null;
   created_at: string;
 };
 
-const PhoneCell = ({ mobile, className }: { mobile: string, className?: string }) => {
-  const { toast } = useToast();
-  const [isLongPress, setIsLongPress] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  if (!mobile) return <span className={className || "text-muted-foreground"}>N/A</span>;
-
-  const startPress = () => {
-    setIsLongPress(false);
-    timerRef.current = setTimeout(() => {
-      setIsLongPress(true);
-      navigator.clipboard.writeText(mobile);
-      toast({ title: "Copied!", description: "Phone number copied to clipboard." });
-    }, 500);
-  };
-
-  const cancelPress = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (isLongPress) {
-      e.preventDefault();
-      setIsLongPress(false);
-    }
-  };
-
-  return (
-    <a
-      href={`tel:${mobile}`}
-      className={`text-primary hover:underline select-none ${className || ''}`}
-      onPointerDown={startPress}
-      onPointerUp={cancelPress}
-      onPointerLeave={cancelPress}
-      onPointerCancel={cancelPress}
-      onClick={handleClick}
-    >
-      {mobile}
-    </a>
-  );
+export type QuoteRequest = {
+  id: string;
+  name: string;
+  email: string;
+  mobile?: string | null;
+  project_type?: string | null;
+  budget?: string | null;
+  timeline?: string | null;
+  requirements?: string | null;
+  status: "new" | "contacted" | "converted" | "lost";
+  created_at: string;
 };
+// ────────────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'leads' | 'ad_leads' | 'ads_inquiries' | 'analytics' | 'blogs'>('overview');
+  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [requests, setRequests] = useState<AuditRequest[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [pageViews, setPageViews] = useState<PageView[]>([]);
   const [adsInquiries, setAdsInquiries] = useState<AdsInquiry[]>([]);
+  const [quoteRequests, setQuoteRequests] = useState<QuoteRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+
+  // ConfirmDialog state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -160,29 +97,26 @@ export default function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Data fetching ──────────────────────────────────────────────────────────
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [requestsResponse, postsResponse, pageViewsResponse, adsInquiriesResponse] = await Promise.all([
+      const [reqRes, postsRes, pvRes, adsRes, quoteRes] = await Promise.all([
         supabase.from("audit_requests").select("*").order("created_at", { ascending: false }),
         supabase.from("blog_posts").select("*").order("created_at", { ascending: false }),
         supabase.from("page_views").select("*").eq("page", "/lp/web-design").order("created_at", { ascending: false }),
         supabase.from("ads_inquiries").select("*").order("created_at", { ascending: false }),
+        supabase.from("quote_requests").select("*").order("created_at", { ascending: false }),
       ]);
 
-      if (requestsResponse.error) throw requestsResponse.error;
-      if (postsResponse.error) throw postsResponse.error;
-      // page_views is optional — gracefully handle if table doesn't exist yet
-      if (!pageViewsResponse.error) {
-        setPageViews(pageViewsResponse.data || []);
-      }
-      // ads_inquiries is optional — gracefully handle
-      if (!adsInquiriesResponse.error) {
-        setAdsInquiries(adsInquiriesResponse.data || []);
-      }
+      if (reqRes.error) throw reqRes.error;
+      if (postsRes.error) throw postsRes.error;
+      if (!pvRes.error) setPageViews(pvRes.data ?? []);
+      if (!adsRes.error) setAdsInquiries(adsRes.data ?? []);
+      if (!quoteRes.error) setQuoteRequests(quoteRes.data ?? []);
 
-      setRequests(requestsResponse.data || []);
-      setPosts(postsResponse.data || []);
+      setRequests(reqRes.data ?? []);
+      setPosts(postsRes.data ?? []);
     } catch (error) {
       console.error("Error fetching admin data:", error);
       toast({ title: "Error", description: "Failed to load dashboard data.", variant: "destructive" });
@@ -191,46 +125,79 @@ export default function AdminDashboard() {
     }
   };
 
-  const updateRequestStatus = async (id: string, newStatus: 'pending' | 'completed') => {
+  // ── Mutations ──────────────────────────────────────────────────────────────
+  const updateRequestStatus = async (id: string, newStatus: "pending" | "completed") => {
     try {
       const { data, error } = await supabase
         .from("audit_requests")
         .update({ status: newStatus })
         .eq("id", id)
         .select();
-        
       if (error) throw error;
-      
-      if (!data || data.length === 0) {
-        throw new Error("Update failed. Check Supabase RLS policies for 'audit_requests'.");
-      }
-      
-      setRequests(requests.map(r => r.id === id ? { ...r, status: newStatus } : r));
+      if (!data || data.length === 0)
+        throw new Error("Update failed — check Supabase RLS policies for 'audit_requests'.");
+      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
       toast({ title: "Success", description: `Request marked as ${newStatus}.` });
     } catch (error: unknown) {
-      console.error("Error updating request:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to update request.";
-      toast({ title: "Update Failed", description: errorMessage, variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Failed to update request.";
+      toast({ title: "Update Failed", description: msg, variant: "destructive" });
     }
   };
 
-  const deletePost = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this post? This cannot be undone.")) return;
-    
+  const updateInquiryStatus = async (id: string, newStatus: AdsInquiry["status"]) => {
     try {
-      const { data, error } = await supabase.from("blog_posts").delete().eq("id", id).select();
+      const { error } = await supabase
+        .from("ads_inquiries")
+        .update({ status: newStatus })
+        .eq("id", id);
       if (error) throw error;
-      
-      if (!data || data.length === 0) {
-        throw new Error("Delete failed. Check Supabase RLS policies for 'blog_posts'.");
-      }
-      
-      setPosts(posts.filter(p => p.id !== id));
-      toast({ title: "Success", description: "Blog post deleted." });
+      setAdsInquiries((prev) => prev.map((i) => (i.id === id ? { ...i, status: newStatus } : i)));
+      toast({ title: "Updated", description: `Inquiry status set to "${newStatus}".` });
     } catch (error: unknown) {
-      console.error("Error deleting post:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete post.";
-      toast({ title: "Delete Failed", description: errorMessage, variant: "destructive" });
+      const msg = error instanceof Error ? error.message : "Failed to update inquiry.";
+      toast({ title: "Update Failed", description: msg, variant: "destructive" });
+    }
+  };
+
+  const updateQuoteStatus = async (id: string, newStatus: QuoteRequest["status"]) => {
+    try {
+      const { error } = await supabase
+        .from("quote_requests")
+        .update({ status: newStatus })
+        .eq("id", id);
+      if (error) throw error;
+      setQuoteRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
+      toast({ title: "Updated", description: `Quote status set to "${newStatus}".` });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to update quote request.";
+      toast({ title: "Update Failed", description: msg, variant: "destructive" });
+    }
+  };
+
+  // ── Delete blog post (now uses ConfirmDialog instead of window.confirm) ────
+  const handleDeleteClick = (id: string) => {
+    setPendingDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const executeDeletePost = async () => {
+    if (!pendingDeleteId) return;
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .delete()
+        .eq("id", pendingDeleteId)
+        .select();
+      if (error) throw error;
+      if (!data || data.length === 0)
+        throw new Error("Delete failed — check Supabase RLS policies for 'blog_posts'.");
+      setPosts((prev) => prev.filter((p) => p.id !== pendingDeleteId));
+      toast({ title: "Deleted", description: "Blog post deleted." });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to delete post.";
+      toast({ title: "Delete Failed", description: msg, variant: "destructive" });
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -239,15 +206,14 @@ export default function AdminDashboard() {
     navigate("/admin");
   };
 
-  const handleExport = () => {
+  // ── Export helpers ─────────────────────────────────────────────────────────
+  const handleExportCSV = () => {
     if (requests.length === 0) {
       toast({ title: "No Data", description: "There are no requests to export." });
       return;
     }
-
-    const headers = ["Date", "Name", "Email", "Mobile", "Website", "Status"];
+    const headers = ["Date", "Name", "Email", "Mobile", "Website", "Status", "Source"];
     const csvRows = [headers.join(",")];
-
     requests.forEach((req) => {
       const row = [
         format(new Date(req.created_at), "yyyy-MM-dd HH:mm:ss"),
@@ -255,836 +221,136 @@ export default function AdminDashboard() {
         `"${req.email.replace(/"/g, '""')}"`,
         `"${(req.mobile || "").replace(/"/g, '""')}"`,
         `"${req.website_url.replace(/"/g, '""')}"`,
-        req.status
+        req.status,
+        req.source ?? "organic",
       ];
       csvRows.push(row.join(","));
     });
-
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `site-nova-leads-${format(new Date(), "yyyy-MM-dd")}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const a = document.createElement("a");
+    a.href = url;
+    a.setAttribute("download", `sitenova-leads-${format(new Date(), "yyyy-MM-dd")}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    toast({ title: "Success", description: "Export started successfully." });
+    toast({ title: "Export started" });
   };
 
   const handleCopyBlogs = () => {
     if (posts.length === 0) {
-      toast({ title: "No Data", description: "There are no blog posts to copy." });
+      toast({ title: "No Data", description: "No blog posts to copy." });
       return;
     }
-
-    const blogsData = posts.map(post => ({
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      excerpt: post.excerpt,
-      content: post.content,
-      tags: post.tags,
-      created_at: post.created_at
-    }));
-
-    navigator.clipboard.writeText(JSON.stringify(blogsData, null, 2))
-      .then(() => {
-        toast({ title: "Copied!", description: "All blog data copied to clipboard in JSON format." });
-      })
-      .catch((err) => {
-        console.error("Failed to copy text: ", err);
-        toast({ title: "Error", description: "Failed to copy to clipboard.", variant: "destructive" });
-      });
+    navigator.clipboard
+      .writeText(JSON.stringify(posts, null, 2))
+      .then(() => toast({ title: "Copied!", description: "All blog data copied as JSON." }))
+      .catch(() => toast({ title: "Error", description: "Failed to copy.", variant: "destructive" }));
   };
 
-  // --- Derived Data ---
-  const chartData = useMemo(() => {
-    const days = Array.from({ length: 7 }).map((_, i) => {
-      const d = subDays(new Date(), 6 - i);
-      return {
-        date: format(d, 'MMM dd'),
-        leads: 0
-      };
-    });
-    
-    requests.forEach(req => {
-      const reqDate = format(new Date(req.created_at), 'MMM dd');
-      const day = days.find(d => d.date === reqDate);
-      if (day) {
-        day.leads += 1;
-      }
-    });
-    return days;
-  }, [requests]);
+  // ── Derived ────────────────────────────────────────────────────────────────
+  const allAdLeads = requests.filter((r) => r.source === "paid_ad");
 
-  const filteredRequests = requests.filter(r => 
-    r.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    r.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (r.mobile && r.mobile.includes(searchQuery)) ||
-    r.website_url.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  const pendingRequests = filteredRequests.filter(r => r.status !== 'completed' && r.source !== 'paid_ad');
-  const completedRequests = filteredRequests.filter(r => r.status === 'completed' && r.source !== 'paid_ad');
+  const badges = {
+    leads:          requests.filter((r) => r.status !== "completed" && r.source !== "paid_ad").length,
+    quote_requests: quoteRequests.filter((r) => r.status === "new").length,
+    ad_leads:       allAdLeads.filter((r) => r.status !== "completed").length,
+    ads_inquiries:  adsInquiries.filter((i) => i.status === "new").length,
+  };
 
-  // Ad leads: submitted from the /lp/web-design paid ads landing page
-  const allAdLeads = requests.filter(r => r.source === 'paid_ad');
-  const filteredAdLeads = allAdLeads.filter(r =>
-    r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (r.mobile && r.mobile.includes(searchQuery)) ||
-    r.website_url.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const pendingAdLeads = filteredAdLeads.filter(r => r.status !== 'completed');
-  const completedAdLeads = filteredAdLeads.filter(r => r.status === 'completed');
-
-  // ── Analytics derived data (LP /lp/web-design) ──────────────────────────
-  const totalLPVisits = pageViews.length;
-  const totalAdLeads = allAdLeads.length;
-  const conversionRate = totalLPVisits > 0
-    ? ((totalAdLeads / totalLPVisits) * 100).toFixed(1)
-    : "0.0";
-
-  const visitChartData = useMemo(() => {
-    const days = Array.from({ length: 30 }).map((_, i) => {
-      const d = subDays(new Date(), 29 - i);
-      return { date: format(d, 'MMM dd'), visits: 0, leads: 0 };
-    });
-    pageViews.forEach(pv => {
-      const pvDate = format(new Date(pv.created_at), 'MMM dd');
-      const day = days.find(d => d.date === pvDate);
-      if (day) day.visits += 1;
-    });
-    allAdLeads.forEach(lead => {
-      const leadDate = format(new Date(lead.created_at), 'MMM dd');
-      const day = days.find(d => d.date === leadDate);
-      if (day) day.leads += 1;
-    });
-    return days;
-  }, [pageViews, allAdLeads]);
-
-  const referrerData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    pageViews.forEach(pv => {
-      let ref = pv.referrer || 'Direct';
-      try {
-        const url = new URL(ref);
-        ref = url.hostname.replace('www.', '');
-      } catch {
-        ref = ref.startsWith('http') ? ref : 'Direct';
-      }
-      counts[ref] = (counts[ref] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([source, count]) => ({ source, count, pct: ((count / totalLPVisits) * 100).toFixed(1) }));
-  }, [pageViews, totalLPVisits]);
-
-  const navItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'leads', label: 'Audit Requests', icon: Users, badge: requests.filter(r => r.status !== 'completed' && r.source !== 'paid_ad').length },
-    { id: 'ad_leads', label: 'Ad Leads', icon: Megaphone, badge: allAdLeads.filter(r => r.status !== 'completed').length },
-    { id: 'ads_inquiries', label: 'Ad Inquiries', icon: Target, badge: adsInquiries.filter(i => i.status === 'new').length },
-    { id: 'analytics', label: 'LP Analytics', icon: TrendingUp },
-    { id: 'blogs', label: 'Blog Posts', icon: FileText },
-  ] as const;
+  // ── Tab content map ────────────────────────────────────────────────────────
+  const tabContent: Record<AdminTab, React.ReactNode> = {
+    overview: (
+      <OverviewTab requests={requests} posts={posts} allAdLeads={allAdLeads} />
+    ),
+    leads: (
+      <LeadsTab
+        requests={requests}
+        loading={loading}
+        onUpdateStatus={updateRequestStatus}
+      />
+    ),
+    quote_requests: (
+      <QuoteRequestsTab
+        quoteRequests={quoteRequests}
+        loading={loading}
+        onUpdateStatus={updateQuoteStatus}
+      />
+    ),
+    ad_leads: (
+      <AdLeadsTab
+        allAdLeads={allAdLeads}
+        loading={loading}
+        onUpdateStatus={updateRequestStatus}
+      />
+    ),
+    ads_inquiries: (
+      <AdsInquiriesTab
+        adsInquiries={adsInquiries}
+        loading={loading}
+        onUpdateInquiryStatus={updateInquiryStatus}
+      />
+    ),
+    analytics: (
+      <AnalyticsTab
+        pageViews={pageViews}
+        allAdLeads={allAdLeads}
+        loading={loading}
+      />
+    ),
+    blogs: (
+      <BlogsTab
+        posts={posts}
+        loading={loading}
+        onDeletePost={handleDeleteClick}
+      />
+    ),
+  };
 
   return (
     <SidebarProvider>
-      <Sidebar variant="inset">
-        <SidebarHeader>
-          <div className="flex items-center gap-2.5 px-3 py-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold">S</div>
-            <span className="font-bold text-lg tracking-tight">SiteNova Admin</span>
-          </div>
-        </SidebarHeader>
-        
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Dashboard Navigation</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton 
-                        isActive={isActive} 
-                        onClick={() => setActiveTab(item.id)}
-                        className="flex justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-4 h-4" />
-                          <span>{item.label}</span>
-                        </div>
-                        {item.badge !== undefined && item.badge > 0 && (
-                          <SidebarMenuBadge className="bg-primary text-primary-foreground rounded-full px-1.5 py-0.5">{item.badge}</SidebarMenuBadge>
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => { throw new Error("This is a Sentry test error from the Admin Dashboard!"); }}>
-                <AlertTriangle className="w-4 h-4" />
-                <span>Test Sentry</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout}>
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
+      <AdminSidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        badges={badges}
+        onLogout={handleLogout}
+      />
 
       <SidebarInset>
-        {/* Top Header Actions */}
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/40 px-6 lg:px-8 bg-background/95 backdrop-blur z-10 sticky top-0">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-2" />
-            <Separator orientation="vertical" className="mr-2 h-4 hidden md:block" />
-            <h2 className="text-xl font-bold tracking-tight capitalize">
-              {activeTab === 'leads' ? 'Audit Requests' : activeTab === 'ad_leads' ? 'Ad Leads' : activeTab === 'ads_inquiries' ? 'Ad Inquiries' : activeTab === 'analytics' ? 'LP Analytics' : activeTab}
-            </h2>
-          </div>
-          
-          <div className="ml-auto flex items-center gap-2">
-            <Button onClick={fetchData} variant="ghost" size="icon" title="Refresh Data">
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-            {(activeTab === 'overview' || activeTab === 'leads' || activeTab === 'ad_leads') && (
-              <Button onClick={handleExport} variant="outline" size="sm" className="gap-2">
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Export CSV</span>
-              </Button>
-            )}
-            {activeTab === 'blogs' && (
-              <div className="flex items-center gap-2">
-                <Button onClick={handleCopyBlogs} variant="outline" size="sm" className="gap-2">
-                  <Copy className="w-4 h-4" />
-                  <span className="hidden sm:inline">Copy All</span>
-                </Button>
-                <Button asChild size="sm" className="gap-2">
-                  <Link to="/admin/blog/new">
-                    <Plus className="w-4 h-4" />
-                    New Post
-                  </Link>
-                </Button>
-              </div>
-            )}
-          </div>
-        </header>
+        <AdminHeader
+          activeTab={activeTab}
+          loading={loading}
+          onRefresh={fetchData}
+          onExportCSV={handleExportCSV}
+          onCopyBlogs={handleCopyBlogs}
+        />
 
-        {/* Scrollable Area */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8">
-          
-          {/* OVERVIEW TAB */}
-          {activeTab === 'overview' && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* KPI Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-                <Card className="bg-card/40 border-border/40">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
-                    <Users className="h-4 w-4 text-primary" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{requests.length}</div>
-                    <p className="text-xs text-muted-foreground mt-1">All time requests</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-card/40 border-border/40 border-amber-500/20">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Pending Action</CardTitle>
-                    <Clock className="h-4 w-4 text-amber-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{requests.filter(r => r.status !== 'completed' && r.source !== 'paid_ad').length}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Organic leads pending</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-card/40 border-border/40 border-purple-500/20">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Ad Leads</CardTitle>
-                    <Megaphone className="h-4 w-4 text-purple-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{allAdLeads.length}</div>
-                    <p className="text-xs text-muted-foreground mt-1">{allAdLeads.filter(r => r.status !== 'completed').length} pending follow-up</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-card/40 border-border/40">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{requests.filter(r => r.status === 'completed').length}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Successfully closed</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-card/40 border-border/40">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Published Blogs</CardTitle>
-                    <FileText className="h-4 w-4 text-blue-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{posts.length}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Active content pieces</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Chart */}
-              <Card className="bg-card/30 border-border/40">
-                <CardHeader>
-                  <CardTitle>Lead Generation Activity</CardTitle>
-                  <CardDescription>Number of audit requests received over the last 7 days.</CardDescription>
-                </CardHeader>
-                <CardContent className="h-80 w-full pl-0">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.4} />
-                      <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} dx={-10} />
-                      <RechartsTooltip 
-                        cursor={{fill: 'hsl(var(--muted))', opacity: 0.2}} 
-                        contentStyle={{backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))'}} 
-                        itemStyle={{color: 'hsl(var(--primary))'}}
-                      />
-                      <Bar dataKey="leads" name="Leads" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={60} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* LEADS TAB */}
-          {activeTab === 'leads' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search by name, email, or website..." 
-                  className="pl-9 bg-card/50"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  Pending Actions
-                  <Badge variant="secondary">{pendingRequests.length}</Badge>
-                </h3>
-                <div className="bg-card/40 border border-border/40 rounded-xl overflow-hidden shadow-sm">
-                  {loading ? (
-                    <div className="p-8 text-center text-muted-foreground">Loading...</div>
-                  ) : pendingRequests.length === 0 ? (
-                    <div className="p-8 text-center text-muted-foreground bg-secondary/10">No pending requests! You're all caught up.</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader className="bg-secondary/20">
-                          <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Mobile</TableHead>
-                            <TableHead>Website</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {pendingRequests.map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell className="whitespace-nowrap text-muted-foreground">
-                                {format(new Date(request.created_at), "MMM d, yyyy")}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 hover:text-amber-500 border-amber-500/20">Pending</Badge>
-                              </TableCell>
-                              <TableCell className="font-medium">{request.name}</TableCell>
-                              <TableCell>{request.email}</TableCell>
-                              <TableCell>
-                                <PhoneCell mobile={request.mobile} />
-                              </TableCell>
-                              <TableCell>
-                                <a href={request.website_url.startsWith('http') ? request.website_url : `https://${request.website_url}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                  {request.website_url}
-                                </a>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button size="sm" onClick={() => updateRequestStatus(request.id, 'completed')} className="gap-2">
-                                  <CheckCircle2 className="w-4 h-4" />
-                                  Resolve
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {completedRequests.length > 0 && (
-                <div className="space-y-4 pt-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 text-muted-foreground">
-                    Resolved Leads
-                    <Badge variant="outline">{completedRequests.length}</Badge>
-                  </h3>
-                  <div className="bg-card/20 border border-border/30 rounded-xl overflow-hidden shadow-sm opacity-90">
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader className="bg-secondary/10">
-                          <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Mobile</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {completedRequests.map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell className="whitespace-nowrap text-muted-foreground">
-                                {format(new Date(request.created_at), "MMM d, yyyy")}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 hover:text-emerald-500 border-emerald-500/20">Resolved</Badge>
-                              </TableCell>
-                              <TableCell className="font-medium text-muted-foreground">{request.name}</TableCell>
-                              <TableCell className="text-muted-foreground">{request.email}</TableCell>
-                              <TableCell>
-                                <PhoneCell mobile={request.mobile} className="text-muted-foreground hover:text-primary" />
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button size="sm" variant="ghost" onClick={() => updateRequestStatus(request.id, 'pending')} className="gap-2 h-8 text-muted-foreground">
-                                  <RotateCcw className="w-3.5 h-3.5" />
-                                  Reopen
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* AD LEADS TAB */}
-          {activeTab === 'ad_leads' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-sm text-purple-400">
-                <Megaphone className="w-4 h-4 flex-shrink-0" />
-                <span>These leads came from your Google / Meta paid ad campaigns via <strong className="text-purple-300">/lp/web-design</strong>.</span>
-              </div>
-
-              <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, email, or website..."
-                  className="pl-9 bg-card/50"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  Pending Follow-up
-                  <Badge variant="secondary">{pendingAdLeads.length}</Badge>
-                </h3>
-                <div className="bg-card/40 border border-border/40 rounded-xl overflow-hidden shadow-sm">
-                  {loading ? (
-                    <div className="p-8 text-center text-muted-foreground">Loading...</div>
-                  ) : pendingAdLeads.length === 0 ? (
-                    <div className="p-8 text-center text-muted-foreground bg-secondary/10">No pending ad leads! You're all caught up.</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader className="bg-secondary/20">
-                          <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Mobile</TableHead>
-                            <TableHead>Website</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {pendingAdLeads.map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell className="whitespace-nowrap text-muted-foreground">
-                                {format(new Date(request.created_at), "MMM d, yyyy")}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="bg-purple-500/10 text-purple-400 border-purple-500/20">Ad Lead</Badge>
-                              </TableCell>
-                              <TableCell className="font-medium">{request.name}</TableCell>
-                              <TableCell>{request.email}</TableCell>
-                              <TableCell>
-                                <PhoneCell mobile={request.mobile} />
-                              </TableCell>
-                              <TableCell>
-                                <a href={request.website_url.startsWith('http') ? request.website_url : `https://${request.website_url}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                  {request.website_url}
-                                </a>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button size="sm" onClick={() => updateRequestStatus(request.id, 'completed')} className="gap-2">
-                                  <CheckCircle2 className="w-4 h-4" />
-                                  Resolve
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {completedAdLeads.length > 0 && (
-                <div className="space-y-4 pt-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 text-muted-foreground">
-                    Resolved Ad Leads
-                    <Badge variant="outline">{completedAdLeads.length}</Badge>
-                  </h3>
-                  <div className="bg-card/20 border border-border/30 rounded-xl overflow-hidden shadow-sm opacity-90">
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader className="bg-secondary/10">
-                          <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Mobile</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {completedAdLeads.map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell className="whitespace-nowrap text-muted-foreground">
-                                {format(new Date(request.created_at), "MMM d, yyyy")}
-                              </TableCell>
-                              <TableCell className="font-medium text-muted-foreground">{request.name}</TableCell>
-                              <TableCell className="text-muted-foreground">{request.email}</TableCell>
-                              <TableCell>
-                                <PhoneCell mobile={request.mobile} className="text-muted-foreground hover:text-primary" />
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button size="sm" variant="ghost" onClick={() => updateRequestStatus(request.id, 'pending')} className="gap-2 h-8 text-muted-foreground">
-                                  <RotateCcw className="w-3.5 h-3.5" />
-                                  Reopen
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ADS INQUIRIES TAB */}
-          {activeTab === 'ads_inquiries' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-sm text-orange-500">
-                <Target className="w-4 h-4 flex-shrink-0" />
-                <span>Showing inquiries from <strong>/ads-contact</strong> — leads who want Google Ads or Meta Ads management.</span>
-              </div>
-
-              {loading ? (
-                <div className="p-8 text-center text-muted-foreground">Loading...</div>
-              ) : adsInquiries.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground bg-secondary/10 rounded-xl">No ad inquiries yet.</div>
-              ) : (
-                <div className="bg-card/40 border border-orange-500/20 rounded-xl overflow-hidden shadow-sm">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-orange-500/5">
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Phone</TableHead>
-                          <TableHead>Business</TableHead>
-                          <TableHead>Platform</TableHead>
-                          <TableHead>Budget</TableHead>
-                          <TableHead>Industry</TableHead>
-                          <TableHead>Goals</TableHead>
-                          <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {adsInquiries.map((inq) => (
-                          <TableRow key={inq.id}>
-                            <TableCell className="whitespace-nowrap text-muted-foreground text-xs">
-                              {format(new Date(inq.created_at), "MMM d, yyyy")}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={
-                                  inq.status === 'new'
-                                    ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
-                                    : inq.status === 'contacted'
-                                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                                    : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                }
-                              >
-                                {inq.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-medium">{inq.name}</TableCell>
-                            <TableCell><PhoneCell mobile={inq.phone} /></TableCell>
-                            <TableCell>{inq.business_name}</TableCell>
-                            <TableCell>
-                              <Badge variant="secondary" className="capitalize text-xs">
-                                {inq.platform.replace('_', ' ')}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">{inq.monthly_budget}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground">{inq.industry}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate" title={inq.goals}>{inq.goals}</TableCell>
-                            <TableCell className="text-right">
-                              <select
-                                value={inq.status}
-                                onChange={async (e) => {
-                                  const newStatus = e.target.value as AdsInquiry['status'];
-                                  const { error } = await supabase.from('ads_inquiries').update({ status: newStatus }).eq('id', inq.id);
-                                  if (!error) setAdsInquiries(adsInquiries.map(i => i.id === inq.id ? { ...i, status: newStatus } : i));
-                                }}
-                                className="rounded-md border border-border/60 bg-background text-xs px-2 py-1.5 text-foreground"
-                              >
-                                <option value="new">New</option>
-                                <option value="contacted">Contacted</option>
-                                <option value="closed">Closed</option>
-                              </select>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ANALYTICS TAB */}
-          {activeTab === 'analytics' && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-
-              {/* Info banner */}
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-sm text-primary">
-                <TrendingUp className="w-4 h-4 flex-shrink-0" />
-                <span>Showing visit and conversion data for <strong>/lp/web-design</strong> — your paid ads landing page.</span>
-              </div>
-
-              {/* KPI cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                <Card className="bg-card/40 border-border/40">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Visits</CardTitle>
-                    <Eye className="h-4 w-4 text-primary" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{totalLPVisits}</div>
-                    <p className="text-xs text-muted-foreground mt-1">All-time page views</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-card/40 border-border/40">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Conversions</CardTitle>
-                    <MousePointerClick className="h-4 w-4 text-emerald-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{totalAdLeads}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Form submissions (ad leads)</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-card/40 border-border/40">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Conversion Rate</CardTitle>
-                    <Percent className="h-4 w-4 text-accent" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{conversionRate}%</div>
-                    <p className="text-xs text-muted-foreground mt-1">Visits → form submissions</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-card/40 border-border/40">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Pending Follow-up</CardTitle>
-                    <Megaphone className="h-4 w-4 text-purple-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{allAdLeads.filter(r => r.status !== 'completed').length}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Ad leads awaiting action</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* 30-day visits + conversions chart */}
-              <Card className="bg-card/30 border-border/40">
-                <CardHeader>
-                  <CardTitle>Visits &amp; Conversions — Last 30 Days</CardTitle>
-                  <CardDescription>Daily page visits (blue) vs form submissions / conversions (green) on the ad landing page.</CardDescription>
-                </CardHeader>
-                <CardContent className="h-80 w-full pl-0">
-                  {loading ? (
-                    <div className="h-full flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
-                  ) : totalLPVisits === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground text-sm">
-                      <Eye className="w-8 h-8 opacity-30" />
-                      <p>No visit data yet. Make sure the <code className="text-xs bg-secondary px-1 py-0.5 rounded">page_views</code> table exists in Supabase.</p>
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={visitChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.4} />
-                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} dy={10}
-                          tickFormatter={(v, i) => i % 5 === 0 ? v : ''} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} dx={-10} />
-                        <RechartsTooltip
-                          cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
-                          contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px' }}
-                        />
-                        <Line type="monotone" dataKey="visits" name="Visits" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="leads" name="Conversions" stroke="hsl(142, 71%, 45%)" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Referrer breakdown */}
-              <Card className="bg-card/30 border-border/40">
-                <CardHeader>
-                  <CardTitle>Traffic Sources</CardTitle>
-                  <CardDescription>Where your landing page visitors are coming from.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <div className="py-8 text-center text-muted-foreground text-sm">Loading...</div>
-                  ) : referrerData.length === 0 ? (
-                    <div className="py-8 text-center text-muted-foreground text-sm">No referrer data yet.</div>
-                  ) : (
-                    <div className="space-y-3">
-                      {referrerData.map(({ source, count, pct }) => (
-                        <div key={source} className="flex items-center gap-3">
-                          <div className="w-28 text-sm text-muted-foreground truncate flex-shrink-0">{source}</div>
-                          <div className="flex-1 h-2 bg-secondary/40 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary rounded-full transition-all duration-500"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                          <div className="text-sm font-semibold w-10 text-right">{count}</div>
-                          <div className="text-xs text-muted-foreground w-12 text-right">{pct}%</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-            </div>
-          )}
-
-          {/* BLOGS TAB */}
-          {activeTab === 'blogs' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="bg-card/40 border border-border/40 rounded-xl overflow-hidden shadow-sm">
-                {loading ? (
-                  <div className="p-8 text-center text-muted-foreground">Loading...</div>
-                ) : posts.length === 0 ? (
-                  <div className="p-12 text-center flex flex-col items-center gap-3 bg-secondary/5">
-                    <FileText className="w-10 h-10 text-muted-foreground/30" />
-                    <div className="text-muted-foreground">No blog posts found. Start writing!</div>
-                    <Button asChild className="mt-2 gap-2" variant="outline">
-                      <Link to="/admin/blog/new">
-                        <Plus className="w-4 h-4" />
-                        Create First Post
-                      </Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-secondary/20">
-                        <TableRow>
-                          <TableHead>Published</TableHead>
-                          <TableHead>Title</TableHead>
-                          <TableHead>URL Slug</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {posts.map((post) => (
-                          <TableRow key={post.id}>
-                            <TableCell className="whitespace-nowrap text-muted-foreground">
-                              {format(new Date(post.created_at), "MMM d, yyyy")}
-                            </TableCell>
-                            <TableCell className="font-medium">{post.title}</TableCell>
-                            <TableCell className="text-muted-foreground">/{post.slug}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button size="icon" variant="ghost" asChild className="h-8 w-8">
-                                  <Link to={`/admin/blog/${post.id}`}>
-                                    <Pencil className="w-4 h-4" />
-                                  </Link>
-                                </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deletePost(post.id)}>
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+            >
+              {tabContent[activeTab]}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </SidebarInset>
+
+      {/* Delete confirmation dialog (managed here so BlogsTab stays pure) */}
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Delete Blog Post?"
+        description="This will permanently delete the post and cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={executeDeletePost}
+      />
     </SidebarProvider>
   );
 }

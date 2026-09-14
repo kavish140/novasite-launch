@@ -239,11 +239,41 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 ### Admin Pages (Protected — `/admin/*`)
 | Page | File | Description |
 |---|---|---|
-| Admin Login | `pages/admin/AdminLogin.tsx` | Password gate (Supabase Auth) |
-| Admin Dashboard | `pages/admin/AdminDashboard.tsx` | Shows `audit_requests` leads table + analytics chart + blog post list. Supports status toggle (pending/completed), CSV export, search/filter, delete. |
-| Admin Blog Editor | `pages/admin/AdminBlogEditor.tsx` | Rich text blog post create/edit, saves to Supabase `blog_posts` table |
+| Admin Login | `pages/admin/AdminLogin.tsx` | Redesigned login page — gradient Zap icon, password visibility toggle, error shake animation, three animated glow orbs. |
+| Admin Dashboard | `pages/admin/AdminDashboard.tsx` | Thin shell (~180 lines) — imports all tab components, owns data fetching + mutations, passes props down. All 6 tabs: Overview, Audit Requests, Ad Leads, Ad Inquiries, LP Analytics, Blog Posts. Exports shared types (`AuditRequest`, `BlogPost`, `AdsInquiry`, `PageView`). AnimatePresence cross-tab transitions. |
+| Admin Blog Editor | `pages/admin/AdminBlogEditor.tsx` | Blog post create/edit with raw HTML textarea (TipTap WYSIWYG coming in Phase 4). |
 
-> **Admin guard**: `components/ProtectedRoute.tsx` wraps `/admin/dashboard` and blog editor. The exit intent popup is suppressed on all `/admin/*` routes.
+> **Admin guard**: `components/ProtectedRoute.tsx` is now **actively wired** to all three protected routes: `admin.dashboard.tsx`, `admin.blog.new.tsx`, `admin.blog.$id.tsx`. Any unauthenticated access redirects to `/admin`. The exit intent popup is suppressed on all `/admin/*` routes.
+
+### Admin Sub-Components (Phase 1 — `pages/admin/components/`)
+| Component | File | Role |
+|---|---|---|
+| `AdminSidebar` | `components/AdminSidebar.tsx` | Redesigned sidebar — gradient Zap brand icon, left-border accent bar on active item, nav grouped into General / Marketing sections, no Test Sentry button. Exports `AdminTab` type. |
+| `AdminHeader` | `components/AdminHeader.tsx` | Top header — breadcrumb path, backdrop-blur-xl, contextual action buttons (Refresh, Export CSV, Copy Blogs, New Post) per active tab. |
+| `KpiCard` | `components/KpiCard.tsx` | Glassmorphism KPI card — hover-lift animation, glow effect, accepts icon/color/accent props. |
+| `ChartCard` | `components/ChartCard.tsx` | Card wrapper for Recharts charts — consistent title/description/sizing. |
+| `StatusBadge` | `components/StatusBadge.tsx` | Centralised status badge — maps status strings to Tailwind colour classes. |
+| `EmptyState` | `components/EmptyState.tsx` | Reusable empty state — icon + title + description + optional action CTA. |
+| `PhoneCell` | `components/PhoneCell.tsx` | Long-press-to-copy phone link — extracted from monolith, shared by all lead tabs. |
+
+### Admin Tabs (Phase 2 — `pages/admin/tabs/`)
+| Tab | File | Description |
+|---|---|---|
+| `OverviewTab` | `tabs/OverviewTab.tsx` | Stagger entrance animation, gradient bar chart fill |
+| `LeadsTab` | `tabs/LeadsTab.tsx` | Search, date range filter (All/Today/7d/30d/90d/Custom), sortable columns (date/name/email), TableSkeleton on load, pagination (20/page) for both pending and resolved sections |
+| `QuoteRequestsTab` | `tabs/QuoteRequestsTab.tsx` | **NEW** — fetches `quote_requests` table. Status flow: new → contacted → converted → lost (shadcn Select). Summary count chips. Date filter + search + sortable columns (date/name/project/budget) + pagination. |
+| `AdLeadsTab` | `tabs/AdLeadsTab.tsx` | Same features as LeadsTab: date filter, sort, TableSkeleton, pagination |
+| `AdsInquiriesTab` | `tabs/AdsInquiriesTab.tsx` | shadcn Select for status. Sortable columns (date/name/status). TableSkeleton on load. Pagination. |
+| `AnalyticsTab` | `tabs/AnalyticsTab.tsx` | AreaChart with gradient fills, stagger animation, gradient traffic-source bars |
+| `BlogsTab` | `tabs/BlogsTab.tsx` | Sortable (date/title). TableSkeleton on load. Pagination. Delete now triggers `ConfirmDialog` in shell (no more `window.confirm`). |
+
+### Admin Shared Components (Phase 2 additions — `pages/admin/components/`)
+| Component | File | Role |
+|---|---|---|
+| `TableSkeleton` | `components/TableSkeleton.tsx` | **NEW** — Shimmer skeleton table with configurable columns/rows. Widths vary via sin() to feel natural. Used in all tabs. |
+| `ConfirmDialog` | `components/ConfirmDialog.tsx` | **NEW** — Wraps shadcn AlertDialog into a controlled component (open + onConfirm). Replaces `window.confirm()` for blog delete. Destructive variant styles the confirm button red. |
+| `DateRangeFilter` | `components/DateRangeFilter.tsx` | **NEW** — Preset buttons (All/Today/7d/30d/90d) + shadcn Calendar popover for custom range. Exports `filterByDateRange<T>()` utility. |
+
 
 ### Service Pages
 | Page | URL | Description |
@@ -986,4 +1016,55 @@ The GA4 deferred script used a local variable `g` instead of assigning `window.g
 #### Note on Google Ads conversions
 Google Ads conversions are tracked via GTM triggers (GTM-P587639R), not direct `trackGoogleAdsConversion()` calls. GTM picks up GA4 custom events from `dataLayer` and fires its own conversion tags.
 
+---
 
+### 2026-09-14 — Admin Dashboard Redesign: Phase 1 (Foundation)
+
+**Files changed**: `app/routes/admin.dashboard.tsx`, `app/routes/admin.blog.new.tsx`, `app/routes/admin.blog.$id.tsx`, `app/pages/admin/AdminLogin.tsx`, `app/pages/admin/AdminDashboard.tsx`
+**Files created**: `app/pages/admin/components/AdminSidebar.tsx`, `AdminHeader.tsx`, `KpiCard.tsx`, `ChartCard.tsx`, `StatusBadge.tsx`, `EmptyState.tsx`, `PhoneCell.tsx` + `app/pages/admin/tabs/OverviewTab.tsx`, `LeadsTab.tsx`, `AdLeadsTab.tsx`, `AdsInquiriesTab.tsx`, `AnalyticsTab.tsx`, `BlogsTab.tsx`
+
+#### Security Fix
+- **Wired `ProtectedRoute`** onto all 3 admin routes (`admin.dashboard.tsx`, `admin.blog.new.tsx`, `admin.blog.$id.tsx`). Previously the component existed but was never used — unauthenticated users could access the full dashboard. Routes now require an active Supabase session; any unauthenticated access redirects to `/admin`.
+
+#### AdminLogin Redesign
+- Gradient `Zap` icon replacing plain "S" box. Three animated pulse glow orbs in background. Password show/hide toggle (Eye/EyeOff). Error shake animation on failed login (Framer Motion keyframe via `shakeKey` increment). `Loader2` spinner during authentication. `ArrowRight` icon on submit button.
+
+#### AdminDashboard — Monolith → 15-File Architecture
+- Dashboard reduced from **1,091 lines to ~180 lines** (thin shell). All tab content extracted into `pages/admin/tabs/`. All shared UI extracted into `pages/admin/components/`. Shared TypeScript types (`AuditRequest`, `BlogPost`, `AdsInquiry`, `PageView`) exported from `AdminDashboard.tsx`.
+- `AnimatePresence` wraps tab content for smooth cross-tab transitions.
+- `updateInquiryStatus` now has full toast success/error handling (previously had none).
+- CSV export now includes the `source` column.
+
+#### AdminSidebar Redesign
+- Brand logo upgraded to gradient `Zap` icon with glow shadow. Active item uses left-border accent bar instead of just background highlight. Nav grouped into "General" and "Marketing" sections with section labels. "Test Sentry" button removed.
+
+#### AdminHeader
+- Breadcrumb path (`Admin / [Tab Name]`). `backdrop-blur-xl` frosted glass effect. Contextual buttons per tab.
+
+#### Tab Improvements
+- All tabs: Framer Motion fade-up entrance. Zebra-stripe table rows. Shared `StatusBadge`, `PhoneCell`, `EmptyState`.
+- `AdsInquiriesTab`: Raw `<select>` replaced with shadcn `Select` component.
+- `AnalyticsTab`: Switched from `LineChart` to `AreaChart` with gradient fills. Traffic source bars now have gradient fill.
+- `OverviewTab`: Bar chart uses gradient fill.
+- `BlogsTab`: Added Tags column.
+
+---
+
+### 2026-09-14 — Admin Dashboard Redesign: Phase 2 (Data & Tables)
+
+**Files created**: `components/TableSkeleton.tsx`, `components/ConfirmDialog.tsx`, `components/DateRangeFilter.tsx`, `tabs/QuoteRequestsTab.tsx`
+**Files modified**: `AdminDashboard.tsx`, `AdminSidebar.tsx`, `AdminHeader.tsx`, `components/StatusBadge.tsx`, `tabs/LeadsTab.tsx`, `tabs/AdLeadsTab.tsx`, `tabs/AdsInquiriesTab.tsx`, `tabs/BlogsTab.tsx`
+
+#### New Features
+- **Quote Requests Tab** — fetches `quote_requests` Supabase table. Status flow: new → contacted → converted → lost. Shows in sidebar with a badge counting `status = 'new'` entries.
+- **TableSkeleton** — shimmer loading state used on all data tabs. Columns/rows configurable per tab.
+- **ConfirmDialog** — shadcn AlertDialog replacing `window.confirm()` for blog post deletes. State managed in `AdminDashboard` shell (keeps tabs pure).
+- **DateRangeFilter** — preset buttons (All / Today / 7d / 30d / 90d) + custom calendar range picker. Applied to LeadsTab, AdLeadsTab, QuoteRequestsTab.
+- **Sortable columns** — all tables now have click-to-sort column headers (asc/desc toggle). Applies to: LeadsTab (date/name/email), AdLeadsTab (date/name/email), AdsInquiriesTab (date/name/status), BlogsTab (date/title), QuoteRequestsTab (date/name/project/budget).
+- **Pagination** — all tables paginated at 20 rows per page with Prev/Next controls and page indicator. Page resets when filter/sort changes.
+
+#### StatusBadge additions
+- Added `quote_new`, `quote_contacted`, `quote_converted`, `quote_lost` keys (prefixed `quote_` to avoid collision with `ads_inquiries` statuses).
+
+#### AdminSidebar / AdminHeader
+- `AdminTab` union type now includes `"quote_requests"`. Sidebar badges prop includes `quote_requests`. FileSignature icon.

@@ -1,6 +1,14 @@
 import { buildMeta } from "@/lib/meta";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminBlogEditor from "@/pages/admin/AdminBlogEditor";
 
-export { default } from "@/pages/admin/AdminBlogEditor";
+export default function AdminBlogNewRoute() {
+  return (
+    <ProtectedRoute>
+      <AdminBlogEditor />
+    </ProtectedRoute>
+  );
+}
 
 export function meta() {
   return buildMeta({
