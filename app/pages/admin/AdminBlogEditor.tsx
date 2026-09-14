@@ -108,15 +108,18 @@ export default function AdminBlogEditor() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border/40 bg-card sticky top-0 z-10">
+      <header className="border-b border-border/40 bg-background/95 backdrop-blur z-10 sticky top-0">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/dashboard")} className="gap-2 -ml-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/dashboard")} className="gap-2 -ml-3 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Button>
-          <span className="font-semibold text-muted-foreground">
-            {isEditing ? "Edit Blog Post" : "New Blog Post"}
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">S</div>
+            <span className="font-semibold text-foreground/80">
+              {isEditing ? "Edit Blog Post" : "New Blog Post"}
+            </span>
+          </div>
         </div>
       </header>
 

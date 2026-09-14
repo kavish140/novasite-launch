@@ -48,14 +48,19 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Admin Login</h1>
-          <p className="text-muted-foreground mt-2">Sign in to access your dashboard</p>
+    <div className="min-h-screen bg-background grid-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Decorative background glows */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] pointer-events-none" />
+      
+      <div className="w-full max-w-sm space-y-8 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl mx-auto mb-6 shadow-glow">S</div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Portal</h1>
+          <p className="text-muted-foreground">Sign in to access your dashboard</p>
         </div>
 
-        <div className="bg-card border border-border/60 rounded-3xl p-8 shadow-sm">
+        <div className="glass-card p-8">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -66,6 +71,7 @@ export default function AdminLogin() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@sitenova.dev"
+                className="bg-background/50"
               />
             </div>
             <div className="space-y-2">
@@ -76,10 +82,11 @@ export default function AdminLogin() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="bg-background/50"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+            <Button type="submit" className="w-full button-shimmer shadow-glow-sm" disabled={loading}>
+              {loading ? "Authenticating..." : "Sign In"}
             </Button>
           </form>
         </div>

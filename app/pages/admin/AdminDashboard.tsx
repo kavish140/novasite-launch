@@ -13,6 +13,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import { format, subDays } from "date-fns";
 import { 
   CheckCircle2, 
@@ -57,6 +74,7 @@ type BlogPost = {
   slug: string;
   excerpt?: string;
   content?: string;
+  tags?: string[];
   created_at: string;
 };
 
@@ -133,7 +151,7 @@ export default function AdminDashboard() {
   const [adsInquiries, setAdsInquiries] = useState<AdsInquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -268,6 +286,7 @@ export default function AdminDashboard() {
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
+      tags: post.tags,
       created_at: post.created_at
     }));
 
@@ -375,78 +394,76 @@ export default function AdminDashboard() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row">
-      
-      {/* Mobile Header (Only visible on small screens) */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b border-border/40 bg-card">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold">S</div>
-          <span className="font-bold tracking-tight">Admin</span>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          Menu
-        </Button>
-      </div>
-
-      {/* Sidebar */}
-      <aside className={`w-full md:w-64 border-r border-border/40 bg-card/40 flex-shrink-0 flex flex-col transition-all ${isMobileMenuOpen ? 'block' : 'hidden md:flex'}`}>
-        <div className="h-16 hidden md:flex items-center px-6 border-b border-border/40">
-          <div className="flex items-center gap-2.5">
+    <SidebarProvider>
+      <Sidebar variant="inset">
+        <SidebarHeader>
+          <div className="flex items-center gap-2.5 px-3 py-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold">S</div>
             <span className="font-bold text-lg tracking-tight">SiteNova Admin</span>
           </div>
-        </div>
+        </SidebarHeader>
         
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-4 h-4" />
-                  {item.label}
-                </div>
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </nav>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Dashboard Navigation</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton 
+                        isActive={isActive} 
+                        onClick={() => setActiveTab(item.id)}
+                        className="flex justify-between"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-4 h-4" />
+                          <span>{item.label}</span>
+                        </div>
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <SidebarMenuBadge className="bg-primary text-primary-foreground rounded-full px-1.5 py-0.5">{item.badge}</SidebarMenuBadge>
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
 
-        <div className="p-4 border-t border-border/40 space-y-2">
-          <Button variant="destructive" className="w-full justify-start gap-2" size="sm" onClick={() => { throw new Error("This is a Sentry test error from the Admin Dashboard!"); }}>
-            <AlertTriangle className="w-4 h-4" />
-            Test Sentry
-          </Button>
-          <Button variant="outline" className="w-full justify-start gap-2" size="sm" onClick={handleLogout}>
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
-        </div>
-      </aside>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => { throw new Error("This is a Sentry test error from the Admin Dashboard!"); }}>
+                <AlertTriangle className="w-4 h-4" />
+                <span>Test Sentry</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={handleLogout}>
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-[calc(100vh-65px)] md:h-screen overflow-hidden">
-        
+      <SidebarInset>
         {/* Top Header Actions */}
-        <header className="h-16 flex flex-shrink-0 items-center justify-between px-6 lg:px-8 border-b border-border/40 bg-background/95 backdrop-blur z-10">
-          <h2 className="text-xl font-bold tracking-tight capitalize">
-            {activeTab === 'leads' ? 'Audit Requests' : activeTab === 'ad_leads' ? 'Ad Leads' : activeTab === 'ads_inquiries' ? 'Ad Inquiries' : activeTab === 'analytics' ? 'LP Analytics' : activeTab}
-          </h2>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/40 px-6 lg:px-8 bg-background/95 backdrop-blur z-10 sticky top-0">
           <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-2" />
+            <Separator orientation="vertical" className="mr-2 h-4 hidden md:block" />
+            <h2 className="text-xl font-bold tracking-tight capitalize">
+              {activeTab === 'leads' ? 'Audit Requests' : activeTab === 'ad_leads' ? 'Ad Leads' : activeTab === 'ads_inquiries' ? 'Ad Inquiries' : activeTab === 'analytics' ? 'LP Analytics' : activeTab}
+            </h2>
+          </div>
+          
+          <div className="ml-auto flex items-center gap-2">
             <Button onClick={fetchData} variant="ghost" size="icon" title="Refresh Data">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
@@ -1067,7 +1084,7 @@ export default function AdminDashboard() {
           )}
 
         </div>
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
