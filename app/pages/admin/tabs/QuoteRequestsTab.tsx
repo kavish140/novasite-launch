@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table, TableBody, TableCell, TableHead,
   TableHeader, TableRow,
@@ -19,6 +20,9 @@ import PhoneCell from "../components/PhoneCell";
 import StatusBadge from "../components/StatusBadge";
 import EmptyState from "../components/EmptyState";
 import TableSkeleton from "../components/TableSkeleton";
+import QuickActions from "../components/QuickActions";
+import BulkActionBar from "../components/BulkActionBar";
+import LeadDetailDrawer, { type DrawerLead } from "../components/LeadDetailDrawer";
 import DateRangeFilter, {
   filterByDateRange,
   type DateRangePreset,
@@ -35,13 +39,61 @@ interface QuoteRequestsTabProps {
   quoteRequests: QuoteRequest[];
   loading: boolean;
   onUpdateStatus: (id: string, status: QuoteRequest["status"]) => Promise<void>;
+  onBulkResolve: (ids: string[]) => Promise<void>;
 }
 
 export default function QuoteRequestsTab({
   quoteRequests,
   loading,
   onUpdateStatus,
+  onBulkResolve,
 }: QuoteRequestsTabProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [drawerData, setDrawerData] = useState<DrawerLead | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const openDrawer = (lead: QuoteRequest) => {
+    setDrawerData({ type: "quote_request", lead });
+    setDrawerOpen(true);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = (rows: QuoteRequest[]) => {
+    const allSel = rows.every((r) => selectedIds.has(r.id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      rows.forEach((r) => allSel ? next.delete(r.id) : next.add(r.id));
+      return next;
+    });
+  };
+
+  const exportSelected = (rows: QuoteRequest[]) => {
+    const sel = rows.filter((r) => selectedIds.has(r.id));
+    if (!sel.length) return;
+    const headers = ["Date", "Name", "Email", "Mobile", "Project", "Budget", "Status"];
+    const csv = [
+      headers.join(","),
+      ...sel.map((r) => [
+        format(new Date(r.created_at), "yyyy-MM-dd HH:mm"),
+        `"${r.name}"`, `"${r.email}"`, `"${r.mobile || ""}"`,
+        `"${r.project_type || ""}"`, `"${r.budget || ""}"`, r.status,
+      ].join(",")),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `quote-requests-selected-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    setSelectedIds(new Set());
+  };
+
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -177,6 +229,20 @@ export default function QuoteRequestsTab({
             <Table>
               <TableHeader className="bg-blue-500/5">
                 <TableRow>
+                  <TableHead className="w-10 pl-4">
+                    <Checkbox
+                      checked={paginated.length > 0 && paginated.every((r) => selectedIds.has(r.id))}
+                      ref={(el) => {
+                        if (el) {
+                          const some = paginated.some((r) => selectedIds.has(r.id));
+                          const all = paginated.every((r) => selectedIds.has(r.id));
+                          (el as unknown as HTMLInputElement).indeterminate = some && !all;
+                        }
+                      }}
+                      onCheckedChange={() => toggleSelectAll(paginated)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </TableHead>
                   <SortHead field="created_at">Date</SortHead>
                   <TableHead>Status</TableHead>
                   <SortHead field="name">Name</SortHead>
@@ -184,12 +250,20 @@ export default function QuoteRequestsTab({
                   <TableHead>Phone</TableHead>
                   <SortHead field="project_type">Project</SortHead>
                   <SortHead field="budget">Budget</SortHead>
+                  <TableHead>Actions</TableHead>
                   <TableHead className="text-right">Update Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginated.map((req, i) => (
-                  <TableRow key={req.id} className={i % 2 === 0 ? "bg-background/20" : ""}>
+                  <TableRow
+                    key={req.id}
+                    className={`cursor-pointer hover:bg-blue-500/5 transition-colors ${i % 2 === 0 ? "bg-background/20" : ""} ${selectedIds.has(req.id) ? "bg-blue-500/5" : ""}`}
+                    onClick={() => openDrawer(req)}
+                  >
+                    <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox checked={selectedIds.has(req.id)} onCheckedChange={() => toggleSelect(req.id)} />
+                    </TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
                       {format(new Date(req.created_at), "MMM d, yyyy")}
                     </TableCell>
@@ -198,12 +272,15 @@ export default function QuoteRequestsTab({
                     </TableCell>
                     <TableCell className="font-medium">{req.name}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{req.email}</TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <PhoneCell mobile={req.mobile ?? ""} />
                     </TableCell>
                     <TableCell className="text-sm">{req.project_type ?? "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{req.budget ?? "—"}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <QuickActions name={req.name} phone={req.mobile} email={req.email} />
+                    </TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Select
                         value={req.status}
                         onValueChange={(v) => onUpdateStatus(req.id, v as QuoteRequest["status"])}
@@ -234,27 +311,29 @@ export default function QuoteRequestsTab({
             {sorted.length} result{sorted.length !== 1 ? "s" : ""} · page {page} of {totalPages}
           </span>
           <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-7 w-7"
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
+            <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-7 w-7"
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
+            <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
       )}
+
+      {/* Lead detail drawer */}
+      <LeadDetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} data={drawerData} />
+
+      {/* Bulk action bar */}
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        showResolve
+        showDelete={false}
+        onResolve={async () => { await onBulkResolve(Array.from(selectedIds)); setSelectedIds(new Set()); }}
+        onExport={() => exportSelected(sorted)}
+        onClear={() => setSelectedIds(new Set())}
+      />
     </motion.div>
   );
 }
+

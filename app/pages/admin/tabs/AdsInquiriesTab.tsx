@@ -18,7 +18,10 @@ import PhoneCell from "../components/PhoneCell";
 import StatusBadge from "../components/StatusBadge";
 import EmptyState from "../components/EmptyState";
 import TableSkeleton from "../components/TableSkeleton";
+import QuickActions from "../components/QuickActions";
+import LeadDetailDrawer, { type DrawerLead } from "../components/LeadDetailDrawer";
 import type { AdsInquiry } from "../AdminDashboard";
+
 
 type SortField = "created_at" | "name" | "status";
 type SortDir = "asc" | "desc";
@@ -38,6 +41,14 @@ export default function AdsInquiriesTab({
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
+  const [drawerData, setDrawerData] = useState<DrawerLead | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const openDrawer = (lead: AdsInquiry) => {
+    setDrawerData({ type: "ad_inquiry", lead });
+    setDrawerOpen(true);
+  };
+
 
   const handleSort = (field: SortField) => {
     if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -104,18 +115,25 @@ export default function AdsInquiriesTab({
                     <TableHead>Budget</TableHead>
                     <TableHead>Industry</TableHead>
                     <TableHead>Goals</TableHead>
+                    <TableHead>Actions</TableHead>
                     <TableHead className="text-right">Update Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginated.map((inq, i) => (
-                    <TableRow key={inq.id} className={i % 2 === 0 ? "bg-background/20" : ""}>
+                    <TableRow
+                      key={inq.id}
+                      className={`cursor-pointer hover:bg-orange-500/5 transition-colors ${i % 2 === 0 ? "bg-background/20" : ""}`}
+                      onClick={() => openDrawer(inq)}
+                    >
                       <TableCell className="whitespace-nowrap text-muted-foreground text-xs">
                         {format(new Date(inq.created_at), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell><StatusBadge status={inq.status} /></TableCell>
                       <TableCell className="font-medium">{inq.name}</TableCell>
-                      <TableCell><PhoneCell mobile={inq.phone} /></TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <PhoneCell mobile={inq.phone} />
+                      </TableCell>
                       <TableCell className="text-sm">{inq.business_name}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="capitalize text-xs">
@@ -127,7 +145,10 @@ export default function AdsInquiriesTab({
                       <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate" title={inq.goals}>
                         {inq.goals}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <QuickActions name={inq.name} phone={inq.phone} />
+                      </TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <Select
                           value={inq.status}
                           onValueChange={(value) => onUpdateInquiryStatus(inq.id, value as AdsInquiry["status"])}
@@ -165,6 +186,10 @@ export default function AdsInquiriesTab({
           </>
         )}
       </div>
+
+      {/* Lead detail drawer */}
+      <LeadDetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} data={drawerData} />
     </motion.div>
   );
 }
+

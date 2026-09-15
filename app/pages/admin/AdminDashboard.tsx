@@ -20,6 +20,9 @@ import AnalyticsTab from "./tabs/AnalyticsTab";
 import BlogsTab from "./tabs/BlogsTab";
 import QuoteRequestsTab from "./tabs/QuoteRequestsTab";
 
+// Realtime hook
+import { useRealtimeLeads } from "./hooks/useRealtimeLeads";
+
 // ─── Shared types (exported so tab files can import them) ────────────────────
 export type AuditRequest = {
   id: string;
@@ -74,6 +77,14 @@ export type QuoteRequest = {
   status: "new" | "contacted" | "converted" | "lost";
   created_at: string;
 };
+
+export type LeadNote = {
+  id: string;
+  lead_type: string;
+  lead_id: string;
+  note: string;
+  created_at: string;
+};
 // ────────────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
@@ -85,12 +96,33 @@ export default function AdminDashboard() {
   const [quoteRequests, setQuoteRequests] = useState<QuoteRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ConfirmDialog state
+  // ── Confirm dialog state (reusable for single + bulk deletes) ────────────
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [confirmConfig, setConfirmConfig] = useState<{
+    title: string;
+    description: string;
+    onConfirm: () => Promise<void>;
+  }>({ title: "", description: "", onConfirm: async () => {} });
 
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // ── Realtime subscriptions ─────────────────────────────────────────────
+  useRealtimeLeads({
+    onNewAuditRequest: (record) => {
+      setRequests((prev) => [record, ...prev]);
+      const label = record.source === "paid_ad" ? "Ad Lead" : "Audit Request";
+      toast({ title: `🔔 New ${label}`, description: `${record.name} just submitted.` });
+    },
+    onNewQuoteRequest: (record) => {
+      setQuoteRequests((prev) => [record, ...prev]);
+      toast({ title: "🔔 New Quote Request", description: `${record.name} just submitted.` });
+    },
+    onNewAdsInquiry: (record) => {
+      setAdsInquiries((prev) => [record, ...prev]);
+      toast({ title: "🔔 New Ads Inquiry", description: `${record.name} just submitted.` });
+    },
+  });
 
   useEffect(() => {
     fetchData();
@@ -125,14 +157,11 @@ export default function AdminDashboard() {
     }
   };
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
+  // ── Single-row mutations ───────────────────────────────────────────────────
   const updateRequestStatus = async (id: string, newStatus: "pending" | "completed") => {
     try {
       const { data, error } = await supabase
-        .from("audit_requests")
-        .update({ status: newStatus })
-        .eq("id", id)
-        .select();
+        .from("audit_requests").update({ status: newStatus }).eq("id", id).select();
       if (error) throw error;
       if (!data || data.length === 0)
         throw new Error("Update failed — check Supabase RLS policies for 'audit_requests'.");
@@ -146,10 +175,7 @@ export default function AdminDashboard() {
 
   const updateInquiryStatus = async (id: string, newStatus: AdsInquiry["status"]) => {
     try {
-      const { error } = await supabase
-        .from("ads_inquiries")
-        .update({ status: newStatus })
-        .eq("id", id);
+      const { error } = await supabase.from("ads_inquiries").update({ status: newStatus }).eq("id", id);
       if (error) throw error;
       setAdsInquiries((prev) => prev.map((i) => (i.id === id ? { ...i, status: newStatus } : i)));
       toast({ title: "Updated", description: `Inquiry status set to "${newStatus}".` });
@@ -161,10 +187,7 @@ export default function AdminDashboard() {
 
   const updateQuoteStatus = async (id: string, newStatus: QuoteRequest["status"]) => {
     try {
-      const { error } = await supabase
-        .from("quote_requests")
-        .update({ status: newStatus })
-        .eq("id", id);
+      const { error } = await supabase.from("quote_requests").update({ status: newStatus }).eq("id", id);
       if (error) throw error;
       setQuoteRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
       toast({ title: "Updated", description: `Quote status set to "${newStatus}".` });
@@ -174,31 +197,71 @@ export default function AdminDashboard() {
     }
   };
 
-  // ── Delete blog post (now uses ConfirmDialog instead of window.confirm) ────
+  // ── Bulk mutations ─────────────────────────────────────────────────────────
+  const bulkUpdateRequestStatus = async (ids: string[], newStatus: "pending" | "completed") => {
+    try {
+      const { error } = await supabase
+        .from("audit_requests").update({ status: newStatus }).in("id", ids);
+      if (error) throw error;
+      setRequests((prev) => prev.map((r) => (ids.includes(r.id) ? { ...r, status: newStatus } : r)));
+      toast({ title: "Done", description: `${ids.length} request${ids.length > 1 ? "s" : ""} marked as ${newStatus}.` });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Bulk update failed.";
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    }
+  };
+
+  const bulkDeleteRequests = async (ids: string[]) => {
+    try {
+      const { error } = await supabase.from("audit_requests").delete().in("id", ids);
+      if (error) throw error;
+      setRequests((prev) => prev.filter((r) => !ids.includes(r.id)));
+      toast({ title: "Deleted", description: `${ids.length} request${ids.length > 1 ? "s" : ""} deleted.` });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Bulk delete failed.";
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    }
+  };
+
+  const bulkUpdateQuoteStatus = async (ids: string[], newStatus: QuoteRequest["status"]) => {
+    try {
+      const { error } = await supabase
+        .from("quote_requests").update({ status: newStatus }).in("id", ids);
+      if (error) throw error;
+      setQuoteRequests((prev) => prev.map((r) => (ids.includes(r.id) ? { ...r, status: newStatus } : r)));
+      toast({ title: "Done", description: `${ids.length} quote${ids.length > 1 ? "s" : ""} updated.` });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Bulk update failed.";
+      toast({ title: "Error", description: msg, variant: "destructive" });
+    }
+  };
+
+  // ── Delete blog post ───────────────────────────────────────────────────────
   const handleDeleteClick = (id: string) => {
-    setPendingDeleteId(id);
+    setConfirmConfig({
+      title: "Delete Blog Post?",
+      description: "This will permanently delete the post and cannot be undone.",
+      onConfirm: async () => {
+        const { data, error } = await supabase
+          .from("blog_posts").delete().eq("id", id).select();
+        if (error) throw error;
+        if (!data || data.length === 0)
+          throw new Error("Delete failed — check Supabase RLS policies for 'blog_posts'.");
+        setPosts((prev) => prev.filter((p) => p.id !== id));
+        toast({ title: "Deleted", description: "Blog post deleted." });
+      },
+    });
     setConfirmOpen(true);
   };
 
-  const executeDeletePost = async () => {
-    if (!pendingDeleteId) return;
-    try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .delete()
-        .eq("id", pendingDeleteId)
-        .select();
-      if (error) throw error;
-      if (!data || data.length === 0)
-        throw new Error("Delete failed — check Supabase RLS policies for 'blog_posts'.");
-      setPosts((prev) => prev.filter((p) => p.id !== pendingDeleteId));
-      toast({ title: "Deleted", description: "Blog post deleted." });
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Failed to delete post.";
-      toast({ title: "Delete Failed", description: msg, variant: "destructive" });
-    } finally {
-      setPendingDeleteId(null);
-    }
+  // ── Open confirm helper (used by tabs for bulk delete) ─────────────────────
+  const openConfirm = (
+    title: string,
+    description: string,
+    onConfirm: () => Promise<void>
+  ) => {
+    setConfirmConfig({ title, description, onConfirm });
+    setConfirmOpen(true);
   };
 
   const handleLogout = async () => {
@@ -269,6 +332,14 @@ export default function AdminDashboard() {
         requests={requests}
         loading={loading}
         onUpdateStatus={updateRequestStatus}
+        onBulkResolve={(ids) => bulkUpdateRequestStatus(ids, "completed")}
+        onBulkDelete={(ids) =>
+          openConfirm(
+            `Delete ${ids.length} lead${ids.length > 1 ? "s" : ""}?`,
+            "This will permanently delete the selected audit requests.",
+            () => bulkDeleteRequests(ids)
+          )
+        }
       />
     ),
     quote_requests: (
@@ -276,6 +347,7 @@ export default function AdminDashboard() {
         quoteRequests={quoteRequests}
         loading={loading}
         onUpdateStatus={updateQuoteStatus}
+        onBulkResolve={(ids) => bulkUpdateQuoteStatus(ids, "contacted")}
       />
     ),
     ad_leads: (
@@ -283,6 +355,14 @@ export default function AdminDashboard() {
         allAdLeads={allAdLeads}
         loading={loading}
         onUpdateStatus={updateRequestStatus}
+        onBulkResolve={(ids) => bulkUpdateRequestStatus(ids, "completed")}
+        onBulkDelete={(ids) =>
+          openConfirm(
+            `Delete ${ids.length} ad lead${ids.length > 1 ? "s" : ""}?`,
+            "This will permanently delete the selected ad leads.",
+            () => bulkDeleteRequests(ids)
+          )
+        }
       />
     ),
     ads_inquiries: (
@@ -293,18 +373,10 @@ export default function AdminDashboard() {
       />
     ),
     analytics: (
-      <AnalyticsTab
-        pageViews={pageViews}
-        allAdLeads={allAdLeads}
-        loading={loading}
-      />
+      <AnalyticsTab pageViews={pageViews} allAdLeads={allAdLeads} loading={loading} />
     ),
     blogs: (
-      <BlogsTab
-        posts={posts}
-        loading={loading}
-        onDeletePost={handleDeleteClick}
-      />
+      <BlogsTab posts={posts} loading={loading} onDeletePost={handleDeleteClick} />
     ),
   };
 
@@ -326,7 +398,6 @@ export default function AdminDashboard() {
           onCopyBlogs={handleCopyBlogs}
         />
 
-        {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto p-6 lg:p-8">
           <AnimatePresence mode="wait">
             <motion.div
@@ -342,14 +413,14 @@ export default function AdminDashboard() {
         </div>
       </SidebarInset>
 
-      {/* Delete confirmation dialog (managed here so BlogsTab stays pure) */}
+      {/* Centralised confirm dialog — handles blog deletes + bulk deletes */}
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Delete Blog Post?"
-        description="This will permanently delete the post and cannot be undone."
+        title={confirmConfig.title}
+        description={confirmConfig.description}
         confirmLabel="Delete"
-        onConfirm={executeDeletePost}
+        onConfirm={confirmConfig.onConfirm}
       />
     </SidebarProvider>
   );

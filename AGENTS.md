@@ -274,6 +274,23 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 | `ConfirmDialog` | `components/ConfirmDialog.tsx` | **NEW** — Wraps shadcn AlertDialog into a controlled component (open + onConfirm). Replaces `window.confirm()` for blog delete. Destructive variant styles the confirm button red. |
 | `DateRangeFilter` | `components/DateRangeFilter.tsx` | **NEW** — Preset buttons (All/Today/7d/30d/90d) + shadcn Calendar popover for custom range. Exports `filterByDateRange<T>()` utility. |
 
+### Admin Phase 3 Components & Hooks (`pages/admin/`)
+| File | Role |
+|---|---|
+| `components/QuickActions.tsx` | One-click WhatsApp (`wa.me/91{digits}?text=…`), Call (`tel:`), Email (`mailto:`) buttons with Tooltips. `stopPropagation` on click so row click doesn't also fire. |
+| `components/BulkActionBar.tsx` | Floating bar (fixed bottom center, AnimatePresence) that appears when table checkboxes are selected. Buttons: Resolve All, Export CSV, Delete (optional). Dismiss with X. |
+| `components/LeadDetailDrawer.tsx` | shadcn Sheet slide-out panel. Accepts `DrawerLead` union (`audit_request \| quote_request \| ad_inquiry`). Renders type-specific fields, QuickActions in header, notes timeline (fetches `lead_notes`), Add Note form (Ctrl+Enter to save). Exports `DrawerLead` and `LeadNote` types. |
+| `hooks/useRealtimeLeads.ts` | Supabase `channel()` subscriptions on `audit_requests`, `quote_requests`, `ads_inquiries` INSERT events. On new insert: calls parent callback to update state + fires Web3Forms email notification to kavishganatra5@gmail.com. Callbacks stored in ref — effect never re-runs on render. |
+
+**Phase 3 Supabase changes:**
+- New table: `lead_notes` (id, lead_type CHECK('audit_request'|'quote_request'|'ad_inquiry'), lead_id uuid, note text, created_at). RLS: authenticated full access only. Index on (lead_id, created_at DESC).
+- Realtime enabled on `audit_requests`, `quote_requests`, `ads_inquiries` via `ALTER PUBLICATION supabase_realtime ADD TABLE …`.
+
+**AdminDashboard Phase 3 changes:**
+- `ConfirmDialog` upgraded to config-object pattern (`confirmConfig` state) — handles single and bulk deletes via a single dialog instance.
+- Bulk mutations: `bulkUpdateRequestStatus(ids, status)`, `bulkDeleteRequests(ids)`, `bulkUpdateQuoteStatus(ids, status)` — use `.in("id", ids)` Supabase filter.
+- `openConfirm(title, description, onConfirm)` helper exposed for child-triggered confirms.
+- `LeadNote` type exported alongside other shared types.
 
 ### Service Pages
 | Page | URL | Description |
