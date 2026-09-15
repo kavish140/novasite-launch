@@ -38,6 +38,15 @@ const DEFAULT_BANNER: BannerSettings = {
   image_url: "",
 };
 
+const PRESETS = [
+  { name: "Brand Blue", bg: "#3b82f6", text: "#ffffff" },
+  { name: "Success Green", bg: "#10b981", text: "#ffffff" },
+  { name: "Warning Amber", bg: "#f59e0b", text: "#ffffff" },
+  { name: "Alert Red", bg: "#ef4444", text: "#ffffff" },
+  { name: "Dark Slate", bg: "#1e293b", text: "#f8fafc" },
+  { name: "Light Frost", bg: "#f8fafc", text: "#0f172a" },
+];
+
 export default function SettingsTab() {
   const { toast } = useToast();
   const [banner, setBanner] = useState<BannerSettings>(DEFAULT_BANNER);
@@ -224,6 +233,24 @@ export default function SettingsTab() {
                 placeholder="https://sitenova.dev/services/google-ads"
                 className="bg-background"
               />
+            </div>
+
+            {/* Templates */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Quick Templates</Label>
+              <div className="flex flex-wrap gap-2">
+                {PRESETS.map((preset) => (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    onClick={() => setBanner((b) => ({ ...b, bg_color: preset.bg, text_color: preset.text, image_url: "" }))}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border/50 text-xs font-medium hover:scale-105 transition-transform"
+                    style={{ backgroundColor: preset.bg, color: preset.text }}
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Colors */}
