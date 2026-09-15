@@ -1,11 +1,13 @@
 /**
  * AnnouncementBanner — sitewide banner rendered in root.tsx above the Outlet.
- * Fetches site_settings.announcement_banner from Supabase (client-side, public anon key).
- * Conditionally renders with a dismiss button (dismissed state persisted in sessionStorage).
+ * Fixed at top-0 with z-[60] (above Navbar's z-50).
+ * Injects --banner-height CSS variable on <html> so Navbar can offset itself.
+ * Fetches site_settings.announcement_banner from Supabase (public anon key).
+ * Dismiss button persists to sessionStorage.
  * Suppressed on /admin routes.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router";
 import { supabase } from "@/lib/supabaseClient";
 import { X } from "lucide-react";
@@ -25,18 +27,32 @@ export default function AnnouncementBanner() {
   const location = useLocation();
   const [banner, setBanner] = useState<BannerSettings | null>(null);
   const [dismissed, setDismissed] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
-  // Suppress on admin pages
   const isAdmin = location.pathname.startsWith("/admin");
 
   useEffect(() => {
-    // Check if already dismissed this session
     if (sessionStorage.getItem(DISMISS_KEY) === "true") {
       setDismissed(true);
       return;
     }
     fetchBanner();
   }, []);
+
+  // Whenever banner mounts/unmounts, update --banner-height on <html>
+  // so the fixed Navbar can add padding-top equal to the banner height.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!dismissed && banner && bannerRef.current) {
+      const h = bannerRef.current.getBoundingClientRect().height;
+      root.style.setProperty("--banner-height", `${h}px`);
+    } else {
+      root.style.setProperty("--banner-height", "0px");
+    }
+    return () => {
+      root.style.setProperty("--banner-height", "0px");
+    };
+  }, [banner, dismissed]);
 
   const fetchBanner = async () => {
     try {
@@ -62,9 +78,10 @@ export default function AnnouncementBanner() {
 
   if (isAdmin || dismissed || !banner) return null;
 
-  const content = (
+  return (
     <div
-      className="relative z-50 w-full px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium"
+      ref={bannerRef}
+      className="fixed top-0 left-0 right-0 z-[60] px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium"
       style={{
         backgroundColor: banner.bg_color,
         color: banner.text_color,
@@ -73,7 +90,7 @@ export default function AnnouncementBanner() {
         backgroundPosition: "center",
       }}
     >
-      {/* overlay if image */}
+      {/* Colour overlay when background image is set */}
       {banner.image_url && (
         <span
           className="absolute inset-0 pointer-events-none"
@@ -100,6 +117,4 @@ export default function AnnouncementBanner() {
       </button>
     </div>
   );
-
-  return content;
 }

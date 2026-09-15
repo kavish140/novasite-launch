@@ -114,7 +114,9 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground font-sans antialiased;
+    padding-top: var(--banner-height, 0px);
+    transition: padding-top 0.3s ease;
     line-height: 1.625;
     font-family: 'Inter', sans-serif;
   }
