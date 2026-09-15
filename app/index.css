@@ -295,7 +295,55 @@
   .dark .prose tbody tr:hover {
     @apply bg-secondary/40;
   }
+
+  /* ── TipTap editor canvas styles ──────────────────────────────────────────── */
+  /* Placeholder */
+  .tiptap p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground/50 pointer-events-none;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+  }
+
+  /* Code block inside editor */
+  .tiptap pre {
+    @apply bg-muted/40 rounded-lg p-4 my-4 font-mono text-sm overflow-x-auto;
+  }
+
+  .tiptap code {
+    @apply bg-muted/60 rounded px-1 py-0.5 text-[0.85em] font-mono;
+  }
+
+  .tiptap pre code {
+    @apply bg-transparent p-0;
+  }
+
+  /* Blockquote */
+  .tiptap blockquote {
+    @apply border-l-4 border-primary/40 pl-4 text-muted-foreground italic my-4;
+  }
+
+  /* Horizontal rule */
+  .tiptap hr {
+    @apply border-border/40 my-6;
+  }
+
+  /* Images */
+  .tiptap img {
+    @apply max-w-full h-auto rounded-lg my-4;
+  }
+
+  /* Links */
+  .tiptap a {
+    @apply text-primary underline underline-offset-2 hover:text-primary/80;
+  }
+
+  /* Focused editor ring */
+  .tiptap:focus-visible {
+    @apply outline-none;
+  }
 }
+
 
 @keyframes btn-quote-pulse-anim {
   0%   { transform: scale(1);    opacity: 1; }

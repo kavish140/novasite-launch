@@ -241,7 +241,7 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 |---|---|---|
 | Admin Login | `pages/admin/AdminLogin.tsx` | Redesigned login page — gradient Zap icon, password visibility toggle, error shake animation, three animated glow orbs. |
 | Admin Dashboard | `pages/admin/AdminDashboard.tsx` | Thin shell (~180 lines) — imports all tab components, owns data fetching + mutations, passes props down. All 6 tabs: Overview, Audit Requests, Ad Leads, Ad Inquiries, LP Analytics, Blog Posts. Exports shared types (`AuditRequest`, `BlogPost`, `AdsInquiry`, `PageView`). AnimatePresence cross-tab transitions. |
-| Admin Blog Editor | `pages/admin/AdminBlogEditor.tsx` | Blog post create/edit with raw HTML textarea (TipTap WYSIWYG coming in Phase 4). |
+| Admin Blog Editor | `pages/admin/AdminBlogEditor.tsx` | Blog post create/edit with **TipTap WYSIWYG editor** (Phase 4). Toolbar: undo/redo, H1-H3, bold/italic/underline/strike/inline-code, bullet/ordered lists, blockquote, code block, text alignment, link insert, image URL insert, horizontal rule, hard break. Live Preview toggle in header renders the post as it will appear on the blog. Slug auto-generated from title on create. |
 
 > **Admin guard**: `components/ProtectedRoute.tsx` is now **actively wired** to all three protected routes: `admin.dashboard.tsx`, `admin.blog.new.tsx`, `admin.blog.$id.tsx`. Any unauthenticated access redirects to `/admin`. The exit intent popup is suppressed on all `/admin/*` routes.
 
@@ -292,7 +292,21 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 - `openConfirm(title, description, onConfirm)` helper exposed for child-triggered confirms.
 - `LeadNote` type exported alongside other shared types.
 
-### Service Pages
+### Admin Phase 4 Components & Enhancements
+| File | Role |
+|---|---|
+| `components/Sparkline.tsx` | Pure SVG sparkline mini-chart (no extra dependency). Renders a filled area + stroke line from a `number[]` array. Used in KpiCard for 7-day trend visualisation. |
+| `components/LeadCard.tsx` | Mobile-first stacked card for an `AuditRequest`. Shown in a 2-col card grid below the `md` breakpoint in LeadsTab and AdLeadsTab. Shows status badge, date, name, email, website link, QuickActions, and Resolve/Reopen button. Click opens LeadDetailDrawer. |
+| `components/TipTapEditor.tsx` | Full WYSIWYG editor built on TipTap. Toolbar: undo/redo, H1/H2/H3, bold/italic/underline/strike/inline-code, bullet/ordered lists, blockquote, code block, text alignment, link insert (window.prompt), image URL insert (window.prompt), horizontal rule, hard break. Output: HTML via `editor.getHTML()`. Syncs external `content` prop for edit mode. |
+
+**Phase 4 modifications:**
+- `KpiCard.tsx` — now accepts optional `sparkData: number[]` (renders Sparkline bottom-right of value), `trend: number` (% change badge with TrendingUp/Down/Minus icon, green/red/muted coloured), `sparkColor: string` (override sparkline colour).
+- `OverviewTab.tsx` — KpiCards now receive 7-day sparkline data and trend% from `buildSparkData()` + `calcTrend()` helpers. Bar chart + Lead Source donut chart now in 2/3 + 1/3 grid layout. Donut uses Recharts PieChart with `PieChart`, `Pie`, `Cell`, `Legend`.
+- `LeadsTab.tsx` / `AdLeadsTab.tsx` — mobile card grid (LeadCard components) rendered below `md` breakpoint; desktop table remains above `md`.
+- `AdminBlogEditor.tsx` — TipTap WYSIWYG replaces raw textarea; live preview toggle in header; form submit via `form id` pattern.
+- `app/index.css` — TipTap editor canvas styles added (placeholder, code block, blockquote, HR, images, links, focus ring).
+
+
 | Page | URL | Description |
 |---|---|---|
 | `pages/services/Ecommerce.tsx` | `/services/ecommerce` | E-commerce store service |

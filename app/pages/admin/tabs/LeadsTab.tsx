@@ -20,6 +20,7 @@ import EmptyState from "../components/EmptyState";
 import TableSkeleton from "../components/TableSkeleton";
 import QuickActions from "../components/QuickActions";
 import BulkActionBar from "../components/BulkActionBar";
+import LeadCard from "../components/LeadCard";
 import LeadDetailDrawer, { type DrawerLead } from "../components/LeadDetailDrawer";
 import DateRangeFilter, {
   filterByDateRange, type DateRangePreset,
@@ -275,12 +276,28 @@ export default function LeadsTab({
             : pending.length === 0 ? <EmptyState icon={Users} title="All caught up!" description="No pending audit requests." />
             : (
               <>
-                {renderTable(paginatedPending, pending, true)}
+                {/* Mobile card grid — visible below md */}
+                <div className="md:hidden p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {paginatedPending.map((lead) => (
+                    <LeadCard
+                      key={lead.id}
+                      lead={lead}
+                      onResolve={() => onUpdateStatus(lead.id, "completed")}
+                      onReopen={() => onUpdateStatus(lead.id, "pending")}
+                      onOpenDrawer={(data) => { setDrawerData(data); setDrawerOpen(true); }}
+                    />
+                  ))}
+                </div>
+                {/* Desktop table — hidden below md */}
+                <div className="hidden md:block">
+                  {renderTable(paginatedPending, pending, true)}
+                </div>
                 {renderPagination(pp, pendingTotalPages, setPendingPage)}
               </>
             )}
         </div>
       </div>
+
 
       {/* Completed */}
       {!loading && completed.length > 0 && (
@@ -289,11 +306,27 @@ export default function LeadsTab({
             Resolved <Badge variant="outline">{completed.length}</Badge>
           </h3>
           <div className="bg-card/20 border border-border/30 rounded-xl overflow-hidden shadow-sm opacity-90">
-            {renderTable(paginatedCompleted, completed, false)}
+            {/* Mobile */}
+            <div className="md:hidden p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {paginatedCompleted.map((lead) => (
+                <LeadCard
+                  key={lead.id}
+                  lead={lead}
+                  onResolve={() => onUpdateStatus(lead.id, "completed")}
+                  onReopen={() => onUpdateStatus(lead.id, "pending")}
+                  onOpenDrawer={(data) => { setDrawerData(data); setDrawerOpen(true); }}
+                />
+              ))}
+            </div>
+            {/* Desktop */}
+            <div className="hidden md:block">
+              {renderTable(paginatedCompleted, completed, false)}
+            </div>
             {renderPagination(cp, completedTotalPages, setCompletedPage)}
           </div>
         </div>
       )}
+
 
       {/* Lead detail drawer */}
       <LeadDetailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} data={drawerData} />

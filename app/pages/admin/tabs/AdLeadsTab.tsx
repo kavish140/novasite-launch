@@ -20,6 +20,7 @@ import EmptyState from "../components/EmptyState";
 import TableSkeleton from "../components/TableSkeleton";
 import QuickActions from "../components/QuickActions";
 import BulkActionBar from "../components/BulkActionBar";
+import LeadCard from "../components/LeadCard";
 import LeadDetailDrawer, { type DrawerLead } from "../components/LeadDetailDrawer";
 import DateRangeFilter, {
   filterByDateRange, type DateRangePreset,
@@ -268,7 +269,23 @@ export default function AdLeadsTab({
             : pending.length === 0 ? <EmptyState icon={Megaphone} title="No pending ad leads!" description="You're all caught up." />
             : (
               <>
-                {renderTable(paginatedPending, true)}
+                {/* Mobile */}
+                <div className="md:hidden p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {paginatedPending.map((lead) => (
+                    <LeadCard
+                      key={lead.id}
+                      lead={lead}
+                      isAdLead
+                      onResolve={() => onUpdateStatus(lead.id, "completed")}
+                      onReopen={() => onUpdateStatus(lead.id, "pending")}
+                      onOpenDrawer={(data) => { setDrawerData(data); setDrawerOpen(true); }}
+                    />
+                  ))}
+                </div>
+                {/* Desktop */}
+                <div className="hidden md:block">
+                  {renderTable(paginatedPending, true)}
+                </div>
                 {renderPagination(pp, pendingTotalPages, setPendingPage)}
               </>
             )}
