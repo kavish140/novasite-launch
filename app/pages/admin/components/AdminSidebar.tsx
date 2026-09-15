@@ -93,9 +93,9 @@ export default function AdminSidebar({
               : "hover:bg-muted/50"
           }`}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <Icon className="w-4 h-4 flex-shrink-0" />
-            <span>{item.label}</span>
+            <span className="truncate">{item.label}</span>
           </div>
           {item.badge !== undefined && item.badge > 0 && (
             <SidebarMenuBadge className="bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 text-[10px] font-bold">
@@ -122,7 +122,7 @@ export default function AdminSidebar({
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="py-2">
+      <SidebarContent className="py-2 overflow-x-hidden overflow-y-auto">
         {/* Main */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 px-3 mb-1">
