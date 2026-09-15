@@ -306,7 +306,27 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 - `AdminBlogEditor.tsx` — TipTap WYSIWYG replaces raw textarea; live preview toggle in header; form submit via `form id` pattern.
 - `app/index.css` — TipTap editor canvas styles added (placeholder, code block, blockquote, HR, images, links, focus ring).
 
+### Admin Phase 5 Components & Enhancements
+| File | Role |
+|---|---|
+| `components/CommandPalette.tsx` | `Cmd+K` / `Ctrl+K` modal using shadcn `<Command>` component. Navigate to any of the 9 tabs, create new blog post, search leads/quotes by name or email. Registered in AdminDashboard via a `useEffect` keydown listener. |
+| `tabs/SettingsTab.tsx` | Two sections: (1) Announcement Banner — text, link, bg/text color pickers, image upload to Supabase Storage `images` bucket, enabled toggle, live inline preview; saves to `site_settings` JSONB via upsert. (2) Change Password — Supabase Auth `updateUser`. |
+| `tabs/ActivityLogTab.tsx` | Scrollable audit trail from `activity_log` table. Timeline with colour-coded action icons. Filters: action type dropdown + date range presets. Pagination at 30/page. Human-readable descriptions from `describeLog()`. |
+| `components/AnnouncementBanner.tsx` | Sitewide top banner — fetches `site_settings.announcement_banner` from Supabase on client mount. Renders if `enabled: true`. Dismiss button persists to `sessionStorage`. Suppressed on `/admin/*`. Lazy-loaded via `ClientOnly` in `root.tsx`. |
 
+**Phase 5 modifications:**
+- `AdminSidebar.tsx` — `AdminTab` union extended with `"settings"` and `"activity_log"`. New **System** section in sidebar with Settings (gear) + Activity Log (history) nav items.
+- `AdminHeader.tsx` — `TAB_LABELS` map includes `settings` and `activity_log`.
+- `AdminDashboard.tsx` — `cmdOpen` state + `Cmd+K` keydown effect + `logActivity()` helper (writes to `activity_log`). CommandPalette rendered alongside ConfirmDialog. `settings` and `activity_log` entries in `tabContent` map. `updateRequestStatus` and `handleDeleteClick` now call `logActivity` after mutations.
+- `root.tsx` — `AnnouncementBanner` lazy-imported and rendered above `<Outlet>` in a `ClientOnly` + `Suspense` wrapper.
+
+**Phase 5 Supabase tables (run SQL below):**
+- `site_settings` — key TEXT PRIMARY KEY, value JSONB, updated_at. Seeded with `announcement_banner` default row.
+- `activity_log` — id UUID, action TEXT, entity_type TEXT, entity_id TEXT, details JSONB, created_at.
+- **Storage buckets**: `images` (public, 10MB limit, image/* MIME types) + `blog-images` (authenticated, 5MB limit).
+
+
+### Service Pages
 | Page | URL | Description |
 |---|---|---|
 | `pages/services/Ecommerce.tsx` | `/services/ecommerce` | E-commerce store service |

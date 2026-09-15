@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { supabase } from "@/lib/supabaseClient";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import AdminSidebar, { AdminTab } from "./components/AdminSidebar";
 import AdminHeader from "./components/AdminHeader";
 import ConfirmDialog from "./components/ConfirmDialog";
+import CommandPalette from "./components/CommandPalette";
 
 // Tab components
 import OverviewTab from "./tabs/OverviewTab";
@@ -19,9 +20,12 @@ import AdsInquiriesTab from "./tabs/AdsInquiriesTab";
 import AnalyticsTab from "./tabs/AnalyticsTab";
 import BlogsTab from "./tabs/BlogsTab";
 import QuoteRequestsTab from "./tabs/QuoteRequestsTab";
+import SettingsTab from "./tabs/SettingsTab";
+import ActivityLogTab from "./tabs/ActivityLogTab";
 
 // Realtime hook
 import { useRealtimeLeads } from "./hooks/useRealtimeLeads";
+
 
 // ─── Shared types (exported so tab files can import them) ────────────────────
 export type AuditRequest = {
@@ -104,8 +108,38 @@ export default function AdminDashboard() {
     onConfirm: () => Promise<void>;
   }>({ title: "", description: "", onConfirm: async () => {} });
 
+  // ── Command palette ────────────────────────────────────────────────────
+  const [cmdOpen, setCmdOpen] = useState(false);
+
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Cmd+K / Ctrl+K shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCmdOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // ── Activity log helper ────────────────────────────────────────────────
+  const logActivity = useCallback(async (
+    action: string,
+    entity_type: string,
+    entity_id?: string,
+    details?: Record<string, unknown>
+  ) => {
+    try {
+      await supabase.from("activity_log").insert([{ action, entity_type, entity_id, details }]);
+    } catch {
+      // non-blocking — log failures silently
+    }
+  }, []);
+
 
   // ── Realtime subscriptions ─────────────────────────────────────────────
   useRealtimeLeads({
@@ -159,14 +193,18 @@ export default function AdminDashboard() {
 
   // ── Single-row mutations ───────────────────────────────────────────────────
   const updateRequestStatus = async (id: string, newStatus: "pending" | "completed") => {
+    const prev = requests.find((r) => r.id === id);
     try {
       const { data, error } = await supabase
         .from("audit_requests").update({ status: newStatus }).eq("id", id).select();
       if (error) throw error;
       if (!data || data.length === 0)
         throw new Error("Update failed — check Supabase RLS policies for 'audit_requests'.");
-      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
+      setRequests((prev2) => prev2.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
       toast({ title: "Success", description: `Request marked as ${newStatus}.` });
+      logActivity("status_change", "audit_request", id, {
+        old_status: prev?.status, new_status: newStatus, lead_name: prev?.name,
+      });
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Failed to update request.";
       toast({ title: "Update Failed", description: msg, variant: "destructive" });
@@ -238,6 +276,7 @@ export default function AdminDashboard() {
 
   // ── Delete blog post ───────────────────────────────────────────────────────
   const handleDeleteClick = (id: string) => {
+    const post = posts.find((p) => p.id === id);
     setConfirmConfig({
       title: "Delete Blog Post?",
       description: "This will permanently delete the post and cannot be undone.",
@@ -249,6 +288,7 @@ export default function AdminDashboard() {
           throw new Error("Delete failed — check Supabase RLS policies for 'blog_posts'.");
         setPosts((prev) => prev.filter((p) => p.id !== id));
         toast({ title: "Deleted", description: "Blog post deleted." });
+        logActivity("blog_deleted", "blog_post", id, { title: post?.title });
       },
     });
     setConfirmOpen(true);
@@ -378,6 +418,8 @@ export default function AdminDashboard() {
     blogs: (
       <BlogsTab posts={posts} loading={loading} onDeletePost={handleDeleteClick} />
     ),
+    settings: <SettingsTab />,
+    activity_log: <ActivityLogTab />,
   };
 
   return (
@@ -421,6 +463,15 @@ export default function AdminDashboard() {
         description={confirmConfig.description}
         confirmLabel="Delete"
         onConfirm={confirmConfig.onConfirm}
+      />
+
+      {/* Command palette — Cmd+K / Ctrl+K */}
+      <CommandPalette
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+        onTabChange={setActiveTab}
+        requests={requests}
+        quoteRequests={quoteRequests}
       />
     </SidebarProvider>
   );

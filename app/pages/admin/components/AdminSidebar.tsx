@@ -22,6 +22,8 @@ import {
   Target,
   Zap,
   FileSignature,
+  Settings,
+  History,
 } from "lucide-react";
 
 export type AdminTab =
@@ -31,7 +33,10 @@ export type AdminTab =
   | "ad_leads"
   | "ads_inquiries"
   | "analytics"
-  | "blogs";
+  | "blogs"
+  | "settings"
+  | "activity_log";
+
 
 
 interface NavItem {
@@ -137,6 +142,23 @@ export default function AdminSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{marketingNav.map(renderNavItem)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <Separator className="mx-3 my-2 bg-border/30" />
+
+        {/* System */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 px-3 mb-1">
+            System
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {[
+                { id: "settings" as AdminTab,      label: "Settings",      icon: Settings,  group: "main" as const },
+                { id: "activity_log" as AdminTab,  label: "Activity Log",  icon: History,   group: "main" as const },
+              ].map(renderNavItem)}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

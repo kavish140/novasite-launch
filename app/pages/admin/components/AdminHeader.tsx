@@ -12,7 +12,10 @@ const TAB_LABELS: Record<string, string> = {
   ads_inquiries:   "Ad Inquiries",
   analytics:       "LP Analytics",
   blogs:           "Blog Posts",
+  settings:        "Settings",
+  activity_log:    "Activity Log",
 };
+
 
 interface AdminHeaderProps {
   activeTab: string;

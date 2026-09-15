@@ -20,6 +20,7 @@ const ScrollProgress = lazy(() => import("@/components/ScrollProgress"));
 const BookCallWidget = lazy(() => import("@/components/BookCallWidget"));
 const ExitIntentPopup = lazy(() => import("@/components/ExitIntentPopup"));
 const MobileAuditBar = lazy(() => import("@/components/MobileAuditBar"));
+const AnnouncementBanner = lazy(() => import("@/components/AnnouncementBanner"));
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -269,6 +270,11 @@ export default function App() {
           <Toaster />
           <Sonner />
           <LazyMotion features={domAnimation}>
+            <Suspense fallback={null}>
+              <ClientOnly>
+                <AnnouncementBanner />
+              </ClientOnly>
+            </Suspense>
             <Outlet />
             <Suspense fallback={null}>
               <ClientOnly>
