@@ -1,4 +1,4 @@
-﻿// SiteNova Blog API — Supabase Edge Function
+// SiteNova Blog API — Supabase Edge Function
 // Function name: blog-api
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are auto-injected by Supabase.
 
@@ -98,11 +98,16 @@ async function handleCreateDraft(
 async function handleListRecentPosts(supabase: ReturnType<typeof createClient>) {
   const { data, error } = await supabase
     .from("blog_posts")
-    .select("id, title, slug, tags, status, source, created_at")
-    .order("created_at", { ascending: false })
-    .limit(30);
+    .select("id, title, slug, excerpt, tags, status, source, created_at")
+    .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return data ?? [];
+  const posts = data ?? [];
+  return {
+    posts,
+    count: posts.length,
+    topics_covered: posts.map((p: Record<string, unknown>) => p.title),
+    note: "Check BOTH title similarity AND tags before choosing a new topic. Do not write about anything in topics_covered.",
+  };
 }
 
 async function handleListTopics(supabase: ReturnType<typeof createClient>) {

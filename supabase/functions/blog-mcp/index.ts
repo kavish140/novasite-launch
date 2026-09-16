@@ -1,4 +1,4 @@
-﻿// SiteNova Blog MCP Server — Supabase Edge Function
+// SiteNova Blog MCP Server — Supabase Edge Function
 // Speaks MCP-over-HTTP (JSON-RPC 2.0) so Gemini Spark can call blog tools.
 // Endpoint: https://bklmtwblsoitafynpikc.supabase.co/functions/v1/blog-mcp
 
@@ -229,11 +229,18 @@ async function callTool(name: string, args: Record<string, unknown>) {
     case "list_recent_posts": {
       const { data, error } = await supabase
         .from("blog_posts")
-        .select("id, title, slug, status, source, created_at")
-        .order("created_at", { ascending: false })
-        .limit(15);
+        .select("id, title, slug, excerpt, tags, status, source, created_at")
+        .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
-      return { success: true, data: data ?? [], count: (data ?? []).length };
+      const posts = data ?? [];
+      return {
+        success: true,
+        data: posts,
+        count: posts.length,
+        // Flat list of titles for quick duplicate-checking
+        topics_covered: posts.map((p: Record<string, unknown>) => p.title),
+        note: "Check BOTH title similarity AND tags before choosing a new topic. Do not write about anything in topics_covered.",
+      };
     }
 
     case "list_drafts": {
