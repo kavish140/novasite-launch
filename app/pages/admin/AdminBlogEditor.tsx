@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Eye, EyeOff, Zap } from "lucide-react";
+import { ArrowLeft, Save, Eye, EyeOff, Zap, MapPin } from "lucide-react";
 import TipTapEditor from "./components/TipTapEditor";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -31,9 +31,52 @@ export default function AdminBlogEditor() {
   const [initialLoading, setInitialLoading] = useState(isEditing);
   const [showPreview, setShowPreview] = useState(false);
   const [showBlanks, setShowBlanks] = useState(false);
+  const [activeBlankId, setActiveBlankId] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Build an annotated preview HTML — replaces <!-- BLANK:id --> with visible anchor spans
+  const getAnnotatedPreview = useCallback((): string => {
+    if (!content) return "";
+    let html = content;
+    blanksMetadata.forEach((blank) => {
+      const isActive = blank.id === activeBlankId;
+      if (blank.filled && blank.filled_content) {
+        // Filled: show green with the actual content
+        html = html.replace(
+          `<!-- BLANK:${blank.id} -->`,
+          `<span
+            id="blank-anchor-${blank.id}"
+            style="display:inline-block;background:rgba(16,185,129,0.15);border:1.5px solid rgba(16,185,129,0.4);border-radius:6px;padding:2px 8px;color:#6ee7b7;font-size:0.8em;font-style:italic;"
+          >✓ ${blank.label}: ${blank.filled_content}</span>`
+        );
+      } else {
+        // Unfilled: show amber anchor, pulse if active
+        html = html.replace(
+          `<!-- BLANK:${blank.id} -->`,
+          `<span
+            id="blank-anchor-${blank.id}"
+            style="display:inline-block;background:${isActive ? "rgba(245,158,11,0.25)" : "rgba(245,158,11,0.1)"};border:${isActive ? "2px" : "1.5px"} solid rgba(245,158,11,${isActive ? "0.8" : "0.4"});border-radius:6px;padding:4px 10px;color:#fbbf24;font-size:0.8em;font-weight:600;box-shadow:${isActive ? "0 0 0 3px rgba(245,158,11,0.2)" : "none"};transition:all 0.3s;"
+          >📍 ${blank.label}</span>`
+        );
+      }
+    });
+    return html;
+  }, [content, blanksMetadata, activeBlankId]);
+
+  // When a blank card is clicked — open preview, set active, scroll to anchor
+  const focusBlankInPreview = useCallback((blankId: string) => {
+    setActiveBlankId(blankId);
+    setShowPreview(true);
+    // Give React a tick to render the preview before scrolling
+    setTimeout(() => {
+      const anchor = document.getElementById(`blank-anchor-${blankId}`);
+      if (anchor) {
+        anchor.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 100);
+  }, []);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -274,7 +317,7 @@ export default function AdminBlogEditor() {
               {content ? (
                 <div
                   className="prose prose-sm prose-invert max-w-none text-foreground/90 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: content }}
+                  dangerouslySetInnerHTML={{ __html: getAnnotatedPreview() }}
                 />
               ) : (
                 <p className="text-muted-foreground italic">No content yet. Switch back to editor to write.</p>
@@ -375,7 +418,9 @@ export default function AdminBlogEditor() {
                 <div
                   key={blank.id}
                   className={`rounded-xl border p-5 space-y-3 transition-all duration-200 ${
-                    blank.filled
+                    blank.id === activeBlankId
+                      ? "border-amber-500/50 bg-amber-500/5 shadow-[inset_3px_0_0_0_rgba(245,158,11,0.6)]"
+                      : blank.filled
                       ? "border-emerald-500/30 bg-emerald-500/5"
                       : "border-border/60 bg-card/60"
                   }`}
@@ -394,21 +439,33 @@ export default function AdminBlogEditor() {
                       <p className="text-xs text-muted-foreground leading-relaxed">{blank.guideline}</p>
                       <p className="text-[10px] text-muted-foreground/60 italic">📍 {blank.location}</p>
                     </div>
-                    {blank.filled && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Show in post button */}
                       <button
                         type="button"
-                        onClick={() =>
-                          setBlanksMetadata((prev) =>
-                            prev.map((b) =>
-                              b.id === blank.id ? { ...b, filled: false, filled_content: null } : b
-                            )
-                          )
-                        }
-                        className="text-xs text-muted-foreground hover:text-foreground shrink-0 underline underline-offset-2"
+                        onClick={() => focusBlankInPreview(blank.id)}
+                        className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25 transition-colors"
+                        title="See exactly where this blank appears in the article"
                       >
-                        Edit
+                        <MapPin className="w-3 h-3" />
+                        Show in post
                       </button>
-                    )}
+                      {blank.filled && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setBlanksMetadata((prev) =>
+                              prev.map((b) =>
+                                b.id === blank.id ? { ...b, filled: false, filled_content: null } : b
+                              )
+                            )
+                          }
+                          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {!blank.filled && (
