@@ -1120,3 +1120,44 @@ Google Ads conversions are tracked via GTM triggers (GTM-P587639R), not direct `
 
 #### AdminSidebar / AdminHeader
 - `AdminTab` union type now includes `"quote_requests"`. Sidebar badges prop includes `quote_requests`. FileSignature icon.
+
+---
+
+### 2026-09-16 — AI Blog Content Pipeline (Phases 1–6)
+
+**Files created**: `supabase/functions/blog-api/index.ts`, `mcp-servers/sitenova-blog-mcp/index.js`, `mcp-servers/sitenova-blog-mcp/package.json`, `.agents/skills/daily-blog-generator/SKILL.md`, `.agents/skills/daily-blog-generator/GEMINI_APP_PROMPT.txt`, `tabs/DraftsTab.tsx`, `tabs/TopicsTab.tsx`
+
+**Files modified**: `routes/blog._index.tsx`, `routes/blog.$slug.tsx`, `pages/blog/BlogIndex.tsx`, `pages/admin/AdminDashboard.tsx`, `pages/admin/AdminBlogEditor.tsx`, `pages/admin/tabs/BlogsTab.tsx`, `pages/admin/tabs/OverviewTab.tsx`, `pages/admin/components/AdminSidebar.tsx`, `pages/admin/components/AdminHeader.tsx`, `pages/admin/components/CommandPalette.tsx`, `C:\Users\Kavish Ganatra\.gemini\config\mcp_config.json`
+
+#### Phase 1 — Database Schema + Blog Status System
+- Added columns to `blog_posts`: `status TEXT CHECK('draft'|'review'|'published'|'archived') DEFAULT 'published'`, `source TEXT CHECK('manual'|'ai') DEFAULT 'manual'`, `blanks_metadata JSONB DEFAULT '[]'`, `ai_model TEXT`, `ai_prompt_used TEXT`, `reviewed_at TIMESTAMPTZ`, `reviewed_by TEXT`, `updated_at TIMESTAMPTZ`.
+- Created `blog_topics` table: `id UUID, title TEXT, description TEXT, target_keywords TEXT[], status TEXT CHECK('pending'|'in_progress'|'used'|'skipped') DEFAULT 'pending', priority INTEGER DEFAULT 0, created_at TIMESTAMPTZ, used_at TIMESTAMPTZ`. RLS: authenticated full access. Index on `(status, priority DESC)`.
+- All public blog routes now filter `.eq("status","published")` — drafts return 404.
+- Admin fetches all posts (no status filter). `BlogsTab` shows Status column (inline shadcn Select), Source badge (🤖 AI / 👤 Manual).
+- `AdminBlogEditor` saves `status` field. Default for new posts: `"draft"`. Dynamic Save/Publish button label.
+- `BlankMeta` type exported from `AdminDashboard`: `{ id, label, guideline, location, filled, filled_content }`.
+
+#### Phase 2 — Supabase Edge Function + MCP Server
+- **Edge function** `blog-api` deployed at `https://bklmtwblsoitafynpikc.supabase.co/functions/v1/blog-api`. Handles 7 actions: `create_draft`, `list_recent_posts`, `list_topics`, `mark_topic_used`, `add_topic`, `get_site_context`, `get_blank_guidelines`. Uses auto-injected `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.
+- **MCP wrapper** at `mcp-servers/sitenova-blog-mcp/index.js` — thin stdio MCP server wrapping all 7 edge function actions as MCP tools for use by Antigravity.
+- `C:\Users\Kavish Ganatra\.gemini\config\mcp_config.json` updated with project URL + anon key (restart Antigravity to reload).
+
+#### Phase 3 — Skill + Gemini App Prompt
+- **SKILL.md** at `.agents/skills/daily-blog-generator/SKILL.md` — 10-step Antigravity skill for generating daily blog posts. AI selects topics based on current SiteNova context and pending `blog_topics` queue. Produces 1600–1800 word HTML posts with 4–6 human-fill blanks (`<!-- BLANK:id -->`).
+- **GEMINI_APP_PROMPT.txt** at `.agents/skills/daily-blog-generator/GEMINI_APP_PROMPT.txt` — ready-to-paste Gemini Gem instructions with real API endpoint baked in. Schedule at 2AM IST in the Gemini app.
+
+#### Phase 4 — DraftsTab + Blog Editor Blank-Fill UI
+- **`DraftsTab`** — shows all AI-generated posts grouped by status (Draft / In Review / Published / Archived). Each card shows: title, status selector, AI model, slug, time ago, blank progress bar, inline preview of unfilled blanks with their guidelines, one-click publish when all blanks filled. Search bar filters by title/slug/tag.
+- **`AdminBlogEditor` blank-fill panel** — appears when editing an AI post with blanks. Toggle "Blanks (N left)" button in header (auto-opens if blanks unfilled). Each blank card: label, AI guideline, location hint, textarea, "Mark as filled" button. On save: `<!-- BLANK:id -->` replaced with `<span class="filled-blank" data-blank-id>` in HTML. `blanks_metadata` saved back to DB.
+- Sidebar: "AI Drafts" entry with `Bot` icon + live badge count. Header: "AI Drafts" shows New Post button. Command palette: "AI Drafts" entry.
+
+#### Phase 5 — Search
+- **BlogsTab**: Search bar (title/slug/tag filter) with `X` clear button + live count. Resets pagination on query change.
+- **DraftsTab**: Search bar above summary strip (title/slug/tag filter).
+- **Public blog** (`/blog`): Search bar below the heading. Filters by title or excerpt client-side (no re-fetch). Featured card hidden when searching (all matching results show in grid). No-results empty state with "Clear search" button.
+
+#### Phase 6 — TopicsTab + OverviewTab KPIs + AGENTS.md
+- **`TopicsTab`** — full CRUD UI for `blog_topics`. Shows: pending queue, used, skipped sections. Actions per card: ✓ mark used, ↷ skip, Restore, Delete. Add form with title, description, target keywords (comma-sep), priority (higher = AI picks first). Animated accordion form reveal. Chip summary (Pending / Used / Skipped counts).
+- **`OverviewTab`** — 7-card KPI grid (was 5). Added: `AI Drafts` (pending drafts awaiting fill, violet) + `Topics Queue` (pending topics count, cyan). Published Blogs KPI now correctly counts only `status='published'` posts. Props expanded: `aiDraftsPending: number`, `topicsInQueue: number`.
+- `AdminDashboard` fetches pending topics count via lightweight Supabase `count` query on mount. `topicsInQueue` state updated accordingly.
+- Sidebar: "Topic Queue" entry with `ListChecks` icon between AI Drafts and Blog Posts. Header: `TAB_LABELS` includes `"topics"`. Command palette: "Topic Queue" entry.

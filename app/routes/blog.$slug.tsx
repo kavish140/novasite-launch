@@ -56,6 +56,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     .from("blog_posts")
     .select("*")
     .eq("slug", params.slug)
+    .eq("status", "published")
     .single();
 
   if (error || !post) {

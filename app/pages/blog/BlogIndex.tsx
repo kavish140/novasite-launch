@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useLoaderData } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
-import { ArrowRight, Clock, BookOpen } from "lucide-react";
+import { ArrowRight, Clock, BookOpen, Search, X } from "lucide-react";
 
 interface BlogPost {
   id: string;
@@ -143,6 +143,7 @@ export default function BlogIndex() {
   const initialPosts = loaderData?.posts ?? [];
   const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
   const [loading, setLoading] = useState(initialPosts.length === 0);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (initialPosts.length > 0) return;
@@ -151,6 +152,7 @@ export default function BlogIndex() {
         const { data, error } = await supabase
           .from("blog_posts")
           .select("id, title, slug, excerpt, published_at")
+          .eq("status", "published")
           .order("published_at", { ascending: false });
         if (error) console.error("Error fetching posts:", error);
         else setPosts(data || []);
@@ -163,7 +165,17 @@ export default function BlogIndex() {
     fetchPosts();
   }, [initialPosts.length]);
 
-  const [featured, ...rest] = posts;
+  const filteredPosts = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return posts;
+    return posts.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.excerpt.toLowerCase().includes(q)
+    );
+  }, [posts, query]);
+
+  const [featured, ...rest] = filteredPosts;
 
   return (
     <PageTransition>
@@ -191,20 +203,45 @@ export default function BlogIndex() {
 
         <main className="flex-1 pt-32 pb-16 sm:pb-24 max-w-7xl mx-auto px-6 w-full">
           {/* Header */}
-          <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div>
-              <h1 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl mb-3">
-                Web Design & SEO Insights
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl">
-                Practical guides on websites, local SEO, and digital growth for Mumbai businesses — written by SiteNova.
-              </p>
+          <div className="mb-10">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                <h1 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl mb-3">
+                  Web Design &amp; SEO Insights
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-2xl">
+                  Practical guides on websites, local SEO, and digital growth for Mumbai businesses — written by SiteNova.
+                </p>
+              </div>
+              {!loading && posts.length > 0 && (
+                <span className="shrink-0 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-4 py-2 text-sm font-medium text-muted-foreground">
+                  <BookOpen size={14} className="text-primary" />
+                  {posts.length} {posts.length === 1 ? "article" : "articles"}
+                </span>
+              )}
             </div>
+
+            {/* Search bar */}
             {!loading && posts.length > 0 && (
-              <span className="shrink-0 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card px-4 py-2 text-sm font-medium text-muted-foreground">
-                <BookOpen size={14} className="text-primary" />
-                {posts.length} {posts.length === 1 ? "article" : "articles"}
-              </span>
+              <div className="relative max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search articles…"
+                  className="w-full h-11 pl-10 pr-10 rounded-xl border border-border/60 bg-card text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                />
+                {query && (
+                  <button
+                    onClick={() => setQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
@@ -226,19 +263,29 @@ export default function BlogIndex() {
                 Back to homepage
               </Link>
             </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-20 rounded-3xl border border-border/60 bg-card/50">
+              <Search size={36} className="mx-auto text-muted-foreground/30 mb-4" />
+              <p className="text-lg font-semibold text-foreground mb-2">No results for "{query}"</p>
+              <p className="text-muted-foreground mb-4">Try a different keyword or browse all articles.</p>
+              <button
+                onClick={() => setQuery("")}
+                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors underline underline-offset-4"
+              >
+                Clear search
+              </button>
+            </div>
           ) : (
             <>
-              {/* Featured post */}
-              {featured && <FeaturedCard post={featured} />}
+              {/* Featured post — hide when searching so grid shows all matches */}
+              {!query && featured && <FeaturedCard post={featured} />}
 
-              {/* Rest of posts */}
-              {rest.length > 0 && (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {rest.map((post) => (
-                    <PostCard key={post.id} post={post} />
-                  ))}
-                </div>
-              )}
+              {/* Posts grid */}
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {(query ? filteredPosts : rest).map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
             </>
           )}
         </main>

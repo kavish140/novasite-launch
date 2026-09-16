@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/command";
 import {
   LayoutDashboard, Users, FileText, Megaphone, TrendingUp,
-  Target, Plus, Settings, History, FileSignature,
+  Target, Plus, Settings, History, FileSignature, Bot, ListChecks,
 } from "lucide-react";
 import type { AdminTab } from "./AdminSidebar";
 import type { AuditRequest, QuoteRequest } from "../AdminDashboard";
@@ -36,6 +36,8 @@ const TAB_COMMANDS: { tab: AdminTab; label: string; icon: React.ElementType }[] 
   { tab: "ad_leads",       label: "Ad Leads",        icon: Megaphone },
   { tab: "ads_inquiries",  label: "Ad Inquiries",    icon: Target },
   { tab: "analytics",      label: "LP Analytics",    icon: TrendingUp },
+  { tab: "drafts",         label: "AI Drafts",       icon: Bot },
+  { tab: "topics",         label: "Topic Queue",     icon: ListChecks },
   { tab: "blogs",          label: "Blog Posts",      icon: FileText },
   { tab: "settings",       label: "Settings",        icon: Settings },
   { tab: "activity_log",   label: "Activity Log",    icon: History },

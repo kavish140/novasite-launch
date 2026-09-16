@@ -29,6 +29,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     const { data: posts } = await supabase
       .from("blog_posts")
       .select("id, title, slug, excerpt, published_at")
+      .eq("status", "published")
       .order("published_at", { ascending: false });
 
     return { posts: posts || [] };

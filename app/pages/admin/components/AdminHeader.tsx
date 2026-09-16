@@ -12,6 +12,8 @@ const TAB_LABELS: Record<string, string> = {
   ads_inquiries:   "Ad Inquiries",
   analytics:       "LP Analytics",
   blogs:           "Blog Posts",
+  drafts:          "AI Drafts",
+  topics:          "Topic Queue",
   settings:        "Settings",
   activity_log:    "Activity Log",
 };
@@ -33,7 +35,7 @@ export default function AdminHeader({
   onCopyBlogs,
 }: AdminHeaderProps) {
   const isLeadTab = activeTab === "overview" || activeTab === "leads" || activeTab === "ad_leads";
-  const isBlogsTab = activeTab === "blogs";
+  const isBlogsTab = activeTab === "blogs" || activeTab === "drafts";
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/40 px-6 lg:px-8 bg-background/80 backdrop-blur-xl z-10 sticky top-0">

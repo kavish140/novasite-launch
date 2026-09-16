@@ -24,6 +24,8 @@ import {
   FileSignature,
   Settings,
   History,
+  Bot,
+  ListChecks,
 } from "lucide-react";
 
 export type AdminTab =
@@ -34,6 +36,8 @@ export type AdminTab =
   | "ads_inquiries"
   | "analytics"
   | "blogs"
+  | "drafts"
+  | "topics"
   | "settings"
   | "activity_log";
 
@@ -55,6 +59,7 @@ interface AdminSidebarProps {
     quote_requests: number;
     ad_leads: number;
     ads_inquiries: number;
+    drafts: number;
   };
   onLogout: () => void;
 }
@@ -66,10 +71,12 @@ export default function AdminSidebar({
   onLogout,
 }: AdminSidebarProps) {
   const mainNav: NavItem[] = [
-    { id: "overview",        label: "Overview",        icon: LayoutDashboard, group: "main" },
-    { id: "leads",           label: "Audit Requests",  icon: Users, badge: badges.leads, group: "main" },
-    { id: "quote_requests",  label: "Quote Requests",  icon: FileSignature, badge: badges.quote_requests, group: "main" },
-    { id: "blogs",           label: "Blog Posts",      icon: FileText, group: "main" },
+    { id: "overview",       label: "Overview",       icon: LayoutDashboard, group: "main" },
+    { id: "leads",          label: "Audit Requests", icon: Users, badge: badges.leads, group: "main" },
+    { id: "quote_requests", label: "Quote Requests", icon: FileSignature, badge: badges.quote_requests, group: "main" },
+    { id: "drafts",         label: "AI Drafts",      icon: Bot, badge: badges.drafts, group: "main" },
+    { id: "topics",         label: "Topic Queue",    icon: ListChecks, group: "main" },
+    { id: "blogs",          label: "Blog Posts",     icon: FileText, group: "main" },
   ];
 
   const marketingNav: NavItem[] = [

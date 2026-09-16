@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { subDays, format } from "date-fns";
-import { Users, Clock, Megaphone, CheckCircle2, FileText } from "lucide-react";
+import { Users, Clock, Megaphone, CheckCircle2, FileText, Bot, ListChecks } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -15,6 +15,8 @@ interface OverviewTabProps {
   requests: AuditRequest[];
   posts: BlogPost[];
   allAdLeads: AuditRequest[];
+  aiDraftsPending: number;
+  topicsInQueue: number;
 }
 
 // Helper: count items per day for the last 7 days → number[]
@@ -55,7 +57,7 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
 
-export default function OverviewTab({ requests, posts, allAdLeads }: OverviewTabProps) {
+export default function OverviewTab({ requests, posts, allAdLeads, aiDraftsPending, topicsInQueue }: OverviewTabProps) {
   const organicLeads = useMemo(
     () => requests.filter((r) => r.source !== "paid_ad"),
     [requests]
@@ -64,6 +66,7 @@ export default function OverviewTab({ requests, posts, allAdLeads }: OverviewTab
   const pendingCount = organicLeads.filter((r) => r.status !== "completed").length;
   const completedCount = requests.filter((r) => r.status === "completed").length;
   const pendingAdLeads = allAdLeads.filter((r) => r.status !== "completed").length;
+  const publishedPosts = posts.filter((p) => p.status === "published").length;
 
   // Sparklines
   const allLeadsSpark = useMemo(() => buildSparkData(requests), [requests]);
@@ -103,7 +106,7 @@ export default function OverviewTab({ requests, posts, allAdLeads }: OverviewTab
   return (
     <motion.div className="space-y-8" variants={stagger} initial="hidden" animate="show">
       {/* KPI Grid */}
-      <motion.div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4" variants={stagger}>
+      <motion.div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-7 gap-4" variants={stagger}>
         <motion.div variants={item}>
           <KpiCard
             title="Total Leads"
@@ -155,10 +158,30 @@ export default function OverviewTab({ requests, posts, allAdLeads }: OverviewTab
         <motion.div variants={item}>
           <KpiCard
             title="Published Blogs"
-            value={posts.length}
-            subtitle="Active content pieces"
+            value={publishedPosts}
+            subtitle="Live content pieces"
             icon={FileText}
             iconColor="text-blue-500"
+          />
+        </motion.div>
+        <motion.div variants={item}>
+          <KpiCard
+            title="AI Drafts"
+            value={aiDraftsPending}
+            subtitle="Awaiting your review"
+            icon={Bot}
+            iconColor="text-violet-500"
+            accentColor="border-violet-500/20"
+          />
+        </motion.div>
+        <motion.div variants={item}>
+          <KpiCard
+            title="Topics Queue"
+            value={topicsInQueue}
+            subtitle="Pending AI topics"
+            icon={ListChecks}
+            iconColor="text-cyan-500"
+            accentColor="border-cyan-500/20"
           />
         </motion.div>
       </motion.div>

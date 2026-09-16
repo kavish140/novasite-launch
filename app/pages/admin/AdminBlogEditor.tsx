@@ -8,6 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Eye, EyeOff, Zap } from "lucide-react";
 import TipTapEditor from "./components/TipTapEditor";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import type { BlogPost } from "./AdminDashboard";
+
+type PostStatus = BlogPost["status"];
 
 export default function AdminBlogEditor() {
   const { id } = useParams<{ id: string }>();
@@ -18,9 +24,13 @@ export default function AdminBlogEditor() {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
+  const [status, setStatus] = useState<PostStatus>("draft");
+  const [blanksMetadata, setBlanksMetadata] = useState<BlogPost["blanks_metadata"]>([]);
+  const [source, setSource] = useState<BlogPost["source"]>("manual");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditing);
   const [showPreview, setShowPreview] = useState(false);
+  const [showBlanks, setShowBlanks] = useState(false);
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -48,6 +58,13 @@ export default function AdminBlogEditor() {
         setExcerpt(data.excerpt ?? "");
         setContent(data.content ?? "");
         setTags(Array.isArray(data.tags) ? data.tags.join(", ") : "");
+        setStatus((data.status as PostStatus) ?? "draft");
+        setBlanksMetadata(Array.isArray(data.blanks_metadata) ? data.blanks_metadata : []);
+        setSource(data.source ?? "manual");
+        // Auto-open blanks panel for AI drafts that have unfilled blanks
+        if (data.source === "ai" && Array.isArray(data.blanks_metadata) && data.blanks_metadata.some((b: { filled: boolean }) => !b.filled)) {
+          setShowBlanks(true);
+        }
       }
     } catch (error) {
       console.error("Error fetching post:", error);
@@ -78,7 +95,31 @@ export default function AdminBlogEditor() {
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
-    const postData = { title, slug, excerpt, content, tags: parsedTags };
+
+    // Inject filled blank content into the HTML before saving
+    let finalContent = content;
+    blanksMetadata.forEach((blank) => {
+      if (blank.filled && blank.filled_content) {
+        finalContent = finalContent.replace(
+          `<!-- BLANK:${blank.id} -->`,
+          `<span class="filled-blank" data-blank-id="${blank.id}">${blank.filled_content}</span>`
+        );
+      }
+    });
+
+    const postData: Record<string, unknown> = {
+      title, slug, excerpt,
+      content: finalContent,
+      tags: parsedTags,
+      status,
+      blanks_metadata: blanksMetadata,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Auto-set published_at the first time a post goes live
+    if (status === "published" && !isEditing) {
+      postData.published_at = new Date().toISOString();
+    }
 
     try {
       if (isEditing) {
@@ -88,7 +129,12 @@ export default function AdminBlogEditor() {
       } else {
         const { error } = await supabase.from("blog_posts").insert([postData]);
         if (error) throw error;
-        toast({ title: "Success", description: "Blog post created successfully!" });
+        toast({
+          title: status === "draft" ? "Draft Saved" : "Post Published",
+          description: status === "draft"
+            ? "Your draft is saved. Fill in the blanks and publish when ready."
+            : "Blog post published successfully!",
+        });
       }
       navigate("/admin/dashboard");
     } catch (error: unknown) {
@@ -133,6 +179,15 @@ export default function AdminBlogEditor() {
               <span className="font-semibold text-foreground/80 text-sm">
                 {isEditing ? "Edit Post" : "New Post"}
               </span>
+              {/* Status badge */}
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${
+                status === "draft"     ? "bg-amber-500/15 text-amber-400 border-amber-500/30" :
+                status === "review"    ? "bg-blue-500/15 text-blue-400 border-blue-500/30" :
+                status === "published" ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" :
+                "bg-secondary/40 text-muted-foreground border-border/40"
+              }`}>
+                {status}
+              </span>
             </div>
 
             <Button
@@ -146,6 +201,33 @@ export default function AdminBlogEditor() {
               {showPreview ? "Editor" : "Preview"}
             </Button>
 
+            {/* Fill Blanks toggle — only shown for AI posts with blanks */}
+            {source === "ai" && blanksMetadata.length > 0 && (
+              <Button
+                type="button"
+                size="sm"
+                variant={showBlanks ? "default" : "outline"}
+                className="gap-2 h-9 border-border/40"
+                onClick={() => setShowBlanks((v) => !v)}
+              >
+                <Zap className="w-4 h-4" />
+                Blanks ({blanksMetadata.filter((b) => !b.filled).length} left)
+              </Button>
+            )}
+
+            {/* Status selector */}
+            <Select value={status} onValueChange={(v) => setStatus(v as PostStatus)}>
+              <SelectTrigger className="h-9 w-32 border-border/40 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="review">Review</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Button
               type="submit"
               form="blog-editor-form"
@@ -153,7 +235,7 @@ export default function AdminBlogEditor() {
               className="gap-2 h-9"
             >
               <Save className="w-4 h-4" />
-              {loading ? "Saving…" : "Save Post"}
+              {loading ? "Saving…" : status === "draft" ? "Save Draft" : status === "published" ? "Publish" : "Save"}
             </Button>
           </div>
         </div>
@@ -271,6 +353,109 @@ export default function AdminBlogEditor() {
               </div>
             </div>
           </form>
+        )}
+
+        {/* ── Blanks Fill Panel ──────────────────────────────────────────── */}
+        {showBlanks && blanksMetadata.length > 0 && (
+          <div className="mt-8 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-foreground">Fill in Blanks</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Add your personal experience, local examples, and client results below. These replace the AI placeholders.
+                </p>
+              </div>
+              <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                {blanksMetadata.filter((b) => !b.filled).length} / {blanksMetadata.length} remaining
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {blanksMetadata.map((blank) => (
+                <div
+                  key={blank.id}
+                  className={`rounded-xl border p-5 space-y-3 transition-all duration-200 ${
+                    blank.filled
+                      ? "border-emerald-500/30 bg-emerald-500/5"
+                      : "border-border/60 bg-card/60"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        {blank.filled ? (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">✓ Filled</span>
+                        ) : (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Needs input</span>
+                        )}
+                        <span className="text-xs text-muted-foreground font-mono">#{blank.id}</span>
+                      </div>
+                      <p className="font-medium text-sm text-foreground">{blank.label}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{blank.guideline}</p>
+                      <p className="text-[10px] text-muted-foreground/60 italic">📍 {blank.location}</p>
+                    </div>
+                    {blank.filled && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setBlanksMetadata((prev) =>
+                            prev.map((b) =>
+                              b.id === blank.id ? { ...b, filled: false, filled_content: null } : b
+                            )
+                          )
+                        }
+                        className="text-xs text-muted-foreground hover:text-foreground shrink-0 underline underline-offset-2"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+
+                  {!blank.filled && (
+                    <div className="space-y-2">
+                      <textarea
+                        className="w-full min-h-[80px] rounded-lg border border-border/60 bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-1 focus:ring-primary/40"
+                        placeholder={`Write your ${blank.label.toLowerCase()} here…`}
+                        defaultValue={blank.filled_content ?? ""}
+                        id={`blank-${blank.id}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById(`blank-${blank.id}`) as HTMLTextAreaElement;
+                          const val = el?.value.trim();
+                          if (!val) return;
+                          setBlanksMetadata((prev) =>
+                            prev.map((b) =>
+                              b.id === blank.id
+                                ? { ...b, filled: true, filled_content: val }
+                                : b
+                            )
+                          );
+                        }}
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        Mark as filled
+                      </button>
+                    </div>
+                  )}
+
+                  {blank.filled && blank.filled_content && (
+                    <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 text-sm text-foreground/80 leading-relaxed">
+                      {blank.filled_content}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {blanksMetadata.every((b) => b.filled) && (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-center space-y-2">
+                <p className="text-emerald-400 font-semibold text-sm">✓ All blanks filled!</p>
+                <p className="text-xs text-muted-foreground">Change status to <strong>Published</strong> in the header and save to go live.</p>
+              </div>
+            )}
+          </div>
         )}
       </main>
     </div>

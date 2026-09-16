@@ -19,6 +19,8 @@ import AdLeadsTab from "./tabs/AdLeadsTab";
 import AdsInquiriesTab from "./tabs/AdsInquiriesTab";
 import AnalyticsTab from "./tabs/AnalyticsTab";
 import BlogsTab from "./tabs/BlogsTab";
+import DraftsTab from "./tabs/DraftsTab";
+import TopicsTab from "./tabs/TopicsTab";
 import QuoteRequestsTab from "./tabs/QuoteRequestsTab";
 import SettingsTab from "./tabs/SettingsTab";
 import ActivityLogTab from "./tabs/ActivityLogTab";
@@ -39,6 +41,15 @@ export type AuditRequest = {
   created_at: string;
 };
 
+export type BlankMeta = {
+  id: string;
+  label: string;
+  guideline: string;
+  location: string;
+  filled: boolean;
+  filled_content: string | null;
+};
+
 export type BlogPost = {
   id: string;
   title: string;
@@ -46,6 +57,15 @@ export type BlogPost = {
   excerpt?: string;
   content?: string;
   tags?: string[];
+  status: "draft" | "review" | "published" | "archived";
+  source: "manual" | "ai";
+  blanks_metadata: BlankMeta[];
+  ai_model?: string | null;
+  ai_prompt_used?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  updated_at?: string | null;
+  published_at?: string | null;
   created_at: string;
 };
 
@@ -304,6 +324,45 @@ export default function AdminDashboard() {
     setConfirmOpen(true);
   };
 
+  // ── Update blog post status ────────────────────────────────────────────────
+  const updatePostStatus = async (id: string, newStatus: BlogPost["status"]) => {
+    const prev = posts.find((p) => p.id === id);
+    try {
+      const updates: Partial<BlogPost> & { published_at?: string | null } = {
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      };
+      // Set published_at when first publishing
+      if (newStatus === "published" && !prev?.published_at) {
+        updates.published_at = new Date().toISOString();
+      }
+      // Set reviewed_at when moving to review or publishing
+      if (newStatus === "review" || newStatus === "published") {
+        updates.reviewed_at = new Date().toISOString();
+      }
+      const { error } = await supabase
+        .from("blog_posts")
+        .update(updates)
+        .eq("id", id);
+      if (error) throw error;
+      setPosts((prev2) =>
+        prev2.map((p) => (p.id === id ? { ...p, ...updates } : p))
+      );
+      toast({
+        title: "Post Updated",
+        description: `"${prev?.title}" is now ${newStatus}.`,
+      });
+      logActivity("post_status_change", "blog_post", id, {
+        old_status: prev?.status,
+        new_status: newStatus,
+        title: prev?.title,
+      });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to update post status.";
+      toast({ title: "Update Failed", description: msg, variant: "destructive" });
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/admin");
@@ -354,18 +413,37 @@ export default function AdminDashboard() {
 
   // ── Derived ────────────────────────────────────────────────────────────────
   const allAdLeads = requests.filter((r) => r.source === "paid_ad");
+  const aiDraftsPending = posts.filter((p) => p.status === "draft" && p.source === "ai").length;
+  // Topics in queue: fetched separately by TopicsTab itself; pass 0 as placeholder
+  // (OverviewTab shows what it receives — TopicsTab owns the DB query)
+  const [topicsInQueue, setTopicsInQueue] = useState(0);
+  // Fetch topics count once on mount
+  useEffect(() => {
+    supabase
+      .from("blog_topics")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending")
+      .then(({ count }) => { if (count !== null) setTopicsInQueue(count); });
+  }, []);
 
   const badges = {
     leads:          requests.filter((r) => r.status !== "completed" && r.source !== "paid_ad").length,
     quote_requests: quoteRequests.filter((r) => r.status === "new").length,
     ad_leads:       allAdLeads.filter((r) => r.status !== "completed").length,
     ads_inquiries:  adsInquiries.filter((i) => i.status === "new").length,
+    drafts:         posts.filter((p) => p.status === "draft" && p.source === "ai").length,
   };
 
   // ── Tab content map ────────────────────────────────────────────────────────
   const tabContent: Record<AdminTab, React.ReactNode> = {
     overview: (
-      <OverviewTab requests={requests} posts={posts} allAdLeads={allAdLeads} />
+      <OverviewTab
+        requests={requests}
+        posts={posts}
+        allAdLeads={allAdLeads}
+        aiDraftsPending={aiDraftsPending}
+        topicsInQueue={topicsInQueue}
+      />
     ),
     leads: (
       <LeadsTab
@@ -416,8 +494,22 @@ export default function AdminDashboard() {
       <AnalyticsTab pageViews={pageViews} allAdLeads={allAdLeads} loading={loading} />
     ),
     blogs: (
-      <BlogsTab posts={posts} loading={loading} onDeletePost={handleDeleteClick} />
+      <BlogsTab
+        posts={posts}
+        loading={loading}
+        onDeletePost={handleDeleteClick}
+        onUpdatePostStatus={updatePostStatus}
+      />
     ),
+    drafts: (
+      <DraftsTab
+        posts={posts}
+        loading={loading}
+        onDeletePost={handleDeleteClick}
+        onUpdatePostStatus={updatePostStatus}
+      />
+    ),
+    topics: <TopicsTab />,
     settings: <SettingsTab />,
     activity_log: <ActivityLogTab />,
   };
