@@ -205,9 +205,19 @@ export default function DraftsTab({ posts, loading, onDeletePost, onUpdatePostSt
           </div>
         )}
 
-        {/* No blanks */}
+        {/* No blanks — complete post, ready to publish */}
         {blanks.length === 0 && (
-          <p className="text-[10px] text-muted-foreground italic">No blanks metadata — post generated without guidelines.</p>
+          <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
+            <span className="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Complete post — ready to publish!
+            </span>
+            <button
+              onClick={() => onUpdatePostStatus(post.id, "published")}
+              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-0.5 transition-colors"
+            >
+              Publish <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
         )}
       </motion.div>
     );
