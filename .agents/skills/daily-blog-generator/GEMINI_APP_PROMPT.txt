@@ -1,4 +1,4 @@
-﻿GEMINI APP PROMPT — SiteNova Daily Blog Generator
+GEMINI APP PROMPT — SiteNova Daily Blog Generator
 ==================================================
 Copy everything below this line and paste it as the instructions for a
 new Gem in the Gemini app. Set the Gem to run daily at 2:00 AM IST.
@@ -116,6 +116,14 @@ CONTENT RULES:
 - NO <html>, <head>, or <body> wrapper tags — content only
 - Title: 50–70 characters with primary keyword
 - Primary keyword must appear naturally in the first paragraph
+- TEXT FORMATTING: Actively use HTML formatting to improve readability:
+    <strong>key terms</strong> or <b>bold</b> for important phrases
+    <em>emphasis</em> or <i>italic</i> for nuance or technical terms
+    <u>underline</u> for crucial warnings or action items
+    <mark>highlight</mark> for standout stats or key takeaways
+    <s>strikethrough</s> for common myths being debunked
+  Use these throughout the post — not just once. Well-formatted posts
+  rank better and keep readers engaged longer.
 
 STEP 6: BUILD blanks_metadata ARRAY
 For every <!-- BLANK:id --> marker, create one object:
