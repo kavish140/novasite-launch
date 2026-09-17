@@ -344,6 +344,40 @@
   .tiptap:focus-visible {
     @apply outline-none;
   }
+
+  /* ── HTML formatting tags — TipTap editor + public blog prose ────────────── */
+  /* Tailwind prose does not style <u>, <mark>, <s> by default */
+  .tiptap u,
+  .prose u {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .tiptap s,
+  .prose s {
+    text-decoration: line-through;
+  }
+
+  .tiptap mark,
+  .prose mark {
+    background-color: rgba(250, 204, 21, 0.3); /* amber-300/30 */
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+
+  /* Make sure b and strong are bold even inside prose (already handled by
+     prose plugin but this ensures no regression from custom resets) */
+  .tiptap b, .tiptap strong,
+  .prose b,  .prose strong {
+    font-weight: 700;
+  }
+
+  /* Italic */
+  .tiptap i, .tiptap em,
+  .prose i,  .prose em {
+    font-style: italic;
+  }
 }
 
 
