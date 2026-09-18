@@ -15,11 +15,13 @@ const TOOLS = [
   {
     name: "list_topics",
     description: "List all pending blog topics in the SiteNova topic queue, ordered by priority. Use this to see what topics are waiting to be written.",
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
     name: "add_topic",
     description: "Add a new topic to the SiteNova blog topic queue. The AI blog generator will pick it up on the next run.",
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     inputSchema: {
       type: "object",
       properties: {
@@ -34,6 +36,7 @@ const TOOLS = [
   {
     name: "mark_topic_used",
     description: "Mark a topic as used after it has been written about.",
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     inputSchema: {
       type: "object",
       properties: {
@@ -45,6 +48,7 @@ const TOOLS = [
   {
     name: "skip_topic",
     description: "Skip a topic — it will be moved to the skipped list and the AI will not pick it up.",
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     inputSchema: {
       type: "object",
       properties: {
@@ -55,17 +59,20 @@ const TOOLS = [
   },
   {
     name: "list_recent_posts",
-    description: "List the 15 most recent blog posts (published + drafts) to avoid writing about duplicate topics.",
+    description: "List all blog posts (published + drafts) to avoid writing about duplicate topics.",
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
     name: "list_drafts",
     description: "List all AI-generated draft blog posts that are waiting to be reviewed and published.",
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
     name: "create_draft",
     description: "Save a new AI-generated blog post draft to the SiteNova database with status=draft.",
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     inputSchema: {
       type: "object",
       properties: {
@@ -84,14 +91,17 @@ const TOOLS = [
   {
     name: "get_site_context",
     description: "Get SiteNovas full business context: services, pricing in rupees, Mumbai service areas, content pillars, tone, and internal links to use in blog posts.",
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     inputSchema: { type: "object", properties: {}, required: [] },
   },
   {
     name: "get_blank_guidelines",
     description: "Get the rules for inserting human-fill blank markers into AI blog posts. Always call this before writing a post.",
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     inputSchema: { type: "object", properties: {}, required: [] },
   },
 ];
+
 
 // ── Site context ──────────────────────────────────────────────────────────────
 const SITE_CONTEXT = {
