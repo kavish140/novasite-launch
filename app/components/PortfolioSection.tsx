@@ -22,6 +22,8 @@ const imageBySlug = {
   "ecommerce-showcase": ecommerceShowcaseImage,
   "sanitaryware-showcase": ecommerceShowcaseImage,
   "nuts-design-golden-showcase": designShowcaseImage,
+  "artistry-showcase": designShowcaseImage,
+  "artisan-gallery": designShowcaseImage,
 } as const;
 
 

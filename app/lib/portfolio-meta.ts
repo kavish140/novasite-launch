@@ -76,6 +76,26 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     localFocus: "Premium brand design template for luxury products, jewellery, and high-end retail experiences.",
     useIframePreview: true,
   },
+  {
+    slug: "artistry-showcase",
+    title: "Artistry Showcase",
+    description:
+      "A creative and visual-forward showcase template designed for artists, studios, and creative agencies with dynamic layouts.",
+    image: designShowcaseImg,
+    liveUrl: "https://artistry-showcase.sitenova.dev/",
+    localFocus: "Creative portfolio showcase highlighting visual aesthetics and artistic presentation.",
+    useIframePreview: true,
+  },
+  {
+    slug: "artisan-gallery",
+    title: "Artisan Gallery",
+    description:
+      "An elegant gallery showcase template perfect for handcrafted goods, art exhibitions, and boutique collections.",
+    image: designShowcaseImg,
+    liveUrl: "https://artisan-gallery.sitenova.dev/",
+    localFocus: "Boutique gallery showcase designed for visual storytelling and curated collections.",
+    useIframePreview: true,
+  },
 ];
 
 export const customerProjects: PortfolioProjectMeta[] = [
