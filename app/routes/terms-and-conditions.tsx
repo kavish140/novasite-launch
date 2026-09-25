@@ -1,5 +1,5 @@
 import TermsAndConditions from "@/pages/legal/TermsAndConditions";
-import { buildMeta } from "@/lib/seo";
+import { buildMeta } from "@/lib/meta";
 
 export function meta() {
   return buildMeta({

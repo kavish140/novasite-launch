@@ -1,5 +1,5 @@
 import RefundPolicy from "@/pages/legal/RefundPolicy";
-import { buildMeta } from "@/lib/seo";
+import { buildMeta } from "@/lib/meta";
 
 export function meta() {
   return buildMeta({
