@@ -13,9 +13,21 @@ export type PortfolioProjectMeta = {
   liveUrl: string;
   localFocus?: string;
   useIframePreview?: boolean;
+  isSpecialHighlight?: boolean;
 };
 
 export const showcaseProjects: PortfolioProjectMeta[] = [
+  {
+    slug: "toolbox",
+    title: "Toolbox by Site Nova",
+    description:
+      "A fast, client-side web application suite featuring 17+ free online calculators and utilities. Demonstrates complex state management and zero-latency performance.",
+    image: aiSmartkitImg, // fallback
+    liveUrl: "https://tools.sitenova.dev",
+    localFocus: "Client-side React application demonstrating interactive tool development.",
+    useIframePreview: true,
+    isSpecialHighlight: true, // We will use this to highlight it in the UI
+  },
   {
     slug: "ai-smartkit",
     title: "AI SmartKit",

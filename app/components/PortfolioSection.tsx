@@ -16,6 +16,7 @@ const imageBySlug = {
   "dr-dipti-ganatra": drDiptiImage,
   "jupiter-finance": jupiterFinanceImage,
   "corporate-zone": jupiterFinanceImage, // fallback only — useIframePreview renders live site
+  "toolbox": smartkitImage, // fallback only
   "ai-smartkit": smartkitImage,
   "business-showcase": businessShowcaseImage,
   "design-showcase": designShowcaseImage,
@@ -102,9 +103,18 @@ const PortfolioSection = () => {
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow"
+                  className={`block relative overflow-hidden rounded-2xl border ${
+                    project.isSpecialHighlight
+                      ? "border-accent/60 shadow-[0_0_30px_-5px_rgba(var(--accent),0.3)] hover:shadow-[0_0_40px_-5px_rgba(var(--accent),0.5)]"
+                      : "border-border/50"
+                  } bg-card h-full interactive-card hover-glow`}
                   aria-label={`Open ${project.title}`}
                 >
+                  {project.isSpecialHighlight && (
+                    <div className="absolute top-4 right-4 z-20 rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground shadow-sm animate-pulse">
+                      React App Bundle
+                    </div>
+                  )}
                   <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
                     {project.useIframePreview && inView ? (
                       <IframePreview src={project.liveUrl} title={project.title} />

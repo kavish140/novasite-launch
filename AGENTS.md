@@ -155,6 +155,9 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `thank-you.tsx` | `/thank-you` | `pages/ThankYou.tsx` |
 | `website-cost-calculator.tsx` | `/website-cost-calculator` | `pages/WebsiteCostCalculator.tsx` |
 | `why-us.tsx` | `/why-us` | `pages/WhyUs.tsx` |
+| `privacy-policy.tsx` | `/privacy-policy` | `pages/legal/PrivacyPolicy.tsx` |
+| `terms-and-conditions.tsx` | `/terms-and-conditions` | `pages/legal/TermsAndConditions.tsx` |
+| `refund-policy.tsx` | `/refund-policy` | `pages/legal/RefundPolicy.tsx` |
 | `blog._index.tsx` | `/blog` | `pages/blog/BlogIndex.tsx` |
 | `blog.$slug.tsx` | `/blog/:slug` | `pages/blog/BlogPost.tsx` |
 | `admin._index.tsx` | `/admin` | `pages/admin/AdminLogin.tsx` |
@@ -219,6 +222,13 @@ This injects `<title>`, meta tags, Open Graph, Twitter Card, canonical link, rob
 | Website Cost Calculator | `pages/WebsiteCostCalculator.tsx` | Interactive calculator with dynamic pricing |
 | Why Us | `pages/WhyUs.tsx` | Differentiators, trust signals |
 | Not Found | `pages/NotFound.tsx` | 404 page |
+
+### Legal Pages
+| Page | File | Description |
+|---|---|---|
+| Privacy Policy | `pages/legal/PrivacyPolicy.tsx` | Privacy Policy required for standard compliance |
+| Terms & Conditions | `pages/legal/TermsAndConditions.tsx` | General T&Cs for services |
+| Refund Policy | `pages/legal/RefundPolicy.tsx` | Refund & Cancellation policy required by payment gateways |
 
 ### Paid Ad Landing Pages (`pages/lp/`)
 Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`. Insert `source: "paid_ad"` into `audit_requests` on form submit. Ad leads appear in a separate "Ad Leads" tab in the Admin Dashboard.
