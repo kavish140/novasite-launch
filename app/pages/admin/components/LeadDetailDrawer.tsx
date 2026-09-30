@@ -140,6 +140,9 @@ export default function LeadDetailDrawer({ open, onOpenChange, data }: LeadDetai
           <Field label="Email" value={r.email} />
           <Field label="Mobile" value={r.mobile} />
           <Field label="Project Type" value={r.project_type} />
+          <Field label="Business" value={r.business_name} />
+          <Field label="Package" value={r.package_name} />
+          <Field label="Source" value={r.source === "paid_ad" ? "Paid Ad" : "Website"} />
           <Field label="Budget" value={r.budget} />
           <Field label="Timeline" value={r.timeline} />
           <Field label="Status" value={<StatusBadge status={`quote_${r.status}`} />} />

@@ -169,7 +169,7 @@ export default function Ecommerce() {
               Why SiteNova for E-commerce?
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Most online shops lose 70% of potential buyers due to slow page loads and complex checkouts. We custom engineer websites to resolve those bottlenecks.
+              Slow page loads and complex checkouts can cause shoppers to leave before buying. We custom engineer websites to resolve those bottlenecks.
             </p>
 
             <div className="mt-8 space-y-6">

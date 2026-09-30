@@ -30,7 +30,7 @@ export default function JupiterFastFinance() {
           "Jupiter Finance is a Mulund-based loan and investment advisory serving Mumbai, Thane, and nearby suburbs. SiteNova built a sleek, dark-themed website covering all five service verticals — home loans, LAP, mutual funds, SIP, and health insurance — with a WhatsApp lead funnel and fast load times that match the brand's own 'fast' promise.",
         stats: [
           { label: "Delivery", value: "10 Days" },
-          { label: "PageSpeed Score", value: "95 / 100" },
+          { label: "Design", value: "Mobile responsive" },
           { label: "Service Verticals", value: "5" },
           { label: "Location", value: "Mulund, Mumbai" },
         ],

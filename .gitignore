@@ -36,3 +36,9 @@ test-results/
 .env
 .env.local
 .env.*
+.dev.vars
+.dev.vars.*
+
+# Local framework/runtime output
+.react-router/
+.wrangler/

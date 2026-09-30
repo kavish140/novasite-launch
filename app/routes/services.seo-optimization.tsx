@@ -7,7 +7,7 @@ export function meta() {
     title:
       "SEO & Website Speed Optimization in Mumbai | Rank on Google | SiteNova",
     description:
-      "Is your Mumbai business invisible on Google? SiteNova fixes Core Web Vitals, boosts PageSpeed to 90+, and builds local SEO systems — so you rank higher and get more calls. From ₹8,000.",
+      "Is your Mumbai business invisible on Google? SiteNova fixes Core Web Vitals, improves loading speed, and builds local SEO systems — so you rank higher and get more calls. From ₹8,000.",
     canonicalPath: "/services/seo-optimization",
     keywords: [
       "SEO and speed optimization Mumbai",

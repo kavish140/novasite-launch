@@ -28,7 +28,7 @@ const imageBySlug = {
 } as const;
 
 
-const PortfolioSection = () => {
+const PortfolioSection = ({ mode = "all" }: { mode?: "all" | "customers" | "showcases" }) => {
   const [inView, setInView] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
 
@@ -54,7 +54,7 @@ const PortfolioSection = () => {
   }, []);
 
   return (
-    <section id="portfolio" ref={sectionRef} className="section-padding relative" aria-labelledby="portfolio-title">
+    <section id={mode === "showcases" ? "showcases" : "portfolio"} ref={sectionRef} className="section-padding relative" aria-labelledby={`${mode}-portfolio-title`}>
       <div className="mx-auto max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -64,87 +64,15 @@ const PortfolioSection = () => {
           className="text-center mb-16"
         >
           <span className="text-sm font-medium text-accent uppercase tracking-widest">Portfolio</span>
-          <h2 id="portfolio-title" className="font-heading text-3xl md:text-5xl font-bold mt-3 mb-5">
-            Websites Built by <span className="gradient-text">Kavish</span>
+          <h2 id={`${mode}-portfolio-title`} className="font-heading text-3xl md:text-5xl font-bold mt-3 mb-5">
+            {mode === "showcases" ? "Explore our design demos" : <>Websites Built by <span className="gradient-text">Kavish</span></>}
           </h2>
           <p className="max-w-xl mx-auto text-muted-foreground text-lg">
             Real projects. Real results. Here's a showcase of sites crafted with SiteNova.
           </p>
         </motion.div>
 
-        {/* Showcase Websites Section */}
-        <div className="mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-8 border-b border-border/50 pb-4"
-          >
-            <h3 className="font-heading text-2xl md:text-3xl font-bold flex items-center gap-3">
-              <span className="h-6 w-1 rounded-full bg-accent" />
-              Showcase Websites (Live Previews)
-            </h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              Internal products, demo templates, and modern SaaS platforms.
-            </p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {showcaseProjects.map((project, i) => (
-              <motion.article
-                key={project.slug}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.15 }}
-                className="group"
-              >
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`block relative overflow-hidden rounded-2xl border ${
-                    project.isSpecialHighlight
-                      ? "border-accent/60 shadow-[0_0_30px_-5px_rgba(var(--accent),0.3)] hover:shadow-[0_0_40px_-5px_rgba(var(--accent),0.5)]"
-                      : "border-border/50"
-                  } bg-card h-full interactive-card hover-glow`}
-                  aria-label={`Open ${project.title}`}
-                >
-                  {project.isSpecialHighlight && (
-                    <div className="absolute top-4 right-4 z-20 rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground shadow-sm animate-pulse">
-                      React App Bundle
-                    </div>
-                  )}
-                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
-                    {project.useIframePreview && inView ? (
-                      <IframePreview src={project.liveUrl} title={project.title} />
-                    ) : (
-                      <BlurImage
-                        src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                        alt={`${project.title} website screenshot by SiteNova`}
-                        className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02] !bg-transparent"
-                        width={500}
-                        height={400}
-                      />
-                    )}
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
-                      <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-5">{project.description}</p>
-                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
-                      Open Website
-                      <ExternalLink size={16} />
-                    </span>
-                  </div>
-                </a>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-
+        {mode !== "showcases" && <>
         {/* Customer Websites Section */}
         <div>
           <motion.div
@@ -260,6 +188,83 @@ const PortfolioSection = () => {
             })}
           </div>
         </div>
+        </>}
+        {mode !== "customers" && <>
+        {/* Showcase Websites Section */}
+        <div className="mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 border-b border-border/50 pb-4"
+          >
+            <h3 className="font-heading text-2xl md:text-3xl font-bold flex items-center gap-3">
+              <span className="h-6 w-1 rounded-full bg-accent" />
+              Showcase Websites (Live Previews)
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              Internal products, demo templates, and modern SaaS platforms.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {showcaseProjects.map((project, i) => (
+              <motion.article
+                key={project.slug}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                className="group"
+              >
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`block relative overflow-hidden rounded-2xl border ${
+                    project.isSpecialHighlight
+                      ? "border-accent/60 shadow-[0_0_30px_-5px_rgba(var(--accent),0.3)] hover:shadow-[0_0_40px_-5px_rgba(var(--accent),0.5)]"
+                      : "border-border/50"
+                  } bg-card h-full interactive-card hover-glow`}
+                  aria-label={`Open ${project.title}`}
+                >
+                  {project.isSpecialHighlight && (
+                    <div className="absolute top-4 right-4 z-20 rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground shadow-sm animate-pulse">
+                      React App Bundle
+                    </div>
+                  )}
+                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
+                    {project.useIframePreview && inView ? (
+                      <IframePreview src={project.liveUrl} title={project.title} />
+                    ) : (
+                      <BlurImage
+                        src={imageBySlug[project.slug as keyof typeof imageBySlug]}
+                        alt={`${project.title} website screenshot by SiteNova`}
+                        className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02] !bg-transparent"
+                        width={500}
+                        height={400}
+                      />
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
+                      <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-5">{project.description}</p>
+                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
+                      Open Website
+                      <ExternalLink size={16} />
+                    </span>
+                  </div>
+                </a>
+              </motion.article>
+            ))}
+          </div>
+        </div>
+
+
+        </>}
       </div>
     </section>
   );

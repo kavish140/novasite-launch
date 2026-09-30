@@ -152,6 +152,10 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `our-process.tsx` | `/our-process` | `pages/OurProcess.tsx` |
 | `pricing.tsx` | `/pricing` | `pages/Pricing.tsx` |
 | `quote.tsx` | `/quote` | `pages/Quote.tsx` |
+| `book-a-call.tsx` | `/book-a-call` | `pages/BookACall.tsx` |
+| `api.quotes.ts` | `/api/quotes` | Validated, idempotent quote action |
+| `api.booking-settings.ts` | `/api/booking-settings` | Sanitized public booking configuration |
+| `api.integrations.google-calendar.ts` | `/api/integrations/google-calendar` | HMAC-signed Calendar/notification API |
 | `thank-you.tsx` | `/thank-you` | `pages/ThankYou.tsx` |
 | `website-cost-calculator.tsx` | `/website-cost-calculator` | `pages/WebsiteCostCalculator.tsx` |
 | `why-us.tsx` | `/why-us` | `pages/WhyUs.tsx` |
@@ -211,14 +215,14 @@ This injects `<title>`, meta tags, Open Graph, Twitter Card, canonical link, rob
 ### Core Pages
 | Page | File | Description |
 |---|---|---|
-| Homepage | `pages/Index.tsx` | Hero, features, service areas grid, pricing callout, portfolio, free audit CTA, how it works, testimonials, FAQ, geo-entity block, footer |
+| Homepage | `pages/Index.tsx` | Buyer-focused hero with prices and client imagery, customer portfolio and testimonials immediately after hero, features, service areas, pricing, demos, process, FAQ and GEO block |
 | About | `pages/About.tsx` | Company story, founder bio, values, team section |
 | Contact | `pages/Contact.tsx` | Contact form + WhatsApp / phone links |
 | Free Audit | `pages/FreeAudit.tsx` | Lead capture form — saves to Supabase `audit_requests` table |
 | Our Process | `pages/OurProcess.tsx` | 4-step process: Discovery → Design → Development → Launch |
 | Pricing | `pages/Pricing.tsx` | Pricing tiers and breakdown |
-| Quote | `pages/Quote.tsx` | Multi-step quote form — saves to Supabase; triggers `/thank-you` redirect + Google Ads pixel |
-| Thank You | `pages/ThankYou.tsx` | Post-quote confirmation page; Google Ads conversion fires here |
+| Quote | `pages/Quote.tsx` | Shared `QuoteForm`: explicit budget, business/contact/project/timing, optional details; saves via `/api/quotes` before confirmation |
+| Thank You | `pages/ThankYou.tsx` | Post-quote confirmation with optional booking CTA; requires accepted submission state; never fires a conversion on page load |
 | Website Cost Calculator | `pages/WebsiteCostCalculator.tsx` | Interactive calculator with dynamic pricing |
 | Why Us | `pages/WhyUs.tsx` | Differentiators, trust signals |
 | Not Found | `pages/NotFound.tsx` | 404 page |
@@ -235,8 +239,8 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 
 | Page | URL | Description |
 |---|---|---|
-| `pages/lp/WebDesignLP.tsx` | `/lp/web-design` | Google + Meta ads LP. **Hero**: inline 3-step `QuoteWizard` (project type → requirements/budget/timeline → contact details). Saves to `quote_requests` Supabase table + sends email via Web3Forms. **Bottom CTA**: 4-field free audit form (`LeadForm`) — saves to `audit_requests` with `source: 'paid_ad'`. Fires `trackAuditSubmit()` on audit submit. Sections: hero+wizard, social proof strip, pain points, how it works, testimonials, FAQ, final audit CTA. Sticky mobile CTA bar. |
-| `pages/lp/LpThankYouQuote.tsx` | `/lp/thank-you-quote` | Confirmation page for LP quote form. Shows name + project type + email. Fires `trackQuoteSubmit()`. Guard: redirects to `/lp/web-design` if accessed directly without router state. |
+| `pages/lp/WebDesignLP.tsx` | `/lp/web-design` | Google + Meta ads LP. **Hero**: shared 3-step `QuoteForm` (project → budget/timing → business/contact). Uses `/api/quotes`; durable email queue is delivered by Apps Script. **Bottom CTA**: 4-field free audit form (`LeadForm`) — saves to `audit_requests` with `source: 'paid_ad'`. Fires `trackAuditSubmit()` on audit submit. Sections: hero+quote form, real client work and testimonials, pain points, process, FAQ and audit CTA. No floating controls on this form page. |
+| `pages/lp/LpThankYouQuote.tsx` | `/lp/thank-you-quote` | Confirmation page for LP quote form. Shows name + project type + email. No mount conversion. Guard: redirects to `/lp/web-design` without an accepted submission ID in router state. Includes booking CTA when configured. |
 | `pages/lp/LpThankYouAudit.tsx` | `/lp/thank-you-audit` | Confirmation page for LP audit form. Shows name + email. Fires `trackAuditSubmit()`. Guard: redirects to `/lp/web-design` if accessed directly without router state. |
 
 
@@ -250,7 +254,7 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 | Page | File | Description |
 |---|---|---|
 | Admin Login | `pages/admin/AdminLogin.tsx` | Redesigned login page — gradient Zap icon, password visibility toggle, error shake animation, three animated glow orbs. |
-| Admin Dashboard | `pages/admin/AdminDashboard.tsx` | Thin shell (~180 lines) — imports all tab components, owns data fetching + mutations, passes props down. All 6 tabs: Overview, Audit Requests, Ad Leads, Ad Inquiries, LP Analytics, Blog Posts. Exports shared types (`AuditRequest`, `BlogPost`, `AdsInquiry`, `PageView`). AnimatePresence cross-tab transitions. |
+| Admin Dashboard | `pages/admin/AdminDashboard.tsx` | Thin shell (~180 lines) — imports all tab components, owns data fetching + mutations, passes props down. Tabs include Overview, Scheduled Calls, lead/quote queues, analytics, blog/content tools, settings and activity log. Exports shared types (`AuditRequest`, `BlogPost`, `AdsInquiry`, `PageView`). AnimatePresence cross-tab transitions. |
 | Admin Blog Editor | `pages/admin/AdminBlogEditor.tsx` | Blog post create/edit with **TipTap WYSIWYG editor** (Phase 4). Toolbar: undo/redo, H1-H3, bold/italic/underline/strike/inline-code, bullet/ordered lists, blockquote, code block, text alignment, link insert, image URL insert, horizontal rule, hard break. Live Preview toggle in header renders the post as it will appear on the blog. Slug auto-generated from title on create. |
 
 > **Admin guard**: `components/ProtectedRoute.tsx` is now **actively wired** to all three protected routes: `admin.dashboard.tsx`, `admin.blog.new.tsx`, `admin.blog.$id.tsx`. Any unauthenticated access redirects to `/admin`. The exit intent popup is suppressed on all `/admin/*` routes.
@@ -290,7 +294,7 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 | `components/QuickActions.tsx` | One-click WhatsApp (`wa.me/91{digits}?text=…`), Call (`tel:`), Email (`mailto:`) buttons with Tooltips. `stopPropagation` on click so row click doesn't also fire. |
 | `components/BulkActionBar.tsx` | Floating bar (fixed bottom center, AnimatePresence) that appears when table checkboxes are selected. Buttons: Resolve All, Export CSV, Delete (optional). Dismiss with X. |
 | `components/LeadDetailDrawer.tsx` | shadcn Sheet slide-out panel. Accepts `DrawerLead` union (`audit_request \| quote_request \| ad_inquiry`). Renders type-specific fields, QuickActions in header, notes timeline (fetches `lead_notes`), Add Note form (Ctrl+Enter to save). Exports `DrawerLead` and `LeadNote` types. |
-| `hooks/useRealtimeLeads.ts` | Supabase `channel()` subscriptions on `audit_requests`, `quote_requests`, `ads_inquiries` INSERT events. On new insert: calls parent callback to update state + fires Web3Forms email notification to kavishganatra5@gmail.com. Callbacks stored in ref — effect never re-runs on render. |
+| `hooks/useRealtimeLeads.ts` | Supabase `channel()` subscriptions on `audit_requests`, `quote_requests`, `ads_inquiries` INSERT events. On new insert: updates parent state. Existing audit/ads email behavior remains; quotes are emailed through the durable server queue and Apps Script, independently of the dashboard. Callbacks stored in ref — effect never re-runs on render. |
 
 **Phase 3 Supabase changes:**
 - New table: `lead_notes` (id, lead_type CHECK('audit_request'|'quote_request'|'ad_inquiry'), lead_id uuid, note text, created_at). RLS: authenticated full access only. Index on (lead_id, created_at DESC).
@@ -301,6 +305,16 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 - Bulk mutations: `bulkUpdateRequestStatus(ids, status)`, `bulkDeleteRequests(ids)`, `bulkUpdateQuoteStatus(ids, status)` — use `.in("id", ids)` Supabase filter.
 - `openConfirm(title, description, onConfirm)` helper exposed for child-triggered confirms.
 - `LeadNote` type exported alongside other shared types.
+
+### Booking and quote improvements (2026-09-29)
+
+- `tabs/ScheduledCallsTab.tsx`: attendee search, upcoming/past/cancelled filters, IST date/duration, Meet/Calendar actions, notification status and sync age.
+- `hooks/useScheduledCalls.ts`: paginated reads and 60-second refresh while Overview or Scheduled Calls is open; scheduling itself runs independently in Apps Script.
+- Sidebar, header and command palette include Scheduled Calls; Overview counts upcoming confirmed appointments only.
+- `components/BookingSettings.tsx`: validates and saves the Google appointment URL and enabled flag in `booking_settings`; mounted by SettingsTab.
+- Quote detail drawer includes business, selected package and source.
+- `components/QuoteForm.tsx`: shared form with pricing/package prefill and idempotent retries.
+- `BookingProvider`/`BookingCTA`: public sanitized configuration, hidden CTAs until enabled and valid.
 
 ### Admin Phase 4 Components & Enhancements
 | File | Role |
@@ -376,9 +390,9 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 ### Lead Generation / Conversion
 | Component | File | Role |
 |---|---|---|
-| `ExitIntentPopup` | `components/ExitIntentPopup.tsx` | Appears on desktop mouse-leave-viewport, or after 45s on mobile. Collects name + email + WhatsApp + industry. Saves to Supabase `audit_requests`. Session-gated via `sessionStorage`. Hidden on `/admin/*`. |
-| `BookCallWidget` | `components/BookCallWidget.tsx` | Floating "Book a Call" button. Lazy-loaded. |
-| `MobileAuditBar` | `components/MobileAuditBar.tsx` | Fixed bottom bar on mobile. Links to `/free-audit`. Lazy-loaded. |
+| `ExitIntentPopup` | `components/ExitIntentPopup.tsx` | Appears on desktop mouse-leave-viewport, or after 45s on mobile. Collects name + email + WhatsApp + industry. Saves to Supabase `audit_requests`. Session-gated via `sessionStorage`. Hidden on admin, LP, booking, quote, contact, audit and confirmation routes via `suppressPromotions()`. |
+| `BookCallWidget` | `components/BookCallWidget.tsx` | One mobile Quote/WhatsApp bar and desktop WhatsApp/phone controls; hidden on form, booking, confirmation and admin pages. Lazy-loaded. |
+| `MobileAuditBar` | `components/MobileAuditBar.tsx` | Legacy component, no longer mounted; consolidated into `BookCallWidget`. |
 
 ### Section Components (used on Homepage & other pages)
 | Component | Role |
@@ -470,6 +484,9 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 | `meta.ts` | `buildMeta()` — generates `MetaDescriptor[]` for RR7 `meta()` exports. Handles title, description, canonical, OG, Twitter Card, keywords, article-specific tags. Also exports `SITE_NAME`, `SITE_URL`, `DEFAULT_OG_IMAGE`, `TWITTER_HANDLE`. |
 | `seo.ts` | JSON-LD structured data builders: `buildLocalBusinessJsonLd()`, `buildOrganizationJsonLd()`, `buildFaqJsonLd()`, `buildServiceJsonLd()`, `buildHowToJsonLd()`, `buildAboutPageJsonLd()`, `buildSpeakableJsonLd()`. Used via `<JsonLd>` component. `setPageSeo()` is a no-op legacy stub. |
 | `locationMeta.ts` | `buildLocationMeta()` + `buildLocationJsonLd()` — factory functions for location page meta and JSON-LD. Keeps all 14 location pages consistent. |
+| `booking.ts` / `quote.ts` | Booking URL validation, promotion suppression, shared quote schema. |
+| `quote-client.ts` | Shared submission client, attribution capture and conversion deduplication. |
+| `server-db.server.ts` / `calendar-sync.server.ts` | Per-request service-role client and signed integration validation; server-only imports. |
 | `analytics.ts` | GA4 event tracking. ID: `G-EBZGS65QQH`. Typed `ConversionEvent` union. Functions: `trackEvent()`, `trackPageView()`, `trackGoogleAdsConversion()`, `trackWhatsAppClick()`, `trackPhoneClick()`, `trackBookCallClick()`, `trackQuoteSubmit()`, `trackAuditSubmit()`, `trackExitPopupSubmit()`, `trackNichePageView()`. Google Ads tag: `AW-18182593308`. |
 | `faq-data.ts` | Exports `faqs` array used by `FaqSection` and FAQ JSON-LD builder. |
 | `portfolio-meta.ts` | Exports `showcaseProjects` and `customerProjects` arrays. Showcase projects: AI SmartKit, Business Showcase, Design Showcase, E-commerce Showcase, Sanitaryware Showcase, Nuts Design Golden Showcase (all SiteNova sub-domains, all `useIframePreview: true`), plus Dr. Dipti Ganatra, Jupiter Fast Finance, and CorporateZone (real clients). |
@@ -501,7 +518,7 @@ Stores leads from: Free Audit form, Exit Intent Popup, Contact form submissions,
 | `created_at` | timestamptz | Auto-set |
 
 #### `quote_requests`
-Stores quote leads from the LP quote wizard (`/lp/web-design` hero form). Managed via the **Quote Requests** tab in the admin dashboard.
+Stores quote leads from both `/quote` and `/lp/web-design` through one server action. Managed via the **Quote Requests** tab in the admin dashboard.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -516,7 +533,8 @@ Stores quote leads from the LP quote wizard (`/lp/web-design` hero form). Manage
 | `status` | text | CHECK constraint: `'new' \| 'contacted' \| 'converted' \| 'lost'`. Default `'new'`. |
 | `created_at` | timestamptz | Auto-set to `now()` UTC |
 
-RLS: anon INSERT allowed (LP form). Authenticated full access (admin dashboard).
+RLS: anonymous access revoked; server-only inserts through `accept_website_quote`. Existing authenticated policies retained, with owner allowlist policy added.
+Additional columns: `phone` (legacy compatibility), `business_name`, `source`, `package_name`, `attribution` JSONB, `submission_id` UUID unique and `submission_hash`. Both phone fields are populated for new leads; legacy phone values are backfilled to mobile.
 Index: `quote_requests_created_at_idx` DESC for fast admin load.
 
 #### `blog_posts`
@@ -566,6 +584,19 @@ Created by user SQL (2026-09-01). Populated by `pages/AdsContact.tsx` form. Disp
 | `status` | text | `'new'` / `'contacted'` / `'closed'` (default: `'new'`) |
 
 
+### Booking and notification data (2026-09-29)
+
+Migration and copy/paste SQL: `supabase/migrations/20260929_conversion_booking.sql`. Setup: `docs/booking-setup.md`.
+
+- `site_admins`: explicit UUID allowlist seeded from the confirmed owner account. `is_site_admin()` governs new booking access.
+- `booking_settings`: singleton, public URL/enabled state only, admin updates. Disabled by default; valid Google appointment schedule URL required.
+- `call_bookings`: unique calendar/event identity, Google change version, attendee, start/end, scheduled/cancelled status, Meet/Calendar links and timestamps. Admin-only reads; server writes. Upcoming and email indexes.
+- `calendar_sync_state`: last successful sync; admin-readable status. The Google incremental token is private in Script Properties.
+- `calendar_sync_nonces`: server-only replay protection. Signed requests expire after five minutes; nonces retained ten minutes.
+- `lead_notifications`: durable deduplicated payloads, attempts, delivery acknowledgement and error state. Admin reads metadata only; private payloads and processing are server-only.
+- `accept_website_quote` atomically saves a quote and notification, with advisory locking and payload hashes for idempotent retries.
+- `sync_call_bookings` handles event versions, rescheduling, late Meet links and cancellation tombstones. `ack_lead_notification` cannot revert a delivered notification.
+
 ### `blog.$slug.tsx` Loader — Credential Fallback Quirk
 
 The blog post route loader uses a **3-tier fallback** for Supabase credentials due to known inconsistencies in how different versions of `@cloudflare/vite-plugin` expose the Cloudflare environment:
@@ -601,6 +632,7 @@ npm run deploy    # Build + deploy to Cloudflare Workers
 
 ### Assets Config (`wrangler.jsonc`)
 - Static assets served from `./dist/client`
+- `/api/*` is Worker-first for server actions and booking settings.
 - `/sitemap.xml` is Worker-first (handled by the `sitemap[.]xml.tsx` route, not static file)
 
 ### Cloudflare Worker Secrets (set via `wrangler secret put`)
@@ -621,8 +653,9 @@ All scripts are injected in `app/root.tsx` (`<head>` section) and are **deferred
 | Microsoft Clarity | `xaxjnw6ykd` | Deferred 3000ms after `window.load` |
 
 ### Conversion Events
-- `submit_quote_form` — fires on Quote form success → redirects to `/thank-you`
-- Google Ads pixel fires on `/thank-you` page load (NOT inside exit popup — intentional)
+- `submit_quote_form` — emitted once per accepted submission by `quote-client.ts`, after server storage; session and memory deduplication. The existing Google Ads quote action also fires here with `transaction_id=submissionId`. Neither confirmation page emits conversions.
+- Direct contact-click calls to the shared Google Ads conversion action were removed. Existing account settings and base tags remain unchanged.
+- `open_booking_calendar` records opening the external fallback; booking CTA clicks are separate from confirmed Calendar appointments. No personal contact details in event parameters.
 - `submit_audit_form` — fires on Free Audit form success
 - `click_exit_popup_cta` — fires on exit popup form success (shown in-popup, no redirect)
 - `click_whatsapp_cta`, `click_phone_cta`, `click_book_call` — CTA click tracking
@@ -700,7 +733,11 @@ VITE_SENTRY_DSN=https://2159c483e3c50155f15c45caf6fb3667@o4511547708997632.inges
 ```bash
 wrangler secret put SUPABASE_URL
 wrangler secret put SUPABASE_ANON_KEY
+wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+wrangler secret put CALENDAR_SYNC_SECRET
 ```
+Local Worker secrets go in ignored `.dev.vars`; never use `VITE_` variables or public settings for service-role or integration secrets.
+
 > These are different from the `VITE_` vars. They are only available inside the Worker at runtime, not at build time.
 
 ---
@@ -745,6 +782,8 @@ node scripts/optimize-images.js
 ### Scripts Directory (`scripts/`)
 | Script | Purpose |
 |---|---|
+| `google-calendar/Code.gs` + `appsscript.json` | Five-minute Calendar sync and MailApp notifications with locking, pagination, invalid-token recovery and delivery ACKs. |
+| `test-booking-db.mjs` | Isolated PostgreSQL migration, replay, idempotency and RLS verification with PGlite. |
 | `seed-blog-posts.mjs` | Seeds 3 pre-written blog posts (Doctors, CA firms, Real Estate) to Supabase. Run once. Reads credentials from `.env`. |
 | `optimize-images.js` | Image optimization utility for assets in `public/`. Run after adding new static images. |
 | `fix-seo.cjs` | Legacy SEO fix script. Likely unused since migrating to RR7 `meta()`. Do not run without understanding what it does. |
@@ -757,7 +796,7 @@ node scripts/optimize-images.js
 1. **Never hardcode contact info** (phone, email, WhatsApp URL). Always import from `app/lib/constants.ts`.
 2. **Never use the client-side `supabase` singleton in route loaders** (server-side). Use `createServerClient(context)` instead.
 3. **Never use the legacy `<SEO>` component or `setPageSeo()` for new pages**. Use `buildMeta()` in route files.
-4. **Never navigate to `/thank-you` from the exit popup**. The thank-you page fires Google Ads conversion pixels — only real quote form submissions should land there.
+4. **Only accepted quote submissions navigate to quote confirmation pages**. Track quote conversion in the shared successful submission handler, never on thank-you page mounts or contact clicks.
 5. **Never add analytics scripts directly** without deferring them — all third-party scripts in `root.tsx` are intentionally delayed to prevent hydration mismatches.
 6. **Never remove the entity disambiguation text** about `sitenovaagency.com` from Schema.org data or GEO content blocks.
 
@@ -816,7 +855,9 @@ The typo'd file should be investigated and removed if it's causing any redirect 
 Contains `sitenova-beta.apk` — the Android app beta. Referenced in `Footer.tsx` as a direct download link. Do not delete or rename this file without updating the footer.
 
 ### E2E Test Coverage
-Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minimal. Do not assume any page other than the homepage has automated test coverage.
+`e2e/home.spec.ts` covers the homepage. `e2e/conversion.spec.ts` covers booking enable/disable, embed/fallback, both mobile quote flows, errors/retry IDs, conversion deduplication, package prefill, floating controls, reduced-height mobile forms and verified-only SEO checker results. Google Calendar and quote responses are mocked; real account delivery requires the setup walkthrough.
+
+Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps Script with mocked Google services. `scripts/test-booking-db.mjs` executes the migration twice and tests PostgreSQL idempotency, changes/cancellations, replay protection and RLS in isolated PGlite; install `@electric-sql/pglite` with `npm install --no-save --package-lock=false @electric-sql/pglite` before running it.
 
 ---
 
@@ -826,6 +867,13 @@ Only **one** Playwright test file exists: `e2e/home.spec.ts`. Coverage is minima
 > Format: `## [Date] — [Brief summary]` followed by bullet points of what changed and why.
 
 ---
+
+### [2026-09-29] — Conversion journey and Google Meet booking
+
+- Added business-focused pricing and quote CTAs, real client imagery/proof before demos, optional detailed requirements, explicit budget selection, and package prefill. Removed conflicting refund promises, unsupported numerical outcomes/statistics across sales pages and unsourced audit testimonials. SEO checker now displays only returned Google scores; unavailable checks show an error instead of invented fallback results. Consolidated mobile controls and suppressed promotional interruptions on conversion pages.
+- Added `/book-a-call`, conditional booking links, admin booking settings, Scheduled Calls and Overview count.
+- Added shared server quote submission, durable notification queue, signed/replay-protected integration, additive SQL migration and Calendar Apps Script with pagination, incremental tokens, locking and retries.
+- Added setup guide, automated browser/unit/database checks, fixed Playwright server port and Vitest configuration, ignored local runtime output and Worker secrets. Live Google/Supabase setup remains required before rollout.
 
 ### [2026-09-08] — Added Sanitaryware and Nuts Design Golden showcase sites
 
@@ -1171,3 +1219,7 @@ Google Ads conversions are tracked via GTM triggers (GTM-P587639R), not direct `
 - **`OverviewTab`** — 7-card KPI grid (was 5). Added: `AI Drafts` (pending drafts awaiting fill, violet) + `Topics Queue` (pending topics count, cyan). Published Blogs KPI now correctly counts only `status='published'` posts. Props expanded: `aiDraftsPending: number`, `topicsInQueue: number`.
 - `AdminDashboard` fetches pending topics count via lightweight Supabase `count` query on mount. `topicsInQueue` state updated accordingly.
 - Sidebar: "Topic Queue" entry with `ListChecks` icon between AI Drafts and Blog Posts. Header: `TAB_LABELS` includes `"topics"`. Command palette: "Topic Queue" entry.
+
+### Verification notes — 2026-09-29
+
+Production build and automated unit, browser and isolated PostgreSQL checks were run locally. The app TypeScript check still reports pre-existing repository errors (65 at Git baseline; 63 after the changes, with no new diagnostics in the comparison). The Google schedule and actual notification delivery require the account setup in `docs/booking-setup.md`.

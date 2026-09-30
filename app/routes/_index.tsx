@@ -1,5 +1,5 @@
 import { buildMeta } from "@/lib/meta";
-import dashboardPreview from "@/assets/dashboard-preview.webp";
+import dashboardPreview from "@/assets/Drdiptiganatra.webp";
 export { default } from "@/pages/Index";
 
 export function links() {

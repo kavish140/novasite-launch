@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import {
+  CalendarDays,
   LayoutDashboard,
   Users,
   FileText,
@@ -29,6 +30,7 @@ import {
 } from "lucide-react";
 
 export type AdminTab =
+  | "scheduled_calls"
   | "overview"
   | "leads"
   | "quote_requests"
@@ -55,6 +57,7 @@ interface AdminSidebarProps {
   activeTab: AdminTab;
   onTabChange: (tab: AdminTab) => void;
   badges: {
+    scheduled_calls: number;
     leads: number;
     quote_requests: number;
     ad_leads: number;
@@ -71,6 +74,7 @@ export default function AdminSidebar({
   onLogout,
 }: AdminSidebarProps) {
   const mainNav: NavItem[] = [
+    { id: "scheduled_calls", label: "Scheduled Calls", icon: CalendarDays, badge: badges.scheduled_calls, group: "main" },
     { id: "overview",       label: "Overview",       icon: LayoutDashboard, group: "main" },
     { id: "leads",          label: "Audit Requests", icon: Users, badge: badges.leads, group: "main" },
     { id: "quote_requests", label: "Quote Requests", icon: FileSignature, badge: badges.quote_requests, group: "main" },

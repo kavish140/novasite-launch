@@ -19,6 +19,7 @@ type ConversionEvent =
   | "click_whatsapp_cta"
   | "click_phone_cta"
   | "click_book_call"
+  | "open_booking_calendar"
   | "submit_quote_form"
   | "submit_audit_form"
   | "click_exit_popup_cta"
@@ -37,8 +38,7 @@ declare global {
 
 const isGtagReady = (): boolean =>
   typeof window !== "undefined" &&
-  typeof window.gtag === "function" &&
-  GA_MEASUREMENT_ID !== "G-XXXXXXXXXX";
+  typeof window.gtag === "function";
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
@@ -49,13 +49,10 @@ const isGtagReady = (): boolean =>
  *   trackEvent("click_whatsapp_cta", { page: "/websites-for-doctors" });
  */
 export const trackEvent = (event: ConversionEvent, params?: EventParams): void => {
-  if (!isGtagReady()) {
-    if (import.meta.env.DEV) {
-      console.log(`[Analytics DEV] ${event}`, params ?? "");
-    }
-    return;
-  }
-  window.gtag!("event", event, params);
+  if (typeof window === "undefined") return;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function (..._args: unknown[]) { window.dataLayer!.push(arguments); };
+  window.gtag("event", event, params);
 };
 
 /**
@@ -73,15 +70,14 @@ export const trackPageView = (path: string, title?: string): void => {
  * Fire a native Google Ads conversion event.
  * Uses the base Google Ads tag (AW-18182593308) already in index.html.
  */
-export const trackGoogleAdsConversion = (conversionLabel: string): void => {
+export const trackGoogleAdsConversion = (conversionLabel: string, submissionId?: string): void => {
   if (typeof window !== "undefined" && typeof window.gtag === "function") {
     window.gtag("event", "conversion", {
       send_to: `AW-18182593308/${conversionLabel}`,
+      transaction_id: submissionId,
     });
   }
 };
-
-export const trackGoogleAdsClickToCall = () => trackGoogleAdsConversion("d5XPCKyS5skcEJy2kd5D");
 
 // ── Convenience wrappers (import directly in click handlers) ─────────────────
 

@@ -69,7 +69,7 @@ const CtaSection = () => {
         <div className="mt-6 flex items-center justify-center gap-2 rounded-full border border-[#25D366]/20 bg-[#25D366]/5 px-5 py-2">
           <ShieldCheck size={16} className="text-[#25D366] shrink-0" />
           <span className="text-sm font-medium text-[#25D366]">
-            Not happy? Full refund within 7 days of delivery
+            Scope and pricing agreed before work begins
           </span>
         </div>
         <p className="mt-4 text-sm text-muted-foreground">We typically respond within 24 hours</p>

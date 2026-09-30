@@ -1,21 +1,21 @@
+import BookingCTA from "@/components/BookingCTA";
 import { Link, useLocation, useNavigate } from "react-router";
 import { setPageSeo } from "@/lib/seo";
 import { useEffect } from "react";
 import { m as motion } from "framer-motion";
 import { CheckCircle2, Phone, MessageCircle, ShieldCheck, Globe } from "lucide-react";
-import { trackGoogleAdsConversion } from "@/lib/analytics";
 import { PHONE_TEL_LINK, PHONE_NUMBER } from "@/lib/constants";
 
 
 const ThankYou = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state as { name?: string; projectType?: string; email?: string } | null;
+  const state = location.state as { submissionId?: string; name?: string; projectType?: string; email?: string } | null;
 
   // Guard: block direct URL access to prevent phantom conversions.
   // /thank-you is only valid when reached via a form submission (state is populated by React Router).
   useEffect(() => {
-    if (!state) {
+    if (!state?.submissionId) {
       navigate("/", { replace: true });
     }
   }, [state, navigate]);
@@ -27,11 +27,10 @@ const ThankYou = () => {
       canonicalPath: "/thank-you",
     });
 
-    // Single, canonical Google Ads conversion fire — only Quote form leads reach this page
-    trackGoogleAdsConversion("FLS8CJvM3LscEJy2kd5D");
+
   }, []);
 
-  if (!state) return null; // Render nothing while redirecting
+  if (!state?.submissionId) return null; // Render nothing while redirecting
 
   const name = state?.name || "there";
   const projectType = state?.projectType || "project";
@@ -72,13 +71,14 @@ const ThankYou = () => {
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
                 Thank you, <span className="text-foreground font-semibold">{name}</span>! We have
                 received your {projectType === "Free Audit" ? "request" : "scoping details"} for your <span className="text-foreground font-semibold">{projectType}</span>. 
-                {projectType === "Free Audit" ? " Our team will review your site and get back" : " A quote summary is being sent"} to <span className="text-foreground font-semibold">{email}</span>.
+                {projectType === "Free Audit" ? " Our team will review your site and get back" : " Kavish will respond"} to <span className="text-foreground font-semibold">{email}</span>.
               </p>
               <p className="text-muted-foreground text-xs">
                 We typically respond within 24 hours. For the fastest booking, choose an option below:
               </p>
             </div>
 
+            <BookingCTA source="quote-confirmation" className="w-full max-w-md" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto pt-4">
               <a
                 href={PHONE_TEL_LINK}

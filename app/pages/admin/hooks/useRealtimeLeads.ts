@@ -60,10 +60,7 @@ export function useRealtimeLeads({
         (payload) => {
           const r = payload.new as QuoteRequest;
           cb.current.onNewQuoteRequest(r);
-          sendLeadEmail(
-            `🔔 New Quote Request from ${r.name}`,
-            `New Quote Request on SiteNova:\n\nName: ${r.name}\nEmail: ${r.email}\nMobile: ${r.mobile || "—"}\nProject: ${r.project_type || "—"}\nBudget: ${r.budget || "—"}\nTimeline: ${r.timeline || "—"}\n\nLogin at https://sitenova.dev/admin to respond.`
-          );
+
         }
       )
       .on(

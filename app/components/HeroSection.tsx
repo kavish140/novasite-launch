@@ -1,8 +1,9 @@
+import BookingCTA from "./BookingCTA";
 import { m as motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, ShieldCheck, Layers } from "lucide-react";
 import { useRef } from "react";
 import { Link } from "react-router";
-import dashboardPreview from "@/assets/dashboard-preview.webp";
+import clientPreview from "@/assets/Drdiptiganatra.webp";
 import BlurImage from "./BlurImage";
 
 
@@ -47,34 +48,27 @@ const HeroSection = () => {
           </div>
 
           <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-balance">
-            Best Website Designer in Mulund, Mumbai &amp; Nearby Areas{" "}
+            Custom Websites for{" "}
             <span className="block w-full gradient-text mt-2">
-              SiteNova
+              Mumbai Businesses
             </span>
           </h1>
 
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 text-balance">
-            We deliver web development and landing page design for businesses in Mulund,
-            Mumbai, Bhandup, Thane, Ghatkopar, Powai, and beyond with fast, SEO-ready,
-            mobile-first websites built to grow your brand.
+            Work directly with Kavish to plan, build, and launch a fast, mobile-friendly website that makes it easy for customers to contact you.
           </p>
 
+          <p className="font-semibold mb-6">Landing pages from ₹10,000 · Business websites from ₹15,000</p>
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
             <Link
               to="/quote"
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect group button-shimmer interactive-card btn-quote-pulse"
             >
-              Get a Free Quote
+              Get My Website Quote
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link
-              to="/free-audit"
-              className="inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-8 py-3.5 text-base font-medium text-primary hover:bg-primary/10 hover:border-primary/70 transition-all interactive-card"
-            >
-              Check Your Website Score
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+            <BookingCTA source="homepage-hero" className="text-base px-8" />
             <button
               onClick={() => document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth", block: "start" })}
               className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/30 px-8 py-3.5 text-base font-medium text-foreground hover:bg-secondary/60 hover:border-border transition-all interactive-card"
@@ -105,7 +99,7 @@ const HeroSection = () => {
             <div className="flex items-center gap-2 mt-1 rounded-full border border-[#25D366]/20 bg-[#25D366]/5 px-4 py-1.5">
               <ShieldCheck size={14} className="text-[#25D366]" />
               <span className="text-[11px] font-medium text-[#25D366]">
-                7-day money-back guarantee on all projects
+                Scope and pricing agreed before work begins
               </span>
             </div>
           </div>
@@ -120,11 +114,11 @@ const HeroSection = () => {
           <div className="relative mx-auto max-w-5xl gradient-border rounded-2xl overflow-hidden">
             <div className="rounded-2xl overflow-hidden border border-border/30">
               <BlurImage
-                src={dashboardPreview}
-                alt="SiteNova web development and landing page design dashboard preview"
+                src={clientPreview}
+                alt="Dr. Dipti Ganatra clinic website built by SiteNova"
                 className="w-full h-auto"
-                width={1024}
-                height={640}
+                width={1920}
+                height={962}
                 loading="eager"
                 fetchPriority="high"
               />

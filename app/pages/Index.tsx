@@ -86,10 +86,78 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
         <main id="main-content">
           <HeroSection />
         <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
-          <TechMarquee />
+          <PortfolioSection mode="customers" />
+          <TestimonialsSection />
           <section aria-labelledby="features-title">
             <FeaturesSection />
           </section>
+          <section aria-labelledby="pricing-title" className="pb-20 sm:pb-24">
+            <div className="mx-auto max-w-7xl px-6">
+              <div className="grid gap-6 rounded-3xl border border-primary/20 bg-primary/5 p-8 shadow-sm md:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+                    Starting price
+                  </p>
+                  <h2 id="pricing-title" className="mt-3 font-heading text-3xl font-bold tracking-tight md:text-4xl">
+                    Websites from <span className="gradient-text">₹10,000 onwards</span>
+                  </h2>
+                  <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
+                    A simple, professional website is a great way to get started without overspending. Whether you need a landing page (from ₹10,000), a business website (from ₹15,000), or a fully custom build, I'll quote based on your exact scope.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {[
+                    "Starter websites",
+                    "Business websites",
+                    "Custom quotes",
+                  ].map((item) => (
+                    <div key={item} className="rounded-2xl border border-border/60 bg-background/80 px-4 py-4 text-center text-sm font-medium text-foreground shadow-sm">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+
+          <LocalAgencySection />
+
+          {/* Free Audit CTA Banner */}
+          <section aria-label="Free website audit" className="py-16 sm:py-20">
+            <div className="mx-auto max-w-7xl px-6">
+              <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5 p-8 md:p-12">
+                <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary mb-2">Free for Mumbai businesses</p>
+                    <h2 className="font-heading text-2xl font-bold tracking-tight md:text-3xl">
+                      Is your website losing you customers?
+                    </h2>
+                    <p className="mt-2 text-muted-foreground max-w-lg">
+                      Get a free, no-obligation audit of your website's SEO, speed, and mobile experience — with actionable tips to fix what's broken.
+                    </p>
+                  </div>
+                  <Link
+                    to="/free-audit"
+                    className="shrink-0 inline-flex items-center justify-center rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm button-shimmer"
+                  >
+                    Get Your Free Audit
+                    <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section aria-labelledby="how-it-works-title">
+            <HowItWorksSection />
+          </section>
+          <section aria-label="Design demos and technologies">
+            <PortfolioSection mode="showcases" />
+            <TechMarquee />
+          </section>
+
           <section aria-labelledby="service-areas-title" className="py-20 sm:py-24">
             <div className="mx-auto max-w-7xl px-6">
               <div className="grid gap-8 rounded-3xl border border-border/60 bg-card/40 p-8 shadow-sm backdrop-blur md:p-12 lg:grid-cols-[1.1fr_0.9fr]">
@@ -133,72 +201,6 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
               </div>
             </div>
           </section>
-          <section aria-labelledby="pricing-title" className="pb-20 sm:pb-24">
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="grid gap-6 rounded-3xl border border-primary/20 bg-primary/5 p-8 shadow-sm md:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
-                    Starting price
-                  </p>
-                  <h2 id="pricing-title" className="mt-3 font-heading text-3xl font-bold tracking-tight md:text-4xl">
-                    Websites from <span className="gradient-text">₹10,000 onwards</span>
-                  </h2>
-                  <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-                    A simple, professional website is a great way to get started without overspending. Whether you need a landing page (from ₹10,000), a business website (from ₹15,000), or a fully custom build, I'll quote based on your exact scope.
-                  </p>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {[
-                    "Starter websites",
-                    "Business websites",
-                    "Custom quotes",
-                  ].map((item) => (
-                    <div key={item} className="rounded-2xl border border-border/60 bg-background/80 px-4 py-4 text-center text-sm font-medium text-foreground shadow-sm">
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-          <PortfolioSection />
-
-          <LocalAgencySection />
-
-          {/* Free Audit CTA Banner */}
-          <section aria-label="Free website audit" className="py-16 sm:py-20">
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5 p-8 md:p-12">
-                <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
-                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary mb-2">Free for Mumbai businesses</p>
-                    <h2 className="font-heading text-2xl font-bold tracking-tight md:text-3xl">
-                      Is your website losing you customers?
-                    </h2>
-                    <p className="mt-2 text-muted-foreground max-w-lg">
-                      Get a free, no-obligation audit of your website's SEO, speed, and mobile experience — with actionable tips to fix what's broken.
-                    </p>
-                  </div>
-                  <Link
-                    to="/free-audit"
-                    className="shrink-0 inline-flex items-center justify-center rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm button-shimmer"
-                  >
-                    Get Your Free Audit
-                    <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section aria-labelledby="how-it-works-title">
-            <HowItWorksSection />
-          </section>
-          <section aria-labelledby="testimonials-title">
-            <TestimonialsSection />
-          </section>
-
           {/* Generative Engine Optimization (GEO) Semantic Entity Block */}
           <section className="geo-entity-block sr-only" aria-label="Entity disambiguation">
             <p>
@@ -220,7 +222,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                     <strong className="text-foreground">SiteNova</strong> is a custom web design and development agency founded by{" "}
                     <strong className="text-foreground">Kavish Ganatra</strong>, based in{" "}
                     <strong className="text-foreground">Mulund, Mumbai, India</strong>. Every website is built from scratch using React and Next.js —
-                    achieving 90–99 PageSpeed scores and built to rank in both traditional Google Search and AI-powered results like{" "}
+                    with attention to loading speed and discoverability in search tools like{" "}
                     <strong className="text-foreground">Google AI Mode</strong>, Perplexity, and ChatGPT.
                   </p>
                   <p>

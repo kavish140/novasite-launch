@@ -78,7 +78,7 @@ const problemPoints = [
   {
     title: "High Bounce Rates Kill Traction",
     description:
-      "If your site takes more than 3 seconds to load, 53% of users leave. Startups can't afford to lose early adopters to poor performance.",
+      "Slow-loading pages can cause visitors to leave before learning about your product. Startups can't afford to lose early adopters to poor performance.",
   },
   {
     title: "Templates Don't Stand Out",
@@ -342,7 +342,7 @@ export default function Startups() {
 
           <div className="inline-flex items-center gap-2 rounded-full border border-green-500/20 bg-green-500/5 px-4 py-1.5 text-xs font-medium text-green-400 mb-10">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Not happy? Full refund within 7 days
+            Scope and pricing agreed before work begins
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">

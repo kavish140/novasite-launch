@@ -15,7 +15,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  LayoutDashboard, Users, FileText, Megaphone, TrendingUp,
+  CalendarDays, LayoutDashboard, Users, FileText, Megaphone, TrendingUp,
   Target, Plus, Settings, History, FileSignature, Bot, ListChecks,
 } from "lucide-react";
 import type { AdminTab } from "./AdminSidebar";
@@ -30,6 +30,7 @@ interface CommandPaletteProps {
 }
 
 const TAB_COMMANDS: { tab: AdminTab; label: string; icon: React.ElementType }[] = [
+  { tab: "scheduled_calls", label: "Scheduled Calls", icon: CalendarDays },
   { tab: "overview",       label: "Overview",        icon: LayoutDashboard },
   { tab: "leads",          label: "Audit Requests",  icon: Users },
   { tab: "quote_requests", label: "Quote Requests",  icon: FileSignature },

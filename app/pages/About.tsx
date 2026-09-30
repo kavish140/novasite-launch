@@ -50,7 +50,7 @@ const values = [
     icon: Zap,
     title: "Speed-First Engineering",
     description:
-      "Every project targets 90+ PageSpeed scores from day one. Fast websites rank higher on Google, convert more visitors, and deliver better user experiences.",
+      "We plan for loading speed from day one. Fast websites rank higher on Google, convert more visitors, and deliver better user experiences.",
   },
   {
     icon: Award,
@@ -67,7 +67,7 @@ const values = [
 ];
 
 const stats = [
-  { value: "90+", label: "PageSpeed Score (avg)" },
+  { value: "Custom", label: "Design & development" },
   { value: "₹10K", label: "Starting price" },
   { value: "7–14", label: "Days to launch" },
   { value: "4+", label: "Niches served" },
@@ -107,7 +107,7 @@ const About = () => {
     <PageTransition>
       <SEO
         title="About SiteNova — Web Design Agency Founded by Kavish Ganatra | Mulund, Mumbai"
-        description="SiteNova (sitenova.dev) is a custom web design and development agency founded by Kavish Ganatra in Mulund, Mumbai. We build React and Next.js websites with 90+ PageSpeed scores for businesses across Mumbai. Not affiliated with sitenovaagency.com."
+        description="SiteNova (sitenova.dev) is a custom web design and development agency founded by Kavish Ganatra in Mulund, Mumbai. We build React and Next.js websites with a focus on loading speed for businesses across Mumbai. Not affiliated with sitenovaagency.com."
         canonicalUrl="/about"
         keywords={[
           "about SiteNova",
@@ -225,7 +225,7 @@ const About = () => {
                     SiteNova has built websites for doctors, lawyers, finance
                     professionals, real estate agencies, and retail businesses across
                     Mulund, Thane, Powai, Andheri, and beyond — consistently delivering
-                    90+ PageSpeed scores and real search ranking improvements.
+                    loading speed and search visibility.
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <span

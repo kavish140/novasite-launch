@@ -81,7 +81,7 @@ const features = [
     icon: Smartphone,
     title: "Mobile-First, SEO-Optimized",
     description:
-      "Over 75% of legal searches happen on mobile. Your website will load fast, look professional on every device, and rank high on Google for relevant legal keywords.",
+      "Potential clients often search for legal services on mobile. Your website will load fast, look professional on every device, and rank high on Google for relevant legal keywords.",
   },
 ];
 
@@ -462,7 +462,7 @@ export default function Lawyers() {
             {/* Guarantee badge */}
             <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 px-5 py-2 text-sm font-medium text-blue-400">
               <ShieldCheck className="h-4 w-4" />
-              Not happy? Full refund within 7 days
+              Scope and pricing agreed before work begins
             </div>
 
             {/* Price mention */}

@@ -49,7 +49,7 @@ const advantages = [
   {
     icon: Zap,
     title: "PageSpeed performance",
-    sitenova: "90–99 scores as standard on both mobile and desktop",
+    sitenova: "Mobile and desktop performance reviewed before launch",
     others: "Most template agencies deliver 40–65 scores due to plugin bloat",
   },
   {
@@ -104,7 +104,7 @@ const reasons = [
     icon: Zap,
     title: "Speed that actually converts visitors",
     description:
-      "A 1-second delay in page load reduces conversions by 7%. SiteNova consistently delivers 90+ PageSpeed scores by using hand-written code, CDN deployment, image optimisation, and no bloated plugins — so your visitors don't leave before the page loads.",
+      "Slow pages can lose visitors. SiteNova uses hand-written code, CDN deployment and image optimisation to make pages easier to load and use.",
   },
   {
     icon: Code2,
@@ -127,7 +127,7 @@ const WhyUs = () => {
     <PageTransition>
       <SEO
         title="Why Choose SiteNova — Best Web Designer in Mumbai vs Freelancers & Agencies"
-        description="Why SiteNova (sitenova.dev) is the best choice for web design in Mumbai. Compare custom React development vs WordPress templates, 90+ PageSpeed scores, GEO/AI search visibility, and direct founder access."
+        description="Why SiteNova (sitenova.dev) is the best choice for web design in Mumbai. Compare custom React development vs WordPress templates, performance optimisation, GEO/AI search visibility, and direct founder access."
         canonicalUrl="/why-us"
         keywords={[
           "why choose SiteNova",

@@ -76,15 +76,15 @@ const features = [
   {
     icon: Smartphone,
     title: "Mobile-First, SEO-Optimized",
-    desc: "Built for the 85% of buyers who browse on their phones. Lightning-fast loading, Google-friendly code, and responsive layouts.",
+    desc: "Built for buyers who browse on their phones. Lightning-fast loading, Google-friendly code, and responsive layouts.",
   },
 ];
 
 const problemPoints = [
   {
     icon: Search,
-    stat: "90%",
-    text: "of home buyers start their search online — if you're not there, you're invisible.",
+    stat: "Be discoverable",
+    text: "Help home buyers find your listings when they search online.",
   },
   {
     icon: Globe,
@@ -151,7 +151,7 @@ export default function RealEstate() {
                 "name": "Why does a real estate agent need a website?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Over 90% of property buyers start their search online. A professional website lets you showcase listings with photos and virtual tours, capture buyer and seller leads 24/7, and build trust with professional branding — giving you a major edge over agents who rely only on referrals."
+                  "text": "Property buyers use online searches to compare listings. A professional website lets you showcase listings with photos and virtual tours, capture buyer and seller leads 24/7, and build trust with professional branding — giving you a major edge over agents who rely only on referrals."
                 }
               },
               {
@@ -418,7 +418,7 @@ export default function RealEstate() {
             className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-1.5 text-xs font-medium text-emerald-500"
           >
             <ShieldCheck className="h-4 w-4" />
-            Not happy? Full refund within 7 days
+            Scope and pricing agreed before work begins
           </motion.div>
 
           {/* Contact buttons */}

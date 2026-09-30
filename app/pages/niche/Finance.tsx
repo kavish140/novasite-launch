@@ -74,7 +74,7 @@ const problemPoints = [
   {
     title: "Clients Research Online First",
     description:
-      "87% of people Google a financial professional before making contact. If they can't find you, they find your competitor.",
+      "Potential clients research financial professionals online before making contact. If they can't find you, they find your competitor.",
   },
   {
     title: "A Dated Website Signals Risk",
@@ -501,7 +501,7 @@ export default function Finance() {
           {/* Guarantee badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-green-500/20 bg-green-500/5 px-4 py-1.5 text-xs font-medium text-green-400 mb-10">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Not happy? Full refund within 7 days
+            Scope and pricing agreed before work begins
           </div>
 
           {/* Contact buttons */}

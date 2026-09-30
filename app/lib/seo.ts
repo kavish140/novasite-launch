@@ -82,7 +82,7 @@ export const buildOrganizationJsonLd = () => ({
   },
   image: DEFAULT_OG_IMAGE,
   description:
-    "SiteNova is a custom web design and development agency based in Mulund, Mumbai, India. Founded by Kavish Ganatra, SiteNova builds high-performance React and Next.js websites with 90+ PageSpeed scores for businesses across Mumbai. Not to be confused with sitenovaagency.com, which is a separate, unaffiliated business.",
+    "SiteNova is a custom web design and development agency based in Mulund, Mumbai, India. Founded by Kavish Ganatra, SiteNova builds high-performance React and Next.js websites with a focus on loading speed for businesses across Mumbai. Not to be confused with sitenovaagency.com, which is a separate, unaffiliated business.",
   foundingDate: "2024",
   founder: {
     "@type": "Person",
@@ -260,7 +260,7 @@ export const buildHowToJsonLd = () => ({
       "@type": "HowToStep",
       position: 4,
       name: "Testing, Launch & Handover",
-      text: "Your site is tested across all devices and browsers. We achieve 90+ PageSpeed scores before launch. After go-live, you receive full ownership of code and content.",
+      text: "Your site is tested across all devices and browsers. We review loading performance before launch. After go-live, you receive full ownership of code and content.",
     },
   ],
 });

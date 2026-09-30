@@ -83,7 +83,7 @@ const features = [
     icon: Smartphone,
     title: "Mobile-First, SEO-Optimized",
     description:
-      "Over 80% of patients search on their phones. Your website will load fast, look stunning on mobile, and rank high on Google.",
+      "Patients often search for care on their phones. Your website will load fast, look stunning on mobile, and rank high on Google.",
   },
 ];
 
@@ -162,7 +162,7 @@ export default function Doctors() {
                 "name": "Why does a doctor need a professional website?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Over 80% of patients search online before choosing a doctor. A professional website builds trust, showcases your expertise, displays patient reviews, and lets patients book appointments 24/7 — giving you a competitive edge over clinics without an online presence."
+                  "text": "Patients use online information when choosing a doctor. A professional website builds trust, showcases your expertise, displays patient reviews, and lets patients book appointments 24/7 — giving you a competitive edge over clinics without an online presence."
                 }
               },
               {
@@ -520,7 +520,7 @@ export default function Doctors() {
             {/* Guarantee badge */}
             <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-5 py-2 text-sm font-medium text-emerald-400">
               <ShieldCheck className="h-4 w-4" />
-              Not happy? Full refund within 7 days
+              Scope and pricing agreed before work begins
             </div>
 
             {/* Price mention */}

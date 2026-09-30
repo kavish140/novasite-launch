@@ -35,7 +35,6 @@ export default function SeoSpeed() {
   const [scoreMobile, setScoreMobile] = useState(0);
   const [scoreSecurity, setScoreSecurity] = useState(0);
   const [isOptimized, setIsOptimized] = useState(false);
-  const [isPopular, setIsPopular] = useState(false);
   const [urlError, setUrlError] = useState("");
 
   const runScan = () => {
@@ -54,7 +53,6 @@ export default function SeoSpeed() {
     setScoreMobile(0);
     setScoreSecurity(0);
     setIsOptimized(false);
-    setIsPopular(false);
 
     const statuses = [
       "Pinging host server...",
@@ -76,30 +74,15 @@ export default function SeoSpeed() {
       }
     }, 600);
 
-    const cleanUrl = url.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, "").trim();
-    const popSites = ["youtube", "google", "insta", "facebook"];
-    const isPop = popSites.some(site => cleanUrl.includes(site));
-
-    const isPredefined = 
-      cleanUrl.includes("sitenova.dev") || 
-      cleanUrl.includes("drdiptiganatra.com") || 
-      cleanUrl.includes("jupiterfinance.com") || 
-      cleanUrl.includes("jupiterfastfinance.com") || 
-      cleanUrl.includes("aismartkit.tech") ||
-      cleanUrl.includes("jupiter-finance-launch") ||
-      cleanUrl.includes("aismartkit") ||
-      isPop;
-
     let formattedUrl = url.trim();
     if (!/^https?:\/\//i.test(formattedUrl)) {
       formattedUrl = "https://" + formattedUrl;
     }
 
-    const animateScores = (targetPerf: number, targetSeo: number, targetMobile: number, targetSecurity: number, optimized: boolean, popular: boolean) => {
+    const animateScores = (targetPerf: number, targetSeo: number, targetMobile: number, targetSecurity: number, optimized: boolean) => {
       clearInterval(statusInterval);
       setScanStep("completed");
       setIsOptimized(optimized);
-      setIsPopular(popular);
 
       let currentPerf = 0;
       let currentSeo = 0;
@@ -123,14 +106,6 @@ export default function SeoSpeed() {
       }, 20);
     };
 
-    if (isPredefined) {
-      // Simulate slight delay for effect
-      setTimeout(() => {
-        animateScores(99, 100, 100, 98, true, isPop);
-      }, 2500);
-      return;
-    }
-
     const performScanLogic = () => {
       // Actual Google PageSpeed Insights API fetch
       const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(formattedUrl)}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
@@ -144,76 +119,34 @@ export default function SeoSpeed() {
           clearTimeout(timeoutId);
           if (data && data.lighthouseResult && data.lighthouseResult.categories) {
             const cats = data.lighthouseResult.categories;
-            const perf = Math.round((cats.performance?.score || 0) * 100);
-            const seo = Math.round((cats.seo?.score || 0) * 100);
-            const mobile = Math.round((cats.accessibility?.score || 0) * 100);
-            const sec = Math.round((cats['best-practices']?.score || 0) * 100);
+            const scores = [cats.performance, cats.seo, cats.accessibility, cats['best-practices']].map(category => category?.score);
+            if (scores.some(score => typeof score !== "number" || score < 0 || score > 1)) throw new Error("Incomplete PageSpeed results");
+            const [perf, seo, mobile, sec] = scores.map(score => Math.round(score * 100));
 
             const optimized = perf >= 85 && seo >= 85;
-            animateScores(perf, seo, mobile, sec, optimized, false);
+            animateScores(perf, seo, mobile, sec, optimized);
           } else {
             throw new Error("Invalid API structure");
           }
         })
         .catch(() => {
-          // Fallback to proxy check if API fails or times out
-          let origin = formattedUrl;
-          try {
-            const parsed = new URL(formattedUrl);
-            origin = parsed.origin;
-          } catch {
-            // Fallback
-          }
-
-          const fetchPath = (path: string) =>
-            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(origin + path)}`)
-              .then((res) => (res.ok ? res.json() : { contents: "" }))
-              .then((data) => (data.contents || "").toLowerCase().includes("made by sitenova"))
-              .catch(() => false);
-
-          Promise.all([
-            fetchPath("/kavishmadesitenova.html").then((r) => r ? true : fetchPath("/kavishmadesitenova")),
-            new Promise((resolve) => setTimeout(resolve, 2000))
-          ]).then(([isVerifiedByPath]) => {
-            if (isVerifiedByPath) {
-              animateScores(99, 100, 100, 98, true, false);
-            } else {
-              animateScores(43, 58, 62, 68, false, false);
-            }
-          });
+          clearTimeout(timeoutId);
+          clearInterval(statusInterval);
+          setScanStep("idle");
+          setUrlError("Verified PageSpeed results are unavailable right now. Please try again later or request a manual audit.");
         });
     };
 
-    // Before performing the scan, verify the site actually exists to prevent ghost outputs
-    fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(formattedUrl)}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Dead");
-        return res.json();
-      })
-      .then(data => {
-        if (data.status && data.status.http_code === 0) throw new Error("Dead");
-        if (!data.contents || data.contents.includes("500 Internal Server Error") || data.contents.includes("Name or service not known")) {
-          throw new Error("Dead");
-        }
-        performScanLogic();
-      })
-      .catch(() => {
-        clearInterval(statusInterval);
-        setScanStep("idle");
-        setUrlError("Website could not be reached or doesn't exist.");
-      });
+    performScanLogic();
   };
 
   const handleStartQuote = () => {
-    const specsSummary = isOptimized
-      ? `Website scanned: ${url} (Already fully optimized${isPopular ? "" : " by SiteNova"}). Client is looking to start a new web project / additional services.`
-      : `SEO / Speed Audit Request:\n- Website scanned: ${url}\n- Current Performance Score: ${scorePerf}%\n- Current SEO Score: ${scoreSeo}%\n- Current Mobile Score: ${scoreMobile}%\n- Requesting site rebuilding/speed optimization.`;
+    const specsSummary = `SEO / Speed Audit Request:\n- Website scanned: ${url}\n- Current Performance Score: ${scorePerf}/100\n- Current SEO Score: ${scoreSeo}/100\n- Current Accessibility Score: ${scoreMobile}/100\n- Requesting site rebuilding/speed optimization.`;
 
     navigate("/quote", {
       state: {
         projectType: isOptimized ? "Business Website" : "Website Redesign",
         requirements: specsSummary,
-        budget: "Rs. 15,000 - 30,000",
       },
     });
   };
@@ -222,7 +155,7 @@ export default function SeoSpeed() {
     <PageTransition>
       <SEO 
         title="SEO & Website Speed Optimization in Mumbai | Rank on Google | SiteNova"
-        description="Is your Mumbai business invisible on Google? SiteNova fixes Core Web Vitals, boosts PageSpeed to 90+, and builds local SEO systems — so you rank higher and get more calls. From ₹8,000."
+        description="Is your Mumbai business invisible on Google? SiteNova fixes Core Web Vitals, improves loading speed, and builds local SEO systems — so you rank higher and get more calls. From ₹8,000."
         canonicalUrl="/services/seo-optimization"
         keywords={["SEO and speed optimization Mumbai", "PageSpeed optimizer Mumbai", "Core Web Vitals specialist Mumbai", "local SEO services Mumbai", "website speed tuning"]}
 
@@ -299,7 +232,7 @@ export default function SeoSpeed() {
               {[
                 {
                   title: "Lighthouse Audit Optimization",
-                  desc: "We tune image sizes, defer script weights, and clean CSS hierarchies to achieve 90+ mobile scores on Google Lighthouse.",
+                  desc: "We tune image sizes, defer script weights, and clean CSS hierarchies to improve mobile loading performance.",
                   icon: Gauge,
                 },
                 {
@@ -341,7 +274,7 @@ export default function SeoSpeed() {
               Speed & SEO Analyzer
             </h3>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              Enter your business website domain below to perform a mock PageSpeed diagnostic check.
+              Enter your business website domain below to request a Google PageSpeed Insights check. Scores vary by test run and do not guarantee business outcomes.
             </p>
 
             <div className="mt-6 space-y-6">
@@ -397,37 +330,28 @@ export default function SeoSpeed() {
                 >
                   {isOptimized ? (
                     <div className="text-center bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-xs font-semibold text-emerald-500 flex items-center justify-center gap-1.5">
-                      <CheckCircle className="h-4 w-4" /> This site is fully optimized!
+                      <CheckCircle className="h-4 w-4" /> Google PageSpeed returned strong performance and SEO scores.
                     </div>
                   ) : (
                     <div className="text-center bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-xs font-semibold text-destructive flex items-center justify-center gap-1.5">
-                      <AlertTriangle className="h-4 w-4" /> Speed and SEO performance issues detected!
+                      <AlertTriangle className="h-4 w-4" /> Review the Google PageSpeed scores below.
                     </div>
                   )}
 
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { label: "Performance", val: scorePerf, target: 99 },
-                      { label: "SEO Config", val: scoreSeo, target: 100 },
-                      { label: "Mobile Layout", val: scoreMobile, target: 100 },
-                      { label: "Security Setup", val: scoreSecurity, target: 98 },
+                      { label: "Performance", val: scorePerf },
+                      { label: "SEO", val: scoreSeo },
+                      { label: "Accessibility", val: scoreMobile },
+                      { label: "Best Practices", val: scoreSecurity },
                     ].map((metric, idx) => (
                       <div key={idx} className="rounded-xl border border-border bg-background/50 p-4 relative flex flex-col justify-between">
                         <span className="text-[11px] text-muted-foreground font-semibold uppercase">{metric.label}</span>
                         <div className="flex flex-col gap-0.5 mt-1.5">
                           <span className={`text-2xl font-bold leading-none ${metric.val >= 90 ? "text-emerald-500" : "text-destructive"}`}>
-                            {metric.val}%
+                            {metric.val}/100
                           </span>
-                          {!isOptimized && (
-                            <span className="text-[10px] text-muted-foreground">
-                              vs <span className="text-emerald-500 font-semibold">{metric.target}%</span> target
-                            </span>
-                          )}
-                          {isOptimized && (
-                            <span className="text-[10px] text-emerald-500 font-semibold leading-none">
-                              Optimal
-                            </span>
-                          )}
+                          <span className="text-[10px] text-muted-foreground">Google Lighthouse score</span>
                         </div>
                       </div>
                     ))}
@@ -435,15 +359,7 @@ export default function SeoSpeed() {
 
                   {/* Summary & Fix CTA */}
                   <div className="rounded-xl border border-border/40 bg-card/40 p-4 text-xs text-muted-foreground leading-relaxed">
-                    {isOptimized ? (
-                      <>
-                        <strong>Findings:</strong> Excellent architecture! This site runs on {isPopular ? "a" : "SiteNova's"} modern, lightning-fast stack. Images are compressed, schemas are local-ready, and Core Web Vitals are fully optimized.
-                      </>
-                    ) : (
-                      <>
-                        <strong>Findings:</strong> Your site suffers from unoptimized asset sizing, missing local JSON-LD business graphs, and low viewport scores. Upgrading to SiteNova structure would increase Performance from <strong>{scorePerf}%</strong> to <strong>99%</strong>.
-                      </>
-                    )}
+                    <strong>Next steps:</strong> These scores come from Google's test of the URL you entered. A manual review can identify specific improvements and agree realistic targets for your project.
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-2.5">

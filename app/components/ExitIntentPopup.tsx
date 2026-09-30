@@ -1,3 +1,4 @@
+import { suppressPromotions } from "@/lib/booking";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "react-router";
 import { m as motion, AnimatePresence } from "framer-motion";
@@ -27,6 +28,7 @@ export default function ExitIntentPopup() {
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const showPopup = useCallback(() => {
+    if (suppressPromotions(window.location.pathname)) return;
     // Don't show if already shown in this session
     if (sessionStorage.getItem(STORAGE_KEY)) return;
     previousFocusRef.current = document.activeElement as HTMLElement;
@@ -149,7 +151,7 @@ export default function ExitIntentPopup() {
   };
 
   // Do not render the popup on any admin pages
-  if (location.pathname.startsWith("/admin")) {
+  if (suppressPromotions(location.pathname)) {
     return null;
   }
 

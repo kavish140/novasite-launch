@@ -6,7 +6,7 @@ export function meta() {
     title:
       "About SiteNova — Web Design Agency Founded by Kavish Ganatra | Mulund, Mumbai",
     description:
-      "SiteNova (sitenova.dev) is a custom web design and development agency founded by Kavish Ganatra in Mulund, Mumbai. We build React and Next.js websites with 90+ PageSpeed scores for businesses across Mumbai. Not affiliated with sitenovaagency.com.",
+      "SiteNova (sitenova.dev) is a custom web design and development agency founded by Kavish Ganatra in Mulund, Mumbai. We build React and Next.js websites with a focus on loading speed for businesses across Mumbai. Not affiliated with sitenovaagency.com.",
     canonicalPath: "/about",
     keywords: [
       "about SiteNova",

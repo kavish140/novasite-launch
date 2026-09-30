@@ -27,7 +27,7 @@ export default function CorporateZone() {
           "Corporatezone is a B2B wholesale stationery and business essentials distributor based in Lower Parel, Mumbai, supplying corporate buyers across India. SiteNova built a full product catalog with 9 categories, a quote-basket inquiry system, real-time search and filter, and a WhatsApp CTA — all on Cloudflare Workers for fast load times for pan-India buyers.",
         stats: [
           { label: "Product Categories", value: "9" },
-          { label: "PageSpeed Score", value: "90+" },
+          { label: "Hosting", value: "Cloudflare Workers" },
           { label: "Industry", value: "B2B Wholesale" },
           { label: "Location", value: "Lower Parel, Mumbai" },
         ],

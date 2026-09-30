@@ -30,7 +30,7 @@ const PAGE_TIERS = [
 
 const ADD_ONS = [
   { id: "seo", label: "Local SEO Setup", desc: "Google Business Profile, schema markup, keyword targeting", price: 5000, icon: Search },
-  { id: "speed", label: "Performance Optimisation", desc: "90+ PageSpeed score · Core Web Vitals tuning", price: 4000, icon: Zap },
+  { id: "speed", label: "Performance Optimisation", desc: "Loading speed · Core Web Vitals tuning", price: 4000, icon: Zap },
   { id: "mobile", label: "Mobile-First Design", desc: "Dedicated mobile UX review and testing", price: 2000, icon: Smartphone },
   { id: "cms", label: "CMS / Blog", desc: "Admin panel to write and publish articles yourself", price: 6000, icon: FileText },
   { id: "multilang", label: "Multi-language", desc: "English + Hindi or Gujarati", price: 8000, icon: Globe },
@@ -66,7 +66,7 @@ const FAQS = [
   },
   {
     q: "Can I get a cheaper website elsewhere?",
-    a: "Cheaper options exist (WordPress templates, DIY builders), but they often carry hidden costs: slow load times, poor SEO, limited customisation, and ongoing plugin fees. SiteNova builds fast, custom sites with 90+ PageSpeed scores that rank on Google — the ROI typically outweighs the cost difference within months.",
+    a: "Cheaper options exist (WordPress templates, DIY builders), but they often carry hidden costs: slow load times, poor SEO, limited customisation, and ongoing plugin fees. SiteNova builds custom sites around your business requirements, loading speed and technical SEO. Compare the agreed scope and ongoing costs when choosing a provider.",
   },
 ];
 
@@ -383,7 +383,7 @@ export default function WebsiteCostCalculator() {
                       "Mobile-first development",
                       "Basic SEO (meta, sitemap, schema)",
                       "1 round of revisions included",
-                      "90+ PageSpeed score target",
+                      "Performance targets agreed for your project",
                     ].map((item) => (
                       <li key={item} className="flex items-center gap-2 text-xs text-muted-foreground">
                         <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />

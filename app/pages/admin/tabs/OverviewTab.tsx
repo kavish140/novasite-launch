@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { subDays, format } from "date-fns";
-import { Users, Clock, Megaphone, CheckCircle2, FileText, Bot, ListChecks } from "lucide-react";
+import { CalendarDays, Users, Clock, Megaphone, CheckCircle2, FileText, Bot, ListChecks } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -12,6 +12,7 @@ import ChartCard from "../components/ChartCard";
 import type { AuditRequest, BlogPost } from "../AdminDashboard";
 
 interface OverviewTabProps {
+  upcomingCalls: number | null;
   requests: AuditRequest[];
   posts: BlogPost[];
   allAdLeads: AuditRequest[];
@@ -57,7 +58,7 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
 
-export default function OverviewTab({ requests, posts, allAdLeads, aiDraftsPending, topicsInQueue }: OverviewTabProps) {
+export default function OverviewTab({ upcomingCalls, requests, posts, allAdLeads, aiDraftsPending, topicsInQueue }: OverviewTabProps) {
   const organicLeads = useMemo(
     () => requests.filter((r) => r.source !== "paid_ad"),
     [requests]
@@ -107,6 +108,9 @@ export default function OverviewTab({ requests, posts, allAdLeads, aiDraftsPendi
     <motion.div className="space-y-8" variants={stagger} initial="hidden" animate="show">
       {/* KPI Grid */}
       <motion.div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-7 gap-4" variants={stagger}>
+        <motion.div variants={item}>
+          <KpiCard title="Upcoming Calls" value={upcomingCalls ?? "Unavailable"} icon={CalendarDays} subtitle="Confirmed Google Calendar bookings" iconColor="text-primary" />
+        </motion.div>
         <motion.div variants={item}>
           <KpiCard
             title="Total Leads"

@@ -281,7 +281,7 @@ export default function GoogleAds() {
                 Everything Managed for You
               </h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                Most businesses waste 60–70% of their Google Ads budget on irrelevant clicks. We fix that from day
+                Irrelevant clicks can use up your Google Ads budget. We review targeting from day
                 one — with tight keyword targeting, compelling ad copy, and weekly bid adjustments.
               </p>
               <div className="mt-8 grid sm:grid-cols-2 gap-4">

@@ -57,7 +57,7 @@ export default function DrDiptiGanatra() {
             icon: Smartphone,
             title: "Mobile-First Design",
             description:
-              "Over 80% of patients search for doctors on mobile. Every page and form is optimised for thumb-friendly navigation and fast load on 4G connections.",
+              "Patients can search for doctors on mobile. Every page and form is optimised for thumb-friendly navigation and fast load on 4G connections.",
           },
           {
             icon: Star,

@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const TAB_LABELS: Record<string, string> = {
+  scheduled_calls: "Scheduled Calls",
   overview:        "Overview",
   leads:           "Audit Requests",
   quote_requests:  "Quote Requests",

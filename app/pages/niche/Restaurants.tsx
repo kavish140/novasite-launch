@@ -65,7 +65,7 @@ const features = [
     icon: Smartphone,
     title: "Mobile-First Design",
     description:
-      "Over 90% of restaurant searches happen on mobile devices on the go. Your site will load instantly and look perfect on every screen.",
+      "Diners often look for restaurants on their phones while on the go. Your site will load instantly and look perfect on every screen.",
   },
 ];
 
@@ -241,7 +241,7 @@ export default function Restaurants() {
             className="text-center mb-14"
           >
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl max-w-3xl mx-auto">
-              Food Apps Take 30% Cuts.{" "}
+              Delivery Commissions Add Up.{" "}
               <span className="gradient-text">Take Back Control.</span>
             </h2>
           </motion.div>
@@ -342,7 +342,7 @@ export default function Restaurants() {
 
           <div className="inline-flex items-center gap-2 rounded-full border border-green-500/20 bg-green-500/5 px-4 py-1.5 text-xs font-medium text-green-400 mb-10">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Not happy? Full refund within 7 days
+            Scope and pricing agreed before work begins
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">

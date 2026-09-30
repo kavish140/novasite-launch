@@ -1,3 +1,4 @@
+import BookingCTA from "@/components/BookingCTA";
 import { useEffect } from "react";
 import { m as motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
@@ -53,7 +54,7 @@ const pricingTiers = [
       "User Authentication & Dashboards",
       "Advanced Animations & Interactions",
       "Custom API Integrations",
-      "Dedicated 24/7 Support",
+      "Support scope agreed upfront",
       "Unlimited Revisions during dev",
     ],
     ctaText: "Request Quote",
@@ -174,6 +175,7 @@ const Pricing = () => {
                 
                 <Link
                   to="/quote"
+                  state={{ packageName: tier.name, projectType: tier.name === "Starter" ? "Landing Page" : tier.name === "Business" ? "Business Website" : undefined }}
                   className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all button-shimmer ${
                     tier.popular
                       ? "bg-primary text-primary-foreground hover:bg-primary/90 glow-effect btn-quote-pulse"
@@ -187,6 +189,7 @@ const Pricing = () => {
             ))}
           </div>
 
+          <div className="text-center mt-8"><BookingCTA source="pricing" /></div>
           {/* FAQ Teaser */}
           <motion.div 
             initial={{ opacity: 0 }}

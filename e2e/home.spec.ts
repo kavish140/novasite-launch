@@ -8,5 +8,5 @@ test('has title and main heading', async ({ page }) => {
 
   // Expect the main heading to contain "SiteNova"
   const heading = page.locator('h1');
-  await expect(heading).toContainText(/SiteNova/i);
+  await expect(heading).toContainText(/Mumbai Businesses/i);
 });

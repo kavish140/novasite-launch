@@ -1,3 +1,4 @@
+import BookingCTA from "@/components/BookingCTA";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useEffect } from "react";
 import { m as motion } from "framer-motion";
@@ -8,32 +9,26 @@ import {
   ShieldCheck,
   Globe,
 } from "lucide-react";
-import { trackQuoteSubmit } from "@/lib/analytics";
 import { PHONE_TEL_LINK, WHATSAPP_URL } from "@/lib/constants";
 
 export default function LpThankYouQuote() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as {
-    name?: string;
+    submissionId?: string; name?: string;
     projectType?: string;
     email?: string;
   } | null;
 
   // Guard: block direct URL access — only valid when reached via form submission
   useEffect(() => {
-    if (!state) {
+    if (!state?.submissionId) {
       navigate("/lp/web-design", { replace: true });
     }
   }, [state, navigate]);
 
-  useEffect(() => {
-    if (state) {
-      trackQuoteSubmit();
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!state) return null;
+  if (!state?.submissionId) return null;
 
   const name = state.name || "there";
   const projectType = state.projectType || "your project";
@@ -78,7 +73,7 @@ export default function LpThankYouQuote() {
                 <span className="text-foreground font-semibold">
                   {projectType}
                 </span>
-                . A quote summary is being sent to{" "}
+                . Kavish will respond to{" "}
                 <span className="text-foreground font-semibold">{email}</span>.
               </p>
               <p className="text-muted-foreground text-xs">
@@ -87,6 +82,7 @@ export default function LpThankYouQuote() {
               </p>
             </div>
 
+            <BookingCTA source="quote-confirmation" className="w-full max-w-md" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto pt-4">
               <a
                 href={PHONE_TEL_LINK}

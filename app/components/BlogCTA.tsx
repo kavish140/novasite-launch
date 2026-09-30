@@ -66,7 +66,7 @@ export default function BlogCTA({ variant = "end" }: BlogCTAProps) {
           </span>
           <span className="inline-flex items-center gap-1.5">
             <Zap className="h-4 w-4 text-primary" />
-            90+ PageSpeed score guaranteed
+            Performance reviewed before launch
           </span>
         </div>
 

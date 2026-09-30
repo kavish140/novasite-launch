@@ -1,3 +1,4 @@
+import { BookingProvider } from "@/components/BookingProvider";
 import { Suspense, lazy } from "react";
 import {
   Links,
@@ -19,7 +20,6 @@ import "@/index.css";
 const ScrollProgress = lazy(() => import("@/components/ScrollProgress"));
 const BookCallWidget = lazy(() => import("@/components/BookCallWidget"));
 const ExitIntentPopup = lazy(() => import("@/components/ExitIntentPopup"));
-const MobileAuditBar = lazy(() => import("@/components/MobileAuditBar"));
 const AnnouncementBanner = lazy(() => import("@/components/AnnouncementBanner"));
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -142,7 +142,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   },
                   image: "https://sitenova.dev/seo-preview.png",
                   description:
-                    "SiteNova is a custom web design and development agency based in Mulund, Mumbai, India. Founded by Kavish Ganatra, SiteNova builds high-performance React and Next.js websites with 90+ PageSpeed scores. Not to be confused with sitenovaagency.com, which is a separate, unaffiliated business.",
+                    "SiteNova is a custom web design and development agency based in Mulund, Mumbai, India. Founded by Kavish Ganatra, SiteNova builds high-performance React and Next.js websites with a focus on loading speed. Not to be confused with sitenovaagency.com, which is a separate, unaffiliated business.",
                   foundingDate: "2024",
                   founder: {
                     "@type": "Person",
@@ -275,13 +275,13 @@ export default function App() {
                 <AnnouncementBanner />
               </ClientOnly>
             </Suspense>
-            <Outlet />
+            <BookingProvider><Outlet /></BookingProvider>
             <Suspense fallback={null}>
               <ClientOnly>
                 <ScrollProgress />
                 <BookCallWidget />
                 <ExitIntentPopup />
-                <MobileAuditBar />
+
               </ClientOnly>
             </Suspense>
           </LazyMotion>

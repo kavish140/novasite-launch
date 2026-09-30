@@ -1,3 +1,4 @@
+import BookingSettings from "../components/BookingSettings";
 /**
  * SettingsTab — Admin settings page.
  * Sections:
@@ -175,6 +176,7 @@ export default function SettingsTab() {
       transition={{ duration: 0.3 }}
     >
       {/* ── Announcement Banner ──────────────────────────────────────────── */}
+      <BookingSettings />
       <section className="bg-card/40 border border-border/40 rounded-xl p-6 space-y-6">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">

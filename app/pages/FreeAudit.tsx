@@ -250,19 +250,9 @@ export default function FreeAudit() {
               </div>
             </div>
 
-            {/* Testimonial */}
             <div className="pt-6 mt-6 border-t border-border/30">
-              <div className="flex items-center gap-1 mb-2 text-yellow-500">
-                <Star className="w-4 h-4 fill-current" />
-                <Star className="w-4 h-4 fill-current" />
-                <Star className="w-4 h-4 fill-current" />
-                <Star className="w-4 h-4 fill-current" />
-                <Star className="w-4 h-4 fill-current" />
-              </div>
-              <p className="text-sm italic text-muted-foreground">
-                "The free audit from SiteNova showed us exactly why our competitors were ranking above us. Implementing their suggestions increased our leads by 40% in two months."
-              </p>
-              <p className="text-xs font-semibold mt-2">— Rahul D., Local Business Owner</p>
+              <h3 className="text-sm font-semibold">Practical next steps for your website</h3>
+              <p className="text-sm text-muted-foreground mt-2">Your audit explains the issues we find and the improvements we recommend, so you can decide what to address first.</p>
             </div>
           </motion.div>
 

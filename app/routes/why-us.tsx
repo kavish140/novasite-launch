@@ -6,7 +6,7 @@ export function meta() {
     title:
       "Why Choose SiteNova — Best Web Designer in Mumbai vs Freelancers & Agencies",
     description:
-      "Why SiteNova (sitenova.dev) is the best choice for web design in Mumbai. Compare custom React development vs WordPress templates, 90+ PageSpeed scores, GEO/AI search visibility, and direct founder access.",
+      "Why SiteNova (sitenova.dev) is the best choice for web design in Mumbai. Compare custom React development vs WordPress templates, performance optimisation, GEO/AI search visibility, and direct founder access.",
     canonicalPath: "/why-us",
     keywords: [
       "why choose SiteNova",

@@ -22,12 +22,12 @@ export const faqs = [
   {
     question: "What technologies does SiteNova use to build websites?",
     answer:
-      "SiteNova uses React 18, Next.js, and TypeScript as the core frontend technologies, styled with Tailwind CSS and animated with Framer Motion for smooth interactions. For backends and databases, SiteNova uses Node.js, Supabase, and PostgreSQL. Sites are deployed on Vercel or Cloudflare Pages with CI/CD automation via GitHub Actions. This modern stack ensures every website achieves 90+ PageSpeed scores, works flawlessly on all devices, and scales reliably under real-world traffic.",
+      "SiteNova uses React 18, Next.js, and TypeScript as the core frontend technologies, styled with Tailwind CSS and animated with Framer Motion for smooth interactions. For backends and databases, SiteNova uses Node.js, Supabase, and PostgreSQL. Sites are deployed on Vercel or Cloudflare Pages with CI/CD automation via GitHub Actions. This stack supports responsive layouts, performance optimisation and maintainable code.",
   },
   {
     question: "Why do I need a mobile-first website design?",
     answer:
-      "Over 70% of local searches in Mumbai happen on mobile devices. A mobile-first website ensures your site loads quickly and displays perfectly on smartphones — the primary device your potential customers use to find businesses. Google's ranking algorithm (including AI-powered features like AI Overviews) prioritises mobile-first indexed sites. SiteNova builds every website with a mobile-first approach by default, combining responsive layouts with fast load times to significantly improve your Google rankings, user experience, and conversion rate.",
+      "Many customers search for local businesses on their phones. A mobile-first website ensures your site loads quickly and displays perfectly on smartphones — the primary device your potential customers use to find businesses. Google's ranking algorithm (including AI-powered features like AI Overviews) prioritises mobile-first indexed sites. SiteNova builds every website with a mobile-first approach by default, combining responsive layouts with fast load times to significantly improve your Google rankings, user experience, and conversion rate.",
   },
   {
     question: "Does SiteNova provide SEO services?",
@@ -47,7 +47,7 @@ export const faqs = [
   {
     question: "Does SiteNova guarantee good Google PageSpeed scores?",
     answer:
-      "Yes. SiteNova consistently delivers websites with scores of 90–99 on Google PageSpeed Insights for both mobile and desktop. This is achieved through hand-written, optimised code (avoiding bloated page builders), aggressive image compression, lazy loading, critical CSS inlining, and CDN deployment via Vercel or Cloudflare. High PageSpeed scores directly improve your Google rankings, reduce user bounce rates, and increase conversion rates — especially on mobile devices commonly used by Mumbai consumers.",
+      "Yes. SiteNova reviews mobile and desktop performance and uses hand-written, optimised code (avoiding bloated page builders), aggressive image compression, lazy loading, critical CSS inlining, and CDN deployment via Vercel or Cloudflare. High PageSpeed scores directly improve your Google rankings, reduce user bounce rates, and increase conversion rates — especially on mobile devices commonly used by Mumbai consumers.",
   },
   {
     question: "Can SiteNova build websites for businesses outside Mumbai?",
@@ -57,12 +57,12 @@ export const faqs = [
   {
     question: "What makes SiteNova different from freelance web designers?",
     answer:
-      "Unlike a generic freelancer using Wix, WordPress, or Squarespace templates, SiteNova writes fully custom code using React and Next.js for every project. This results in significantly faster load times (90+ PageSpeed), better Google rankings, unique designs that precisely match the client's brand, and long-term code maintainability. SiteNova also includes structured Schema.org data, Generative Engine Optimisation (GEO) signals, and Core Web Vitals tuning as standard — ensuring the client's website appears not just in traditional search but also in AI-powered results like Google AI Mode and Perplexity.",
+      "Unlike a generic freelancer using Wix, WordPress, or Squarespace templates, SiteNova writes fully custom code using React and Next.js for every project. This results in significantly faster load times, better Google rankings, unique designs that precisely match the client's brand, and long-term code maintainability. SiteNova also includes structured Schema.org data, Generative Engine Optimisation (GEO) signals, and Core Web Vitals tuning as standard — ensuring the client's website appears not just in traditional search but also in AI-powered results like Google AI Mode and Perplexity.",
   },
   {
     question: "What is the difference between a template website and a custom website?",
     answer:
-      "A template website (such as Wix, Squarespace, or a WordPress theme) is a pre-built design that thousands of businesses share. They load slowly, rank poorly on Google, and cannot be uniquely tailored to your brand. A custom website — like those SiteNova builds — is coded from scratch using React or Next.js. This means it is uniquely designed for your business, loads 2–3× faster than a template site, achieves 90+ PageSpeed scores, and is built with technical SEO baked in from day one. For businesses in Mumbai looking to rank on Google and generate leads, a custom website is a significantly better long-term investment.",
+      "A template website (such as Wix, Squarespace, or a WordPress theme) is a pre-built design that thousands of businesses share. They load slowly, rank poorly on Google, and cannot be uniquely tailored to your brand. A custom website — like those SiteNova builds — is coded from scratch using React or Next.js. This means it is uniquely designed for your business, is optimised for loading speed, and is built with technical SEO baked in from day one. For businesses in Mumbai looking to rank on Google and generate leads, a custom website is a significantly better long-term investment.",
   },
   {
     question: "Do I need a budget approved before contacting SiteNova?",

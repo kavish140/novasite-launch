@@ -85,7 +85,7 @@ const steps = [
     description:
       "We test your site across all major browsers (Chrome, Safari, Firefox) and devices (iPhone, Android, iPad, desktop). We run a Google PageSpeed audit and fix anything below 90. Once you're happy, we deploy to Vercel or Cloudflare Pages with a custom domain and SSL. You receive full code ownership and admin access.",
     deliverables: [
-      "90+ PageSpeed score (mobile & desktop)",
+      "Performance checks (mobile & desktop)",
       "Cross-browser & device testing",
       "Live deployment with SSL",
       "Full code ownership handover",
@@ -174,7 +174,7 @@ const OurProcess = () => {
                 {[
                   { icon: Clock, text: "7–14 day delivery" },
                   { icon: Banknote, text: "From ₹10,000" },
-                  { icon: CheckCircle2, text: "90+ PageSpeed guaranteed" },
+                  { icon: CheckCircle2, text: "Performance reviewed" },
                 ].map(({ icon: Icon, text }) => (
                   <span key={text} className="flex items-center gap-2">
                     <Icon className="h-4 w-4 text-primary" />

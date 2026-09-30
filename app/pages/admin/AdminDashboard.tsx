@@ -1,3 +1,5 @@
+import ScheduledCallsTab from "./tabs/ScheduledCallsTab";
+import { useScheduledCalls } from "./hooks/useScheduledCalls";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { supabase } from "@/lib/supabaseClient";
@@ -94,6 +96,10 @@ export type QuoteRequest = {
   name: string;
   email: string;
   mobile?: string | null;
+  business_name?: string | null;
+  source?: string | null;
+  package_name?: string | null;
+  submission_id?: string | null;
   project_type?: string | null;
   budget?: string | null;
   timeline?: string | null;
@@ -113,6 +119,8 @@ export type LeadNote = {
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const scheduled = useScheduledCalls(activeTab === "overview" || activeTab === "scheduled_calls");
+  const upcomingCalls = scheduled.calls.filter(c => c.status === "scheduled" && Date.parse(c.ends_at) >= Date.now()).length;
   const [requests, setRequests] = useState<AuditRequest[]>([]);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [pageViews, setPageViews] = useState<PageView[]>([]);
@@ -427,6 +435,7 @@ export default function AdminDashboard() {
   }, []);
 
   const badges = {
+    scheduled_calls: upcomingCalls,
     leads:          requests.filter((r) => r.status !== "completed" && r.source !== "paid_ad").length,
     quote_requests: quoteRequests.filter((r) => r.status === "new").length,
     ad_leads:       allAdLeads.filter((r) => r.status !== "completed").length,
@@ -436,8 +445,10 @@ export default function AdminDashboard() {
 
   // ── Tab content map ────────────────────────────────────────────────────────
   const tabContent: Record<AdminTab, React.ReactNode> = {
+    scheduled_calls: <ScheduledCallsTab {...scheduled} />,
     overview: (
       <OverviewTab
+        upcomingCalls={scheduled.error ? null : upcomingCalls}
         requests={requests}
         posts={posts}
         allAdLeads={allAdLeads}
@@ -527,7 +538,7 @@ export default function AdminDashboard() {
         <AdminHeader
           activeTab={activeTab}
           loading={loading}
-          onRefresh={fetchData}
+          onRefresh={() => { fetchData(); scheduled.refresh(); }}
           onExportCSV={handleExportCSV}
           onCopyBlogs={handleCopyBlogs}
         />

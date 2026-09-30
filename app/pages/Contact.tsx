@@ -1,3 +1,4 @@
+import BookingCTA from "@/components/BookingCTA";
 import { useEffect } from "react";
 import { Phone, Mail, MessageCircle, MapPin, ShieldCheck, CheckCircle2, Globe } from "lucide-react";
 import { setPageSeo } from "@/lib/seo";
@@ -46,6 +47,7 @@ const Contact = () => {
           </p>
         </motion.div>
 
+        <div className="text-center mb-8"><BookingCTA source="contact" /></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Direct Contact Options */}
           <motion.div
