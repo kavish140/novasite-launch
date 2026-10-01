@@ -11,19 +11,24 @@ await db.exec(`
   create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
   create function auth.uid() returns uuid language sql as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
   insert into auth.users values('${admin}','kavishganatra5@gmail.com',now());
-  create table public.quote_requests(id uuid primary key default gen_random_uuid(),name text not null,email text not null,phone text,status text default 'new',created_at timestamptz default now());
+  create table public.quote_requests(id uuid primary key default gen_random_uuid(),name text not null,email text not null,phone text,status text default 'quote_pending',created_at timestamptz default now());
   insert into public.quote_requests(name,email,phone) values('Existing lead','old@example.test','9999999999');
 `);
 const migration = await readFile("supabase/migrations/20260929_conversion_booking.sql", "utf8");
 await db.exec(migration);
 await db.exec(migration);
+const quoteStatusMigration = await readFile("supabase/migrations/20261001_quote_status_default.sql", "utf8");
+await db.exec(quoteStatusMigration);
+await db.exec(quoteStatusMigration);
 assert.equal((await db.query("select mobile from quote_requests where email='old@example.test'")).rows[0].mobile, "9999999999");
+assert.equal((await db.query("select status from quote_requests where email='old@example.test'")).rows[0].status, "new");
 
 const quote = { submissionId: "00000000-0000-4000-8000-000000000002", name: "Buyer", email: "buyer@example.test", phone: "9999999999", businessName: "Business", projectType: "Business Website", requirements: "", budget: "Rs. 15,000 - 30,000", timeline: "Normal (2-4 weeks)", source: "website", attribution: {} };
 await db.exec("set role service_role");
 const saveQuote = q => db.query("select accept_website_quote($1::jsonb)", [JSON.stringify(q)]);
 await saveQuote(quote); await saveQuote(quote);
 assert.equal((await db.query("select count(*)::int as n from quote_requests where submission_id is not null")).rows[0].n, 1);
+assert.equal((await db.query("select status from quote_requests where submission_id is not null")).rows[0].status, "new");
 assert.equal((await db.query("select count(*)::int as n from lead_notifications where kind='quote'")).rows[0].n, 1);
 await assert.rejects(saveQuote({ ...quote, name: "Changed payload" }), /submission_conflict/);
 

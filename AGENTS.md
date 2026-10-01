@@ -530,7 +530,7 @@ Stores quote leads from both `/quote` and `/lp/web-design` through one server ac
 | `requirements` | text (nullable) | Project description |
 | `budget` | text (nullable) | Selected budget range |
 | `timeline` | text (nullable) | Selected timeline preference |
-| `status` | text | CHECK constraint: `'new' \| 'contacted' \| 'converted' \| 'lost'`. Default `'new'`. |
+| `status` | text | `'new' \| 'contacted' \| 'converted' \| 'lost'`. Run `20261001_quote_status_default.sql` on older tables to replace the legacy `quote_pending` default and values. |
 | `created_at` | timestamptz | Auto-set to `now()` UTC |
 
 RLS: anonymous access revoked; server-only inserts through `accept_website_quote`. Existing authenticated policies retained, with owner allowlist policy added.
@@ -587,6 +587,8 @@ Created by user SQL (2026-09-01). Populated by `pages/AdsContact.tsx` form. Disp
 ### Booking and notification data (2026-09-29)
 
 Migration and copy/paste SQL: `supabase/migrations/20260929_conversion_booking.sql`. Setup: `docs/booking-setup.md`.
+
+Older production `quote_requests` tables can retain a `quote_pending` status default after the additive conversion migration. Apply `supabase/migrations/20261001_quote_status_default.sql` to set the default to `new` and relabel only existing `quote_pending` rows; other statuses are preserved.
 
 - `site_admins`: explicit UUID allowlist seeded from the confirmed owner account. `is_site_admin()` governs new booking access.
 - `booking_settings`: singleton, public URL/enabled state only, admin updates. Disabled by default; valid Google appointment schedule URL required.
@@ -865,6 +867,13 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 
 > **AI agents: append an entry here every time you make a significant change.**
 > Format: `## [Date] — [Brief summary]` followed by bullet points of what changed and why.
+
+---
+
+### [2026-10-01] — Align legacy quote status with admin workflow
+
+- Added `20261001_quote_status_default.sql` to change the retained production `quote_pending` default to `new` and relabel pending rows, preserving contacted, converted and lost records.
+- Extended the isolated database test to start from the legacy default and verify the follow-up migration is repeatable and new quotes receive `new`.
 
 ---
 
