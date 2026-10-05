@@ -1,286 +1,423 @@
 import { useMemo, useState } from "react";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import {
-  Pencil, Trash2, Bot, Clock, CheckCircle2,
-  AlertCircle, ChevronRight, FileText, Search, X,
+  Pencil,
+  Trash2,
+  Bot,
+  Clock,
+  CheckCircle2,
+  FileText,
+  Search,
+  X,
+  ArrowUpRight,
+  Archive,
+  ClipboardCheck,
 } from "lucide-react";
 import { Link } from "react-router";
-import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import EmptyState from "../components/EmptyState";
-import TableSkeleton from "../components/TableSkeleton";
+import { cn } from "@/lib/utils";
 import type { BlogPost, BlankMeta } from "../AdminDashboard";
-
 interface DraftsTabProps {
   posts: BlogPost[];
   loading: boolean;
   onDeletePost: (id: string) => void;
   onUpdatePostStatus: (id: string, status: BlogPost["status"]) => Promise<void>;
 }
-
-const STATUS_STYLES: Record<BlogPost["status"], string> = {
-  draft:     "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  review:    "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  published: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  archived:  "bg-secondary/40 text-muted-foreground border-border/40",
+const stages = [
+  {
+    id: "draft",
+    label: "Drafts",
+    description: "Add your expertise",
+    icon: Pencil,
+    color: "text-amber-500",
+  },
+  {
+    id: "review",
+    label: "In review",
+    description: "Give it a final read",
+    icon: ClipboardCheck,
+    color: "text-primary",
+  },
+  {
+    id: "published",
+    label: "Published",
+    description: "Live on your blog",
+    icon: CheckCircle2,
+    color: "text-emerald-500",
+  },
+  {
+    id: "archived",
+    label: "Archived",
+    description: "Saved for later",
+    icon: Archive,
+    color: "text-muted-foreground",
+  },
+] as const;
+const statusStyles: Record<BlogPost["status"], string> = {
+  draft: "bg-amber-500/10 text-amber-500",
+  review: "bg-primary/10 text-primary",
+  published: "bg-emerald-500/10 text-emerald-500",
+  archived: "bg-muted text-muted-foreground",
 };
-
-function BlankProgress({ blanks }: { blanks: BlankMeta[] }) {
-  if (!blanks || blanks.length === 0) return null;
-  const filled = blanks.filter((b) => b.filled).length;
-  const total = blanks.length;
-  const pct = Math.round((filled / total) * 100);
-  const allDone = filled === total;
-
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">
-          {allDone ? (
-            <span className="flex items-center gap-1 text-emerald-400">
-              <CheckCircle2 className="w-3 h-3" /> All blanks filled
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-amber-400">
-              <AlertCircle className="w-3 h-3" /> {total - filled} blank{total - filled !== 1 ? "s" : ""} remaining
-            </span>
-          )}
-        </span>
-        <span className={`font-medium ${allDone ? "text-emerald-400" : "text-muted-foreground"}`}>
-          {filled}/{total}
-        </span>
-      </div>
-      <div className="h-1.5 rounded-full bg-secondary/40 overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${allDone ? "bg-emerald-500" : "bg-amber-500"}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-export default function DraftsTab({ posts, loading, onDeletePost, onUpdatePostStatus }: DraftsTabProps) {
+export default function DraftsTab({
+  posts,
+  loading,
+  onDeletePost,
+  onUpdatePostStatus,
+}: DraftsTabProps) {
   const [query, setQuery] = useState("");
-
-  // Only show AI-generated posts (all statuses except archived, so user can manage the pipeline)
-  const aiPosts = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    return posts
-      .filter((p) => {
-        if (p.source !== "ai") return false;
-        if (!q) return true;
-        return (
-          p.title.toLowerCase().includes(q) ||
-          p.slug.toLowerCase().includes(q) ||
-          (Array.isArray(p.tags) && p.tags.some((t) => t.toLowerCase().includes(q)))
-        );
-      })
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [posts, query]);
-
-  const drafts    = aiPosts.filter((p) => p.status === "draft");
-  const inReview  = aiPosts.filter((p) => p.status === "review");
-  const published = aiPosts.filter((p) => p.status === "published");
-  const archived  = aiPosts.filter((p) => p.status === "archived");
-
-  if (loading) return <TableSkeleton columns={4} rows={4} />;
-
-  if (aiPosts.length === 0) {
-    return (
-      <EmptyState
-        icon={Bot}
-        title="No AI drafts yet"
-        description="Your daily blog generator will deposit drafts here automatically. Run the skill or Gemini Gem to generate the first post."
-      />
+  const [stage, setStage] = useState<BlogPost["status"] | "all">("draft");
+  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
+  const aiPosts = useMemo(
+    () =>
+      posts
+        .filter((p) => p.source === "ai")
+        .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)),
+    [posts],
+  );
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return aiPosts.filter(
+      (p) =>
+        (stage === "all" || p.status === stage) &&
+        (!q ||
+          [p.title, p.slug, ...(p.tags || [])].some((text) =>
+            text.toLowerCase().includes(q),
+          )),
     );
-  }
-
-  const renderPost = (post: BlogPost, i: number) => {
-    const blanks: BlankMeta[] = Array.isArray(post.blanks_metadata) ? post.blanks_metadata : [];
-    const allFilled = blanks.length > 0 && blanks.every((b) => b.filled);
-
-    return (
-      <motion.div
-        key={post.id}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ delay: i * 0.04 }}
-        className="rounded-xl border border-border/40 bg-card/40 p-5 space-y-4 hover:border-border/70 transition-colors"
-      >
-        {/* Top row */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1 min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Status select */}
-              <Select
-                value={post.status}
-                onValueChange={(v) => onUpdatePostStatus(post.id, v as BlogPost["status"])}
-              >
-                <SelectTrigger className={`h-5 text-[10px] border px-2 w-24 rounded-full font-bold ${STATUS_STYLES[post.status]}`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="review">Review</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30 font-bold">
-                <Bot className="w-2.5 h-2.5" />AI
-              </span>
-              {post.ai_model && (
-                <span className="text-[10px] text-muted-foreground/60 font-mono">{post.ai_model}</span>
-              )}
-            </div>
-            <h3 className="font-semibold text-sm text-foreground leading-snug">{post.title}</h3>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-              </span>
-              <span className="font-mono">/{post.slug}</span>
-            </div>
+  }, [aiPosts, stage, query]);
+  const ready = aiPosts.filter(
+    (p) =>
+      ["draft", "review"].includes(p.status) &&
+      (!p.blanks_metadata?.length || p.blanks_metadata.every((b) => b.filled)),
+  ).length;
+  const changeStatus = async (post: BlogPost, status: BlogPost["status"]) => {
+    setBusyIds((prev) => new Set(prev).add(post.id));
+    try {
+      await onUpdatePostStatus(post.id, status);
+    } finally {
+      setBusyIds((prev) => {
+        const next = new Set(prev);
+        next.delete(post.id);
+        return next;
+      });
+    }
+  };
+  return (
+    <div className="space-y-6">
+      <div className="admin-panel flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
+        <div className="flex items-center gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Bot className="h-6 w-6" />
+          </span>
+          <div>
+            <h2 className="font-heading text-lg font-semibold">
+              From first draft to your next article
+            </h2>
+            <p className="mt-1 max-w-lg text-sm text-muted-foreground">
+              Add your experience, review the details, and publish when you're
+              ready.
+            </p>
           </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1 shrink-0">
-            <Button size="icon" variant="ghost" asChild className="h-8 w-8" title="Edit & fill blanks">
-              <Link to={`/admin/blog/${post.id}`}>
-                <Pencil className="w-4 h-4" />
-              </Link>
-            </Button>
-            <Button
-              size="icon" variant="ghost"
-              className="h-8 w-8 text-destructive hover:bg-destructive/10"
-              title="Delete"
-              onClick={() => onDeletePost(post.id)}
+        </div>
+        <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-500">
+          <CheckCircle2 className="h-4 w-4" />
+          {loading ? "—" : ready} ready for a final review
+        </span>
+      </div>
+      <div
+        className="grid grid-cols-2 gap-3 lg:grid-cols-4"
+        aria-label="Filter drafts by status"
+      >
+        {stages.map(({ id, label, description, icon: Icon, color }) => (
+          <button
+            key={id}
+            aria-pressed={stage === id}
+            onClick={() => setStage(id)}
+            className={cn(
+              "admin-panel flex min-w-0 items-start gap-3 p-4 text-left transition-colors sm:p-5",
+              stage === id &&
+                "border-primary bg-primary/5 ring-1 ring-primary/20",
+            )}
+          >
+            <Icon className={cn("mt-1 h-4 w-4 shrink-0", color)} />
+            <span className="min-w-0 flex-1">
+              <span className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-medium">{label}</span>
+                <span className="text-2xl font-semibold tabular-nums">
+                  {loading
+                    ? "—"
+                    : aiPosts.filter((p) => p.status === id).length}
+                </span>
+              </span>
+              <span className="mt-1 block text-[11px] text-muted-foreground">
+                {description}
+              </span>
+            </span>
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative min-w-0 flex-1 sm:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            aria-label="Search AI drafts"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by title, slug, or tag…"
+            className="h-10 bg-card pl-10 pr-10"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              aria-label="Clear draft search"
+              className="absolute right-2 top-2 rounded p-1 text-muted-foreground"
             >
-              <Trash2 className="w-4 h-4" />
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <Button
+          variant={stage === "all" ? "secondary" : "outline"}
+          onClick={() => setStage("all")}
+          size="sm"
+          aria-pressed={stage === "all"}
+        >
+          All articles
+        </Button>
+        <span className="ml-auto text-xs text-muted-foreground">
+          {loading
+            ? "Loading…"
+            : `${filtered.length} article${filtered.length === 1 ? "" : "s"}`}
+        </span>
+      </div>
+      {loading ? (
+        <div className="grid gap-5 lg:grid-cols-2">
+          {[0, 1, 2, 3].map((n) => (
+            <div key={n} className="admin-panel h-72 animate-pulse p-6">
+              <div className="mb-5 h-5 w-24 rounded bg-muted" />
+              <div className="mb-3 h-6 w-3/4 rounded bg-muted" />
+              <div className="h-16 rounded bg-muted" />
+            </div>
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="admin-panel">
+          <EmptyState
+            icon={query ? Search : FileText}
+            title={
+              query
+                ? "No matching articles"
+                : aiPosts.length
+                  ? "Nothing in this stage"
+                  : "Your content studio is ready"
+            }
+            description={
+              query
+                ? "Try another title or tag, or clear the search to see your articles."
+                : aiPosts.length
+                  ? "Choose another stage to view the rest of your articles."
+                  : "AI-generated articles will appear here, ready for your experience and final review."
+            }
+          />
+          <div className="flex justify-center pb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setQuery("");
+                setStage("all");
+              }}
+            >
+              Show all articles
             </Button>
           </div>
         </div>
-
-        {/* Blank progress bar */}
-        {blanks.length > 0 && <BlankProgress blanks={blanks} />}
-
-        {/* Blank cards preview */}
-        {blanks.length > 0 && !allFilled && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {blanks.filter((b) => !b.filled).slice(0, 4).map((blank) => (
-              <div
-                key={blank.id}
-                className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 space-y-0.5"
-              >
-                <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wide">{blank.label}</p>
-                <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">{blank.guideline}</p>
-              </div>
-            ))}
-            {blanks.filter((b) => !b.filled).length > 4 && (
-              <div className="rounded-lg border border-border/30 bg-secondary/20 px-3 py-2 flex items-center justify-center">
-                <span className="text-[10px] text-muted-foreground">+{blanks.filter((b) => !b.filled).length - 4} more</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* All filled CTA */}
-        {allFilled && (
-          <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
-            <span className="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" /> All blanks filled — ready to publish!
-            </span>
-            <button
-              onClick={() => onUpdatePostStatus(post.id, "published")}
-              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-0.5 transition-colors"
-            >
-              Publish <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-        )}
-
-        {/* No blanks — complete post, ready to publish */}
-        {blanks.length === 0 && (
-          <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
-            <span className="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Complete post — ready to publish!
-            </span>
-            <button
-              onClick={() => onUpdatePostStatus(post.id, "published")}
-              className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-0.5 transition-colors"
-            >
-              Publish <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-        )}
-      </motion.div>
-    );
-  };
-
-  const Section = ({ title, items, emptyMsg }: { title: string; items: BlogPost[]; emptyMsg: string }) => (
-    <div className="space-y-3">
-      <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 px-1">{title} ({items.length})</h4>
-      {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground/50 italic px-1">{emptyMsg}</p>
       ) : (
-        <AnimatePresence mode="popLayout">
-          {items.map((p, i) => renderPost(p, i))}
-        </AnimatePresence>
+        <div className="grid items-stretch gap-5 lg:grid-cols-2">
+          {filtered.map((post) => {
+            const blanks: BlankMeta[] = Array.isArray(post.blanks_metadata)
+              ? post.blanks_metadata
+              : [];
+            const filled = blanks.filter((b) => b.filled).length;
+            const remaining = blanks.length - filled;
+            const canPublish =
+              remaining === 0 && ["draft", "review"].includes(post.status);
+            const busy = busyIds.has(post.id);
+            return (
+              <article
+                key={post.id}
+                className="admin-panel flex min-w-0 flex-col overflow-hidden"
+              >
+                <div className="flex-1 space-y-4 p-5 sm:p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Select
+                      value={post.status}
+                      disabled={busy}
+                      onValueChange={(v) =>
+                        changeStatus(post, v as BlogPost["status"])
+                      }
+                    >
+                      <SelectTrigger
+                        aria-label={`Status for ${post.title}`}
+                        className={cn(
+                          "h-8 w-32 rounded-lg border-0 text-xs font-medium",
+                          statusStyles[post.status],
+                        )}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="review">In review</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                        <SelectItem value="archived">Archived</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {formatDistanceToNow(new Date(post.created_at), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </div>
+                  <div>
+                    <Link
+                      to={`/admin/blog/${post.id}`}
+                      className="font-heading text-xl font-semibold leading-snug tracking-tight hover:text-primary"
+                    >
+                      {post.title}
+                    </Link>
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {post.excerpt ||
+                        "Open this article to review the content and add your perspective."}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(post.tags || []).slice(0, 4).map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-md bg-muted/70 px-2 py-1 text-[10px] text-muted-foreground"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/25 p-4">
+                    <div className="flex items-center justify-between gap-3 text-xs">
+                      <span className="font-medium">
+                        {blanks.length ? "Your contributions" : "Final review"}
+                      </span>
+                      <span
+                        className={
+                          remaining ? "text-amber-500" : "text-emerald-500"
+                        }
+                      >
+                        {blanks.length
+                          ? `${filled} of ${blanks.length} complete`
+                          : "No placeholders to fill"}
+                      </span>
+                    </div>
+                    {blanks.length > 0 && (
+                      <div
+                        role="progressbar"
+                        aria-label={`Contributions for ${post.title}`}
+                        aria-valuemin={0}
+                        aria-valuemax={blanks.length}
+                        aria-valuenow={filled}
+                        className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"
+                      >
+                        <div
+                          className={cn(
+                            "h-full rounded-full",
+                            remaining ? "bg-primary" : "bg-emerald-500",
+                          )}
+                          style={{
+                            width: `${(filled / blanks.length) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    )}
+                    {remaining > 0 ? (
+                      <details className="mt-3 text-xs">
+                        <summary className="cursor-pointer text-muted-foreground">
+                          {remaining} contribution{remaining === 1 ? "" : "s"}{" "}
+                          to add
+                        </summary>
+                        <div className="mt-3 space-y-3">
+                          {blanks
+                            .filter((b) => !b.filled)
+                            .map((blank) => (
+                              <div key={blank.id}>
+                                <p className="font-medium">{blank.label}</p>
+                                <p className="mt-1 leading-relaxed text-muted-foreground">
+                                  {blank.guideline}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </details>
+                    ) : (
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        {post.status === "published"
+                          ? "Published. You can return to the editor for updates."
+                          : post.status === "archived"
+                            ? "Archived. Change the status to bring it back into your workflow."
+                            : "Give the article a final read before publishing."}
+                      </p>
+                    )}
+                  </div>
+                  {post.ai_model && (
+                    <p className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                      <Bot className="h-3 w-3" />
+                      Created with {post.ai_model}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 border-t border-border bg-muted/20 px-5 py-4 sm:px-6">
+                  <Button asChild size="sm" className="gap-2">
+                    <Link to={`/admin/blog/${post.id}`}>
+                      <Pencil className="h-3.5 w-3.5" />
+                      {remaining ? "Edit & contribute" : "Review article"}
+                    </Link>
+                  </Button>
+                  {canPublish && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => changeStatus(post, "published")}
+                      className="gap-2"
+                    >
+                      {busy ? "Updating…" : "Publish"}
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={busy}
+                    aria-label={`Delete ${post.title}`}
+                    onClick={() => onDeletePost(post.id)}
+                    className="ml-auto h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
       )}
     </div>
-  );
-
-  return (
-    <motion.div
-      className="space-y-8"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* Search bar */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search AI drafts by title, slug, or tag…"
-          className="pl-9 h-9 text-sm"
-        />
-        {query && (
-          <button
-            onClick={() => setQuery("")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-
-      {/* Summary bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: "Drafts", count: drafts.length, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-          { label: "In Review", count: inReview.length, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
-          { label: "Published", count: published.length, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-          { label: "Archived", count: archived.length, color: "text-muted-foreground", bg: "bg-secondary/20 border-border/30" },
-        ].map(({ label, count, color, bg }) => (
-          <div key={label} className={`rounded-xl border p-3 text-center ${bg}`}>
-            <p className={`text-xl font-bold ${color}`}>{count}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{label}</p>
-          </div>
-        ))}
-      </div>
-
-      <Section title="📝 Drafts — Needs your input" items={drafts} emptyMsg="No drafts waiting — you're all caught up!" />
-      {inReview.length > 0 && <Section title="🔍 In Review" items={inReview} emptyMsg="" />}
-      {published.length > 0 && <Section title="✅ Published AI Posts" items={published} emptyMsg="" />}
-      {archived.length > 0 && <Section title="📦 Archived" items={archived} emptyMsg="" />}
-    </motion.div>
   );
 }

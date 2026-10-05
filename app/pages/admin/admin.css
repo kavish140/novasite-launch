@@ -1,0 +1,121 @@
+.admin-workspace {
+  --background: 220 25% 97%;
+  --foreground: 224 30% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 30% 15%;
+  --primary: 239 70% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 20% 94%;
+  --secondary-foreground: 224 30% 20%;
+  --muted: 220 20% 94%;
+  --muted-foreground: 220 12% 43%;
+  --accent: 239 70% 96%;
+  --accent-foreground: 239 70% 45%;
+  --border: 220 20% 89%;
+  --input: 220 20% 86%;
+  --ring: 239 70% 58%;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  font-family: Inter, sans-serif;
+}
+.dark .admin-workspace {
+  --background: 225 24% 9%;
+  --foreground: 220 20% 94%;
+  --card: 225 22% 12%;
+  --card-foreground: 220 20% 94%;
+  --primary: 239 90% 73%;
+  --primary-foreground: 225 30% 10%;
+  --secondary: 225 20% 17%;
+  --secondary-foreground: 220 20% 94%;
+  --muted: 225 20% 17%;
+  --muted-foreground: 220 12% 65%;
+  --accent: 239 30% 21%;
+  --accent-foreground: 239 90% 80%;
+  --border: 225 18% 22%;
+  --input: 225 18% 27%;
+}
+.admin-nav {
+  --sidebar-background: 225 30% 10%;
+  --sidebar-foreground: 220 18% 82%;
+  --sidebar-accent: 225 24% 17%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 225 22% 20%;
+  --sidebar-ring: 239 90% 73%;
+  color: hsl(var(--sidebar-foreground));
+  background: hsl(var(--sidebar-background));
+}
+.admin-workspace [data-sidebar="sidebar"] {
+  background: hsl(225 30% 10%);
+}
+.admin-panel {
+  border: 1px solid hsl(var(--border));
+  border-radius: 1rem;
+  background: hsl(var(--card));
+  box-shadow: 0 2px 4px rgb(15 23 42 / 0.025);
+}
+.admin-workspace table {
+  font-size: 0.8125rem;
+}
+.admin-workspace thead {
+  background: hsl(var(--muted) / 0.65);
+}
+.admin-workspace th {
+  height: 3rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.admin-workspace td {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-color: hsl(var(--border));
+}
+.admin-workspace input:not([type="checkbox"]),
+.admin-workspace textarea {
+  border-radius: 0.625rem;
+}
+.admin-workspace :focus-visible {
+  outline-offset: 3px;
+}
+.admin-content > div > .space-y-6 > [class*="bg-card"],
+.admin-content > div > .space-y-8 > [class*="bg-card"] {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+  border-radius: 1rem;
+}
+.admin-login-art {
+  background:
+    radial-gradient(ellipse at 10% 90%, #3730a3 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 10%, #164e63 0%, transparent 55%), #111827;
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-workspace *,
+  .admin-workspace *::before,
+  .admin-workspace *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+/* Status colors retain readable contrast on the light admin surfaces. */
+html:not(.dark) .admin-workspace .text-blue-400 {
+  color: #2563eb;
+}
+html:not(.dark) .admin-workspace .text-amber-400 {
+  color: #a16207;
+}
+html:not(.dark) .admin-workspace .text-amber-500 {
+  color: #a16207;
+}
+html:not(.dark) .admin-workspace .text-emerald-500 {
+  color: #047857;
+}
+html:not(.dark) .admin-workspace .text-emerald-400 {
+  color: #047857;
+}
+html:not(.dark) .admin-workspace .text-violet-400 {
+  color: #7c3aed;
+}
+html:not(.dark) .admin-workspace .text-red-400 {
+  color: #dc2626;
+}

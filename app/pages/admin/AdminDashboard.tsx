@@ -6,11 +6,12 @@ import { supabase } from "@/lib/supabaseClient";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m as motion } from "framer-motion";
+import "./admin.css";
 
 // Shared components
 import AdminSidebar, { AdminTab } from "./components/AdminSidebar";
-import AdminHeader from "./components/AdminHeader";
+import AdminHeader, { TAB_LABELS, TAB_DESCRIPTIONS } from "./components/AdminHeader";
 import ConfirmDialog from "./components/ConfirmDialog";
 import CommandPalette from "./components/CommandPalette";
 
@@ -448,6 +449,9 @@ export default function AdminDashboard() {
     scheduled_calls: <ScheduledCallsTab {...scheduled} />,
     overview: (
       <OverviewTab
+        loading={loading}
+        quoteRequests={quoteRequests}
+        onTabChange={setActiveTab}
         upcomingCalls={scheduled.error ? null : upcomingCalls}
         requests={requests}
         posts={posts}
@@ -526,7 +530,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="admin-workspace">
       <AdminSidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -534,16 +538,25 @@ export default function AdminDashboard() {
         onLogout={handleLogout}
       />
 
-      <SidebarInset>
+      <SidebarInset className="min-w-0 bg-background">
         <AdminHeader
           activeTab={activeTab}
           loading={loading}
           onRefresh={() => { fetchData(); scheduled.refresh(); }}
           onExportCSV={handleExportCSV}
           onCopyBlogs={handleCopyBlogs}
+          onSearch={() => setCmdOpen(true)}
         />
 
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+        <div className="admin-content mx-auto w-full max-w-[1600px] flex-1 p-4 pb-20 sm:p-8 lg:p-10">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[.2em] text-primary">SiteNova workspace</p>
+              <h1 className="font-heading text-3xl font-semibold tracking-tight">{TAB_LABELS[activeTab]}</h1>
+              <p className="mt-2 max-w-xl text-sm text-muted-foreground">{TAB_DESCRIPTIONS[activeTab]}</p>
+            </div>
+            <span className="rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">{new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric" }).format(new Date())}</span>
+          </div>
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

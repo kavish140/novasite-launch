@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import {
   Sidebar,
   SidebarContent,
@@ -7,11 +8,10 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import {
   CalendarDays,
   LayoutDashboard,
@@ -27,7 +27,9 @@ import {
   History,
   Bot,
   ListChecks,
+  ArrowUpRight,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type AdminTab =
   | "scheduled_calls"
@@ -42,17 +44,6 @@ export type AdminTab =
   | "topics"
   | "settings"
   | "activity_log";
-
-
-
-interface NavItem {
-  id: AdminTab;
-  label: string;
-  icon: React.ElementType;
-  badge?: number;
-  group: "main" | "marketing";
-}
-
 interface AdminSidebarProps {
   activeTab: AdminTab;
   onTabChange: (tab: AdminTab) => void;
@@ -66,127 +57,162 @@ interface AdminSidebarProps {
   };
   onLogout: () => void;
 }
-
+type NavItem = {
+  id: AdminTab;
+  label: string;
+  icon: React.ElementType;
+  badge?: number;
+};
 export default function AdminSidebar({
   activeTab,
   onTabChange,
   badges,
   onLogout,
 }: AdminSidebarProps) {
-  const mainNav: NavItem[] = [
-    { id: "scheduled_calls", label: "Scheduled Calls", icon: CalendarDays, badge: badges.scheduled_calls, group: "main" },
-    { id: "overview",       label: "Overview",       icon: LayoutDashboard, group: "main" },
-    { id: "leads",          label: "Audit Requests", icon: Users, badge: badges.leads, group: "main" },
-    { id: "quote_requests", label: "Quote Requests", icon: FileSignature, badge: badges.quote_requests, group: "main" },
-    { id: "drafts",         label: "AI Drafts",      icon: Bot, badge: badges.drafts, group: "main" },
-    { id: "topics",         label: "Topic Queue",    icon: ListChecks, group: "main" },
-    { id: "blogs",          label: "Blog Posts",     icon: FileText, group: "main" },
+  const { isMobile, setOpenMobile } = useSidebar();
+  const groups: { label: string; items: NavItem[] }[] = [
+    {
+      label: "Workspace",
+      items: [
+        { id: "overview", label: "Overview", icon: LayoutDashboard },
+        {
+          id: "scheduled_calls",
+          label: "Scheduled calls",
+          icon: CalendarDays,
+          badge: badges.scheduled_calls,
+        },
+        {
+          id: "quote_requests",
+          label: "Quote requests",
+          icon: FileSignature,
+          badge: badges.quote_requests,
+        },
+        {
+          id: "leads",
+          label: "Audit requests",
+          icon: Users,
+          badge: badges.leads,
+        },
+      ],
+    },
+    {
+      label: "Marketing",
+      items: [
+        {
+          id: "ad_leads",
+          label: "Ad leads",
+          icon: Megaphone,
+          badge: badges.ad_leads,
+        },
+        {
+          id: "ads_inquiries",
+          label: "Ad inquiries",
+          icon: Target,
+          badge: badges.ads_inquiries,
+        },
+        { id: "analytics", label: "Landing page analytics", icon: TrendingUp },
+      ],
+    },
+    {
+      label: "Content",
+      items: [
+        { id: "blogs", label: "Blog posts", icon: FileText },
+        { id: "drafts", label: "AI drafts", icon: Bot, badge: badges.drafts },
+        { id: "topics", label: "Topic queue", icon: ListChecks },
+      ],
+    },
+    {
+      label: "Manage",
+      items: [
+        { id: "settings", label: "Settings", icon: Settings },
+        { id: "activity_log", label: "Activity log", icon: History },
+      ],
+    },
   ];
-
-  const marketingNav: NavItem[] = [
-    { id: "ad_leads",       label: "Ad Leads",     icon: Megaphone, badge: badges.ad_leads, group: "marketing" },
-    { id: "ads_inquiries",  label: "Ad Inquiries", icon: Target, badge: badges.ads_inquiries, group: "marketing" },
-    { id: "analytics",      label: "LP Analytics", icon: TrendingUp, group: "marketing" },
-  ];
-
-
-  const renderNavItem = (item: NavItem) => {
-    const Icon = item.icon;
-    const isActive = activeTab === item.id;
-    return (
-      <SidebarMenuItem key={item.id}>
-        <SidebarMenuButton
-          isActive={isActive}
-          onClick={() => onTabChange(item.id)}
-          className={`flex justify-between transition-all duration-150 ${
-            isActive
-              ? "bg-primary/10 text-primary font-medium border-l-2 border-primary -ml-px pl-[calc(0.5rem+1px)]"
-              : "hover:bg-muted/50"
-          }`}
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <Icon className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">{item.label}</span>
-          </div>
-          {item.badge !== undefined && item.badge > 0 && (
-            <SidebarMenuBadge className="bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-              {item.badge}
-            </SidebarMenuBadge>
-          )}
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    );
-  };
-
   return (
-    <Sidebar variant="inset" className="border-r border-border/40">
-      {/* Brand */}
-      <SidebarHeader className="border-b border-border/30">
-        <div className="flex items-center gap-2.5 px-3 py-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-[0_0_12px_hsl(var(--primary)/0.4)] flex-shrink-0">
-            <Zap className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <div className="min-w-0">
-            <span className="font-bold text-base tracking-tight block leading-tight">SiteNova</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Admin Panel</span>
-          </div>
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent className="py-2 overflow-x-hidden overflow-y-auto">
-        {/* Main */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 px-3 mb-1">
-            General
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{mainNav.map(renderNavItem)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <Separator className="mx-3 my-2 bg-border/30" />
-
-        {/* Marketing */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 px-3 mb-1">
-            Marketing
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{marketingNav.map(renderNavItem)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <Separator className="mx-3 my-2 bg-border/30" />
-
-        {/* System */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60 px-3 mb-1">
-            System
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {[
-                { id: "settings" as AdminTab,      label: "Settings",      icon: Settings,  group: "main" as const },
-                { id: "activity_log" as AdminTab,  label: "Activity Log",  icon: History,   group: "main" as const },
-              ].map(renderNavItem)}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className="border-t border-border/30 pb-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={onLogout}
-              className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+    <Sidebar className="border-r-0">
+      <div className="admin-nav flex h-full flex-col">
+        <SidebarHeader className="px-6 pb-5 pt-7">
+          <Link
+            to="/admin/dashboard"
+            className="flex items-center gap-3 text-white"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500">
+              <Zap className="h-5 w-5" />
+            </span>
+            <span className="text-xl font-semibold tracking-tight">
+              SiteNova
+              <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-[.2em] text-slate-400">
+                Admin workspace
+              </span>
+            </span>
+          </Link>
+        </SidebarHeader>
+        <SidebarContent className="gap-1 px-3 pb-4">
+          {groups.map((group) => (
+            <SidebarGroup key={group.label} className="py-2">
+              <SidebarGroupLabel className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500">
+                {group.label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="gap-1">
+                  {group.items.map(({ id, label, icon: Icon, badge }) => (
+                    <SidebarMenuItem key={id}>
+                      <SidebarMenuButton
+                        isActive={activeTab === id}
+                        aria-current={activeTab === id ? "page" : undefined}
+                        onClick={() => {
+                          onTabChange(id);
+                          if (isMobile) setOpenMobile(false);
+                        }}
+                        className={cn(
+                          "h-10 rounded-lg px-3 text-[13px] transition-colors",
+                          activeTab === id
+                            ? "bg-indigo-500/20 text-indigo-200 data-[active=true]:bg-indigo-500/20 data-[active=true]:text-indigo-200"
+                            : "text-slate-400 hover:text-white",
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span>{label}</span>
+                        {!!badge && (
+                          <span
+                            className={cn(
+                              "ml-auto rounded-md px-1.5 py-0.5 text-[10px] tabular-nums",
+                              activeTab === id
+                                ? "bg-indigo-400/20 text-indigo-200"
+                                : "bg-slate-800 text-slate-300",
+                            )}
+                          >
+                            {badge}
+                          </span>
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </SidebarContent>
+        <SidebarFooter className="gap-3 border-t border-white/5 p-5">
+          <Link
+            to="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-2.5 text-xs text-slate-300 hover:bg-white/5"
+          >
+            View website
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-xs text-slate-400 hover:bg-white/5 hover:text-white"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
+        </SidebarFooter>
+      </div>
     </Sidebar>
   );
 }

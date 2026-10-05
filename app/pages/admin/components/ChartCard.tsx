@@ -16,7 +16,7 @@ export default function ChartCard({
   contentClassName = "h-80 w-full pl-0",
 }: ChartCardProps) {
   return (
-    <Card className={`bg-card/30 border-border/40 ${className}`}>
+    <Card className={`admin-panel ${className}`}>
       <CardHeader>
         <CardTitle className="text-base font-semibold">{title}</CardTitle>
         {description && (

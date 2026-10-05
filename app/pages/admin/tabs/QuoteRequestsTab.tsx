@@ -173,12 +173,10 @@ export default function QuoteRequestsTab({
       transition={{ duration: 0.3 }}
     >
       {/* Info banner */}
-      <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm text-blue-400">
+      <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20 text-sm text-primary">
         <FileSignature className="w-4 h-4 flex-shrink-0" />
         <span>
-          Quote requests submitted via the{" "}
-          <strong className="text-blue-300">QuoteWizard</strong> on{" "}
-          <strong className="text-blue-300">/lp/web-design</strong>.
+          Project inquiries from your website and paid landing page. Review the details and update each lead as you follow up.
         </span>
       </div>
 
@@ -222,7 +220,7 @@ export default function QuoteRequestsTab({
           <EmptyState
             icon={FileSignature}
             title="No quote requests yet"
-            description={search || datePreset !== "all" ? "No results match your filters." : "Requests from the LP QuoteWizard will appear here."}
+            description={search || datePreset !== "all" ? "No results match your filters." : "New website and landing page quote requests will appear here."}
           />
         ) : (
           <div className="overflow-x-auto">
@@ -336,4 +334,3 @@ export default function QuoteRequestsTab({
     </motion.div>
   );
 }
-

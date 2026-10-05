@@ -1,17 +1,29 @@
+import "./admin.css";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
-import { Eye, EyeOff, Zap, ArrowRight, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  Eye,
+  EyeOff,
+  Zap,
+  ArrowRight,
+  Loader2,
+  ArrowLeft,
+  ShieldCheck,
+  CalendarDays,
+  Users,
+  FileText,
+} from "lucide-react";
+import { m as motion } from "framer-motion";
 
 export default function AdminLogin() {
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [shakeKey, setShakeKey] = useState(0); // increment to re-trigger shake anim
 
@@ -29,13 +41,20 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       if (error) throw error;
       navigate("/admin/dashboard");
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Invalid credentials.";
-      toast({ title: "Login Failed", description: errorMessage, variant: "destructive" });
+      toast({
+        title: "Login Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       // Trigger shake animation
       setShakeKey((k) => k + 1);
     } finally {
@@ -44,125 +63,153 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Background grid */}
-      <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
-
-      {/* Ambient glow orbs */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[140px] pointer-events-none animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/15 rounded-full blur-[120px] pointer-events-none animate-pulse [animation-delay:1s]" />
-      <div className="absolute top-3/4 left-1/2 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
-
-      <motion.div
-        className="w-full max-w-sm space-y-8 relative z-10"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
-        {/* Brand header */}
-        <div className="text-center space-y-3">
-          <motion.div
-            className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto shadow-[0_0_32px_hsl(var(--primary)/0.5)]"
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.4, type: "spring", stiffness: 200 }}
-          >
-            <Zap className="w-7 h-7 text-primary-foreground" />
-          </motion.div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Admin Portal</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Sign in to access your SiteNova dashboard
-            </p>
+    <div className="admin-workspace grid min-h-svh lg:grid-cols-2">
+      <aside className="admin-login-art relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex xl:p-16">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500">
+            <Zap className="h-5 w-5" />
+          </span>
+          <span className="text-xl font-semibold tracking-tight">SiteNova</span>
+        </div>
+        <div className="relative z-10 max-w-md py-14">
+          <span className="mb-6 block text-[10px] font-semibold uppercase tracking-[.24em] text-indigo-300">
+            Your business, in focus
+          </span>
+          <h2 className="font-heading text-5xl font-medium leading-[1.15] tracking-tight">
+            Great work starts
+            <br />
+            with a clear view.
+          </h2>
+          <p className="mt-6 max-w-sm text-base leading-relaxed text-slate-400">
+            One workspace for your next client, your next conversation, and your
+            next big idea.
+          </p>
+          <div className="mt-10 space-y-3">
+            {[
+              { icon: Users, label: "Turn inquiries into opportunities" },
+              {
+                icon: CalendarDays,
+                label: "Stay ready for every conversation",
+              },
+              { icon: FileText, label: "Create content that connects" },
+            ].map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[.03] px-4 py-3 text-sm text-slate-300"
+              >
+                <Icon className="h-4 w-4 text-indigo-300" />
+                {label}
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Card */}
-        <motion.div
-          key={shakeKey}
-          // Shake on login error — only runs when shakeKey changes
-          animate={
-            shakeKey > 0
-              ? { x: [0, -8, 8, -6, 6, -4, 4, 0] }
-              : { x: 0 }
-          }
-          transition={{ duration: 0.4 }}
-          className="glass-card p-8 space-y-6"
+        <span className="text-xs text-slate-500">
+          SiteNova · Admin workspace
+        </span>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full border-[60px] border-white/[.03]"
+        />
+      </aside>
+      <main className="flex min-h-svh flex-col px-6 py-8 sm:px-12">
+        <Link
+          to="/"
+          className="inline-flex w-fit items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
         >
-          <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@sitenova.dev"
-                className="bg-background/60 border-border/60 focus:border-primary/60 transition-colors"
-              />
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">
-                Password
-              </Label>
-              <div className="relative">
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to website
+        </Link>
+        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-14">
+          <div className="mb-8">
+            <span className="mb-6 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[.2em] text-primary">
+              SiteNova admin
+            </p>
+            <h1 className="font-heading text-3xl font-semibold tracking-tight">
+              Welcome back.
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Sign in to your workspace to pick up where you left off.
+            </p>
+          </div>
+          <motion.div
+            key={shakeKey}
+            animate={shakeKey > 0 ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email address</Label>
                 <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
+                  id="email"
+                  type="email"
                   required
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="bg-background/60 border-border/60 focus:border-primary/60 transition-colors pr-10"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="h-12 bg-card"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
               </div>
-            </div>
-
-            {/* Submit */}
-            <Button
-              type="submit"
-              className="w-full gap-2 button-shimmer shadow-glow-sm font-semibold"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Authenticating…
-                </>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </Button>
-          </form>
-        </motion.div>
-
-        {/* Footer note */}
-        <p className="text-center text-xs text-muted-foreground/60">
-          SiteNova Admin — Restricted Access
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="h-12 bg-card pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-12 w-full gap-2 font-medium"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Signing in…
+                  </>
+                ) : (
+                  <>
+                    Sign in to workspace
+                    <ArrowRight className="ml-auto h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </motion.div>
+          <p className="mt-6 flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Restricted to authorized SiteNova administrators
+          </p>
+        </div>
+        <p className="text-center text-[10px] uppercase tracking-[.15em] text-muted-foreground/60">
+          Built for the work ahead
         </p>
-      </motion.div>
+      </main>
     </div>
   );
 }

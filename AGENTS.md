@@ -429,6 +429,16 @@ Full shadcn/ui library: Accordion, AlertDialog, Avatar, Badge, Button, Card, Car
 
 ## 7. Design System
 
+### Admin workspace (2026-10-04)
+
+- `app/pages/admin/admin.css` defines scoped light/dark admin tokens: indigo accents, solid card surfaces, subtle borders and consistent table typography. Public-site tokens remain independent. The sidebar uses a dark navy palette in both themes.
+- Dashboard navigation groups all 12 tabs into Workspace, Marketing, Content and Manage; selecting a mobile item closes the drawer. The header exposes command search, theme toggle, refresh, contextual exports and New post.
+- Overview uses four spacious metrics, a seven-day audit/quote chart, acquisition breakdown, recent inquiries linking to their respective queues, and content summaries. Counts derive from existing data, with loading/empty states; quotes are included in total inquiries.
+- Login uses a two-column brand panel and accessible sign-in form. The blog editor shares admin tokens and uses wrapping header actions on narrow screens.
+- `e2e/admin.spec.ts` uses isolated mocked sessions/data to check the auth redirect, password visibility, overview counts, search, theme switching and mobile navigation without production writes.
+- AI Drafts now uses stage-filter cards, a responsive article grid, excerpt/tag previews, contribution progress with expandable guidelines, and explicit edit/review actions. Search remains available when there are no matches; published and archived cards do not show a Publish shortcut.
+- Topic Queue now highlights the next pending topic, orders by priority then age, offers searchable stage filters including in-progress topics, and shows all used topics. Its expanded creation form explains priority and separates the article angle from keywords; named actions and a delete confirmation replace tiny icon-only controls.
+
 ### Fonts
 - **Headings**: `Space Grotesk` (weights 400, 600, 700) — `font-heading` class
 - **Body**: `Inter` (weights 400, 500, 600) — `font-body` class
@@ -864,6 +874,19 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-04] — Content studio and topic planning redesign
+
+- Redesigned AI Drafts and Topic Queue to match the admin workspace, with interactive stage counts, readable cards, recoverable search/empty states and responsive layouts.
+- Draft cards show article excerpts and contribution progress; topic cards show priority, keywords and clear actions. In-progress topics and previously hidden older used topics are now accessible. New topics immediately re-sort into their correct queue position.
+- Retained manual publishing and existing data workflows; topic deletion uses the existing confirmation dialog. Browser checks use mocked data only, including topic creation.
+- Validation: production build and all 16 existing regression tests passed. All 5 admin browser checks pass in Edge, covering draft contribution details/status filtering, search recovery, no redundant Publish action on published cards, every topic stage, priority ordering, deletion cancellation, mocked creation and narrow-screen overflow. No new diagnostics appear in the changed components; the 63 existing application TypeScript errors remain.
+
+### [2026-10-04] — Admin workspace design overhaul
+
+- Rebuilt sidebar/header, redesigned login, and replaced the crowded overview with an actionable daily summary, larger metrics, inquiry charts, recent inquiries and content shortcuts.
+- Added scoped admin theme tokens and consistent card/table/form styling across existing tabs; matched the editor and improved its mobile action wrapping. Retained authentication, Supabase queries and mutations, booking synchronization, manual publishing and existing bulk workflows.
+- Validation: production build passed; all 16 existing Vitest tests and all 3 new admin browser checks passed in installed Edge. Desktop dark/light and mobile screenshots were inspected. The application TypeScript check still reports existing repository errors, with none in files changed by this overhaul. Local preview is available at `/admin`; no production deployment or database changes were made for the design work.
 
 > **AI agents: append an entry here every time you make a significant change.**
 > Format: `## [Date] — [Brief summary]` followed by bullet points of what changed and why.

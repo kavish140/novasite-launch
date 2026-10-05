@@ -1,3 +1,4 @@
+import "./admin.css";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { supabase } from "@/lib/supabaseClient";
@@ -191,7 +192,7 @@ export default function AdminBlogEditor() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="admin-workspace min-h-screen bg-background flex items-center justify-center">
         <div className="flex items-center gap-3 text-muted-foreground">
           <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           Loading post…
@@ -201,10 +202,10 @@ export default function AdminBlogEditor() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="admin-workspace min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur z-10 sticky top-0">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 min-h-16 py-3 flex flex-wrap items-center justify-between gap-3">
           <Button
             variant="ghost" size="sm"
             onClick={() => navigate("/admin/dashboard")}
@@ -214,7 +215,7 @@ export default function AdminBlogEditor() {
             Back to Dashboard
           </Button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2 mr-2">
               <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
                 <Zap className="w-3.5 h-3.5 text-primary" />
@@ -285,7 +286,7 @@ export default function AdminBlogEditor() {
       </header>
 
       {/* Main */}
-      <main className="max-w-5xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {showPreview ? (
           /* ── Live Preview ────────────────────────────────────────────── */
           <div className="space-y-6">
@@ -293,7 +294,7 @@ export default function AdminBlogEditor() {
               <Eye className="w-4 h-4" />
               Preview — this is how the post will render on the blog.
             </div>
-            <div className="bg-card/40 border border-border/40 rounded-xl p-8 shadow-sm">
+            <div className="bg-card/40 border border-border/40 rounded-2xl p-5 sm:p-8 shadow-sm">
               {title && (
                 <h1 className="text-3xl font-bold tracking-tight mb-4">{title}</h1>
               )}
@@ -327,7 +328,7 @@ export default function AdminBlogEditor() {
         ) : (
           /* ── Editor form ─────────────────────────────────────────────── */
           <form id="blog-editor-form" onSubmit={handleSubmit} className="space-y-8">
-            <div className="bg-card border border-border/60 rounded-xl p-8 shadow-sm space-y-6">
+            <div className="bg-card border border-border/60 rounded-2xl p-5 sm:p-8 shadow-sm space-y-6">
               {/* Title + Slug */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -401,7 +402,7 @@ export default function AdminBlogEditor() {
         {/* ── Blanks Fill Panel ──────────────────────────────────────────── */}
         {showBlanks && blanksMetadata.length > 0 && (
           <div className="mt-8 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="font-semibold text-foreground">Fill in Blanks</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
