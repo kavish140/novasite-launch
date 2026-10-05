@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 const now = new Date().toISOString();
 const audits = [
@@ -75,6 +76,48 @@ async function previewSession(page: import("@playwright/test").Page) {
     );
   });
 }
+
+test("blog editor applies HTML and exports a review of unsaved changes with a complete archive", async ({ page }) => {
+  await previewSession(page);
+  const post = { id: "editor-preview", title: "Original title", slug: "editor-preview", excerpt: "Summary", content: "<p>Original content</p>", tags: ["SEO"], status: "published", source: "manual", blanks_metadata: [], created_at: now, published_at: now, ai_model: null };
+  await page.route("**/rest/v1/blog_posts*", (route) => {
+    const url = new URL(route.request().url());
+    return route.fulfill({ json: url.searchParams.has("id") ? post : [post, { ...post, id: "earlier", slug: "earlier", title: "Earlier article", content: "<p>Entire older article</p>" }] });
+  });
+  await page.goto("/admin/blog/editor-preview");
+  await page.getByLabel("Post Title").fill("Unsaved upgraded title");
+  const canvas = page.locator(".tiptap");
+  await canvas.click();
+  await page.keyboard.press("Control+End");
+  await page.keyboard.press("Enter");
+  await canvas.pressSequentially("<h2>Typed heading</h2><strong>Bold</strong> plain");
+  await expect(canvas.locator("h2")).toHaveText("Typed heading");
+  await expect(canvas.locator("strong")).toHaveText("Bold");
+  await canvas.evaluate((element) => {
+    const data = new DataTransfer();
+    data.setData("text/plain", "<p>Pasted <em>HTML</em></p>");
+    element.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
+  });
+  await expect(canvas.locator("em")).toHaveText("HTML");
+  await page.evaluate(() => {
+    Object.defineProperty(navigator.clipboard, "writeText", { configurable: true, value: async (text: string) => { (window as unknown as { reviewClipboard: string }).reviewClipboard = text; } });
+  });
+  await page.getByRole("button", { name: "Copy review prompt + post", exact: true }).click();
+  const copied = await page.evaluate(() => (window as unknown as { reviewClipboard: string }).reviewClipboard);
+  expect(copied).toContain("Unsaved upgraded title");
+  expect(copied).toContain("Typed heading");
+  expect(copied).toContain("Fact-check");
+  expect(copied).not.toContain("PUBLISHED POSTS —");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download review TXT (all posts)", exact: true }).click();
+  const download = await downloadPromise;
+  const archive = await readFile((await download.path())!, "utf8");
+  expect(archive).toContain("PUBLISHED POSTS — 2 posts");
+  expect(archive).toContain("Entire older article");
+  expect(archive).toContain("Unsaved upgraded title");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
 
 test("admin remains protected and login supports password visibility", async ({
   page,

@@ -14,6 +14,7 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
+import { HtmlInput } from "./HtmlInput";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -66,6 +67,8 @@ export default function TipTapEditor({ content, onChange, placeholder = "Start w
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        link: false,
+        underline: false,
         bulletList: { keepMarks: true },
         orderedList: { keepMarks: true },
       }),
@@ -74,6 +77,7 @@ export default function TipTapEditor({ content, onChange, placeholder = "Start w
       Link.configure({ openOnClick: false, HTMLAttributes: { class: "text-primary underline underline-offset-2" } }),
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      HtmlInput,
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -90,7 +94,7 @@ export default function TipTapEditor({ content, onChange, placeholder = "Start w
   // Sync external content changes (e.g. when loading from Supabase in edit mode)
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content, false);
+      editor.commands.setContent(content, { emitUpdate: false });
     }
   }, [content]); // eslint-disable-line react-hooks/exhaustive-deps
 

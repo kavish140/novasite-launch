@@ -325,7 +325,16 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 - `components/QuoteForm.tsx`: shared form with pricing/package prefill and idempotent retries.
 - `BookingProvider`/`BookingCTA`: public sanitized configuration, hidden CTAs until enabled and valid.
 
+### Blog HTML input and manual AI review (2026-10-05)
+
+- `components/HtmlInput.ts` adds immediate formatting for typed editor-supported HTML tags and parses raw HTML pastes, including HTML code fences copied from an AI chat. Supports headings, paragraphs, inline marks, lists, quotes, links, images and breaks. Inline closing tags stop their formatting; HTML examples inside code stay literal (closing `</code>` / `</pre>` exits the corresponding format). Pasted HTML is sanitized to remove scripts, event handlers and unsafe URLs before TipTap parsing.
+- `AdminBlogEditor.tsx` includes **Copy review prompt + post**, using all loaded metadata with current unsaved title/slug/excerpt/tags/content/status/source/contribution details. Clipboard failures expose selectable text for manual copying.
+- **Download review TXT (all posts)** includes the same prompt/current post plus full details and HTML for every currently published post. Reads Supabase in ordered batches of 500, excludes drafts/review/archived rows, and refuses partial exports if any batch fails. This is a local copy/download workflow; the owner pastes or uploads the result to an LLM.
+- `app/lib/blog-review-export.ts` holds the shared prompt and export/pagination helpers. The prompt requests current authoritative research, source URLs, corrections, upgraded metadata and paste-ready HTML, and explicitly requires disclosure when browsing or verification is unavailable. No automated publication/review gate or AI credentials are introduced.
+- `TipTapEditor.tsx` uses the TipTap v3 `setContent` options and disables duplicate StarterKit link/underline extensions.
+
 ### Admin Phase 4 Components & Enhancements
+
 | File | Role |
 |---|---|
 | `components/Sparkline.tsx` | Pure SVG sparkline mini-chart (no extra dependency). Renders a filled area + stroke line from a `number[]` array. Used in KpiCard for 7-day trend visualisation. |
@@ -511,6 +520,7 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 | `portfolio-meta.ts` | Exports `showcaseProjects` and `customerProjects` arrays. Showcase projects: AI SmartKit, Business Showcase, Design Showcase, E-commerce Showcase, Sanitaryware Showcase, Nuts Design Golden Showcase (all SiteNova sub-domains, all `useIframePreview: true`), plus Dr. Dipti Ganatra, Jupiter Fast Finance, and CorporateZone (real clients). |
 | `supabaseClient.ts` | Dual client exports (see §2 Architecture). |
 | `relatedPosts.ts` | `PostSummary` interface + `rankPosts(candidates, currentTags, limit)` — pure ranking function for the "Continue Reading" section. Scores candidates by tag overlap, then view count, then recency. No Supabase imports — fully testable. |
+| `blog-review-export.ts` | Manual AI review prompt, current-post/complete-published-archive TXT serialization, and paginated archive helper. Used by the blog editor copy/download actions. |
 | `seoRoutes.js` | **Legacy** — build-time SEO route injection. No longer used (replaced by RR7 `meta()` exports). Do not modify unless you know what you're doing. |
 | `utils.ts` | `cn()` utility (clsx + tailwind-merge). |
 
@@ -883,6 +893,13 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-05] — HTML blog editing and manual AI review exports
+
+- Added immediate formatting for typed supported HTML tags and safe raw/rich HTML paste handling in the blog editor. Code examples remain literal; formatting integrates with editor undo and existing HTML storage.
+- Added a predefined fact-checking/improvement prompt copied with the current unsaved post details, and a TXT download with the same prompt/current post plus all published posts fetched in batches. Copy failures provide selectable text; failed database batches cannot produce a partial download.
+- Validation: production build, all 24 Vitest tests (8 new editor/export checks), lint for changed source/test files, and a mocked Edge browser test passed. Browser coverage verifies typing/pasting, copying unsaved changes, TXT archive contents and mobile overflow against a fresh local production preview. The existing development server had a stale React cache; no production data was changed. The repository-wide TypeScript check still reports existing errors, with no diagnostics in changed files.
+- No deployment or database migration was performed.
 
 ### [2026-10-04] — Content studio and topic planning redesign
 

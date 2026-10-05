@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Eye, EyeOff, Zap, MapPin } from "lucide-react";
+import { ArrowLeft, Save, Eye, EyeOff, Zap, MapPin, Copy, Download } from "lucide-react";
+import { buildBlogReviewExport, readPublishedPosts, type ReviewPost } from "@/lib/blog-review-export";
 import TipTapEditor from "./components/TipTapEditor";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -33,6 +34,9 @@ export default function AdminBlogEditor() {
   const [showPreview, setShowPreview] = useState(false);
   const [showBlanks, setShowBlanks] = useState(false);
   const [activeBlankId, setActiveBlankId] = useState<string | null>(null);
+  const [loadedPost, setLoadedPost] = useState<Record<string, unknown>>({});
+  const [exporting, setExporting] = useState(false);
+  const [copyFallback, setCopyFallback] = useState("");
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -97,6 +101,7 @@ export default function AdminBlogEditor() {
       if (error) throw error;
 
       if (data) {
+        setLoadedPost(data);
         setTitle(data.title);
         setSlug(data.slug);
         setExcerpt(data.excerpt ?? "");
@@ -129,6 +134,55 @@ export default function AdminBlogEditor() {
     const newTitle = e.target.value;
     setTitle(newTitle);
     if (!isEditing) setSlug(generateSlug(newTitle));
+  };
+
+  const currentPost = (): ReviewPost => ({
+    ...loadedPost,
+    id: id ?? null,
+    title, slug, excerpt, content,
+    tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+    status, source,
+    blanks_metadata: blanksMetadata,
+  });
+
+  const copyReviewPrompt = async () => {
+    const text = buildBlogReviewExport(currentPost());
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyFallback("");
+      toast({ title: "Review prompt copied", description: "Paste it into your AI chat to review the current post, including unsaved changes." });
+    } catch {
+      setCopyFallback(text);
+      toast({ title: "Copy manually", description: "Clipboard access is unavailable. Select and copy the text below." });
+    }
+  };
+
+  const downloadReviewArchive = async () => {
+    setExporting(true);
+    try {
+      const posts = await readPublishedPosts(async (from, to) => {
+        const { data, error } = await supabase.from("blog_posts").select("*")
+          .eq("status", "published").order("created_at", { ascending: false })
+          .order("id", { ascending: true }).range(from, to);
+        if (error) throw error;
+        return (data ?? []) as ReviewPost[];
+      });
+      const text = buildBlogReviewExport(currentPost(), posts);
+      const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `sitenova-blog-review-${new Date().toISOString().slice(0, 10)}.txt`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast({ title: "Review TXT downloaded", description: `Includes the prompt, current editor details and all ${posts.length} published posts.` });
+    } catch (error) {
+      console.error("Error exporting blog review:", error);
+      toast({ title: "Download failed", description: "Could not load all published posts. Please try again.", variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -287,6 +341,29 @@ export default function AdminBlogEditor() {
 
       {/* Main */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        <section className="mb-6 rounded-2xl border border-border/60 bg-card p-5 space-y-3" aria-label="AI blog review">
+          <div>
+            <h2 className="font-semibold">Review with AI</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Copy a fact-checking and improvement prompt with this post’s current details, then paste it into your AI chat.
+              Download the TXT to also include all published posts for context and internal links.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" className="gap-2" onClick={copyReviewPrompt}>
+              <Copy className="h-4 w-4" />Copy review prompt + post
+            </Button>
+            <Button type="button" variant="outline" className="gap-2" disabled={exporting} onClick={downloadReviewArchive}>
+              <Download className="h-4 w-4" />{exporting ? "Preparing TXT…" : "Download review TXT (all posts)"}
+            </Button>
+          </div>
+          {copyFallback && (
+            <div className="space-y-2">
+              <Label htmlFor="review-copy-fallback">Select and copy the review prompt</Label>
+              <Textarea id="review-copy-fallback" value={copyFallback} readOnly onFocus={(event) => event.target.select()} className="h-48 font-mono text-xs" />
+            </div>
+          )}
+        </section>
         {showPreview ? (
           /* ── Live Preview ────────────────────────────────────────────── */
           <div className="space-y-6">
@@ -387,7 +464,8 @@ export default function AdminBlogEditor() {
               <div className="space-y-2">
                 <Label>Post Content</Label>
                 <p className="text-xs text-muted-foreground">
-                  Use the toolbar to format your content. Click <strong>Preview</strong> in the header to see how it will look.
+                  Use the toolbar, type HTML tags such as &lt;h2&gt; or &lt;strong&gt;, or paste HTML to apply formatting automatically.
+                  Close inline tags to stop formatting. HTML inside code stays literal. Click <strong>Preview</strong> to see the result.
                 </p>
                 <TipTapEditor
                   content={content}
