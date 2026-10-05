@@ -29,6 +29,15 @@
 
 ## 1. Business Overview
 
+### Automated blog review removed (2026-10-04)
+
+- At the user's request, the Gemini/Groq review feature was removed and application code restored to `acc915e` (the successful Google Meet/quote implementation plus the legacy quote-status fix). Manual blog editing and publishing are restored in the code.
+- Google Meet booking, Calendar synchronization, Scheduled Calls, quote intake and notification delivery remain intact.
+- `supabase/migrations/20261004_remove_blog_review_gate.sql` removes the review-only publication trigger and RPCs and restores the original published status default. Existing posts, private review history and recovery data are preserved; admin authorization and RLS remain unchanged. The user applied this SQL in production on 2026-10-04; their Supabase screenshot confirms "Success. No rows returned."
+- The Worker bindings `GROQ_API_KEY`, `GEMINI_API_KEY` and `GEMINI_FREE_TIER_CONFIRMED` were removed. Calendar and Supabase bindings remain.
+- Validation: production build and all 16 existing conversion, quote, Calendar and scheduled-call tests passed. No articles were published as a test.
+- Restored application deployed as Worker version `0cc34d0c-438a-4d19-bf9a-c9c449a1fd4a`. Live `/book-a-call` and `/api/booking-settings` return HTTP 200 with booking enabled; the removed review endpoint renders the fallback page and rejects POST with HTTP 405. Code deployment and database rollback are complete.
+
 | Field | Value |
 |---|---|
 | **Business Name** | SiteNova |

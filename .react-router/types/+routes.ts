@@ -14,10 +14,22 @@ type Pages = {
   "/": {
     params: {};
   };
+  "/api/integrations/google-calendar": {
+    params: {};
+  };
+  "/portfolio/jupiter-fast-finance": {
+    params: {};
+  };
+  "/portfolio/dr-dipti-ganatra": {
+    params: {};
+  };
   "/services/seo-optimization": {
     params: {};
   };
   "/services/web-applications": {
+    params: {};
+  };
+  "/portfolio/corporate-zone": {
     params: {};
   };
   "/websites-for-consultants": {
@@ -35,6 +47,9 @@ type Pages = {
   "/websites-for-startups": {
     params: {};
   };
+  "/api/booking-settings": {
+    params: {};
+  };
   "/location/lower-parel": {
     params: {};
   };
@@ -47,6 +62,9 @@ type Pages = {
   "/location/pedder-road": {
     params: {};
   };
+  "/terms-and-conditions": {
+    params: {};
+  };
   "/websites-for-doctors": {
     params: {};
   };
@@ -56,13 +74,25 @@ type Pages = {
   "/websites-for-lawyers": {
     params: {};
   };
+  "/services/google-ads": {
+    params: {};
+  };
   "/location/ghatkopar": {
+    params: {};
+  };
+  "/lp/thank-you-audit": {
+    params: {};
+  };
+  "/lp/thank-you-quote": {
     params: {};
   };
   "/services/ecommerce": {
     params: {};
   };
   "/location/vikhroli": {
+    params: {};
+  };
+  "/services/meta-ads": {
     params: {};
   };
   "/location/andheri": {
@@ -103,16 +133,34 @@ type Pages = {
   "/location/thane": {
     params: {};
   };
+  "/privacy-policy": {
+    params: {};
+  };
+  "/lp/web-design": {
+    params: {};
+  };
+  "/refund-policy": {
+    params: {};
+  };
   "/sitemap.xml": {
     params: {};
   };
   "/admin": {
     params: {};
   };
+  "/ads-contact": {
+    params: {};
+  };
   "/blog": {
     params: {};
   };
+  "/book-a-call": {
+    params: {};
+  };
   "/our-process": {
+    params: {};
+  };
+  "/api/quotes": {
     params: {};
   };
   "/blog/:slug": {
@@ -151,7 +199,19 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/services/seo-optimization" | "/services/web-applications" | "/websites-for-consultants" | "/websites-for-real-estate" | "/websites-for-restaurants" | "/website-cost-calculator" | "/websites-for-startups" | "/location/lower-parel" | "/location/mahalakshmi" | "/location/peddar-road" | "/location/pedder-road" | "/websites-for-doctors" | "/websites-for-finance" | "/websites-for-lawyers" | "/location/ghatkopar" | "/services/ecommerce" | "/location/vikhroli" | "/location/andheri" | "/location/bhandup" | "/admin/dashboard" | "/location/bandra" | "/location/mulund" | "/admin/blog/:id" | "/admin/blog/new" | "/location/dadar" | "/location/kurla" | "/location/nahur" | "/location/powai" | "/location/thane" | "/sitemap.xml" | "/admin" | "/blog" | "/our-process" | "/blog/:slug" | "/contact-us" | "/free-audit" | "/thank-you" | "/pricing" | "/why-us" | "/about" | "/quote" | "/*";
+    page: "/" | "/api/integrations/google-calendar" | "/portfolio/jupiter-fast-finance" | "/portfolio/dr-dipti-ganatra" | "/services/seo-optimization" | "/services/web-applications" | "/portfolio/corporate-zone" | "/websites-for-consultants" | "/websites-for-real-estate" | "/websites-for-restaurants" | "/website-cost-calculator" | "/websites-for-startups" | "/api/booking-settings" | "/location/lower-parel" | "/location/mahalakshmi" | "/location/peddar-road" | "/location/pedder-road" | "/terms-and-conditions" | "/websites-for-doctors" | "/websites-for-finance" | "/websites-for-lawyers" | "/services/google-ads" | "/location/ghatkopar" | "/lp/thank-you-audit" | "/lp/thank-you-quote" | "/services/ecommerce" | "/location/vikhroli" | "/services/meta-ads" | "/location/andheri" | "/location/bhandup" | "/admin/dashboard" | "/location/bandra" | "/location/mulund" | "/admin/blog/:id" | "/admin/blog/new" | "/location/dadar" | "/location/kurla" | "/location/nahur" | "/location/powai" | "/location/thane" | "/privacy-policy" | "/lp/web-design" | "/refund-policy" | "/sitemap.xml" | "/admin" | "/ads-contact" | "/blog" | "/book-a-call" | "/our-process" | "/api/quotes" | "/blog/:slug" | "/contact-us" | "/free-audit" | "/thank-you" | "/pricing" | "/why-us" | "/about" | "/quote" | "/*";
+  };
+  "routes/api.integrations.google-calendar.ts": {
+    id: "routes/api.integrations.google-calendar";
+    page: "/api/integrations/google-calendar";
+  };
+  "routes/portfolio.jupiter-fast-finance.tsx": {
+    id: "routes/portfolio.jupiter-fast-finance";
+    page: "/portfolio/jupiter-fast-finance";
+  };
+  "routes/portfolio.dr-dipti-ganatra.tsx": {
+    id: "routes/portfolio.dr-dipti-ganatra";
+    page: "/portfolio/dr-dipti-ganatra";
   };
   "routes/services.seo-optimization.tsx": {
     id: "routes/services.seo-optimization";
@@ -160,6 +220,10 @@ type RouteFiles = {
   "routes/services.web-applications.tsx": {
     id: "routes/services.web-applications";
     page: "/services/web-applications";
+  };
+  "routes/portfolio.corporate-zone.tsx": {
+    id: "routes/portfolio.corporate-zone";
+    page: "/portfolio/corporate-zone";
   };
   "routes/websites-for-consultants.tsx": {
     id: "routes/websites-for-consultants";
@@ -181,6 +245,10 @@ type RouteFiles = {
     id: "routes/websites-for-startups";
     page: "/websites-for-startups";
   };
+  "routes/api.booking-settings.ts": {
+    id: "routes/api.booking-settings";
+    page: "/api/booking-settings";
+  };
   "routes/location.lower-parel.tsx": {
     id: "routes/location.lower-parel";
     page: "/location/lower-parel";
@@ -197,6 +265,10 @@ type RouteFiles = {
     id: "routes/location.pedder-road";
     page: "/location/pedder-road";
   };
+  "routes/terms-and-conditions.tsx": {
+    id: "routes/terms-and-conditions";
+    page: "/terms-and-conditions";
+  };
   "routes/websites-for-doctors.tsx": {
     id: "routes/websites-for-doctors";
     page: "/websites-for-doctors";
@@ -209,9 +281,21 @@ type RouteFiles = {
     id: "routes/websites-for-lawyers";
     page: "/websites-for-lawyers";
   };
+  "routes/services.google-ads.tsx": {
+    id: "routes/services.google-ads";
+    page: "/services/google-ads";
+  };
   "routes/location.ghatkopar.tsx": {
     id: "routes/location.ghatkopar";
     page: "/location/ghatkopar";
+  };
+  "routes/lp.thank-you-audit.tsx": {
+    id: "routes/lp.thank-you-audit";
+    page: "/lp/thank-you-audit";
+  };
+  "routes/lp.thank-you-quote.tsx": {
+    id: "routes/lp.thank-you-quote";
+    page: "/lp/thank-you-quote";
   };
   "routes/services.ecommerce.tsx": {
     id: "routes/services.ecommerce";
@@ -220,6 +304,10 @@ type RouteFiles = {
   "routes/location.vikhroli.tsx": {
     id: "routes/location.vikhroli";
     page: "/location/vikhroli";
+  };
+  "routes/services.meta-ads.tsx": {
+    id: "routes/services.meta-ads";
+    page: "/services/meta-ads";
   };
   "routes/location.andheri.tsx": {
     id: "routes/location.andheri";
@@ -269,6 +357,18 @@ type RouteFiles = {
     id: "routes/location.thane";
     page: "/location/thane";
   };
+  "routes/privacy-policy.tsx": {
+    id: "routes/privacy-policy";
+    page: "/privacy-policy";
+  };
+  "routes/lp.web-design.tsx": {
+    id: "routes/lp.web-design";
+    page: "/lp/web-design";
+  };
+  "routes/refund-policy.tsx": {
+    id: "routes/refund-policy";
+    page: "/refund-policy";
+  };
   "routes/sitemap[.]xml.tsx": {
     id: "routes/sitemap[.]xml";
     page: "/sitemap.xml";
@@ -277,13 +377,25 @@ type RouteFiles = {
     id: "routes/admin._index";
     page: "/admin";
   };
+  "routes/ads-contact.tsx": {
+    id: "routes/ads-contact";
+    page: "/ads-contact";
+  };
   "routes/blog._index.tsx": {
     id: "routes/blog._index";
     page: "/blog";
   };
+  "routes/book-a-call.tsx": {
+    id: "routes/book-a-call";
+    page: "/book-a-call";
+  };
   "routes/our-process.tsx": {
     id: "routes/our-process";
     page: "/our-process";
+  };
+  "routes/api.quotes.ts": {
+    id: "routes/api.quotes";
+    page: "/api/quotes";
   };
   "routes/blog.$slug.tsx": {
     id: "routes/blog.$slug";
@@ -329,23 +441,33 @@ type RouteFiles = {
 
 type RouteModules = {
   "root": typeof import("./app/root.tsx");
+  "routes/api.integrations.google-calendar": typeof import("./app/routes/api.integrations.google-calendar.ts");
+  "routes/portfolio.jupiter-fast-finance": typeof import("./app/routes/portfolio.jupiter-fast-finance.tsx");
+  "routes/portfolio.dr-dipti-ganatra": typeof import("./app/routes/portfolio.dr-dipti-ganatra.tsx");
   "routes/services.seo-optimization": typeof import("./app/routes/services.seo-optimization.tsx");
   "routes/services.web-applications": typeof import("./app/routes/services.web-applications.tsx");
+  "routes/portfolio.corporate-zone": typeof import("./app/routes/portfolio.corporate-zone.tsx");
   "routes/websites-for-consultants": typeof import("./app/routes/websites-for-consultants.tsx");
   "routes/websites-for-real-estate": typeof import("./app/routes/websites-for-real-estate.tsx");
   "routes/websites-for-restaurants": typeof import("./app/routes/websites-for-restaurants.tsx");
   "routes/website-cost-calculator": typeof import("./app/routes/website-cost-calculator.tsx");
   "routes/websites-for-startups": typeof import("./app/routes/websites-for-startups.tsx");
+  "routes/api.booking-settings": typeof import("./app/routes/api.booking-settings.ts");
   "routes/location.lower-parel": typeof import("./app/routes/location.lower-parel.tsx");
   "routes/location.mahalakshmi": typeof import("./app/routes/location.mahalakshmi.tsx");
   "routes/location.peddar-road": typeof import("./app/routes/location.peddar-road.tsx");
   "routes/location.pedder-road": typeof import("./app/routes/location.pedder-road.tsx");
+  "routes/terms-and-conditions": typeof import("./app/routes/terms-and-conditions.tsx");
   "routes/websites-for-doctors": typeof import("./app/routes/websites-for-doctors.tsx");
   "routes/websites-for-finance": typeof import("./app/routes/websites-for-finance.tsx");
   "routes/websites-for-lawyers": typeof import("./app/routes/websites-for-lawyers.tsx");
+  "routes/services.google-ads": typeof import("./app/routes/services.google-ads.tsx");
   "routes/location.ghatkopar": typeof import("./app/routes/location.ghatkopar.tsx");
+  "routes/lp.thank-you-audit": typeof import("./app/routes/lp.thank-you-audit.tsx");
+  "routes/lp.thank-you-quote": typeof import("./app/routes/lp.thank-you-quote.tsx");
   "routes/services.ecommerce": typeof import("./app/routes/services.ecommerce.tsx");
   "routes/location.vikhroli": typeof import("./app/routes/location.vikhroli.tsx");
+  "routes/services.meta-ads": typeof import("./app/routes/services.meta-ads.tsx");
   "routes/location.andheri": typeof import("./app/routes/location.andheri.tsx");
   "routes/location.bhandup": typeof import("./app/routes/location.bhandup.tsx");
   "routes/admin.dashboard": typeof import("./app/routes/admin.dashboard.tsx");
@@ -358,10 +480,16 @@ type RouteModules = {
   "routes/location.nahur": typeof import("./app/routes/location.nahur.tsx");
   "routes/location.powai": typeof import("./app/routes/location.powai.tsx");
   "routes/location.thane": typeof import("./app/routes/location.thane.tsx");
+  "routes/privacy-policy": typeof import("./app/routes/privacy-policy.tsx");
+  "routes/lp.web-design": typeof import("./app/routes/lp.web-design.tsx");
+  "routes/refund-policy": typeof import("./app/routes/refund-policy.tsx");
   "routes/sitemap[.]xml": typeof import("./app/routes/sitemap[.]xml.tsx");
   "routes/admin._index": typeof import("./app/routes/admin._index.tsx");
+  "routes/ads-contact": typeof import("./app/routes/ads-contact.tsx");
   "routes/blog._index": typeof import("./app/routes/blog._index.tsx");
+  "routes/book-a-call": typeof import("./app/routes/book-a-call.tsx");
   "routes/our-process": typeof import("./app/routes/our-process.tsx");
+  "routes/api.quotes": typeof import("./app/routes/api.quotes.ts");
   "routes/blog.$slug": typeof import("./app/routes/blog.$slug.tsx");
   "routes/contact-us": typeof import("./app/routes/contact-us.tsx");
   "routes/free-audit": typeof import("./app/routes/free-audit.tsx");
