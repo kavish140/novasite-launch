@@ -14,6 +14,7 @@ import { faqs } from "@/lib/faq-data";
 // The <Suspense> boundary below is kept for graceful client hydration only.
 import TechMarquee from "@/components/TechMarquee";
 import FeaturesSection from "@/components/FeaturesSection";
+import ResourcesSection from "@/components/ResourcesSection";
 import PortfolioSection from "@/components/PortfolioSection";
 import LocalAgencySection from "@/components/LocalAgencySection";
 import HowItWorksSection from "@/components/HowItWorksSection";
@@ -91,6 +92,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
           <section aria-labelledby="features-title">
             <FeaturesSection />
           </section>
+          <ResourcesSection />
           <section aria-labelledby="pricing-title" className="pb-20 sm:pb-24">
             <div className="mx-auto max-w-7xl px-6">
               <div className="grid gap-6 rounded-3xl border border-primary/20 bg-primary/5 p-8 shadow-sm md:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">

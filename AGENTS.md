@@ -224,7 +224,7 @@ This injects `<title>`, meta tags, Open Graph, Twitter Card, canonical link, rob
 ### Core Pages
 | Page | File | Description |
 |---|---|---|
-| Homepage | `pages/Index.tsx` | Buyer-focused hero with prices and client imagery, customer portfolio and testimonials immediately after hero, features, service areas, pricing, demos, process, FAQ and GEO block |
+| Homepage | `pages/Index.tsx` | Buyer-focused hero with prices and client imagery, customer portfolio and testimonials immediately after hero, features, Resources by SiteNova, service areas, pricing, demos, process, FAQ and GEO block |
 | About | `pages/About.tsx` | Company story, founder bio, values, team section |
 | Contact | `pages/Contact.tsx` | Contact form + WhatsApp / phone links |
 | Free Audit | `pages/FreeAudit.tsx` | Lead capture form — saves to Supabase `audit_requests` table |
@@ -417,6 +417,7 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 |---|---|
 | `HeroSection` | Main hero with headline, CTA buttons |
 | `FeaturesSection` | Key differentiators grid |
+| `ResourcesSection` | Server-rendered homepage section after features (`#resources`), introducing AI Insights and Toolbox with three published article links and three real tool examples. Static curated links; no client fetch or ad code. |
 | `TechMarquee` | Scrolling marquee of tech logos |
 | `PortfolioSection` | Portfolio grid with showcase + customer projects. Customer cards link to internal `/portfolio/*` case study pages. Showcase cards link directly to external sites. |
 | `LocalAgencySection` | "Local Agency Advantage" trust pillar section — 4 pillars: same city, direct dev access, Hindi/Marathi/Gujarati/Kutchi, fixed pricing. Includes WhatsApp CTA. Inserted on homepage between PortfolioSection and Free Audit CTA. |
@@ -893,6 +894,13 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-07] — Homepage resources section
+
+- Added `ResourcesSection.tsx` after homepage features, introducing `ai-insights.sitenova.dev` and `tools.sitenova.dev` with descriptive cards, three published AI articles and QR code/PDF tool examples linked to their verified public routes.
+- Uses existing theme tokens, responsive columns, semantic headings and visible keyboard focus. Statically imported so content and links appear in server-rendered HTML.
+- Agency hero and existing conversion flows remain intact. No AdSense settings, subdomain content or production deployment changed.
+- Validation: production build and ESLint for changed source files passed. Local Edge preview confirmed HTTP 200, resources in server-rendered HTML, all eight links, and no section overflow at 390px or 320px; desktop and mobile screenshots inspected.
 
 ### [2026-10-05] — HTML blog editing and manual AI review exports
 
