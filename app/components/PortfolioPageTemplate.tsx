@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
 import IframePreview from "@/components/IframePreview";
+import type { ClientReview } from "@/lib/client-reviews";
 import { WHATSAPP_URL } from "@/lib/constants";
 
 const fadeUp = {
@@ -40,9 +41,7 @@ export interface PortfolioPageTemplateProps {
     name: string;
     role: string;
     liveUrl: string;
-    testimonialQuote?: string;
-    testimonialAuthor?: string;
-    testimonialRole?: string;
+    review?: ClientReview;
   };
   project: {
     headline: string;
@@ -167,28 +166,33 @@ export default function PortfolioPageTemplate({
           </section>
 
           {/* ── Testimonial (optional) ─────────────────────────── */}
-          {client.testimonialQuote && (
+          {client.review && (
             <section className="py-16 sm:py-20 border-t border-border/40">
               <div className="mx-auto max-w-3xl px-6">
                 <motion.div
                   {...fadeUp}
                   className="glass-card rounded-2xl p-8 sm:p-10 text-center"
                 >
-                  <div className="flex justify-center gap-1 mb-5">
-                    {Array.from({ length: 5 }).map((_, i) => (
+                  <div className="flex justify-center gap-1 mb-5" role="img" aria-label={`${client.review.rating} out of 5 stars${client.review.source ? ` on ${client.review.source}` : ""}`}>
+                    {Array.from({ length: client.review.rating }).map((_, i) => (
                       <svg key={i} className="h-4 w-4 fill-accent text-accent" viewBox="0 0 20 20" aria-hidden="true">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                     ))}
                   </div>
-                  <p className="text-foreground/90 leading-relaxed text-base sm:text-lg mb-6 italic">
-                    "{client.testimonialQuote}"
-                  </p>
+                  {client.review.content ? (
+                    <blockquote className="text-foreground/90 leading-relaxed text-base sm:text-lg mb-6 italic">
+                      <p>“{client.review.content}”</p>
+                    </blockquote>
+                  ) : (
+                    <div className="mb-6">
+                      <h2 className="font-heading text-2xl font-semibold">5-star Google rating</h2>
+                      <p className="mt-2 text-sm text-muted-foreground">Rating only — no written review.</p>
+                    </div>
+                  )}
                   <div>
-                    <p className="font-heading font-semibold text-sm">{client.testimonialAuthor}</p>
-                    {client.testimonialRole && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{client.testimonialRole}</p>
-                    )}
+                    <p className="font-heading font-semibold text-sm">{client.review.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{client.review.role}</p>
                   </div>
                 </motion.div>
               </div>

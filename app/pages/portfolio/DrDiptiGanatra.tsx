@@ -1,3 +1,4 @@
+import { clientReviews } from "@/lib/client-reviews";
 import PortfolioPageTemplate from "@/components/PortfolioPageTemplate";
 import {
   Calendar,
@@ -18,10 +19,7 @@ export default function DrDiptiGanatra() {
         name: "Dr. Dipti Ganatra",
         role: "MD (Homeopathy) · Maharashtra CET Rank 1 · Mulund West",
         liveUrl: "https://drdiptiganatra.com",
-        testimonialQuote:
-          "Absolutely thrilled with my website www.drdiptiganatra.com! Site Nova's team built it beautifully in a very short span of time, with complete database integration and seamless functionality. The design is clean, professional, and perfectly reflects my practice. Since its launch, I've seen improved patient engagement and steady growth in my business. Highly recommend their team for anyone looking for a powerful and well-executed website!",
-        testimonialAuthor: "Dr. Dipti Ganatra",
-        testimonialRole: "MD (Homeopathy), Mulund West, Mumbai",
+        review: clientReviews["dr-dipti-ganatra"],
       }}
       project={{
         headline:

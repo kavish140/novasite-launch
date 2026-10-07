@@ -1,3 +1,4 @@
+import { clientReviews } from "@/lib/client-reviews";
 import PortfolioPageTemplate from "@/components/PortfolioPageTemplate";
 import {
   Home,
@@ -18,10 +19,7 @@ export default function JupiterFastFinance() {
         name: "Jupiter Fast Finance",
         role: "Finance Advisory & Loan Consultancy · Mulund, Mumbai",
         liveUrl: "https://jupiterfastfinance.com",
-        testimonialQuote:
-          "Truly impressed with the fantastic work done by Site Nova's team on JupiterFinance.com. The website is exceptionally well-designed — modern, sleek, and highly professional in appearance. Every element feels thoughtfully placed, creating a smooth and engaging user experience. Their attention to detail and design aesthetics really stand out. Highly appreciative of the quality and finesse they bring to their work!",
-        testimonialAuthor: "Jupiter Fast Finance",
-        testimonialRole: "Finance Advisory, Mulund, Mumbai",
+        review: clientReviews["jupiter-finance"],
       }}
       project={{
         headline:

@@ -131,12 +131,12 @@ export const customerProjects: PortfolioProjectMeta[] = [
   },
   {
     slug: "corporate-zone",
-    title: "CorporateZone",
+    title: "Corporatezone",
     description:
-      "A clean, professional B2B services website built for CorporateZone — strong brand identity, clear service hierarchy, and a lead-generation layout designed for corporate clients.",
+      "A wholesale stationery and business essentials catalog for Corporatezone in Lower Parel, Mumbai, with product search, category filters, and bulk quote inquiries.",
     image: jupiterFinanceImg, // unused — useIframePreview renders live site as the card thumbnail
     liveUrl: "https://corporatezone.in",
-    localFocus: "B2B corporate services website targeting Mumbai and pan-India business clients.",
+    localFocus: "Wholesale stationery and office supplies for Lower Parel, Mumbai and pan-India corporate buyers.",
     useIframePreview: true,
   },
 ];

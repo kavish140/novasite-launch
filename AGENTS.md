@@ -422,7 +422,7 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 | `PortfolioSection` | Portfolio grid with showcase + customer projects. Customer cards link to internal `/portfolio/*` case study pages. Showcase cards link directly to external sites. |
 | `LocalAgencySection` | "Local Agency Advantage" trust pillar section — 4 pillars: same city, direct dev access, Hindi/Marathi/Gujarati/Kutchi, fixed pricing. Includes WhatsApp CTA. Inserted on homepage between PortfolioSection and Free Audit CTA. |
 | `HowItWorksSection` | 4-step process visual |
-| `TestimonialsSection` | Client testimonials |
+| `TestimonialsSection` | Three client review cards from `lib/client-reviews.ts`, with case-study links. Corporatezone is a five-star Google rating without written review text. |
 | `FaqSection` | FAQ accordion (uses `lib/faq-data.ts`) |
 | `CtaSection` | Bottom call-to-action banner |
 | `BlogCTA` | CTA block for blog pages |
@@ -435,7 +435,7 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 | `JsonLd` | Injects a JSON-LD `<script>` tag inline |
 | `BlurImage` | Image with blur-up loading effect. Accepts all standard `<img>` HTML attributes. **Important**: always pass `width` and `height` props — these are forwarded to both the `<img>` element and used to set `aspect-ratio` on the outer wrapper div, preventing CLS before the image loads. For above-fold images always pass `loading="eager" fetchPriority="high"`. |
 | `IframePreview` | Shared component that renders a live iframe thumbnail with loading/error states. Extracted from `PortfolioSection`. Used in both `PortfolioSection` and `PortfolioPageTemplate`. Props: `src`, `title`. |
-| `PortfolioPageTemplate` | Shared full-page layout for all client portfolio case study pages. Accepts `client`, `project`, `backSlug` props. Renders: hero + live iframe, stats bar, optional testimonial, features grid, tech stack pills, dual CTA. See `app/pages/portfolio/` for usage. |
+| `PortfolioPageTemplate` | Shared full-page layout for all client portfolio case study pages. Accepts `client`, `project`, `backSlug` props. Renders: hero + live iframe, stats bar, optional shared client review (written testimonial or rating only), features grid, tech stack pills, dual CTA. See `app/pages/portfolio/` for usage. |
 | `ClientOnly` | Renders children only after client hydration (prevents SSR mismatches) |
 | `ErrorBoundary` | Top-level error boundary with fallback UI |
 | `ProtectedRoute` | Auth gate for admin pages |
@@ -894,6 +894,15 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-07] — Three-client showcase and Corporatezone Google rating
+
+- Added `app/lib/client-reviews.ts` as the shared review source for the homepage/reusable review section and all three existing case-study pages. Preserved Dr. Dipti Ganatra and Jupiter Fast Finance's existing review wording.
+- Added Corporatezone's owner-confirmed five-star Google rating with no invented quotation, review date, individual reviewer identity or direct review URL. The UI explicitly identifies it as a rating without written text.
+- Review cards use a responsive three-column desktop grid and links to existing case studies. Corrected Corporatezone's portfolio description to wholesale stationery/business essentials in Lower Parel, Mumbai.
+- Retained all three `/portfolio/*` routes; no duplicate pages, database changes or deployment.
+- Validation: production client/SSR build and scoped ESLint passed; local browser DOM confirmed all three review cards, case-study links and rating-only copy. The normal build output folder was locked, so Vite output cleanup was temporarily disabled for verification and the original configuration restored. The development preview had an existing stylesheet loading issue; responsive visual verification remains outstanding.
+
 
 ### [2026-10-07] — Homepage resources section
 

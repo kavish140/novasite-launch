@@ -1,3 +1,4 @@
+import { clientReviews } from "@/lib/client-reviews";
 import PortfolioPageTemplate from "@/components/PortfolioPageTemplate";
 import {
   Search,
@@ -18,7 +19,7 @@ export default function CorporateZone() {
         name: "Corporatezone",
         role: "Wholesale Stationery & Business Essentials · Lower Parel, Mumbai",
         liveUrl: "https://corporatezone.in",
-        // No testimonial — review pending
+        review: clientReviews["corporate-zone"],
       }}
       project={{
         headline:
