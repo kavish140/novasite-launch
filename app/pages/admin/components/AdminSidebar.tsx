@@ -180,6 +180,7 @@ export default function AdminSidebar({
                         <span>{label}</span>
                         {!!badge && (
                           <span
+                            title={id==="payments"?"Attention flags, not a count of payments. An order can have more than one flag.":undefined}
                             className={cn(
                               "ml-auto rounded-md px-1.5 py-0.5 text-[10px] tabular-nums",
                               activeTab === id

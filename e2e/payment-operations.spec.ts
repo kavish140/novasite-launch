@@ -7,6 +7,23 @@ async function isolate(page:Page,admin=true){
  await page.route('**/api/booking-settings',route=>route.fulfill({json:{enabled:false,booking_url:null}}));
  await page.route(/\.supabase\.co\//,route=>{const url=new URL(route.request().url());return route.fulfill({json:url.pathname.endsWith('/auth/v1/user')?user:url.pathname.endsWith('/rpc/is_site_admin')?admin:[],headers:{'content-range':'0-0/0'}});});
 }
+test('automatic checks are separate from payments and repeated warning logs do not create rows',async({page})=>{
+ await isolate(page);await session(page);const now=new Date().toISOString();
+ await page.route('**/api/admin/payments/*',route=>{
+  const action=new URL(route.request().url()).pathname.split('/').pop(),body=route.request().postDataJSON();
+  const health={observedAt:now,latestRunFailed:false,lastCompletedAt:now,lastSuccessfulAt:now,needsReconciliation:1,overdue:0,refunded:0,disputes:[],unacknowledgedPaid:1,investigations:0,lostDisputes:[]};
+  const order={request_id:id,order_id:'order_unconfirmed',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-12T09:08:35Z',last_checked_at:'2026-10-12T15:50:02Z',last_check_source:'cron'};
+  return route.fulfill({json:action==='paid'?{orders:[{request_id:'paid',paid_at:'2026-10-12T09:18:00Z',acknowledged_at:null,payment_intents:{order_id:'order_paid',payment_id:'pay_verified',package:'test',amount:100,status:'paid',created_at:'2026-10-12T09:17:39Z',customer:{}}}],nextOffset:null}:action==='investigations'?{items:[],nextOffset:null}:action==='history'?{history:[{id:'log',old_state:'pending',new_state:'needs_reconciliation',source:'cron',created_at:order.last_checked_at,error:null,alert:true}],nextOffset:null}:body.summaryOnly?health:{orders:[order],runs:[],alerts:Array.from({length:20},(_,i)=>({id:String(i),request_id:id,order_id:order.order_id,error:'Repeated warning',created_at:order.last_checked_at})),nextOffset:null}});
+ });
+ await page.goto('/admin/dashboard');await page.getByRole('button',{name:'Review Payments',exact:true}).click();
+ await expect(page.getByText('₹1 test payment · ₹1.00 · Paid — verified',{exact:true})).toBeVisible();await expect(page.getByText('Order ID: order_paid')).toBeVisible();await expect(page.getByText('Payment ID: pay_verified')).toBeVisible();
+ const table=page.getByRole('table',{name:'Unpaid and unconfirmed checkout orders'});await expect(table.locator('tbody tr')).toHaveCount(1);
+ await expect(table.getByText('Order created: 12 Oct 2026, 14:38:35 IST')).toBeVisible();await expect(table.getByText('12 Oct 2026, 21:20:02 IST',{exact:true})).toBeVisible();await expect(table.getByText('Automatic status check',{exact:true})).toBeVisible();await expect(page.getByText('Repeated warning',{exact:true})).toHaveCount(0);
+ await table.getByRole('button',{name:'History',exact:true}).click();await expect(page.getByText('These entries are checks of this order, not additional payments.')).toBeVisible();
+ await expect(page.locator('details').filter({hasText:'Automatic checks — scheduler health'})).not.toHaveAttribute('open','');
+ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:'test-results/payment-clarity-mobile.png',fullPage:true});
+});
 test('combined admin queue acknowledges paid/lost alerts and keeps investigations record-only on mobile',async({page})=>{
  await isolate(page);await session(page);const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));let acknowledged=false,lost=true;
  await page.route('**/api/admin/payments/*',route=>{const action=new URL(route.request().url()).pathname.split('/').pop(),body=route.request().postDataJSON();

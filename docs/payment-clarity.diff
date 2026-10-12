@@ -1,0 +1,280 @@
+diff --git a/app/lib/payment-queue-store.test.ts b/app/lib/payment-queue-store.test.ts
+index da305cf..36ef8ec 100644
+--- a/app/lib/payment-queue-store.test.ts
++++ b/app/lib/payment-queue-store.test.ts
+@@ -19,3 +19,22 @@ it('fails closed when queue storage denies access',async()=>{
+  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({code:'42501',message:'permission denied'},{status:403})));
+  await expect(paymentStore({SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake-service-key'}).queue(0)).rejects.toThrow('Payment queue unavailable');
+ });
++it('attributes only the matching latest check and keeps audit rows out of the queue',async()=>{
++ const at='2026-10-12T15:50:02Z';
++ const fetcher=vi.fn<typeof fetch>(async input=>Response.json(String(input).includes('/payment_intents?')?[
++  {request_id:'one',last_checked_at:at,payment_reconciliation_log:[{created_at:at,payment_reconciliation_runs:{source:'cron'}}]},
++  {request_id:'two',last_checked_at:at,payment_reconciliation_log:[{created_at:'2026-10-12T15:40:02Z',payment_reconciliation_runs:{source:'admin'}}]},
++  {request_id:'three',last_checked_at:null,payment_reconciliation_log:[]}
++ ]:[]));vi.stubGlobal('fetch',fetcher);
++ const result=await paymentStore({SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake'}).queue(0);
++ expect(result.orders).toEqual([{request_id:'one',last_checked_at:at,last_check_source:'cron'},{request_id:'two',last_checked_at:at,last_check_source:null},{request_id:'three',last_checked_at:null,last_check_source:null}]);
++ const url=new URL(String(fetcher.mock.calls[0][0]));
++ expect(url.searchParams.get('payment_reconciliation_log.limit')).toBe('1');
++ expect(url.searchParams.get('payment_reconciliation_log.order')).toBe('created_at.desc,id.desc');
++ expect(fetcher.mock.calls.every(([,options])=>options?.method==='GET')).toBe(true);
++});
++it('returns check source in history without changing stored state',async()=>{
++ vi.stubGlobal('fetch',vi.fn(async()=>Response.json([{id:'log',old_state:'pending',new_state:'pending',payment_reconciliation_runs:{source:'admin'}}])));
++ const result=await paymentStore({SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake'}).history('one',0);
++ expect(result.history).toEqual([{id:'log',old_state:'pending',new_state:'pending',source:'admin'}]);
++});
+diff --git a/app/pages/admin/components/AdminSidebar.tsx b/app/pages/admin/components/AdminSidebar.tsx
+index ad7899c..0ed6388 100644
+--- a/app/pages/admin/components/AdminSidebar.tsx
++++ b/app/pages/admin/components/AdminSidebar.tsx
+@@ -180,6 +180,7 @@ export default function AdminSidebar({
+                         <span>{label}</span>
+                         {!!badge && (
+                           <span
++                            title={id==="payments"?"Attention flags, not a count of payments. An order can have more than one flag.":undefined}
+                             className={cn(
+                               "ml-auto rounded-md px-1.5 py-0.5 text-[10px] tabular-nums",
+                               activeTab === id
+diff --git a/app/pages/admin/components/PaidOrders.tsx b/app/pages/admin/components/PaidOrders.tsx
+index c6cd943..209eb92 100644
+--- a/app/pages/admin/components/PaidOrders.tsx
++++ b/app/pages/admin/components/PaidOrders.tsx
+@@ -1,8 +1,9 @@
+ import {useCallback,useEffect,useState} from "react";
+ import {adminPaymentRequest} from "@/lib/payment-admin-client";
++import {paymentDate} from "@/lib/payment-display";
+ import {formatINR} from "@/lib/payments";
+ import {Button} from "@/components/ui/button";
+-type PaidOrder={request_id:string;paid_at:string;acknowledged_at:string|null;payment_intents:{order_id:string;package:string;amount:number;status:string;customer:Record<string,unknown>}};
++type PaidOrder={request_id:string;paid_at:string;acknowledged_at:string|null;payment_intents:{order_id:string;payment_id?:string|null;created_at?:string;package:string;amount:number;status:string;customer:Record<string,unknown>}};
+ type Page={orders:PaidOrder[];nextOffset:number|null};
+ export default function PaidOrders({refreshHealth}:{refreshHealth?:()=>Promise<void>}){
+  const [page,setPage]=useState<Page|null>(null),[offset,setOffset]=useState(0),[error,setError]=useState(""),[busy,setBusy]=useState(false);
+@@ -11,6 +12,6 @@ export default function PaidOrders({refreshHealth}:{refreshHealth?:()=>Promise<v
+  useEffect(()=>{void refresh();},[refresh]);
+  async function acknowledge(order:PaidOrder){setBusy(true);setError("");try{await adminPaymentRequest("acknowledge",{kind:"paid",id:order.request_id,acknowledged:!order.acknowledged_at});await refresh();await refreshHealth?.();}catch{setError("Unable to save acknowledgement.");}finally{setBusy(false);}}
+  async function getReceipt(order:PaidOrder){setBusy(true);setError("");try{const result=await adminPaymentRequest<{url:string}>("order-receipt",{requestId:order.request_id});if(!/^https:\/\/sitenova\.dev\/receipt#[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[0-9a-f]{64}$/.test(result.url))throw new Error("Invalid receipt link");setReceipts(current=>({...current,[order.request_id]:result.url}));}catch{setError("Unable to load this receipt. Your payment remains recorded; try again later.");}finally{setBusy(false);}}
+- return <section className="rounded-xl border border-border p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="font-semibold text-lg">Recent paid orders</h2><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh paid orders</Button></div><p className="text-sm text-muted-foreground mt-2">Paid and refunded orders, newest confirmation first. Acknowledgement records your review; it does not change payment status.</p>{error&&<p role="alert">{error}</p>}{page?.orders.map(order=>{const p=order.payment_intents;return <article key={order.request_id} className="mt-4 border-t border-border pt-4 text-sm space-y-2 break-words"><p className="font-semibold">{p.package} · {formatINR(p.amount)} · {p.status}</p><p>Paid confirmation: {new Date(order.paid_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})} IST</p><p className="break-all">{p.order_id}</p>{["name","email","phone","business","project_type","requirements","timeline"].map(key=>typeof p.customer[key]==="string"&&p.customer[key]?<p key={key}>{key.replace(/_/g," ")}: {String(p.customer[key])}</p>:null)}{p.package==="test"&&p.amount===100&&<div className="flex flex-wrap gap-3 items-center"><Button variant="outline" disabled={busy} onClick={()=>void getReceipt(order)}>Get ₹1 test receipt</Button>{receipts[order.request_id]&&<a href={receipts[order.request_id]} className="text-primary underline" referrerPolicy="no-referrer" target="_blank" rel="noopener noreferrer">Open receipt</a>}</div>}<label className="flex gap-2 items-center"><input type="checkbox" checked={!!order.acknowledged_at} disabled={busy} onChange={()=>void acknowledge(order)}/>Acknowledged</label></article>;})}{page&&!page.orders.length&&<p className="mt-4 text-muted-foreground">No paid orders yet.</p>}<div className="flex flex-wrap gap-2 mt-4"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous paid orders</Button><Button variant="outline" disabled={busy||page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next paid orders</Button></div></section>;
++ return <section className="rounded-xl border border-border p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="font-semibold text-lg">Recent paid orders</h2><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh paid orders</Button></div><p className="text-sm text-muted-foreground mt-2">Only confirmed paid/refunded ledger entries appear here. Automatic checks are not payments. Recorded confirmation is when SiteNova saved the status, not necessarily when the bank transfer happened.</p>{error&&<p role="alert">{error}</p>}{page&&<p className="text-sm mt-3">{page.orders.length} confirmed payment(s) on this page.</p>}{page?.orders.map(order=>{const p=order.payment_intents;return <article key={order.request_id} className="mt-4 border-t border-border pt-4 text-sm space-y-2 break-words"><p className="font-semibold">{p.package==="test"?"₹1 test payment":p.package} · {formatINR(p.amount)} · {p.status==="paid"?"Paid — verified":"Refund recorded"}</p><p>Recorded confirmation: {paymentDate(order.paid_at)}</p>{p.created_at&&<p className="text-muted-foreground">Order created: {paymentDate(p.created_at)}</p>}<p className="break-all text-muted-foreground">Order ID: {p.order_id}</p>{p.payment_id&&<p className="break-all">Payment ID: {p.payment_id}</p>}{["name","email","phone","business","project_type","requirements","timeline"].map(key=>typeof p.customer[key]==="string"&&p.customer[key]?<p key={key}>{key.replace(/_/g," ")}: {String(p.customer[key])}</p>:null)}{p.package==="test"&&p.amount===100&&<div className="flex flex-wrap gap-3 items-center"><Button variant="outline" disabled={busy} onClick={()=>void getReceipt(order)}>Get ₹1 test receipt</Button>{receipts[order.request_id]&&<a href={receipts[order.request_id]} className="text-primary underline" referrerPolicy="no-referrer" target="_blank" rel="noopener noreferrer">Open receipt</a>}</div>}<label className="flex gap-2 items-center"><input type="checkbox" checked={!!order.acknowledged_at} disabled={busy} onChange={()=>void acknowledge(order)}/>Acknowledged</label></article>;})}{page&&!page.orders.length&&<p className="mt-4 text-muted-foreground">No paid orders yet.</p>}<div className="flex flex-wrap gap-2 mt-4"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous paid orders</Button><Button variant="outline" disabled={busy||page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next paid orders</Button></div></section>;
+ }
+
+diff --git a/app/pages/admin/components/PaymentAlerts.tsx b/app/pages/admin/components/PaymentAlerts.tsx
+index ceb9432..49db3a2 100644
+--- a/app/pages/admin/components/PaymentAlerts.tsx
++++ b/app/pages/admin/components/PaymentAlerts.tsx
+@@ -1,13 +1,15 @@
+ import {AlertTriangle} from "lucide-react";
+ import {Button} from "@/components/ui/button";
+ import {paymentAlertCount,staleCron,type PaymentHealth} from "@/lib/payment-health";
+-export const paymentTime=(value:string)=>new Date(value).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"});
++import {paymentDate} from "@/lib/payment-display";
++export const paymentTime=paymentDate;
+ export default function PaymentAlerts({health,isAdmin,error,now,onOpen}:{health:PaymentHealth|null;isAdmin:boolean;error:boolean;now:number;onOpen:()=>void}){
+  if(!isAdmin)return null;
+  if(error)return <section role="alert" className="mb-6 rounded-xl border-2 border-amber-500 bg-amber-500/10 p-5"><h2 className="font-semibold">Payment monitoring unavailable</h2><p className="mt-1 text-sm">Unable to confirm payment alerts. Open Payments and refresh; monitoring is unverified.</p><Button className="mt-3" variant="outline" onClick={onOpen}>Open Payments</Button></section>;
+  if(!health||!paymentAlertCount(health,now))return null;
+  return <section role="alert" aria-label="Payment alerts" className="mb-6 rounded-xl border-2 border-amber-500 bg-amber-500/10 p-5">
+   <h2 className="flex items-center gap-2 text-lg font-semibold"><AlertTriangle className="h-5 w-5"/>Payments need attention</h2>
++  <p className="mt-2 text-sm text-muted-foreground">These are review flags, not new payments. One order can have multiple flags.</p>
+   <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
+    {!!health.unacknowledgedPaid&&<li>{health.unacknowledgedPaid} paid order(s) awaiting acknowledgement.</li>}
+    {!!health.investigations&&<li>{health.investigations} payment record(s) need investigation.</li>}
+@@ -17,9 +19,9 @@ export default function PaymentAlerts({health,isAdmin,error,now,onOpen}:{health:
+    {!!health.overdue&&<li>{health.overdue} order(s) unresolved for over 24 hours.</li>}
+    {!!health.needsReconciliation&&<li>{health.needsReconciliation} order(s) need reconciliation.</li>}
+    {!!health.refunded&&<li>{health.refunded} payment(s) refunded, including partial refunds.</li>}
+-   {!!health.disputes.length&&<li>{health.disputes.length} open dispute(s).{health.disputes[0].responseDueAt?` Earliest response due: ${paymentTime(health.disputes[0].responseDueAt)} IST.`:" Response deadline not supplied."}</li>}
++   {!!health.disputes.length&&<li>{health.disputes.length} open dispute(s).{health.disputes[0].responseDueAt?` Earliest response due: ${paymentTime(health.disputes[0].responseDueAt)}.`:" Response deadline not supplied."}</li>}
+   </ul>
+-  {!!health.disputes.length&&<ul className="mt-3 space-y-1 text-sm">{health.disputes.map(dispute=><li key={dispute.id} className="break-all">{dispute.id} · {dispute.status.replace(/_/g," ")} · Response due: {dispute.responseDueAt?`${paymentTime(dispute.responseDueAt)} IST`:"not supplied"}</li>)}</ul>}
++  {!!health.disputes.length&&<ul className="mt-3 space-y-1 text-sm">{health.disputes.map(dispute=><li key={dispute.id} className="break-all">{dispute.id} · {dispute.status.replace(/_/g," ")} · Response due: {dispute.responseDueAt?paymentTime(dispute.responseDueAt):"not supplied"}</li>)}</ul>}
+   <Button className="mt-4" variant="outline" onClick={onOpen}>Review Payments</Button>
+  </section>;
+ }
+diff --git a/app/pages/admin/components/PaymentCronHealth.test.tsx b/app/pages/admin/components/PaymentCronHealth.test.tsx
+index 3076de6..19e861c 100644
+--- a/app/pages/admin/components/PaymentCronHealth.test.tsx
++++ b/app/pages/admin/components/PaymentCronHealth.test.tsx
+@@ -6,8 +6,8 @@ afterEach(cleanup);
+ const now=Date.parse("2026-10-11T10:07:00Z");
+ it("shows the successful scheduled completion and the next wall-clock cron run in IST",()=>{
+  render(<PaymentCronHealth health={{observedAt:new Date(now).toISOString(),lastCompletedAt:"2026-10-11T10:00:02Z",lastSuccessfulAt:"2026-10-11T10:00:02Z",latestRunFailed:false,needsReconciliation:0,overdue:0,refunded:0,disputes:[]}} now={now}/>);
+- expect(screen.getByText(/Last successful reconciliation run:/).textContent).toContain("3:30:02 pm IST");
+- expect(screen.getByText(/Next expected run:/).textContent).toContain("3:40:00 pm IST");
++ expect(screen.getByText(/Last successful reconciliation run:/).textContent).toContain("15:30:02 IST");
++ expect(screen.getByText(/Next expected run:/).textContent).toContain("15:40:00 IST");
+  expect(nextReconciliationAt(now)).toBe("2026-10-11T10:10:00.000Z");
+  expect(nextReconciliationAt(Date.parse("2026-10-11T10:10:00Z"))).toBe("2026-10-11T10:20:00.000Z");
+ });
+diff --git a/app/pages/admin/components/PaymentCronHealth.tsx b/app/pages/admin/components/PaymentCronHealth.tsx
+index 31d2785..24e3eb0 100644
+--- a/app/pages/admin/components/PaymentCronHealth.tsx
++++ b/app/pages/admin/components/PaymentCronHealth.tsx
+@@ -3,8 +3,8 @@ import {paymentTime} from "./PaymentAlerts";
+ export default function PaymentCronHealth({health,now}:{health:PaymentHealth|null|undefined;now:number}){
+  return <section aria-label="Reconciliation scheduler" className="rounded-xl border border-border bg-card p-5 text-sm space-y-2">
+   <h2 className="font-semibold">Reconciliation scheduler</h2>
+-  <p>Last successful reconciliation run: {health?.lastSuccessfulAt?`${paymentTime(health.lastSuccessfulAt)} IST`:health?"No successful scheduled run recorded":"Unverified — monitoring data unavailable"}</p>
+-  <p>Next expected run: {health?`${paymentTime(nextReconciliationAt(now))} IST`:"Unverified"}</p>
++  <p>Last successful reconciliation run: {health?.lastSuccessfulAt?paymentTime(health.lastSuccessfulAt):health?"No successful scheduled run recorded":"Unverified — monitoring data unavailable"}</p>
++  <p>Next expected run: {health?paymentTime(nextReconciliationAt(now)):"Unverified"}</p>
+   <p className="text-muted-foreground">Scheduled every 10 minutes. Admin re-checks do not reset scheduler health. This is the expected schedule, not confirmation that the next run will complete.</p>
+  </section>;
+ }
+diff --git a/app/pages/admin/tabs/PaymentsTab.test.tsx b/app/pages/admin/tabs/PaymentsTab.test.tsx
+index 42a9309..a80222b 100644
+--- a/app/pages/admin/tabs/PaymentsTab.test.tsx
++++ b/app/pages/admin/tabs/PaymentsTab.test.tsx
+@@ -9,6 +9,15 @@ vi.mock('../components/PaymentInvestigations',()=>({default:()=>null}));
+ const order={request_id:'request',order_id:'order_1',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-10T10:00:00Z',last_checked_at:null};
+ beforeEach(()=>{vi.resetAllMocks();vi.mocked(adminPaymentRequest).mockResolvedValue({orders:[order],runs:[],alerts:[],nextOffset:null});});
+ afterEach(cleanup);
++it('shows each checkout once despite repeated alert logs and separates creation from automatic check time',async()=>{
++ const current={...order,created_at:'2026-10-12T09:08:35Z',last_checked_at:'2026-10-12T15:50:02Z',last_check_source:'cron'};
++ vi.mocked(adminPaymentRequest).mockResolvedValueOnce({orders:[current,current],runs:[],alerts:Array.from({length:20},(_,i)=>({id:String(i),request_id:'request',order_id:'order_1',created_at:current.last_checked_at,error:'Repeated warning'})),nextOffset:null});
++ render(<PaymentsTab now={Date.parse('2026-10-12T15:55:00Z')}/>);
++ expect(await screen.findByText('order_1')).toBeTruthy();expect(screen.getAllByText('order_1')).toHaveLength(1);
++ expect(screen.getByText('Order created: 12 Oct 2026, 14:38:35 IST')).toBeTruthy();expect(screen.getByText('12 Oct 2026, 21:20:02 IST')).toBeTruthy();expect(screen.getByText('Automatic status check')).toBeTruthy();
++ expect(screen.getByText('Payment status uncertain — review required')).toBeTruthy();expect(screen.queryByText('Repeated warning')).toBeNull();expect(screen.queryByText('Flagged orders')).toBeNull();
++ expect(screen.getByText('Automatic checks — scheduler health').closest('details')?.open).toBe(false);
++});
+ it('shows open disputes with payment, order, paise amount and deadline, then removes resolved disputes',async()=>{
+  const health={observedAt:order.created_at,latestRunFailed:false,lastCompletedAt:order.created_at,lastSuccessfulAt:order.created_at,overdue:0,needsReconciliation:0,refunded:0,disputes:[{id:'disp_1',event:'payment.dispute.created',status:'open',amount:100,currency:'INR',paymentId:'pay_1',orderId:'order_1',responseDueAt:'2026-10-12T10:00:00Z',occurredAt:order.created_at}]};
+  const view=render(<PaymentsTab health={health}/>);
+diff --git a/app/pages/admin/tabs/PaymentsTab.tsx b/app/pages/admin/tabs/PaymentsTab.tsx
+index 38c2380..425c381 100644
+--- a/app/pages/admin/tabs/PaymentsTab.tsx
++++ b/app/pages/admin/tabs/PaymentsTab.tsx
+@@ -2,15 +2,16 @@ import {useCallback,useEffect,useState} from "react";
+ import {Button} from "@/components/ui/button";
+ import {adminPaymentRequest} from "@/lib/payment-admin-client";
+ import {formatINR} from "@/lib/payments";
++import {checkoutState,paymentCheckSource,paymentDate} from "@/lib/payment-display";
+ import type {PaymentHealth} from "@/lib/payment-health";
+ import PaymentCronHealth from "../components/PaymentCronHealth";
+ import PaidOrders from "../components/PaidOrders";
+ import PaymentInvestigations from "../components/PaymentInvestigations";
+-type Order={request_id:string;order_id:string|null;package:string;amount:number;status:string;reconciliation_state:string;created_at:string;last_checked_at:string|null};
+-type History={id:string;old_state:string;new_state:string;error:string|null;alert:boolean;created_at:string};
+-type Queue={orders:Order[];runs:{id:string;error:string|null;started_at:string}[];alerts:{id:string;request_id:string;order_id:string|null;new_state:string;error:string|null;created_at:string}[];nextOffset:number|null};
++type Order={request_id:string;order_id:string|null;package:string;amount:number;status:string;reconciliation_state:string;created_at:string;last_checked_at:string|null;last_check_source?:string|null};
++type History={id:string;old_state:string;new_state:string;error:string|null;alert:boolean;created_at:string;source?:string|null};
++type Queue={orders:Order[];runs:{id:string;source?:string;error:string|null;started_at:string}[];alerts:{id:string;request_id:string;order_id:string|null;new_state:string;error:string|null;created_at:string}[];nextOffset:number|null};
+ type HistoryPage={history:History[];nextOffset:number|null};
+-const time=(value:string|null)=>value?new Date(value).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}):"Not checked";
++const time=paymentDate;
+ export default function PaymentsTab({health,refreshHealth,now=Date.now()}:{health?:PaymentHealth|null;refreshHealth?:()=>Promise<void>;now?:number}){
+   const [queue,setQueue]=useState<Queue|null>(null),[offset,setOffset]=useState(0),[selected,setSelected]=useState<Order|null>(null),[history,setHistory]=useState<HistoryPage>({history:[],nextOffset:null});
+   const [busy,setBusy]=useState(false),[error,setError]=useState(""),[notice,setNotice]=useState("");
+@@ -31,18 +32,26 @@ export default function PaymentsTab({health,refreshHealth,now=Date.now()}:{healt
+       await refreshHealth?.();
+     }catch(e){setError(e instanceof Error?e.message:"Unable to check payment.");}finally{setBusy(false);}
+   }
++  const orders=[...new Map((queue?.orders??[]).map(order=>[order.request_id,order])).values()];
+   return <div className="space-y-6">
+-    <PaymentCronHealth health={health} now={now}/>
+     <PaidOrders refreshHealth={refreshHealth}/>
+     <PaymentInvestigations/>
+     {!!health?.lostDisputes?.length&&<section className="rounded-xl border-2 border-destructive p-5"><h2 className="font-semibold">Lost disputes — acknowledgement required</h2>{health.lostDisputes.map(dispute=><div key={dispute.eventId} className="mt-3 text-sm break-all"><p>{dispute.id} · Payment: {dispute.paymentId??"Unknown"} · {dispute.amount===null?"Amount not supplied":dispute.currency==="INR"?formatINR(dispute.amount):`${dispute.amount} subunits (${dispute.currency??"unknown"})`}</p><p>Acknowledging records your review. It does not change payment status or move money.</p><Button variant="outline" disabled={busy} onClick={async()=>{setBusy(true);setError("");try{await adminPaymentRequest("acknowledge",{kind:"dispute",eventId:dispute.eventId});await refreshHealth?.();}catch{setError("Unable to acknowledge lost dispute.");}finally{setBusy(false);}}}>Acknowledge lost dispute</Button></div>)}</section>}
+-    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Pending payments and failures checked in the last 24 hours. Automatic checks run every 10 minutes. Times shown in IST.</p><Button variant="outline" disabled={busy} onClick={()=>{void refresh();void refreshHealth?.();}}>Refresh payments</Button></div>
+-    {!!health?.disputes.length&&<section className="rounded-xl border border-amber-500 p-5"><h2 className="font-semibold">Open disputes</h2>{health.disputes.map(dispute=><div key={dispute.id} className="mt-3 border-t border-border pt-3 text-sm break-all"><p>{dispute.id} · {dispute.status.replace(/_/g," ")}</p><p>Payment: {dispute.paymentId??"Not supplied"} · Order: {dispute.orderId??"Unknown / not supplied"}</p><p>Disputed amount: {dispute.amount===null?"Not supplied":dispute.currency==="INR"?formatINR(dispute.amount):`${dispute.amount} subunits (${dispute.currency??"currency not supplied"})`}</p><p>Response due: {dispute.responseDueAt?`${time(dispute.responseDueAt)} IST`:"Not supplied by Razorpay"}</p><p className="text-muted-foreground">Respond in the Razorpay dashboard. This audit entry does not change paid status.</p></div>)}</section>}
++    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Checkout orders below are not confirmed payments. Status checks do not create orders or take money. All times use IST (24-hour clock).</p><Button variant="outline" disabled={busy} onClick={()=>{void refresh();void refreshHealth?.();}}>Refresh payments</Button></div>
++    {!!health?.disputes.length&&<section className="rounded-xl border border-amber-500 p-5"><h2 className="font-semibold">Open disputes</h2>{health.disputes.map(dispute=><div key={dispute.id} className="mt-3 border-t border-border pt-3 text-sm break-all"><p>{dispute.id} · {dispute.status.replace(/_/g," ")}</p><p>Payment: {dispute.paymentId??"Not supplied"} · Order: {dispute.orderId??"Unknown / not supplied"}</p><p>Disputed amount: {dispute.amount===null?"Not supplied":dispute.currency==="INR"?formatINR(dispute.amount):`${dispute.amount} subunits (${dispute.currency??"currency not supplied"})`}</p><p>Response due: {dispute.responseDueAt?time(dispute.responseDueAt):"Not supplied by Razorpay"}</p><p className="text-muted-foreground">Respond in the Razorpay dashboard. This audit entry does not change paid status.</p></div>)}</section>}
+     {error&&<p role="alert" className="text-destructive">{error}</p>}{notice&&<p role="status">{notice}</p>}
+     {!!queue?.runs.length&&(!health||health.latestRunFailed)&&<section className="rounded-xl border border-destructive/40 p-4"><h2 className="font-semibold mb-2">Reconciliation failures — review required</h2>{queue.runs.map(run=><p key={run.id} className="text-sm">{time(run.started_at)} · {run.error??"A scheduled check failed."}</p>)}</section>}
+-    {!!queue?.alerts.length&&<section className="rounded-xl border border-amber-500/40 p-4"><h2 className="font-semibold mb-2">Flagged orders</h2>{queue.alerts.map(alert=><div key={alert.id} className="text-sm py-2 break-all"><p>{alert.order_id??alert.request_id} · {time(alert.created_at)}</p><p>{alert.error??"Unresolved for over 24 hours — review required."}</p><Button variant="ghost" disabled={busy} onClick={()=>void showHistory({request_id:alert.request_id,order_id:alert.order_id,package:"",amount:0,status:"pending",reconciliation_state:alert.new_state,created_at:alert.created_at,last_checked_at:null})}>View history</Button></div>)}</section>}
+-    <div className="rounded-xl border border-border overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="p-3">Order / service</th><th className="p-3">Amount</th><th className="p-3">State</th><th className="p-3">Last checked</th><th className="p-3">Actions</th></tr></thead><tbody>{queue?.orders.map(order=><tr key={order.request_id} className="border-b border-border"><td className="p-3 break-all">{order.order_id??"Order creation unresolved"}<span className="block text-muted-foreground">{order.package} · {time(order.created_at)}</span></td><td className="p-3 whitespace-nowrap">{formatINR(order.amount)}</td><td className="p-3">{order.reconciliation_state.replace(/_/g," ")}</td><td className="p-3">{time(order.last_checked_at)}</td><td className="p-3"><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy} onClick={()=>void recheck(order)}>Re-check with Razorpay</Button><Button variant="ghost" disabled={busy} onClick={()=>void showHistory(order)}>History</Button></div></td></tr>)}</tbody></table>{queue&&!queue.orders.length&&<p className="p-5 text-muted-foreground">No payments in this queue.</p>}{!queue&&busy&&<p className="p-5">Loading payments…</p>}</div>
+-    <div className="flex gap-3"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous</Button><Button variant="outline" disabled={busy||queue?.nextOffset==null} onClick={()=>setOffset(queue!.nextOffset!)}>Next</Button></div>
+-    {selected&&<section className="rounded-xl border border-border p-5"><h2 className="font-semibold break-all mb-3">Reconciliation history: {selected.order_id??selected.request_id}</h2><Button variant="outline" disabled={busy} onClick={()=>void recheck(selected)}>Re-check with Razorpay</Button>{history.history.map(item=><div key={item.id} className="border-t border-border py-3 mt-3"><p className="text-sm">{time(item.created_at)} · {item.old_state.replace(/_/g," ")} → {item.new_state.replace(/_/g," ")}</p>{item.alert&&<p className="text-amber-500 text-sm">Flagged for review</p>}{item.error&&<p className="text-sm text-destructive">{item.error}</p>}</div>)}{!history.history.length&&!busy&&<p className="mt-3 text-sm text-muted-foreground">No reconciliation checks recorded yet.</p>}{history.nextOffset!==null&&<Button variant="outline" disabled={busy} onClick={()=>void showHistory(selected,true)}>Load older checks</Button>}</section>}
++    <section className="rounded-xl border border-border bg-card p-5 space-y-4">
++      <h2 className="font-semibold text-lg">Unpaid &amp; unconfirmed checkouts</h2>
++      <p className="text-sm text-muted-foreground">Each checkout appears once. The checkout amount is requested, not proof of a debit. A status-check time is not a payment time.</p>
++      {queue&&<p className="text-sm">{orders.length} checkout order(s) on this page.</p>}
++      <div className="overflow-x-auto"><table aria-label="Unpaid and unconfirmed checkout orders" className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="p-3">Checkout order</th><th className="p-3">Checkout amount</th><th className="p-3">Current status</th><th className="p-3">Last status check</th><th className="p-3">Actions</th></tr></thead><tbody>{orders.map(order=>{
++        const overdue=order.status==="pending"&&["pending","needs_reconciliation"].includes(order.reconciliation_state)&&now-Date.parse(order.created_at)>86400000;
++        return <tr key={order.request_id} className="border-b border-border"><td className="p-3 min-w-52"><p className="break-all">{order.order_id??"Order creation unconfirmed"}</p><p className="text-muted-foreground mt-1">{order.package==="test"?"₹1 test checkout":order.package}</p><p className="text-muted-foreground mt-1">Order created: {paymentDate(order.created_at)}</p></td><td className="p-3 whitespace-nowrap align-top">{formatINR(order.amount)}</td><td className="p-3 min-w-44 align-top"><p>{checkoutState(order)}</p>{overdue&&<p className="mt-2 text-amber-500">Unresolved for over 24 hours</p>}</td><td className="p-3 min-w-48 align-top"><p>{order.last_checked_at?paymentCheckSource(order.last_check_source):"Not checked yet"}</p>{order.last_checked_at&&<p className="text-muted-foreground mt-1">{paymentDate(order.last_checked_at)}</p>}</td><td className="p-3 align-top"><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy} onClick={()=>void recheck(order)}>Re-check with Razorpay</Button><Button variant="ghost" disabled={busy} onClick={()=>void showHistory(order)}>History</Button></div></td></tr>;
++      })}</tbody></table>{queue&&!orders.length&&<p className="py-4 text-muted-foreground">No unpaid or unconfirmed checkouts in this queue.</p>}{!queue&&busy&&<p className="py-4">Loading checkout orders…</p>}</div>
++    </section>
++    {(offset>0||queue?.nextOffset!=null)&&<div className="flex flex-wrap gap-3"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous</Button><Button variant="outline" disabled={busy||queue?.nextOffset==null} onClick={()=>setOffset(queue!.nextOffset!)}>Next</Button></div>}
++    {selected&&<section className="rounded-xl border border-border p-5"><h2 className="font-semibold break-all mb-3">Status-check history: {selected.order_id??selected.request_id}</h2><p className="text-sm text-muted-foreground mb-3">These entries are checks of this order, not additional payments.</p><Button variant="outline" disabled={busy} onClick={()=>void recheck(selected)}>Re-check with Razorpay</Button>{history.history.map(item=><div key={item.id} className="border-t border-border py-3 mt-3"><p className="text-sm">{paymentCheckSource(item.source)} · {time(item.created_at)} · {item.old_state.replace(/_/g," ")} → {item.new_state.replace(/_/g," ")}</p>{item.alert&&<p className="text-amber-500 text-sm">Flagged for review</p>}{item.error&&<p className="text-sm text-destructive">{item.error}</p>}</div>)}{!history.history.length&&!busy&&<p className="mt-3 text-sm text-muted-foreground">No reconciliation checks recorded yet.</p>}{history.nextOffset!==null&&<Button variant="outline" disabled={busy} onClick={()=>void showHistory(selected,true)}>Load older checks</Button>}</section>}
++    <details className="rounded-xl border border-border p-5"><summary className="font-semibold cursor-pointer">Automatic checks — scheduler health</summary><div className="mt-4"><PaymentCronHealth health={health} now={now}/></div><p className="mt-3 text-sm text-muted-foreground">These checks review existing orders. Their timestamps are not payment times.</p></details>
+   </div>;
+ }
+diff --git a/e2e/payment-operations.spec.ts b/e2e/payment-operations.spec.ts
+index 5fdd999..efc0b19 100644
+--- a/e2e/payment-operations.spec.ts
++++ b/e2e/payment-operations.spec.ts
+@@ -7,6 +7,23 @@ async function isolate(page:Page,admin=true){
+  await page.route('**/api/booking-settings',route=>route.fulfill({json:{enabled:false,booking_url:null}}));
+  await page.route(/\.supabase\.co\//,route=>{const url=new URL(route.request().url());return route.fulfill({json:url.pathname.endsWith('/auth/v1/user')?user:url.pathname.endsWith('/rpc/is_site_admin')?admin:[],headers:{'content-range':'0-0/0'}});});
+ }
++test('automatic checks are separate from payments and repeated warning logs do not create rows',async({page})=>{
++ await isolate(page);await session(page);const now=new Date().toISOString();
++ await page.route('**/api/admin/payments/*',route=>{
++  const action=new URL(route.request().url()).pathname.split('/').pop(),body=route.request().postDataJSON();
++  const health={observedAt:now,latestRunFailed:false,lastCompletedAt:now,lastSuccessfulAt:now,needsReconciliation:1,overdue:0,refunded:0,disputes:[],unacknowledgedPaid:1,investigations:0,lostDisputes:[]};
++  const order={request_id:id,order_id:'order_unconfirmed',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-12T09:08:35Z',last_checked_at:'2026-10-12T15:50:02Z',last_check_source:'cron'};
++  return route.fulfill({json:action==='paid'?{orders:[{request_id:'paid',paid_at:'2026-10-12T09:18:00Z',acknowledged_at:null,payment_intents:{order_id:'order_paid',payment_id:'pay_verified',package:'test',amount:100,status:'paid',created_at:'2026-10-12T09:17:39Z',customer:{}}}],nextOffset:null}:action==='investigations'?{items:[],nextOffset:null}:action==='history'?{history:[{id:'log',old_state:'pending',new_state:'needs_reconciliation',source:'cron',created_at:order.last_checked_at,error:null,alert:true}],nextOffset:null}:body.summaryOnly?health:{orders:[order],runs:[],alerts:Array.from({length:20},(_,i)=>({id:String(i),request_id:id,order_id:order.order_id,error:'Repeated warning',created_at:order.last_checked_at})),nextOffset:null}});
++ });
++ await page.goto('/admin/dashboard');await page.getByRole('button',{name:'Review Payments',exact:true}).click();
++ await expect(page.getByText('₹1 test payment · ₹1.00 · Paid — verified',{exact:true})).toBeVisible();await expect(page.getByText('Order ID: order_paid')).toBeVisible();await expect(page.getByText('Payment ID: pay_verified')).toBeVisible();
++ const table=page.getByRole('table',{name:'Unpaid and unconfirmed checkout orders'});await expect(table.locator('tbody tr')).toHaveCount(1);
++ await expect(table.getByText('Order created: 12 Oct 2026, 14:38:35 IST')).toBeVisible();await expect(table.getByText('12 Oct 2026, 21:20:02 IST',{exact:true})).toBeVisible();await expect(table.getByText('Automatic status check',{exact:true})).toBeVisible();await expect(page.getByText('Repeated warning',{exact:true})).toHaveCount(0);
++ await table.getByRole('button',{name:'History',exact:true}).click();await expect(page.getByText('These entries are checks of this order, not additional payments.')).toBeVisible();
++ await expect(page.locator('details').filter({hasText:'Automatic checks — scheduler health'})).not.toHaveAttribute('open','');
++ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
++ await page.screenshot({path:'test-results/payment-clarity-mobile.png',fullPage:true});
++});
+ test('combined admin queue acknowledges paid/lost alerts and keeps investigations record-only on mobile',async({page})=>{
+  await isolate(page);await session(page);const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));let acknowledged=false,lost=true;
+  await page.route('**/api/admin/payments/*',route=>{const action=new URL(route.request().url()).pathname.split('/').pop(),body=route.request().postDataJSON();
+diff --git a/supabase/functions/_shared/payment-operations.ts b/supabase/functions/_shared/payment-operations.ts
+index 470c0a3..a62d87c 100644
+--- a/supabase/functions/_shared/payment-operations.ts
++++ b/supabase/functions/_shared/payment-operations.ts
+@@ -47,7 +47,7 @@ export function operationsStore(env:PaymentEnv){
+    if(after)query=query.gt("request_id",after);const result=await query;if(result.error)throw new Error("Reservation read failed");return result.data as {request_id:string;created_at:string;key_id:string}[];
+   },
+   async paid(offset:number){
+-   const result=await db.from("payment_order_operations").select("request_id,paid_at,acknowledged_at,payment_intents!inner(order_id,package,amount,status,customer)").in("payment_intents.status",["paid","refunded"]).order("paid_at",{ascending:false}).order("request_id").range(offset,offset+49);
++   const result=await db.from("payment_order_operations").select("request_id,paid_at,acknowledged_at,payment_intents!inner(order_id,payment_id,created_at,package,amount,status,customer)").in("payment_intents.status",["paid","refunded"]).order("paid_at",{ascending:false}).order("request_id").range(offset,offset+49);
+    if(result.error)throw new Error("Paid orders unavailable");
+    return {orders:result.data,nextOffset:result.data.length===50?offset+50:null};
+   },
+diff --git a/supabase/functions/_shared/payment-store.ts b/supabase/functions/_shared/payment-store.ts
+index ae55f48..c28a1aa 100644
+--- a/supabase/functions/_shared/payment-store.ts
++++ b/supabase/functions/_shared/payment-store.ts
+@@ -38,19 +38,25 @@ export function paymentStore(env: Partial<ServerEnv>) {
+     },
+     async queue(offset: number) {
+       const since=new Date(Date.now()-24*60*60000).toISOString();
+-      const result=await db.from("payment_intents").select("request_id,order_id,payment_id,package,amount,status,reconciliation_state,created_at,last_checked_at,retry_parent,retry_reserved_at").eq("status","pending")
++      const result=await db.from("payment_intents").select("request_id,order_id,payment_id,package,amount,status,reconciliation_state,created_at,last_checked_at,retry_parent,retry_reserved_at,payment_reconciliation_log(created_at,payment_reconciliation_runs(source))").eq("status","pending")
+         .or(`reconciliation_state.in.(pending,needs_reconciliation),and(reconciliation_state.in.(failed,expired),last_checked_at.gte.${since})`)
+-        .order("created_at",{ascending:false}).order("request_id").range(offset,offset+49);
++        .order("created_at",{ascending:false}).order("request_id")
++        .order("created_at",{referencedTable:"payment_reconciliation_log",ascending:false}).order("id",{referencedTable:"payment_reconciliation_log",ascending:false}).limit(1,{referencedTable:"payment_reconciliation_log"}).range(offset,offset+49);
+       if(result.error) throw new Error("Payment queue unavailable");
+       const runs=await db.from("payment_reconciliation_runs").select("id,source,state,started_at,error,checked,errors").eq("alert",true).order("started_at",{ascending:false}).limit(20);
+       const alerts=await db.from("payment_reconciliation_log").select("id,request_id,order_id,new_state,error,created_at,payment_intents!inner(status,reconciliation_state)").eq("alert",true).eq("payment_intents.status","pending").in("payment_intents.reconciliation_state",["pending","needs_reconciliation"]).order("created_at",{ascending:false}).limit(20);
+       if(runs.error || alerts.error) throw new Error("Payment alerts unavailable");
+-      return {orders:result.data,runs:runs.data,alerts:alerts.data,nextOffset:result.data.length===50?offset+50:null};
++      const orders=result.data.map(({payment_reconciliation_log:checks,...order})=>{
++        const check=checks?.[0],run=check?.payment_reconciliation_runs as unknown as {source?:string}|null;
++        const matching=check?.created_at&&order.last_checked_at&&Date.parse(check.created_at)===Date.parse(order.last_checked_at);
++        return {...order,last_check_source:matching&&["cron","admin","retry"].includes(run?.source??"")?run!.source:null};
++      });
++      return {orders,runs:runs.data,alerts:alerts.data,nextOffset:result.data.length===50?offset+50:null};
+     },
+     async history(requestId: string, offset: number) {
+-      const result=await db.from("payment_reconciliation_log").select("id,order_id,old_state,new_state,error,alert,created_at,run_id").eq("request_id",requestId).order("created_at",{ascending:false}).order("id").range(offset,offset+49);
++      const result=await db.from("payment_reconciliation_log").select("id,order_id,old_state,new_state,error,alert,created_at,run_id,payment_reconciliation_runs(source)").eq("request_id",requestId).order("created_at",{ascending:false}).order("id").range(offset,offset+49);
+       if(result.error) throw new Error("Payment history unavailable");
+-      return {history:result.data,nextOffset:result.data.length===50?offset+50:null};
++      return {history:result.data.map(({payment_reconciliation_runs:run,...row})=>({...row,source:(run as unknown as {source:string}|null)?.source??null})),nextOffset:result.data.length===50?offset+50:null};
+     },
+     async byRequest(requestId: string): Promise<PaymentRecord|null> {
+       const result=await db.from("payment_intents").select().eq("request_id",requestId).maybeSingle();

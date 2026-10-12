@@ -38,19 +38,25 @@ export function paymentStore(env: Partial<ServerEnv>) {
     },
     async queue(offset: number) {
       const since=new Date(Date.now()-24*60*60000).toISOString();
-      const result=await db.from("payment_intents").select("request_id,order_id,payment_id,package,amount,status,reconciliation_state,created_at,last_checked_at,retry_parent,retry_reserved_at").eq("status","pending")
+      const result=await db.from("payment_intents").select("request_id,order_id,payment_id,package,amount,status,reconciliation_state,created_at,last_checked_at,retry_parent,retry_reserved_at,payment_reconciliation_log(created_at,payment_reconciliation_runs(source))").eq("status","pending")
         .or(`reconciliation_state.in.(pending,needs_reconciliation),and(reconciliation_state.in.(failed,expired),last_checked_at.gte.${since})`)
-        .order("created_at",{ascending:false}).order("request_id").range(offset,offset+49);
+        .order("created_at",{ascending:false}).order("request_id")
+        .order("created_at",{referencedTable:"payment_reconciliation_log",ascending:false}).order("id",{referencedTable:"payment_reconciliation_log",ascending:false}).limit(1,{referencedTable:"payment_reconciliation_log"}).range(offset,offset+49);
       if(result.error) throw new Error("Payment queue unavailable");
       const runs=await db.from("payment_reconciliation_runs").select("id,source,state,started_at,error,checked,errors").eq("alert",true).order("started_at",{ascending:false}).limit(20);
       const alerts=await db.from("payment_reconciliation_log").select("id,request_id,order_id,new_state,error,created_at,payment_intents!inner(status,reconciliation_state)").eq("alert",true).eq("payment_intents.status","pending").in("payment_intents.reconciliation_state",["pending","needs_reconciliation"]).order("created_at",{ascending:false}).limit(20);
       if(runs.error || alerts.error) throw new Error("Payment alerts unavailable");
-      return {orders:result.data,runs:runs.data,alerts:alerts.data,nextOffset:result.data.length===50?offset+50:null};
+      const orders=result.data.map(({payment_reconciliation_log:checks,...order})=>{
+        const check=checks?.[0],run=check?.payment_reconciliation_runs as unknown as {source?:string}|null;
+        const matching=check?.created_at&&order.last_checked_at&&Date.parse(check.created_at)===Date.parse(order.last_checked_at);
+        return {...order,last_check_source:matching&&["cron","admin","retry"].includes(run?.source??"")?run!.source:null};
+      });
+      return {orders,runs:runs.data,alerts:alerts.data,nextOffset:result.data.length===50?offset+50:null};
     },
     async history(requestId: string, offset: number) {
-      const result=await db.from("payment_reconciliation_log").select("id,order_id,old_state,new_state,error,alert,created_at,run_id").eq("request_id",requestId).order("created_at",{ascending:false}).order("id").range(offset,offset+49);
+      const result=await db.from("payment_reconciliation_log").select("id,order_id,old_state,new_state,error,alert,created_at,run_id,payment_reconciliation_runs(source)").eq("request_id",requestId).order("created_at",{ascending:false}).order("id").range(offset,offset+49);
       if(result.error) throw new Error("Payment history unavailable");
-      return {history:result.data,nextOffset:result.data.length===50?offset+50:null};
+      return {history:result.data.map(({payment_reconciliation_runs:run,...row})=>({...row,source:(run as unknown as {source:string}|null)?.source??null})),nextOffset:result.data.length===50?offset+50:null};
     },
     async byRequest(requestId: string): Promise<PaymentRecord|null> {
       const result=await db.from("payment_intents").select().eq("request_id",requestId).maybeSingle();

@@ -9,6 +9,15 @@ vi.mock('../components/PaymentInvestigations',()=>({default:()=>null}));
 const order={request_id:'request',order_id:'order_1',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-10T10:00:00Z',last_checked_at:null};
 beforeEach(()=>{vi.resetAllMocks();vi.mocked(adminPaymentRequest).mockResolvedValue({orders:[order],runs:[],alerts:[],nextOffset:null});});
 afterEach(cleanup);
+it('shows each checkout once despite repeated alert logs and separates creation from automatic check time',async()=>{
+ const current={...order,created_at:'2026-10-12T09:08:35Z',last_checked_at:'2026-10-12T15:50:02Z',last_check_source:'cron'};
+ vi.mocked(adminPaymentRequest).mockResolvedValueOnce({orders:[current,current],runs:[],alerts:Array.from({length:20},(_,i)=>({id:String(i),request_id:'request',order_id:'order_1',created_at:current.last_checked_at,error:'Repeated warning'})),nextOffset:null});
+ render(<PaymentsTab now={Date.parse('2026-10-12T15:55:00Z')}/>);
+ expect(await screen.findByText('order_1')).toBeTruthy();expect(screen.getAllByText('order_1')).toHaveLength(1);
+ expect(screen.getByText('Order created: 12 Oct 2026, 14:38:35 IST')).toBeTruthy();expect(screen.getByText('12 Oct 2026, 21:20:02 IST')).toBeTruthy();expect(screen.getByText('Automatic status check')).toBeTruthy();
+ expect(screen.getByText('Payment status uncertain — review required')).toBeTruthy();expect(screen.queryByText('Repeated warning')).toBeNull();expect(screen.queryByText('Flagged orders')).toBeNull();
+ expect(screen.getByText('Automatic checks — scheduler health').closest('details')?.open).toBe(false);
+});
 it('shows open disputes with payment, order, paise amount and deadline, then removes resolved disputes',async()=>{
  const health={observedAt:order.created_at,latestRunFailed:false,lastCompletedAt:order.created_at,lastSuccessfulAt:order.created_at,overdue:0,needsReconciliation:0,refunded:0,disputes:[{id:'disp_1',event:'payment.dispute.created',status:'open',amount:100,currency:'INR',paymentId:'pay_1',orderId:'order_1',responseDueAt:'2026-10-12T10:00:00Z',occurredAt:order.created_at}]};
  const view=render(<PaymentsTab health={health}/>);

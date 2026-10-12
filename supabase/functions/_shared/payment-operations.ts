@@ -47,7 +47,7 @@ export function operationsStore(env:PaymentEnv){
    if(after)query=query.gt("request_id",after);const result=await query;if(result.error)throw new Error("Reservation read failed");return result.data as {request_id:string;created_at:string;key_id:string}[];
   },
   async paid(offset:number){
-   const result=await db.from("payment_order_operations").select("request_id,paid_at,acknowledged_at,payment_intents!inner(order_id,package,amount,status,customer)").in("payment_intents.status",["paid","refunded"]).order("paid_at",{ascending:false}).order("request_id").range(offset,offset+49);
+   const result=await db.from("payment_order_operations").select("request_id,paid_at,acknowledged_at,payment_intents!inner(order_id,payment_id,created_at,package,amount,status,customer)").in("payment_intents.status",["paid","refunded"]).order("paid_at",{ascending:false}).order("request_id").range(offset,offset+49);
    if(result.error)throw new Error("Paid orders unavailable");
    return {orders:result.data,nextOffset:result.data.length===50?offset+50:null};
   },
