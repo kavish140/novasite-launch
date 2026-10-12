@@ -14,7 +14,7 @@ describe("admin test payment authorization",()=>{
   const summary=new Request(original.url.replace("admin-test/order","admin-queue/queue"),{method:"POST",headers:original.headers,body:JSON.stringify({summaryOnly:true})});
   expect((await handlePaymentEdge(summary,env)).status).toBe(403);expect(mocks.queue).not.toHaveBeenCalled();
  });
- it.each(["queue","history","recheck","paid","acknowledge","investigations"])("denies non-admins access to payment %s",async action=>{
+ it.each(["queue","history","recheck","paid","acknowledge","investigations","order-receipt"])("denies non-admins access to payment %s",async action=>{
   const queueReq=(token?:string)=>{const original=req(token);return new Request(original.url.replace("admin-test/order",`admin-queue/${action}`),original);};
   expect((await handlePaymentEdge(queueReq(),env)).status).toBe(401);
   mocks.getUser.mockResolvedValueOnce({data:{user:null},error:{message:"forged"}});

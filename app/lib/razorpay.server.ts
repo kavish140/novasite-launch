@@ -27,12 +27,12 @@ export const paymentWebhook=(_request:Request,_context:unknown)=>paymentJson({er
 export async function adminTestPaymentAction(request:Request,context:unknown,action:string) {
  if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
  if(request.headers.get("origin")!==new URL(request.url).origin) return paymentJson({error:"Invalid origin"},403);
- if(!["order","checkout","verify","status","queue","history","recheck","paid","acknowledge","investigations","receipt-link"].includes(action)) return paymentJson({error:"Not found"},404);
+ if(!["order","checkout","verify","status","queue","history","recheck","paid","acknowledge","investigations","receipt-link","order-receipt"].includes(action)) return paymentJson({error:"Not found"},404);
  const authorization=request.headers.get("authorization") ?? "";
  if(!authorization.startsWith("Bearer ") || authorization.length>8010 || authorization.length<8) return paymentJson({error:"Admin sign-in required"},401);
  try {
   const body=await request.text(); if(body.length>6000) return paymentJson({error:"Request too large"},413);
-  const channel=["queue","history","recheck","paid","acknowledge","investigations"].includes(action)?"admin-queue/":"admin-test/";
+  const channel=["queue","history","recheck","paid","acknowledge","investigations","order-receipt"].includes(action)?"admin-queue/":"admin-test/";
   const response=await edge(paymentEnv(context),channel+action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local",authorization.slice(7));
   return paymentJson(await response.json(),response.status);
  } catch { return paymentJson({error:"Unable to confirm test payment. Check status before retrying."},503); }

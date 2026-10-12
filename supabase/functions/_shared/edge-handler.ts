@@ -30,7 +30,7 @@ export async function handlePaymentEdge(request: Request, env: EdgeEnv) {
   const adminQueue = new URL(request.url).pathname.split("/").at(-2) === "admin-queue";
   const backend = configured(env);
   if (action === "config" && !adminQueue) return paymentJson({enabled:paymentsEnabled(backend),testMode:env.RAZORPAY_KEY_ID?.startsWith("rzp_test_") ?? false,packages:PAYMENT_PACKAGES});
-  if (!(adminQueue?["queue","history","recheck","paid","acknowledge","investigations"]:["order","retry","verify","status","checkout","receipt","receipt-link"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
+  if (!(adminQueue?["queue","history","recheck","paid","acknowledge","investigations","order-receipt"]:["order","retry","verify","status","checkout","receipt","receipt-link"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
   const origin = request.headers.get("x-payment-origin") ?? "";
   if (!/^https:\/\/sitenova\.dev$|^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return paymentJson({error:"Invalid origin"},403);
   const headers = new Headers({origin,"cf-connecting-ip":request.headers.get("x-payment-client-ip") ?? "local"});

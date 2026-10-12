@@ -3,11 +3,12 @@ import {paymentJson,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts"
 import {paymentStore} from "./payment-store.ts";
 import {reconcileOne} from "./reconciliation.ts";
 import {operationsStore} from "./payment-operations.ts";
+import {receiptToken} from "./payment-receipt.ts";
 
 // Called only after the gateway verifies Auth identity AND site_admins membership.
 export async function adminPayments(request: Request, env: PaymentEnv, action: string, admin: VerifiedTestAdmin) {
   if(!admin?.id) return paymentJson({error:"Admin sign-in required"},401);
-  if(!["queue","history","recheck","paid","acknowledge","investigations"].includes(action)) return paymentJson({error:"Not found"},404);
+  if(!["queue","history","recheck","paid","acknowledge","investigations","order-receipt"].includes(action)) return paymentJson({error:"Not found"},404);
   let run:string|undefined;
   const store=paymentStore(env);
   try {
@@ -31,6 +32,13 @@ export async function adminPayments(request: Request, env: PaymentEnv, action: s
     const input=z.object({requestId:z.string().uuid(),...(action==="history"?{offset}:{})}).strict().parse(body);
     const record=await store.byRequest(input.requestId);
     if(!record) return paymentJson({error:"Order not found"},404);
+    if(action==="order-receipt"){
+      if(record.package!=="test"||record.amount!==100)return paymentJson({error:"Not a ₹1 test payment"},400);
+      if(!["paid","refunded"].includes(record.status??""))return paymentJson({error:"Payment is not yet confirmed"},409);
+      if(!env.PAYMENT_RECEIPT_SECRET||env.PAYMENT_RECEIPT_SECRET.length<32)return paymentJson({error:"Receipt links unavailable"},503);
+      const id=await operationsStore(env).receiptByRequest(record.request_id);
+      return paymentJson({url:`https://sitenova.dev/receipt#${await receiptToken(id,env.PAYMENT_RECEIPT_SECRET)}`});
+    }
     if(action==="history") return paymentJson(await store.history(input.requestId,(input as {offset:number}).offset));
     run=await store.startRun("admin");
     const result=await reconcileOne(env,run,record);

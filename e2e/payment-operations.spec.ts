@@ -35,6 +35,20 @@ test('public checkout remains disabled in the production preview',async({page})=
  await isolate(page);await page.goto('/pay?package=starter');await expect(page.getByText('Online payments are coming soon',{exact:false})).toBeVisible();await expect(page.getByRole('button',{name:/Pay.*advance/})).toHaveCount(0);expect(await page.locator('script[src*="checkout.razorpay.com"]').count()).toBe(0);
 });
 
+test('admin retrieves a previous rupee test receipt without a checkout session or new payment',async({page})=>{
+ await isolate(page);await session(page);const token=`${id}.${'a'.repeat(64)}`,actions:string[]=[];
+ await page.route('**/api/admin/payments/*',route=>{
+  const action=new URL(route.request().url()).pathname.split('/').pop()!;actions.push(action);const now=new Date().toISOString();
+  if(action==='order-receipt'){expect(route.request().postDataJSON()).toEqual({requestId:id});return route.fulfill({json:{url:`https://sitenova.dev/receipt#${token}`}});}
+  const health={observedAt:now,latestRunFailed:false,lastCompletedAt:now,lastSuccessfulAt:now,needsReconciliation:0,overdue:0,refunded:0,disputes:[],unacknowledgedPaid:1,investigations:0,lostDisputes:[]};
+  return route.fulfill({json:action==='paid'?{orders:[{request_id:id,paid_at:now,acknowledged_at:null,payment_intents:{order_id:'order_previous',package:'test',amount:100,status:'paid',customer:{}}}],nextOffset:null}:action==='investigations'?{items:[],nextOffset:null}:route.request().postDataJSON().summaryOnly?health:{orders:[],runs:[],alerts:[],nextOffset:null}});
+ });
+ await page.route('**/api/payments/receipt',route=>route.fulfill({json:{package:'test',amount:100,status:'paid'}}));
+ await page.goto('/admin/dashboard');await page.getByRole('button',{name:'Review Payments',exact:true}).click();
+ await page.getByRole('button',{name:'Get ₹1 test receipt',exact:true}).click();const link=page.getByRole('link',{name:'Open receipt',exact:true});await expect(link).toHaveAttribute('href',`https://sitenova.dev/receipt#${token}`);
+ await page.goto(`/receipt#${token}`);await expect(page.getByText('₹1.00',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('paid',{exact:true})).toBeVisible();expect(actions.some(action=>['order','checkout','verify','recheck'].includes(action))).toBe(false);
+});
+
 
 
 

@@ -14,3 +14,15 @@ it("shows stored contact and project details and acknowledges without changing s
  await waitFor(()=>expect(refresh).toHaveBeenCalled());
  expect(vi.mocked(adminPaymentRequest).mock.calls.every(([action])=>["paid","acknowledge"].includes(action))).toBe(true);
 });
+it("opens a saved ₹1 test receipt by ledger reference without starting payment or requiring browser checkout storage",async()=>{
+ const url=`https://sitenova.dev/receipt#00000000-0000-4000-8000-000000000002.${"a".repeat(64)}`;
+ vi.mocked(adminPaymentRequest).mockImplementation(async(action)=>action==="paid"?{orders:[{request_id:"test-request",paid_at:"2026-10-11T10:00:00Z",acknowledged_at:null,payment_intents:{order_id:"order_test",package:"test",amount:100,status:"paid",customer:{}}}],nextOffset:null}:{url});
+ render(<PaidOrders/>);fireEvent.click(await screen.findByRole("button",{name:"Get ₹1 test receipt"}));
+ expect((await screen.findByRole("link",{name:"Open receipt"})).getAttribute("href")).toBe(url);
+ expect(adminPaymentRequest).toHaveBeenCalledWith("order-receipt",{requestId:"test-request"});expect(vi.mocked(adminPaymentRequest).mock.calls.every(([action])=>["paid","order-receipt"].includes(action))).toBe(true);
+});
+it("keeps payment recorded and exposes no unsafe link when receipt generation fails",async()=>{
+ vi.mocked(adminPaymentRequest).mockImplementation(async(action)=>action==="paid"?{orders:[{request_id:"test-request",paid_at:"2026-10-11T10:00:00Z",acknowledged_at:null,payment_intents:{order_id:"order_test",package:"test",amount:100,status:"paid",customer:{}}}],nextOffset:null}:{url:"https://unsafe.example"});
+ render(<PaidOrders/>);fireEvent.click(await screen.findByRole("button",{name:"Get ₹1 test receipt"}));
+ expect((await screen.findByRole("alert")).textContent).toContain("Your payment remains recorded");expect(screen.queryByRole("link",{name:"Open receipt"})).toBeNull();
+});

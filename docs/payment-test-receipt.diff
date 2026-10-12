@@ -1,0 +1,92 @@
+diff --git a/app/lib/payment-admin-client.ts b/app/lib/payment-admin-client.ts
+index 00dc1fb..fee3034 100644
+--- a/app/lib/payment-admin-client.ts
++++ b/app/lib/payment-admin-client.ts
+@@ -1,5 +1,5 @@
+ import {supabase} from "./supabaseClient";
+-export async function adminPaymentRequest<T>(action:"queue"|"history"|"recheck"|"paid"|"acknowledge"|"investigations",body:unknown):Promise<T>{
++export async function adminPaymentRequest<T>(action:"queue"|"history"|"recheck"|"paid"|"acknowledge"|"investigations"|"order-receipt",body:unknown):Promise<T>{
+   const {data,error}=await supabase.auth.getSession();
+   if(error || !data.session?.access_token) throw new Error("Sign in again to check payments.");
+   const response=await fetch(`/api/admin/payments/${action}`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`},body:JSON.stringify(body),signal:AbortSignal.timeout(40000)});
+diff --git a/app/lib/razorpay.server.ts b/app/lib/razorpay.server.ts
+index fd56dbe..44bb817 100644
+--- a/app/lib/razorpay.server.ts
++++ b/app/lib/razorpay.server.ts
+@@ -27,12 +27,12 @@ export const paymentWebhook=(_request:Request,_context:unknown)=>paymentJson({er
+ export async function adminTestPaymentAction(request:Request,context:unknown,action:string) {
+  if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
+  if(request.headers.get("origin")!==new URL(request.url).origin) return paymentJson({error:"Invalid origin"},403);
+- if(!["order","checkout","verify","status","queue","history","recheck","paid","acknowledge","investigations","receipt-link"].includes(action)) return paymentJson({error:"Not found"},404);
++ if(!["order","checkout","verify","status","queue","history","recheck","paid","acknowledge","investigations","receipt-link","order-receipt"].includes(action)) return paymentJson({error:"Not found"},404);
+  const authorization=request.headers.get("authorization") ?? "";
+  if(!authorization.startsWith("Bearer ") || authorization.length>8010 || authorization.length<8) return paymentJson({error:"Admin sign-in required"},401);
+  try {
+   const body=await request.text(); if(body.length>6000) return paymentJson({error:"Request too large"},413);
+-  const channel=["queue","history","recheck","paid","acknowledge","investigations"].includes(action)?"admin-queue/":"admin-test/";
++  const channel=["queue","history","recheck","paid","acknowledge","investigations","order-receipt"].includes(action)?"admin-queue/":"admin-test/";
+   const response=await edge(paymentEnv(context),channel+action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local",authorization.slice(7));
+   return paymentJson(await response.json(),response.status);
+  } catch { return paymentJson({error:"Unable to confirm test payment. Check status before retrying."},503); }
+diff --git a/app/pages/admin/components/PaidOrders.tsx b/app/pages/admin/components/PaidOrders.tsx
+index 32ae59e..c6cd943 100644
+--- a/app/pages/admin/components/PaidOrders.tsx
++++ b/app/pages/admin/components/PaidOrders.tsx
+@@ -6,9 +6,11 @@ type PaidOrder={request_id:string;paid_at:string;acknowledged_at:string|null;pay
+ type Page={orders:PaidOrder[];nextOffset:number|null};
+ export default function PaidOrders({refreshHealth}:{refreshHealth?:()=>Promise<void>}){
+  const [page,setPage]=useState<Page|null>(null),[offset,setOffset]=useState(0),[error,setError]=useState(""),[busy,setBusy]=useState(false);
++ const [receipts,setReceipts]=useState<Record<string,string>>({});
+  const refresh=useCallback(async()=>{setBusy(true);setError("");try{setPage(await adminPaymentRequest<Page>("paid",{offset}));}catch{setError("Unable to load paid orders.");}finally{setBusy(false);}},[offset]);
+  useEffect(()=>{void refresh();},[refresh]);
+  async function acknowledge(order:PaidOrder){setBusy(true);setError("");try{await adminPaymentRequest("acknowledge",{kind:"paid",id:order.request_id,acknowledged:!order.acknowledged_at});await refresh();await refreshHealth?.();}catch{setError("Unable to save acknowledgement.");}finally{setBusy(false);}}
+- return <section className="rounded-xl border border-border p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="font-semibold text-lg">Recent paid orders</h2><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh paid orders</Button></div><p className="text-sm text-muted-foreground mt-2">Paid and refunded orders, newest confirmation first. Acknowledgement records your review; it does not change payment status.</p>{error&&<p role="alert">{error}</p>}{page?.orders.map(order=>{const p=order.payment_intents;return <article key={order.request_id} className="mt-4 border-t border-border pt-4 text-sm space-y-2 break-words"><p className="font-semibold">{p.package} · {formatINR(p.amount)} · {p.status}</p><p>Paid confirmation: {new Date(order.paid_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})} IST</p><p className="break-all">{p.order_id}</p>{["name","email","phone","business","project_type","requirements","timeline"].map(key=>typeof p.customer[key]==="string"&&p.customer[key]?<p key={key}>{key.replace(/_/g," ")}: {String(p.customer[key])}</p>:null)}<label className="flex gap-2 items-center"><input type="checkbox" checked={!!order.acknowledged_at} disabled={busy} onChange={()=>void acknowledge(order)}/>Acknowledged</label></article>;})}{page&&!page.orders.length&&<p className="mt-4 text-muted-foreground">No paid orders yet.</p>}<div className="flex flex-wrap gap-2 mt-4"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous paid orders</Button><Button variant="outline" disabled={busy||page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next paid orders</Button></div></section>;
++ async function getReceipt(order:PaidOrder){setBusy(true);setError("");try{const result=await adminPaymentRequest<{url:string}>("order-receipt",{requestId:order.request_id});if(!/^https:\/\/sitenova\.dev\/receipt#[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[0-9a-f]{64}$/.test(result.url))throw new Error("Invalid receipt link");setReceipts(current=>({...current,[order.request_id]:result.url}));}catch{setError("Unable to load this receipt. Your payment remains recorded; try again later.");}finally{setBusy(false);}}
++ return <section className="rounded-xl border border-border p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="font-semibold text-lg">Recent paid orders</h2><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh paid orders</Button></div><p className="text-sm text-muted-foreground mt-2">Paid and refunded orders, newest confirmation first. Acknowledgement records your review; it does not change payment status.</p>{error&&<p role="alert">{error}</p>}{page?.orders.map(order=>{const p=order.payment_intents;return <article key={order.request_id} className="mt-4 border-t border-border pt-4 text-sm space-y-2 break-words"><p className="font-semibold">{p.package} · {formatINR(p.amount)} · {p.status}</p><p>Paid confirmation: {new Date(order.paid_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})} IST</p><p className="break-all">{p.order_id}</p>{["name","email","phone","business","project_type","requirements","timeline"].map(key=>typeof p.customer[key]==="string"&&p.customer[key]?<p key={key}>{key.replace(/_/g," ")}: {String(p.customer[key])}</p>:null)}{p.package==="test"&&p.amount===100&&<div className="flex flex-wrap gap-3 items-center"><Button variant="outline" disabled={busy} onClick={()=>void getReceipt(order)}>Get ₹1 test receipt</Button>{receipts[order.request_id]&&<a href={receipts[order.request_id]} className="text-primary underline" referrerPolicy="no-referrer" target="_blank" rel="noopener noreferrer">Open receipt</a>}</div>}<label className="flex gap-2 items-center"><input type="checkbox" checked={!!order.acknowledged_at} disabled={busy} onChange={()=>void acknowledge(order)}/>Acknowledged</label></article>;})}{page&&!page.orders.length&&<p className="mt-4 text-muted-foreground">No paid orders yet.</p>}<div className="flex flex-wrap gap-2 mt-4"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous paid orders</Button><Button variant="outline" disabled={busy||page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next paid orders</Button></div></section>;
+ }
+ 
+diff --git a/supabase/functions/_shared/admin-payments.ts b/supabase/functions/_shared/admin-payments.ts
+index d5c76df..94e7f09 100644
+--- a/supabase/functions/_shared/admin-payments.ts
++++ b/supabase/functions/_shared/admin-payments.ts
+@@ -3,11 +3,12 @@ import {paymentJson,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts"
+ import {paymentStore} from "./payment-store.ts";
+ import {reconcileOne} from "./reconciliation.ts";
+ import {operationsStore} from "./payment-operations.ts";
++import {receiptToken} from "./payment-receipt.ts";
+ 
+ // Called only after the gateway verifies Auth identity AND site_admins membership.
+ export async function adminPayments(request: Request, env: PaymentEnv, action: string, admin: VerifiedTestAdmin) {
+   if(!admin?.id) return paymentJson({error:"Admin sign-in required"},401);
+-  if(!["queue","history","recheck","paid","acknowledge","investigations"].includes(action)) return paymentJson({error:"Not found"},404);
++  if(!["queue","history","recheck","paid","acknowledge","investigations","order-receipt"].includes(action)) return paymentJson({error:"Not found"},404);
+   let run:string|undefined;
+   const store=paymentStore(env);
+   try {
+@@ -31,6 +32,13 @@ export async function adminPayments(request: Request, env: PaymentEnv, action: s
+     const input=z.object({requestId:z.string().uuid(),...(action==="history"?{offset}:{})}).strict().parse(body);
+     const record=await store.byRequest(input.requestId);
+     if(!record) return paymentJson({error:"Order not found"},404);
++    if(action==="order-receipt"){
++      if(record.package!=="test"||record.amount!==100)return paymentJson({error:"Not a ₹1 test payment"},400);
++      if(!["paid","refunded"].includes(record.status??""))return paymentJson({error:"Payment is not yet confirmed"},409);
++      if(!env.PAYMENT_RECEIPT_SECRET||env.PAYMENT_RECEIPT_SECRET.length<32)return paymentJson({error:"Receipt links unavailable"},503);
++      const id=await operationsStore(env).receiptByRequest(record.request_id);
++      return paymentJson({url:`https://sitenova.dev/receipt#${await receiptToken(id,env.PAYMENT_RECEIPT_SECRET)}`});
++    }
+     if(action==="history") return paymentJson(await store.history(input.requestId,(input as {offset:number}).offset));
+     run=await store.startRun("admin");
+     const result=await reconcileOne(env,run,record);
+diff --git a/supabase/functions/_shared/edge-handler.ts b/supabase/functions/_shared/edge-handler.ts
+index 6401963..4cb99e1 100644
+--- a/supabase/functions/_shared/edge-handler.ts
++++ b/supabase/functions/_shared/edge-handler.ts
+@@ -30,7 +30,7 @@ export async function handlePaymentEdge(request: Request, env: EdgeEnv) {
+   const adminQueue = new URL(request.url).pathname.split("/").at(-2) === "admin-queue";
+   const backend = configured(env);
+   if (action === "config" && !adminQueue) return paymentJson({enabled:paymentsEnabled(backend),testMode:env.RAZORPAY_KEY_ID?.startsWith("rzp_test_") ?? false,packages:PAYMENT_PACKAGES});
+-  if (!(adminQueue?["queue","history","recheck","paid","acknowledge","investigations"]:["order","retry","verify","status","checkout","receipt","receipt-link"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
++  if (!(adminQueue?["queue","history","recheck","paid","acknowledge","investigations","order-receipt"]:["order","retry","verify","status","checkout","receipt","receipt-link"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
+   const origin = request.headers.get("x-payment-origin") ?? "";
+   if (!/^https:\/\/sitenova\.dev$|^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return paymentJson({error:"Invalid origin"},403);
+   const headers = new Headers({origin,"cf-connecting-ip":request.headers.get("x-payment-client-ip") ?? "local"});
