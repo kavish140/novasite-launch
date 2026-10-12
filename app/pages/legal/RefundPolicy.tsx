@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
+import { EMAIL } from "@/lib/constants";
 
 const RefundPolicy = () => {
   return (
@@ -13,7 +14,7 @@ const RefundPolicy = () => {
               Refund & Cancellation Policy
             </h1>
             <div className="prose prose-invert max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-primary">
-              <p>Last updated: {new Date().toLocaleDateString()}</p>
+              <p>Last updated: 10 October 2026</p>
               
               <h2>1. Cancellation Policy</h2>
               <p>
@@ -39,10 +40,13 @@ const RefundPolicy = () => {
                 Approved refunds will be processed within 7-14 business days. The refund will be issued to the original method of payment used during the transaction.
               </p>
 
+              <h3>Online payment queries</h3>
+              <p>For Razorpay payments, include your payment or order reference when requesting a cancellation, reporting a duplicate payment or asking about a debit without confirmation. Approved refunds are returned through the original payment method. Your bank or payment provider may take additional time to reflect a processed refund.</p>
+
               <h2>4. Contact Us</h2>
               <p>
                 If you have any questions about our Cancellation and Refund Policy, please contact us at:<br/>
-                Email: kavishganatra5@gmail.com
+                Email: <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
               </p>
             </div>
           </div>

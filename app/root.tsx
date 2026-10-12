@@ -6,6 +6,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -23,6 +24,8 @@ const ExitIntentPopup = lazy(() => import("@/components/ExitIntentPopup"));
 const AnnouncementBanner = lazy(() => import("@/components/AnnouncementBanner"));
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const pathname = useLocation().pathname;
+  const paymentPage = pathname === "/pay" || pathname === "/receipt" || pathname.startsWith("/admin");
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -87,25 +90,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
 
         {/* Google Tag Manager */}
-        <script
+        {!paymentPage && <script
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-P587639R');`,
           }}
-        />
+        />}
 
         {/* Google Analytics 4 + Google Ads (Deferred — combined so window.gtag is set once) */}
-        <script
+        {!paymentPage && <script
           dangerouslySetInnerHTML={{
             __html: `window.addEventListener("load",function(){setTimeout(function(){window.dataLayer=window.dataLayer||[];function gtag(){window.dataLayer.push(arguments)}window.gtag=gtag;gtag('js',new Date());gtag('config','G-EBZGS65QQH');gtag('config','AW-18182593308');gtag('config','AW-18182593308/SzalCITh_skcEJy2kd5D',{'phone_conversion_number':'9326060621'});var ga=document.createElement('script');ga.src='https://www.googletagmanager.com/gtag/js?id=G-EBZGS65QQH';ga.async=true;document.head.appendChild(ga);var aw=document.createElement('script');aw.src='https://www.googletagmanager.com/gtag/js?id=AW-18182593308';aw.async=true;document.head.appendChild(aw);},2000)})`,
           }}
-        />
+        />}
 
         {/* Microsoft Clarity (Deferred to prevent DOM mutations during hydration) */}
-        <script
+        {!paymentPage && <script
           dangerouslySetInnerHTML={{
             __html: `window.addEventListener("load",function(){setTimeout(function(){(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","xaxjnw6ykd");},3000)});`,
           }}
-        />
+        />}
 
         {/* Site-wide JSON-LD (Organization + WebSite + ProfessionalService) */}
         <script
@@ -237,14 +240,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body suppressHydrationWarning>
         {/* Google Tag Manager (noscript) */}
-        <noscript>
+        {!paymentPage && <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-P587639R"
             height="0"
             width="0"
             style={{ display: "none", visibility: "hidden" }}
           />
-        </noscript>
+        </noscript>}
 
         {children}
 

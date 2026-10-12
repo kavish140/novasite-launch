@@ -125,6 +125,7 @@ const Footer = () => {
             <Link to="/privacy-policy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
             <Link to="/terms-and-conditions" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
             <Link to="/refund-policy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Refunds</Link>
+            <Link to="/delivery-policy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Digital Delivery</Link>
             <a href={EMAIL_COMPOSE_LINK} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Email</a>
             <a href={PHONE_TEL_LINK} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Call Us</a>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">WhatsApp</a>

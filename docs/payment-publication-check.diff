@@ -1,0 +1,176 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -552,6 +552,7 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
+ ## 9. Data & Backend (Supabase)
+ 
+ ### Payment operations additions — LOCAL ONLY (2026-10-11)
++- Publication review on 2026-10-12: 165 unit/integration tests (all original 133 retained), four isolated real-browser production-preview checks, seven isolated PostgreSQL scripts, scoped lint and client/SSR build pass. Browser testing found and fixed mobile investigation-button overflow by wrapping the new paid/investigation controls; checkout/verification/settlement remain unchanged. Added paginated recovery, provider mismatch, receipt failure/rate/input and sidecar-failure rollback tests. Client/review artifact scans find no private server identifiers in browser bundles or matching local credential values. Zero payment type diagnostics; 62 unrelated diagnostics and existing build/React preview warnings remain. Live new backend/query/account/secret behaviour is unverified. Owner reports saving PAYMENT_RECEIPT_SECRET in Supabase; no value was read or printed. Nothing pushed/deployed/charged. Details: docs/payment-publication-review.md; final changes: docs/payment-publication-check.diff.
+ - Four unapplied migrations add service-only sidecars for paid-order acknowledgement/receipt identity, record-only investigations, dispute acknowledgement by dispute ID, and minimal dispute snapshots. No existing settlement RPC or checkout/verification body changes. Public activation remains disabled; no push, deployment or charge was performed.
+ - Admin Payments adds recent paid/refunded orders with stored contact/project details and acknowledgement, investigation evidence, and persistent lost-dispute alerts. Overview and Payments badge include their counts. Fresh existing admin authentication protects every read/write; browser roles have no table grants.
+ - The scheduler adds GET-only recovery for paid/refunded orders confirmed within 30 days, orphan order evidence matched to unattached reservations older than 15 minutes, and paginated dispute reads. It retains existing monotonic reconciliation, 110-second budget and visible failure reporting. No creation, capture, refund, attachment or fulfilment action is added.
+@@ -943,6 +944,9 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
+ 
+ ## 16. Changelog
+ 
++### [2026-10-12] — Payment publication checks
++- Expanded to 165 passing tests plus four real-browser checks and seven PostgreSQL scripts. Fixed narrow-screen overflow in the new investigation/paid pagination controls; added provider pagination/mismatch/redirect, receipt storage/rate/input and metadata-failure rollback checks. Production build, scoped lint and bundle/credential scans pass. Existing 62 unrelated type diagnostics remain; all new live backend behaviour is unverified. Owner reports saving the independent receipt secret. No push/deployment/charges; public payments remain disabled. Backend must deploy and pass live read-only checks before website after approval. See docs/payment-publication-review.md.
++
+ ### Payment operations review (2026-10-11)
+ - Prepared local-only paid-order acknowledgement, investigations, persistent lost-dispute acknowledgement, GET-only refund/dispute recovery and minimal durable signed receipts. See section 9 and docs/payment-operations-review.md for evidence and limits. Nothing pushed or deployed; public payments remain disabled. Final suite: 160 passing tests, including all 133 baseline tests.
+ 
+diff --git a/app/pages/admin/components/PaidOrders.tsx b/app/pages/admin/components/PaidOrders.tsx
+--- a/app/pages/admin/components/PaidOrders.tsx
++++ b/app/pages/admin/components/PaidOrders.tsx
+@@ -9,5 +9,6 @@ export default function PaidOrders({refreshHealth}:{refreshHealth?:()=>Promise<v
+  const refresh=useCallback(async()=>{setBusy(true);setError("");try{setPage(await adminPaymentRequest<Page>("paid",{offset}));}catch{setError("Unable to load paid orders.");}finally{setBusy(false);}},[offset]);
+  useEffect(()=>{void refresh();},[refresh]);
+  async function acknowledge(order:PaidOrder){setBusy(true);setError("");try{await adminPaymentRequest("acknowledge",{kind:"paid",id:order.request_id,acknowledged:!order.acknowledged_at});await refresh();await refreshHealth?.();}catch{setError("Unable to save acknowledgement.");}finally{setBusy(false);}}
+- return <section className="rounded-xl border border-border p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="font-semibold text-lg">Recent paid orders</h2><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh paid orders</Button></div><p className="text-sm text-muted-foreground mt-2">Paid and refunded orders, newest confirmation first. Acknowledgement records your review; it does not change payment status.</p>{error&&<p role="alert">{error}</p>}{page?.orders.map(order=>{const p=order.payment_intents;return <article key={order.request_id} className="mt-4 border-t border-border pt-4 text-sm space-y-2 break-words"><p className="font-semibold">{p.package} · {formatINR(p.amount)} · {p.status}</p><p>Paid confirmation: {new Date(order.paid_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})} IST</p><p className="break-all">{p.order_id}</p>{["name","email","phone","business","project_type","requirements","timeline"].map(key=>typeof p.customer[key]==="string"&&p.customer[key]?<p key={key}>{key.replace(/_/g," ")}: {String(p.customer[key])}</p>:null)}<label className="flex gap-2 items-center"><input type="checkbox" checked={!!order.acknowledged_at} disabled={busy} onChange={()=>void acknowledge(order)}/>Acknowledged</label></article>;})}{page&&!page.orders.length&&<p className="mt-4 text-muted-foreground">No paid orders yet.</p>}<div className="flex gap-2 mt-4"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous paid orders</Button><Button variant="outline" disabled={busy||page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next paid orders</Button></div></section>;
++ return <section className="rounded-xl border border-border p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="font-semibold text-lg">Recent paid orders</h2><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh paid orders</Button></div><p className="text-sm text-muted-foreground mt-2">Paid and refunded orders, newest confirmation first. Acknowledgement records your review; it does not change payment status.</p>{error&&<p role="alert">{error}</p>}{page?.orders.map(order=>{const p=order.payment_intents;return <article key={order.request_id} className="mt-4 border-t border-border pt-4 text-sm space-y-2 break-words"><p className="font-semibold">{p.package} · {formatINR(p.amount)} · {p.status}</p><p>Paid confirmation: {new Date(order.paid_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})} IST</p><p className="break-all">{p.order_id}</p>{["name","email","phone","business","project_type","requirements","timeline"].map(key=>typeof p.customer[key]==="string"&&p.customer[key]?<p key={key}>{key.replace(/_/g," ")}: {String(p.customer[key])}</p>:null)}<label className="flex gap-2 items-center"><input type="checkbox" checked={!!order.acknowledged_at} disabled={busy} onChange={()=>void acknowledge(order)}/>Acknowledged</label></article>;})}{page&&!page.orders.length&&<p className="mt-4 text-muted-foreground">No paid orders yet.</p>}<div className="flex flex-wrap gap-2 mt-4"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous paid orders</Button><Button variant="outline" disabled={busy||page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next paid orders</Button></div></section>;
+ }
++
+diff --git a/app/pages/admin/components/PaymentInvestigations.tsx b/app/pages/admin/components/PaymentInvestigations.tsx
+--- a/app/pages/admin/components/PaymentInvestigations.tsx
++++ b/app/pages/admin/components/PaymentInvestigations.tsx
+@@ -7,5 +7,6 @@ type Page={items:Item[];nextOffset:number|null};
+ export default function PaymentInvestigations(){
+  const [page,setPage]=useState<Page|null>(null),[offset,setOffset]=useState(0),[error,setError]=useState("");
+  const refresh=useCallback(async()=>{setError("");try{setPage(await adminPaymentRequest<Page>("investigations",{offset}));}catch{setError("Unable to load investigations.");}},[offset]);useEffect(()=>{void refresh();},[refresh]);
+- return <section className="rounded-xl border border-amber-500/50 p-5"><h2 className="font-semibold text-lg">Needs investigation</h2><p className="text-sm text-muted-foreground mt-2">Record-only evidence. Check these references in Razorpay before deciding the next step; this list cannot attach orders or change paid status.</p>{error&&<p role="alert">{error}</p>}{page?.items.map(item=><article key={item.id} className="mt-4 border-t border-border pt-3 text-sm break-all"><p>{item.kind.replace(/_/g," ")} · {item.provider_status??"Unknown status"}</p><p>Order: {item.order_id??"Unknown"} · Payment: {item.payment_id??"Not supplied"}</p>{item.request_id&&<p>Reservation: {item.request_id}</p>}<p>Amount: {item.amount===null?"Not supplied":item.currency==="INR"?formatINR(item.amount):`${item.amount} subunits (${item.currency??"unknown currency"})`}</p></article>)}{page&&!page.items.length&&<p className="mt-3 text-muted-foreground">No investigation records.</p>}<div className="flex gap-2 mt-3"><Button variant="outline" onClick={()=>void refresh()}>Refresh investigations</Button><Button variant="outline" disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous investigations</Button><Button variant="outline" disabled={page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next investigations</Button></div></section>;
++ return <section className="rounded-xl border border-amber-500/50 p-5"><h2 className="font-semibold text-lg">Needs investigation</h2><p className="text-sm text-muted-foreground mt-2">Record-only evidence. Check these references in Razorpay before deciding the next step; this list cannot attach orders or change paid status.</p>{error&&<p role="alert">{error}</p>}{page?.items.map(item=><article key={item.id} className="mt-4 border-t border-border pt-3 text-sm break-all"><p>{item.kind.replace(/_/g," ")} · {item.provider_status??"Unknown status"}</p><p>Order: {item.order_id??"Unknown"} · Payment: {item.payment_id??"Not supplied"}</p>{item.request_id&&<p>Reservation: {item.request_id}</p>}<p>Amount: {item.amount===null?"Not supplied":item.currency==="INR"?formatINR(item.amount):`${item.amount} subunits (${item.currency??"unknown currency"})`}</p></article>)}{page&&!page.items.length&&<p className="mt-3 text-muted-foreground">No investigation records.</p>}<div className="flex flex-wrap gap-2 mt-3"><Button variant="outline" onClick={()=>void refresh()}>Refresh investigations</Button><Button variant="outline" disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous investigations</Button><Button variant="outline" disabled={page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next investigations</Button></div></section>;
+ }
++
+diff --git a/docs/payment-operations-review.md b/docs/payment-operations-review.md
+--- a/docs/payment-operations-review.md
++++ b/docs/payment-operations-review.md
+@@ -14,7 +14,7 @@ The existing paymentAction, callback verification, checkout authorization, recor
+ 
+ ## Evidence
+ 
+-All 133 existing scenarios remain in the suite. Final suite: **160 tests, 31 files, passing**. Existing queue tests isolate the two new sections (which have dedicated tests); health-query expectations include the added queries. No test scenario was removed.
++All 133 existing scenarios remain in the suite. Publication review on 2026-10-12: **165 tests, 31 files, passing**, plus four real-browser checks. Existing queue tests isolate the two new sections (which have dedicated tests); health-query expectations include the added queries. No test scenario was removed. Browser checks use a real local production build with mocked account/provider data; receipt refresh across two fresh browser contexts, admin acknowledgement/alert clearing, non-admin isolation, public disabled checkout and mobile width pass. Mobile investigation buttons overflowed before the fix and now wrap. See `payment-publication-review.md` for final checks and remaining warnings.
+ 
+ | Addition | Local evidence | Live evidence for this addition |
+ |---|---|---|
+@@ -31,7 +31,7 @@ Scoped source lint and production client/SSR build pass. Application type-check
+ ## Deployment order after owner approval
+ 
+ 1. Keep both public activation flags false. Review the diff and apply the four new migrations in timestamp order: payment_operations, payment_investigations, payment_dispute_acknowledgements, payment_dispute_sync.
+-2. Add `PAYMENT_RECEIPT_SECRET` to **Supabase Edge Function secrets**, using an independent cryptographically random secret of at least 32 bytes. It is required for receipt links only. Do not place it in a VITE variable or the website. For local Edge tests use the ignored Edge environment file. No secret is created by this pass. Keep it stable; when rotating it retain the old value as `PAYMENT_RECEIPT_PREVIOUS_SECRET` while old receipts need to remain valid. One previous key is supported; removing it invalidates links signed with it.
++2. The owner reports saving a random 64-character `PAYMENT_RECEIPT_SECRET` in **Supabase Edge Function secrets** on 2026-10-12. Its live configuration has not been independently checked; no value was read or printed. It is required for receipt links only. Do not place it in a VITE variable or the website. For local Edge tests use the ignored Edge environment file. Keep it stable; when rotating it retain the old value as `PAYMENT_RECEIPT_PREVIOUS_SECRET` while old receipts need to remain valid. One previous key is supported; removing it invalidates links signed with it.
+ 3. Deploy backend **before website**: updated razorpay-webhook, razorpay-payments and razorpay-reconcile with their shared modules. Preserve the existing custom authentication configuration and scheduler credential. Do not change keys, webhook signature configuration, public activation or checkout settings.
+ 4. Check schema/grants, rejected bad signatures/non-admin calls, signed receipt projection and a scheduled completion with GET-only recovery. Account access to dispute listing and actual relational query shapes must be verified here. No charges are required for these read-only checks.
+ 5. Only then deploy the website while preserving runtime bindings and public payments disabled. This document is a review/deployment plan, not authorization to execute it.
+diff --git a/e2e/payment-operations.spec.ts b/e2e/payment-operations.spec.ts
+--- /dev/null
++++ b/e2e/payment-operations.spec.ts
+@@ -0,0 +1,40 @@
++import {test,expect,type Page} from '@playwright/test';
++const id='00000000-0000-4000-8000-000000000001';
++const user={id:'payment-preview-admin',email:'preview@example.test',aud:'authenticated',role:'authenticated',app_metadata:{},user_metadata:{},created_at:new Date().toISOString()};
++async function session(page:Page){await page.addInitScript(user=>{const payload=btoa(JSON.stringify({sub:user.id,exp:Math.floor(Date.now()/1000)+3600}));localStorage.setItem('sb-bklmtwblsoitafynpikc-auth-token',JSON.stringify({access_token:`preview.${payload}.preview`,refresh_token:'preview-only',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,token_type:'bearer',user}));},user);}
++async function isolate(page:Page,admin=true){
++ await page.route(/googletagmanager|clarity\.ms|sentry\.io|razorpay\.com/,route=>route.abort());
++ await page.route('**/api/booking-settings',route=>route.fulfill({json:{enabled:false,booking_url:null}}));
++ await page.route(/\.supabase\.co\//,route=>{const url=new URL(route.request().url());return route.fulfill({json:url.pathname.endsWith('/auth/v1/user')?user:url.pathname.endsWith('/rpc/is_site_admin')?admin:[],headers:{'content-range':'0-0/0'}});});
++}
++test('combined admin queue acknowledges paid/lost alerts and keeps investigations record-only on mobile',async({page})=>{
++ await isolate(page);await session(page);const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));let acknowledged=false,lost=true;
++ await page.route('**/api/admin/payments/*',route=>{const action=new URL(route.request().url()).pathname.split('/').pop(),body=route.request().postDataJSON();
++  const now=new Date().toISOString();const health={observedAt:now,latestRunFailed:false,lastCompletedAt:now,lastSuccessfulAt:now,needsReconciliation:0,overdue:0,refunded:0,disputes:[],unacknowledgedPaid:acknowledged?0:1,investigations:1,lostDisputes:lost?[{id:'disp_preview',eventId:'evt_preview',status:'lost',amount:100,currency:'INR',paymentId:'pay_preview',orderId:'order_preview'}]:[]};
++  if(action==='acknowledge'){if(body.kind==='paid')acknowledged=body.acknowledged;else lost=false;return route.fulfill({json:{acknowledged:true}});}
++  return route.fulfill({json:action==='queue'?body.summaryOnly?health:{orders:[],runs:[],alerts:[],nextOffset:null}:action==='paid'?{orders:[{request_id:id,paid_at:now,acknowledged_at:acknowledged?now:null,payment_intents:{order_id:'order_preview',package:'starter',amount:500000,status:'paid',customer:{name:'Preview Client',email:'preview@example.test',business:'Preview Studio',requirements:'A business website'}}}],nextOffset:null}:action==='investigations'?{items:[{id:'investigation',kind:'unknown_payment',order_id:'order_unknown',payment_id:'pay_unknown',request_id:null,amount:100,currency:'INR',provider_status:'captured'}],nextOffset:null}:{history:[],nextOffset:null}});
++ });
++ await page.goto('/admin/dashboard');await expect(page.getByText('1 paid order(s) awaiting acknowledgement.')).toBeVisible();await page.getByRole('button',{name:'Review Payments',exact:true}).click();
++ await expect(page.getByRole('heading',{name:'Recent paid orders'})).toBeVisible();await expect(page.getByText('Preview Studio',{exact:false})).toBeVisible();await page.getByRole('checkbox',{name:'Acknowledged',exact:true}).click();await expect(page.getByRole('checkbox',{name:'Acknowledged',exact:true})).toBeChecked();await expect(page.getByText('1 paid order(s) awaiting acknowledgement.')).toHaveCount(0);
++ await page.getByRole('button',{name:'Acknowledge lost dispute',exact:true}).click();await expect(page.getByRole('heading',{name:'Lost disputes — acknowledgement required'})).toHaveCount(0);await expect(page.getByText('1 payment record(s) need investigation.')).toBeVisible();
++ await expect(page.getByRole('button',{name:/mark.*paid|attach.*order/i})).toHaveCount(0);await page.setViewportSize({width:390,height:844});await expect(page.getByRole('heading',{name:'Recent paid orders'})).toBeVisible();await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(errors).toEqual([]);
++});
++test('fresh devices and refresh read the minimal receipt without analytics or personal data',async({browser})=>{
++ const token=`${id}.${'a'.repeat(64)}`;
++ for(let device=0;device<2;device++){const context=await browser.newContext({viewport:{width:device?390:1440,height:900}}),page=await context.newPage();await isolate(page);let reads=0;
++  await page.route('**/api/payments/receipt',route=>{expect(route.request().postDataJSON()).toEqual({token});reads++;return route.fulfill({json:{package:'starter',amount:500000,status:'paid'}});});
++  await page.goto(`/receipt#${token}`);await expect(page.getByText('₹5,000.00',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('paid',{exact:true})).toBeVisible();expect(reads).toBe(2);
++  expect(await page.locator('script[src*="googletagmanager"],script[src*="clarity"],script[src*="checkout.razorpay"]').count()).toBe(0);await expect(page.getByText(/preview@example|order_preview|pay_preview/)).toHaveCount(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await context.close();
++ }
++});
++test('non-admin cannot mount the queue or fetch payment alert data',async({page})=>{
++ await isolate(page,false);await session(page);let queries=0;await page.route('**/api/admin/payments/*',route=>{queries++;return route.fulfill({status:403,json:{error:'Admin required'}});});
++ await page.goto('/admin/dashboard');await expect(page.getByRole('heading',{name:'Overview',exact:true})).toBeVisible();await page.waitForTimeout(1000);expect(queries).toBe(0);await expect(page.getByRole('alert',{name:'Payment alerts'})).toHaveCount(0);
++});
++test('public checkout remains disabled in the production preview',async({page})=>{
++ await isolate(page);await page.goto('/pay?package=starter');await expect(page.getByText('Online payments are coming soon',{exact:false})).toBeVisible();await expect(page.getByRole('button',{name:/Pay.*advance/})).toHaveCount(0);expect(await page.locator('script[src*="checkout.razorpay.com"]').count()).toBe(0);
++});
++
++
++
++
+diff --git a/playwright.payments.config.ts b/playwright.payments.config.ts
+--- /dev/null
++++ b/playwright.payments.config.ts
+@@ -0,0 +1,2 @@
++import {defineConfig} from '@playwright/test';
++export default defineConfig({testDir:'./e2e',testMatch:'payment-operations.spec.ts',workers:1,retries:0,reporter:'list',use:{baseURL:'http://127.0.0.1:8096',channel:'msedge',trace:'off'},webServer:{command:'node node_modules/wrangler/bin/wrangler.js dev workers/deploy.ts --ip 127.0.0.1 --port 8096 --local --log-level error',url:'http://127.0.0.1:8096',timeout:120000,reuseExistingServer:false}});
+diff --git a/scripts/check-payment-client-security.mjs b/scripts/check-payment-client-security.mjs
+--- /dev/null
++++ b/scripts/check-payment-client-security.mjs
+@@ -0,0 +1,16 @@
++import {readFileSync,readdirSync,existsSync} from 'node:fs';
++import {join} from 'node:path';
++import assert from 'node:assert/strict';
++const walk=dir=>readdirSync(dir,{withFileTypes:true}).filter(e=>!e.name.startsWith('.')).flatMap(e=>e.isDirectory()?walk(join(dir,e.name)):[join(dir,e.name)]);
++const privateNames=['SUPABASE_SERVICE_ROLE_KEY','RAZORPAY_KEY_SECRET','RAZORPAY_WEBHOOK_SECRET','PAYMENT_GATEWAY_SECRET','PAYMENT_RECEIPT_SECRET','PAYMENT_RECEIPT_PREVIOUS_SECRET','CALENDAR_SYNC_SECRET'];
++const values=[];
++// Read ignored local settings only in memory. Never emit their contents or matches.
++for(const file of ['.env','.dev.vars','supabase/functions/.env'])if(existsSync(file))for(const line of readFileSync(file,'utf8').split(/\r?\n/)){
++ const match=/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/.exec(line);if(!match||!privateNames.includes(match[1]))continue;
++ const value=match[2].replace(/^(['"])(.*)\1$/,'$2');if(value.length>=16)values.push(value);
++}
++const client=walk('dist/client').filter(file=>/\.(?:js|html|json|map)$/.test(file));
++for(const file of client){const body=readFileSync(file,'utf8');assert.ok(!privateNames.some(name=>body.includes(name)),'Private server identifier found in client build');}
++const artifacts=[...client,...walk('docs').filter(file=>/\.(?:md|diff|txt)$/.test(file))];
++for(const file of artifacts){const body=readFileSync(file,'utf8');assert.ok(!values.some(value=>body.includes(value)),'Private credential found in review/client artifact');}
++console.log('PASS: client bundles contain no private payment/server identifiers; local credential values absent from client and review artifacts. Supabase-only secret values were not inspected.');
+diff --git a/docs/payment-publication-review.md b/docs/payment-publication-review.md
+--- /dev/null
++++ b/docs/payment-publication-review.md
+@@ -0,0 +1,38 @@
++# Payment publication review — 12 October 2026
++
++The additive changes are ready for owner review and a controlled backend-first rollout. They are not certified bug-free or verified against the live new backend. Nothing has been committed, pushed or deployed, and no order, charge, capture or refund was created by the agent. Public activation flags were not changed; local production-preview checkout is confirmed disabled.
++
++## Confirmed checks
++
++| Check | Result | What this proves / limits |
++|---|---|---|
++| Full Vitest regression | 165 tests / 31 files pass; original 133 retained | Provider/Auth HTTP uses mocks; no bank transactions |
++| Real-browser production preview | 4 / 4 pass in installed Edge | Actual built UI, mock backend/account data: paid/lost acknowledgement clears alerts, investigations stay record-only, mobile queue fits 390px, receipt refresh in two fresh contexts, no personal details/tracking scripts on receipt, non-admin makes no payment query, public checkout disabled |
++| Seven database scripts | All pass in isolated PGlite/PostgreSQL | Fixed paise constraints, browser grants/RLS denial, atomic event IDs/rollback, monotonic settlement/refunds, one retry successor, schedule overlap/watchdog, record-only disputes/investigations, stable receipt ID, acknowledgement cannot settle; pg_cron/pg_net/Vault in schedule test are stubs |
++| Metadata failure | Additional real SQL assertion passes | Receipt-sidecar insertion failure rolls back the original settlement and webhook marker together; cannot report success with an unsaved ledger |
++| Production build | Client and SSR pass | Deployable website artifact; not a live Supabase Edge runtime check |
++| Scoped ESLint | Pass | All payment-change TypeScript files plus new browser checks/config |
++| Application typecheck | 0 payment diagnostics; 62 unrelated remain | Full application typecheck is not clean; unrelated code unchanged |
++| Client/artifact security scan | Pass | Private server identifiers absent from browser bundles; values from local ignored credential settings absent from client/review artifacts. Supabase-only secret values were not inspected |
++
++Useful commands: `node node_modules/vitest/vitest.mjs run`; `node node_modules/@playwright/test/cli.js test --config playwright.payments.config.ts`; `node scripts/check-payment-client-security.mjs`; `npm run build`. Database scripts: `test-payment-db`, `test-webhook-events-db`, `test-payment-disputes-db`, `test-reconciliation-db`, `test-reconciliation-schedule-db`, `test-payment-retry-db`, `test-payment-operations-db` under scripts.
++
++## Fix and added evidence
++
++Browser testing exposed mobile overflow from the new investigation action row. Paid/investigation controls now wrap, without changing any payment action. The final browser run passes after rebuilding. Initial test assertions were also corrected to await the existing asynchronous acknowledgement update and use the site's two-decimal rupee formatting; those were test mistakes, not settlement bugs.
++
++Five extra regression cases cover dispute identity/currency/amount mismatch, paid recovery beyond a full 100-row page and exhausted time budget, paginated GET dispute reads/redirect denial, receipt storage/rate failures, and missing/malformed/oversized receipt requests. Actual SQL additionally tests receipt observer failure rollback. No checkout, verification or settlement body/migration changed in this review.
++
++Existing non-blocking warnings remain: React's development preview reports the shared root `fetchPriority` prop warning, the build reports large chunks/React Router future flags and an unused unrelated import. They are not failing payment tests, but the repository is not warning-free. The 62 unrelated type errors remain outside this task's payment scope.
++
++## Unverified and deployment gates
++
++- New migrations/functions/UI remain undeployed. Live PostgREST relationships, Edge module/runtime deployment and permissions for GET dispute listing must be checked after backend deployment and before website deployment. The documented [Razorpay dispute-list API](https://razorpay.com/docs/api/disputes/fetch-all/) supports the read; account access has not been tested.
++- Owner reports saving a random 64-character PAYMENT_RECEIPT_SECRET. Its presence/value in the intended project and a real signed receipt round trip are unverified; no value was requested, read or printed. The same receipt signing key must remain stable for existing links.
++- High-volume completion within the existing 110-second scheduler budget is unverified. Pagination/deadline failure is tested; sustained backlog capacity/fairness is not. An incomplete run is visibly failed, rather than silently reported successful.
++- Real bank failures/refunds/disputes and true concurrent webhook deliveries are not exercised here. SQL deduplication/transaction behaviour and provider mocks cover their local logic. No automated service fulfilment is added.
++- Investigation evidence is retained with an alert and cannot be manually marked paid/attached/resolved by this feature. Backfilled paid time uses existing stored verification time, not a newly verified provider capture timestamp.
++
++After explicit approval: apply the four new migrations, deploy the three backend functions with their existing authentication/flags, verify grants, new query shapes, signed minimal receipt, admin denial and scheduled GET completion. Deploy website only after those checks pass. Keep public payment flags false throughout. Live smoke checks must not initiate charges/refunds/disputes. Before a Git push, exclude secrets and tracked generated runtime/framework artifacts; existing local Git status includes such output.
++
++Review the original additive diff in `payment-operations.diff` plus the final publication changes in `payment-publication-check.diff`. The admin click-through steps remain in `payment-operations-review.md`.

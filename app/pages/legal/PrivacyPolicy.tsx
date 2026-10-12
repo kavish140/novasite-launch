@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
+import { EMAIL } from "@/lib/constants";
 
 const PrivacyPolicy = () => {
   return (
@@ -13,7 +14,7 @@ const PrivacyPolicy = () => {
               Privacy Policy
             </h1>
             <div className="prose prose-invert max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-primary">
-              <p>Last updated: {new Date().toLocaleDateString()}</p>
+              <p>Last updated: 10 October 2026</p>
               
               <h2>1. Introduction</h2>
               <p>
@@ -27,6 +28,7 @@ const PrivacyPolicy = () => {
               <ul>
                 <li><strong>Identity Data</strong> includes first name, last name, username or similar identifier.</li>
                 <li><strong>Contact Data</strong> includes email address and telephone numbers.</li>
+                <li><strong>Project and Transaction Data</strong> includes your business or project name, selected package, amount, order and payment references, and payment or refund status.</li>
                 <li><strong>Technical Data</strong> includes internet protocol (IP) address, your login data, browser type and version, time zone setting and location, browser plug-in types and versions, operating system and platform, and other technology on the devices you use to access this website.</li>
                 <li><strong>Usage Data</strong> includes information about how you use our website, products and services.</li>
               </ul>
@@ -41,6 +43,9 @@ const PrivacyPolicy = () => {
                 <li>Where we need to comply with a legal obligation.</li>
               </ul>
 
+              <h3>Payment processing</h3>
+              <p>When you pay online, we share your checkout contact and project details with Razorpay to process and identify your payment. Razorpay collects payment credentials directly through its checkout; SiteNova does not collect or store full card numbers, CVV, UPI PINs or banking passwords. Payment and refund records are available through Razorpay for accounting and support. A checkout session reference is stored in your browser session to let you check a payment after refreshing the page. See <a href="https://razorpay.com/privacy/" target="_blank" rel="noopener noreferrer">Razorpay's privacy policy</a> for its processing practices.</p>
+
               <h2>4. Data Security</h2>
               <p>
                 We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorised way, altered or disclosed. In addition, we limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know.
@@ -54,7 +59,7 @@ const PrivacyPolicy = () => {
               <h2>6. Contact Us</h2>
               <p>
                 If you have any questions about this privacy policy or our privacy practices, please contact us at: <br/>
-                Email: kavishganatra5@gmail.com<br/>
+                Email: <a href={`mailto:${EMAIL}`}>{EMAIL}</a><br/>
                 Address: Mulund, Mumbai, Maharashtra, India (PIN: 400080)
               </p>
             </div>

@@ -8,6 +8,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   const staticPaths = [
     "/",
     "/pricing",
+    "/delivery-policy",
     "/contact-us",
     "/quote",
     "/about",
@@ -67,7 +68,8 @@ export async function loader({ context }: Route.LoaderArgs) {
   // causing it to distrust and ignore lastmod signals entirely.
   const lastModified: Record<string, string> = {
     "/": "2026-08-31",
-    "/pricing": "2026-07-15",
+    "/pricing": "2026-10-10",
+    "/delivery-policy": "2026-10-10",
     "/contact-us": "2026-06-01",
     "/quote": "2026-07-01",
     "/about": "2026-06-01",

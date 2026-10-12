@@ -2,7 +2,8 @@ import BookingCTA from "@/components/BookingCTA";
 import { useEffect } from "react";
 import { m as motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
+import { formatINR, type PackageCatalog, type PaymentPackage } from "@/lib/payments";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -63,6 +64,7 @@ const pricingTiers = [
 ];
 
 const Pricing = () => {
+  const { paymentsEnabled, packages } = useLoaderData<{ paymentsEnabled: boolean; packages: PackageCatalog }>();
   useEffect(() => {
     // any jsonLd can be added here
   }, []);
@@ -185,6 +187,11 @@ const Pricing = () => {
                   {tier.ctaText}
                   <ArrowRight size={16} />
                 </Link>
+                {paymentsEnabled && tier.name !== "Premium" && (
+                  <Link reloadDocument to={`/pay?package=${tier.name.toLowerCase()}`} className="mt-4 text-center text-sm font-semibold text-primary underline underline-offset-4">
+                    Pay {formatINR(packages[tier.name.toLowerCase() as PaymentPackage].advance)} advance
+                  </Link>
+                )}
               </motion.div>
             ))}
           </div>

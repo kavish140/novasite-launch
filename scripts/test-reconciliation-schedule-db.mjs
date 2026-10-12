@@ -1,0 +1,32 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
+await db.exec(await readFile('supabase/migrations/20261010170200_razorpay_backend_payments.sql','utf8'));
+await db.exec(await readFile('supabase/migrations/20261011090250_payment_reconciliation.sql','utf8'));
+// Only external extensions are stubbed; execute the real scheduling function.
+await db.exec(`create schema extensions;create schema vault;create schema net;create schema cron;
+create table vault.decrypted_secrets(name text,decrypted_secret text);
+create function extensions.gen_random_bytes(integer) returns bytea language sql as $$select decode(repeat('ab',32),'hex')$$;
+create function vault.create_secret(text,text,text) returns uuid language plpgsql as $$begin insert into vault.decrypted_secrets values($2,$1);return gen_random_uuid();end;$$;
+create table cron.jobs(name text,schedule text,command text);
+create function cron.schedule(text,text,text) returns bigint language plpgsql as $$begin insert into cron.jobs values($1,$2,$3);return 1;end;$$;
+create table net.calls(url text,body jsonb);
+create function net.http_post(url text,headers jsonb,body jsonb,timeout_milliseconds integer) returns bigint language plpgsql as $$begin insert into net.calls values(url,body);return 1;end;$$;`);
+const schedule=(await readFile('supabase/migrations/20261011090645_payment_reconciliation_schedule.sql','utf8')).replace('create extension if not exists pg_net with schema extensions;','');
+await db.exec(schedule);
+await db.exec(await readFile('supabase/migrations/20261011091631_payment_confirmed_retry.sql','utf8'));
+await db.exec(await readFile('supabase/migrations/20261011092645_payment_queue_alerts.sql','utf8'));
+await db.exec("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id,created_at,reconciliation_state) values(gen_random_uuid(),'h','failed','starter',500000,'rzp_test_example','{}','2026-10-10','order_failed',now()-interval '25 hours','failed'),(gen_random_uuid(),'h','pending','starter',500000,'rzp_test_example','{}','2026-10-10','order_pending',now()-interval '25 hours','needs_reconciliation')");
+assert.equal((await db.query('select schedule from cron.jobs')).rows[0].schedule,'*/10 * * * *');
+await db.query('select enqueue_payment_reconciliation()');
+assert.equal((await db.query("select count(*)::int as n from payment_reconciliation_log where order_id='order_failed' and alert")).rows[0].n,0);
+assert.equal((await db.query("select count(*)::int as n from payment_reconciliation_log where order_id='order_pending' and alert")).rows[0].n,1);
+await db.query('select enqueue_payment_reconciliation()');
+assert.equal((await db.query('select count(*)::int as n from net.calls')).rows[0].n,1);
+await db.exec("update payment_reconciliation_runs set started_at=now()-interval '16 minutes'");
+await db.query('select enqueue_payment_reconciliation()');
+assert.equal((await db.query("select alert from payment_reconciliation_runs where state='failed'")).rows[0].alert,true);
+assert.equal((await db.query('select count(*)::int as n from net.calls')).rows[0].n,2);
+for(const role of ['anon','authenticated','service_role']){await db.exec(`set role ${role}`);await assert.rejects(db.query('select enqueue_payment_reconciliation()'),/permission denied/);await db.exec('reset role');}
+await db.close();console.log('PASS: 10-minute schedule, overlap prevention, abandoned-run alert and enqueue privilege denial.');

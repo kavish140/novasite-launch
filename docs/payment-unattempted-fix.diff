@@ -1,0 +1,58 @@
+diff --git "a/C:\\Users\\KAVISH~1\\AppData\\Local\\Temp/sitenova-unattempted-razorpay-before.ts" b/supabase/functions/_shared/razorpay.ts
+index 9a431a6..304dfc0 100644
+--- "a/C:\\Users\\KAVISH~1\\AppData\\Local\\Temp/sitenova-unattempted-razorpay-before.ts"
++++ b/supabase/functions/_shared/razorpay.ts
+@@ -210,7 +210,7 @@ async function recordStatus(env: PaymentEnv, status: PaymentStatus, orderId: str
+   return status;
+ }
+ // Read-only provider reconciliation: this function cannot create/capture/refund payments.
+-export async function fetchStoredPaymentStatus(env: PaymentEnv, record: PaymentRecord): Promise<PaymentStatus | {status:"failed"|"expired"}> {
++export async function fetchStoredPaymentStatus(env: PaymentEnv, record: PaymentRecord): Promise<PaymentStatus | {status:"failed"|"expired"|"unattempted"}> {
+   if (!record.order_id || record.key_id!==env.RAZORPAY_KEY_ID) throw new Error("Order requires owner reconciliation");
+   const claims=claimsSchema.parse({orderId:record.order_id,amount:record.amount,package:record.package,keyId:record.key_id,issuedAt:Date.parse(record.created_at)});
+   if(claims.amount!==BACKEND_PACKAGES[claims.package].advance) throw new Error("Invalid stored amount");
+@@ -227,6 +227,9 @@ export async function fetchStoredPaymentStatus(env: PaymentEnv, record: PaymentR
+   if(collection.items.length && collection.items.every(p=>p.status==="failed" && declines.has(p.error_reason??""))) return {status:"failed"};
+   // Razorpay Orders normally do not expire. Never infer expiry from browser age.
+   if(order.status==="expired" && collection.items.length===0) return {status:"expired"};
++  // A provider-confirmed untouched checkout is unpaid, not an uncertain debit.
++  // This classification never authorizes a new order or changes checkout rules.
++  if(order.status==="created" && collection.items.length===0) return {status:"unattempted"};
+   return {status:"pending"};
+ }
+ export async function paymentWebhook(request: Request, context: unknown) {
+diff --git "a/C:\\Users\\KAVISH~1\\AppData\\Local\\Temp/sitenova-unattempted-sql-before.sql" b/supabase/migrations/20261011105638_payment_unattempted_reconciliation.sql
+index a082e22..8275caa 100644
+--- "a/C:\\Users\\KAVISH~1\\AppData\\Local\\Temp/sitenova-unattempted-sql-before.sql"
++++ b/supabase/migrations/20261011105638_payment_unattempted_reconciliation.sql
+@@ -1,3 +1,6 @@
++begin;
++-- Only the server's fresh provider fetch may report 'unattempted'.
++-- Persist it as pending; retain all settlement/retry/access safeguards.
+ create or replace function public.record_payment_reconciliation(p_run uuid,p_request uuid,p_payment text,p_status text,p_refunded integer,p_error text)
+ returns text language plpgsql security invoker set search_path='' as $$
+ declare r public.payment_intents; previous text; resulting text; flagged boolean;
+@@ -8,14 +11,19 @@ begin
+  previous=case when r.status='pending' then r.reconciliation_state else r.status end;
+  if p_status in ('paid','refunded') then
+    perform public.record_package_payment(r.order_id,p_payment,p_status,p_refunded);
+- elsif p_status not in ('pending','failed','expired') or p_status is null then raise exception 'invalid_reconciliation_status';
++ elsif p_status not in ('pending','failed','expired','unattempted') or p_status is null then raise exception 'invalid_reconciliation_status';
+  end if;
+  select * into r from public.payment_intents where request_id=p_request;
+- resulting=case when r.status<>'pending' then r.status when p_status in ('failed','expired') and p_error is null then p_status else 'needs_reconciliation' end;
+- flagged=p_error is not null or (resulting='needs_reconciliation' and r.created_at<now()-interval '24 hours');
++ resulting=case when r.status<>'pending' then r.status
++   when p_status in ('failed','expired') and p_error is null then p_status
++   when p_status='unattempted' and p_error is null then 'pending'
++   else 'needs_reconciliation' end;
++ flagged=p_error is not null or (resulting in ('pending','needs_reconciliation') and r.created_at<now()-interval '24 hours');
+  update public.payment_intents set last_checked_at=now(),reconciliation_state=case when status='pending' then resulting else 'settled' end where request_id=p_request;
+  insert into public.payment_reconciliation_log(run_id,request_id,order_id,old_state,new_state,error,alert)
+  values(p_run,p_request,r.order_id,previous,resulting,p_error,flagged);
+  return resulting;
+ end;$$;
+-
++revoke all on function public.record_payment_reconciliation(uuid,uuid,text,text,integer,text) from public,anon,authenticated;
++grant execute on function public.record_payment_reconciliation(uuid,uuid,text,text,integer,text) to service_role;
++commit;

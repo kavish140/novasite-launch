@@ -1,0 +1,14 @@
+import {useCallback,useEffect,useState} from "react";
+import {adminPaymentRequest} from "@/lib/payment-admin-client";
+import {formatINR} from "@/lib/payments";
+import {Button} from "@/components/ui/button";
+type PaidOrder={request_id:string;paid_at:string;acknowledged_at:string|null;payment_intents:{order_id:string;package:string;amount:number;status:string;customer:Record<string,unknown>}};
+type Page={orders:PaidOrder[];nextOffset:number|null};
+export default function PaidOrders({refreshHealth}:{refreshHealth?:()=>Promise<void>}){
+ const [page,setPage]=useState<Page|null>(null),[offset,setOffset]=useState(0),[error,setError]=useState(""),[busy,setBusy]=useState(false);
+ const refresh=useCallback(async()=>{setBusy(true);setError("");try{setPage(await adminPaymentRequest<Page>("paid",{offset}));}catch{setError("Unable to load paid orders.");}finally{setBusy(false);}},[offset]);
+ useEffect(()=>{void refresh();},[refresh]);
+ async function acknowledge(order:PaidOrder){setBusy(true);setError("");try{await adminPaymentRequest("acknowledge",{kind:"paid",id:order.request_id,acknowledged:!order.acknowledged_at});await refresh();await refreshHealth?.();}catch{setError("Unable to save acknowledgement.");}finally{setBusy(false);}}
+ return <section className="rounded-xl border border-border p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="font-semibold text-lg">Recent paid orders</h2><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh paid orders</Button></div><p className="text-sm text-muted-foreground mt-2">Paid and refunded orders, newest confirmation first. Acknowledgement records your review; it does not change payment status.</p>{error&&<p role="alert">{error}</p>}{page?.orders.map(order=>{const p=order.payment_intents;return <article key={order.request_id} className="mt-4 border-t border-border pt-4 text-sm space-y-2 break-words"><p className="font-semibold">{p.package} · {formatINR(p.amount)} · {p.status}</p><p>Paid confirmation: {new Date(order.paid_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})} IST</p><p className="break-all">{p.order_id}</p>{["name","email","phone","business","project_type","requirements","timeline"].map(key=>typeof p.customer[key]==="string"&&p.customer[key]?<p key={key}>{key.replace(/_/g," ")}: {String(p.customer[key])}</p>:null)}<label className="flex gap-2 items-center"><input type="checkbox" checked={!!order.acknowledged_at} disabled={busy} onChange={()=>void acknowledge(order)}/>Acknowledged</label></article>;})}{page&&!page.orders.length&&<p className="mt-4 text-muted-foreground">No paid orders yet.</p>}<div className="flex flex-wrap gap-2 mt-4"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous paid orders</Button><Button variant="outline" disabled={busy||page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next paid orders</Button></div></section>;
+}
+

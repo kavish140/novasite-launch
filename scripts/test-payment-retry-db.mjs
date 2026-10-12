@@ -1,0 +1,21 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
+for(const file of ['20261010170200_razorpay_backend_payments.sql','20261011090250_payment_reconciliation.sql','20261011091631_payment_confirmed_retry.sql'])await db.exec(await readFile('supabase/migrations/'+file,'utf8'));
+const parent='00000000-0000-4000-8000-000000000001',child='00000000-0000-4000-8000-000000000002',run='00000000-0000-4000-8000-000000000003';
+const data={request_id:child,payload_hash:'hash',dedupe_hash:'child',package:'starter',amount:500000,key_id:'rzp_test_example',customer:{},terms_version:'2026-10-10'};
+await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id) values($1,'hash','parent','starter',500000,'rzp_test_example','{}','2026-10-10','order_old')",[parent]);
+for(const role of ['anon','authenticated']){await db.exec(`set role ${role}`);await assert.rejects(db.query('select reserve_payment_retry($1,$2)',[parent,data]),/permission denied/);await db.exec('reset role');}
+await db.exec('set role service_role');
+const reserve=()=>db.query('select reserve_payment_retry($1,$2) as result',[parent,data]);
+await assert.rejects(reserve(),/retry_not_verified/);
+await db.query("insert into payment_reconciliation_runs(id,state) values($1,'running')",[run]);
+await db.query("select record_payment_reconciliation($1,$2,null,'failed',0,null)",[run,parent]);
+assert.equal((await reserve()).rows[0].result.created,true);assert.equal((await reserve()).rows[0].result.created,false);
+assert.ok((await db.query('select retry_reserved_at from payment_intents where request_id=$1',[parent])).rows[0].retry_reserved_at);
+await assert.rejects(db.query('select reserve_payment_retry($1,$2)',[parent,{...data,request_id:run}]),/already_reserved/);
+assert.equal((await db.query('select count(*)::int as n from payment_intents')).rows[0].n,2);
+await db.query("select record_payment_reconciliation($1,$2,'pay_late','paid',0,null)",[run,parent]);
+await assert.rejects(reserve(),/retry_not_verified/);
+await db.close();console.log('PASS: uncertain retries blocked, confirmed retries idempotent, one successor, retired parent, late capture blocks retries, browser denial.');

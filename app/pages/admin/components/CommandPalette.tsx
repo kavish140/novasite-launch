@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/command";
 import {
   CalendarDays, LayoutDashboard, Users, FileText, Megaphone, TrendingUp,
-  Target, Plus, Settings, History, FileSignature, Bot, ListChecks,
+  Target, Plus, Settings, History, FileSignature, Bot, ListChecks, CreditCard,
 } from "lucide-react";
 import type { AdminTab } from "./AdminSidebar";
 import type { AuditRequest, QuoteRequest } from "../AdminDashboard";
@@ -30,6 +30,7 @@ interface CommandPaletteProps {
 }
 
 const TAB_COMMANDS: { tab: AdminTab; label: string; icon: React.ElementType }[] = [
+  { tab: "payments", label: "Payments", icon: CreditCard },
   { tab: "scheduled_calls", label: "Scheduled Calls", icon: CalendarDays },
   { tab: "overview",       label: "Overview",        icon: LayoutDashboard },
   { tab: "leads",          label: "Audit Requests",  icon: Users },

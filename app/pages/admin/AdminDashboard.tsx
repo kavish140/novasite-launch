@@ -27,6 +27,10 @@ import TopicsTab from "./tabs/TopicsTab";
 import QuoteRequestsTab from "./tabs/QuoteRequestsTab";
 import SettingsTab from "./tabs/SettingsTab";
 import ActivityLogTab from "./tabs/ActivityLogTab";
+import PaymentsTab from "./tabs/PaymentsTab";
+import PaymentAlerts from "./components/PaymentAlerts";
+import {usePaymentHealth} from "./hooks/usePaymentHealth";
+import {paymentAlertCount} from "@/lib/payment-health";
 
 // Realtime hook
 import { useRealtimeLeads } from "./hooks/useRealtimeLeads";
@@ -120,6 +124,7 @@ export type LeadNote = {
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const paymentHealth=usePaymentHealth();
   const scheduled = useScheduledCalls(activeTab === "overview" || activeTab === "scheduled_calls");
   const upcomingCalls = scheduled.calls.filter(c => c.status === "scheduled" && Date.parse(c.ends_at) >= Date.now()).length;
   const [requests, setRequests] = useState<AuditRequest[]>([]);
@@ -436,6 +441,7 @@ export default function AdminDashboard() {
   }, []);
 
   const badges = {
+    payments: paymentHealth.isAdmin&&paymentHealth.health?paymentAlertCount(paymentHealth.health,paymentHealth.clock):0,
     scheduled_calls: upcomingCalls,
     leads:          requests.filter((r) => r.status !== "completed" && r.source !== "paid_ad").length,
     quote_requests: quoteRequests.filter((r) => r.status === "new").length,
@@ -446,6 +452,7 @@ export default function AdminDashboard() {
 
   // ── Tab content map ────────────────────────────────────────────────────────
   const tabContent: Record<AdminTab, React.ReactNode> = {
+    payments: paymentHealth.isAdmin?<PaymentsTab health={paymentHealth.health} refreshHealth={paymentHealth.refresh} now={paymentHealth.clock}/>:<p>Checking admin access…</p>,
     scheduled_calls: <ScheduledCallsTab {...scheduled} />,
     overview: (
       <OverviewTab
@@ -542,7 +549,7 @@ export default function AdminDashboard() {
         <AdminHeader
           activeTab={activeTab}
           loading={loading}
-          onRefresh={() => { fetchData(); scheduled.refresh(); }}
+          onRefresh={() => { fetchData(); scheduled.refresh(); void paymentHealth.refresh(); }}
           onExportCSV={handleExportCSV}
           onCopyBlogs={handleCopyBlogs}
           onSearch={() => setCmdOpen(true)}
@@ -557,6 +564,7 @@ export default function AdminDashboard() {
             </div>
             <span className="rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">{new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric" }).format(new Date())}</span>
           </div>
+          <PaymentAlerts health={paymentHealth.health} isAdmin={paymentHealth.isAdmin} error={paymentHealth.error} now={paymentHealth.clock} onOpen={()=>setActiveTab("payments")}/>
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

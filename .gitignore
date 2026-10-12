@@ -42,3 +42,6 @@ test-results/
 # Local framework/runtime output
 .react-router/
 .wrangler/
+
+# Supabase CLI local metadata
+supabase/.temp/

@@ -1,0 +1,1180 @@
+diff --git a/supabase/functions/_shared/edge-handler.ts b/supabase/functions/_shared/edge-handler.ts
+index e3a55a0..cf5e725 100644
+--- a/supabase/functions/_shared/edge-handler.ts
++++ b/supabase/functions/_shared/edge-handler.ts
+@@ -1,5 +1,6 @@
+ import { createClient } from "@supabase/supabase-js";
+ import { paymentAction, paymentWebhook, paymentJson, paymentsEnabled, PAYMENT_PACKAGES, type PaymentEnv } from "./razorpay.ts";
++import { adminPayments } from "./admin-payments.ts";
+ type EdgeEnv = PaymentEnv & { PAYMENT_GATEWAY_SECRET?: string };
+ async function sameSecret(actual: string, expected: string) {
+   const encoder = new TextEncoder();
+@@ -25,14 +26,15 @@ export async function handlePaymentEdge(request: Request, env: EdgeEnv) {
+   if (!await sameSecret(request.headers.get("x-payment-gateway-secret") ?? "",env.PAYMENT_GATEWAY_SECRET)) return paymentJson({error:"Unauthorized"},401);
+   const action = new URL(request.url).pathname.split("/").pop();
+   const adminTest = new URL(request.url).pathname.split("/").at(-2) === "admin-test";
++  const adminQueue = new URL(request.url).pathname.split("/").at(-2) === "admin-queue";
+   const backend = configured(env);
+-  if (action === "config") return paymentJson({enabled:paymentsEnabled(backend),testMode:env.RAZORPAY_KEY_ID?.startsWith("rzp_test_") ?? false,packages:PAYMENT_PACKAGES});
+-  if (!["order","verify","status","checkout"].includes(action ?? "")) return paymentJson({error:"Not found"},404);
++  if (action === "config" && !adminQueue) return paymentJson({enabled:paymentsEnabled(backend),testMode:env.RAZORPAY_KEY_ID?.startsWith("rzp_test_") ?? false,packages:PAYMENT_PACKAGES});
++  if (!(adminQueue?["queue","history","recheck"]:["order","retry","verify","status","checkout"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
+   const origin = request.headers.get("x-payment-origin") ?? "";
+   if (!/^https:\/\/sitenova\.dev$|^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return paymentJson({error:"Invalid origin"},403);
+   const headers = new Headers({origin,"cf-connecting-ip":request.headers.get("x-payment-client-ip") ?? "local"});
+   let admin;
+-  if (adminTest) {
++  if (adminTest || adminQueue) {
+     const token = request.headers.get("x-payment-admin-token");
+     if (!token || token.length > 8000) return paymentJson({error:"Admin sign-in required"},401);
+     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) return paymentJson({error:"Payments unavailable"},503);
+@@ -46,7 +48,8 @@ export async function handlePaymentEdge(request: Request, env: EdgeEnv) {
+       admin = {id:identity.data.user.id,email:identity.data.user.email ?? ""};
+     } catch { return paymentJson({error:"Unable to verify admin access"},503); }
+   }
++  if(adminQueue && admin) return adminPayments(request,backend,action!,admin);
+   const forwarded = new Request(`${origin}/api/payments/${action}`,{method:"POST",headers,body:request.body,duplex:"half"} as RequestInit);
+-  return paymentAction(forwarded,{env:backend},action as "order"|"verify"|"status"|"checkout",admin);
++  return paymentAction(forwarded,{env:backend},action as "order"|"retry"|"verify"|"status"|"checkout",admin);
+ }
+ export const handleWebhookEdge = (request: Request, env: EdgeEnv) => paymentWebhook(request,{env:configured(env)});
+diff --git a/supabase/functions/_shared/razorpay.ts b/supabase/functions/_shared/razorpay.ts
+index c737b4a..bfe93e8 100644
+--- a/supabase/functions/_shared/razorpay.ts
++++ b/supabase/functions/_shared/razorpay.ts
+@@ -1,5 +1,5 @@
+ import { z } from "zod";
+-import { paymentStore } from "./payment-store.ts";
++import { paymentStore, type PaymentRecord } from "./payment-store.ts";
+ import { paymentDetailsSchema, type PaymentStatus } from "./payments.ts";
+ 
+ // Paise amounts are owned exclusively by the backend; client requests cannot override them.
+@@ -66,7 +66,7 @@ async function api(env: PaymentEnv, path: string, body?: unknown) {
+   return response.json();
+ }
+ const orderSchema = z.object({ id: z.string(), amount: z.number(), currency: z.string(), status: z.string(), notes: z.object({ package: z.string() }) });
+-const paymentSchema = z.object({ id: z.string(), order_id: z.string(), amount: z.number(), currency: z.string(), status: z.string(), amount_refunded: z.number().default(0) });
++const paymentSchema = z.object({ id: z.string(), order_id: z.string(), amount: z.number(), currency: z.string(), status: z.string(), amount_refunded: z.number().default(0), error_reason: z.string().nullable().optional() });
+ async function trustedOrder(env: PaymentEnv, claims: z.infer<typeof claimsSchema>, admin?: VerifiedTestAdmin) {
+   const stored = await paymentStore(env).find(claims.orderId);
+   if (!stored || stored.amount !== claims.amount || stored.package !== claims.package || stored.key_id !== claims.keyId) throw new PaymentError("Invalid stored payment session", 403);
+@@ -74,7 +74,7 @@ async function trustedOrder(env: PaymentEnv, claims: z.infer<typeof claimsSchema
+   const order = orderSchema.parse(await api(env, `orders/${claims.orderId}`));
+   if (order.id !== claims.orderId || order.amount !== claims.amount || order.currency !== "INR" || order.notes.package !== claims.package)
+     throw new PaymentError("Payment details do not match this order", 403);
+-  return { ...order, ledgerSettled: stored.status === "paid" || stored.status === "refunded" };
++  return { ...order, ledgerSettled: stored.status === "paid" || stored.status === "refunded", ledgerRetired: !!stored.retry_reserved_at, retryParent: stored.retry_parent };
+ }
+ function statusOf(payment: z.infer<typeof paymentSchema>, claims: z.infer<typeof claimsSchema>): PaymentStatus {
+   if (payment.order_id !== claims.orderId || payment.amount !== claims.amount || payment.currency !== "INR")
+@@ -86,11 +86,11 @@ function statusOf(payment: z.infer<typeof paymentSchema>, claims: z.infer<typeof
+ export function paymentJson(body: unknown, status = 200) {
+   return Response.json(body, { status, headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" } });
+ }
+-export async function paymentAction(request: Request, context: unknown, action: "order" | "verify" | "status" | "checkout", admin?: VerifiedTestAdmin) {
++export async function paymentAction(request: Request, context: unknown, action: "order" | "retry" | "verify" | "status" | "checkout", admin?: VerifiedTestAdmin) {
+   if (request.method !== "POST") return paymentJson({ error: "Method not allowed" }, 405);
+   if (request.headers.get("origin") !== new URL(request.url).origin) return paymentJson({ error: "Invalid origin" }, 403);
+   const env = paymentEnv(context);
+-  const opening = action === "order" || action === "checkout";
++  const opening = action === "order" || action === "retry" || action === "checkout";
+   // Live keys must never open checkout on an unregistered local/preview website.
+   // Existing signed sessions may still reconcile there without collecting money.
+   if (opening && env.RAZORPAY_KEY_ID?.startsWith("rzp_live_") && new URL(request.url).origin !== "https://sitenova.dev")
+@@ -98,18 +98,40 @@ export async function paymentAction(request: Request, context: unknown, action:
+   if (!(admin || !opening ? paymentBackendConfigured(env) && !!env.PAYMENT_RATE_LIMITER : paymentsEnabled(env))) return paymentJson({ error: "Online payments are not available yet. Please contact SiteNova." }, 503);
+   try {
+     if (!env.PAYMENT_RATE_LIMITER) throw new PaymentError("Payment service is not configured yet", 503);
+-    const limit = await env.PAYMENT_RATE_LIMITER.limit({ key: `${action === "order" ? "create" : "check"}:${request.headers.get("cf-connecting-ip") ?? "local"}` });
++    const limit = await env.PAYMENT_RATE_LIMITER.limit({ key: `${action === "order" || action === "retry" ? "create" : "check"}:${request.headers.get("cf-connecting-ip") ?? "local"}` });
+     if (!limit.success) return paymentJson({ error: "Too many payment requests. Please wait a minute and try again." }, 429);
+     const raw = await request.text();
+     if (raw.length > 6000) return paymentJson({ error: "Request too large" }, 413);
+-    const body = JSON.parse(raw);
+-    if (action === "order") {
++    let body = JSON.parse(raw);
++    if (action === "order" || action === "retry") {
++      let parent: PaymentRecord | null = null;
++      if(action === "retry") {
++        if(admin) throw new PaymentError("Invalid payment channel",403);
++        const retry=z.object({token:z.string().max(3000),requestId:z.string().uuid()}).strict().parse(body);
++        const claims=await readToken(retry.token,env);
++        if(claims.package==="test") throw new PaymentError("Invalid payment channel",403);
++        parent=await paymentStore(env).find(claims.orderId);
++        if(!parent) throw new PaymentError("Invalid payment session",403);
++        const store=paymentStore(env),run=await store.startRun("retry");
++        let checked;
++        try { checked=await fetchStoredPaymentStatus(env,parent); }
++        catch {
++          await store.recordReconciliation(run,parent,{status:"pending"},"Retry verification failed; owner review required.");
++          await store.finishRun(run,1,1,"Retry verification failed; owner review required.");
++          throw new PaymentError("Previous payment is uncertain. Reconciliation is required before paying again.",409);
++        }
++        await store.recordReconciliation(run,parent,checked,null);
++        await store.finishRun(run,1,0,null);
++        if(!["failed","expired"].includes(checked.status)) throw new PaymentError("Previous payment is not confirmed failed or expired. Check status before paying again.",409);
++        body={...paymentDetailsSchema.parse(parent.customer),requestId:retry.requestId};
++      }
+       const input = admin ? z.object({ requestId: z.string().uuid() }).strict().parse(body) : paymentDetailsSchema.extend({ requestId: z.string().uuid() }).parse(body);
+       const { requestId } = input;
+       const details = admin ? { package: "test" as const, name: "Test", email: admin.email, phone: "", business: "Test", accepted: true, admin_id: admin.id } : paymentDetailsSchema.parse(Object.fromEntries(Object.entries(input).filter(([key]) => key !== "requestId")));
+       const pack = BACKEND_PACKAGES[details.package];
+       const store = paymentStore(env);
+-      const reserved = await store.reserve({ request_id: requestId, payload_hash: await sign(JSON.stringify(details), env.RAZORPAY_KEY_SECRET!), dedupe_hash: await sign(JSON.stringify([env.RAZORPAY_KEY_ID,details.package,details.email.toLowerCase(),details.phone,details.business.trim().toLowerCase(),...(admin ? [admin.id,requestId] : [])]),env.RAZORPAY_KEY_SECRET!), package: details.package, amount: pack.advance, key_id: env.RAZORPAY_KEY_ID, customer: details, terms_version: "2026-10-10" });
++      const reservation={ request_id: requestId, payload_hash: await sign(JSON.stringify(details), env.RAZORPAY_KEY_SECRET!), dedupe_hash: await sign(JSON.stringify([env.RAZORPAY_KEY_ID,details.package,details.email.toLowerCase(),details.phone,details.business.trim().toLowerCase(),...(parent ? [parent.request_id] : admin ? [admin.id,requestId] : [])]),env.RAZORPAY_KEY_SECRET!), package: details.package, amount: pack.advance, key_id: env.RAZORPAY_KEY_ID, customer: details, terms_version: "2026-10-10" };
++      const reserved = parent ? await store.reserveRetry(parent.request_id,reservation) : await store.reserve(reservation);
+       if (!reserved.created) {
+         const existing = reserved.record;
+         if (!existing.order_id) throw new PaymentError("Payment request is being checked. Contact SiteNova before creating another checkout.", 409);
+@@ -141,10 +163,33 @@ export async function paymentAction(request: Request, context: unknown, action:
+     const collection = z.object({ items: z.array(paymentSchema) }).parse(await api(env, `orders/${order.id}/payments`));
+     const settled = collection.items.find(p => p.status === "captured" || p.status === "refunded" || p.amount_refunded > 0);
+     if (settled) return paymentJson(await recordStatus(env, statusOf(settled, claims), order.id));
++    // A previous attempt may change after a retry was reserved. Check its whole
++    // lineage again before releasing new checkout options, never during callbacks.
++    if(action === "checkout" && order.retryParent) {
++      const store=paymentStore(env),run=await store.startRun("retry");
++      let parentId:string|null|undefined=order.retryParent,checked=0;
++      const deadline=Date.now()+25000;
++      try {
++        while(parentId) {
++          if(checked>=10 || Date.now()>deadline) throw new Error("Retry lineage needs owner review");
++          const ancestor=await store.byRequest(parentId);
++          if(!ancestor) throw new Error("Retry parent unavailable");
++          const state=await fetchStoredPaymentStatus(env,ancestor);
++          await store.recordReconciliation(run,ancestor,state,null);checked++;
++          if(!["failed","expired"].includes(state.status)) throw new Error("Previous attempt no longer safe to retry");
++          parentId=ancestor.retry_parent;
++        }
++        await store.finishRun(run,checked,0,null);
++      } catch {
++        await store.recordReconciliation(run,(await store.find(order.id))!,{status:"pending"},"Previous attempt changed or could not be verified. New checkout blocked.");
++        await store.finishRun(run,checked,1,"Retry lineage requires owner review.");
++        throw new PaymentError("An earlier payment needs reconciliation. This checkout is blocked; contact SiteNova before paying again.",409);
++      }
++    }
+     const age = Date.now() - claims.issuedAt;
+     // A failed attempt can be authorised later. Never reopen attempted orders,
+     // even when the current payment list is empty or the issuer reports failure.
+-    const attempted = collection.items.length > 0 || order.status !== "created" || order.ledgerSettled;
++    const attempted = collection.items.length > 0 || order.status !== "created" || order.ledgerSettled || order.ledgerRetired;
+     if (action === "checkout" && attempted)
+       throw new PaymentError("This order already has a payment attempt. Check its status and contact SiteNova before paying again, even if Razorpay reports failure.", 409);
+     const canPay = !attempted && age >= 0 && age < 24 * 60 * 60 * 1000;
+@@ -164,6 +209,26 @@ async function recordStatus(env: PaymentEnv, status: PaymentStatus, orderId: str
+   if (status.status !== "pending" && status.paymentId) await paymentStore(env).settle(orderId, status.paymentId, status.status, status.refundedAmount ?? 0);
+   return status;
+ }
++// Read-only provider reconciliation: this function cannot create/capture/refund payments.
++export async function fetchStoredPaymentStatus(env: PaymentEnv, record: PaymentRecord): Promise<PaymentStatus | {status:"failed"|"expired"}> {
++  if (!record.order_id || record.key_id!==env.RAZORPAY_KEY_ID) throw new Error("Order requires owner reconciliation");
++  const claims=claimsSchema.parse({orderId:record.order_id,amount:record.amount,package:record.package,keyId:record.key_id,issuedAt:Date.parse(record.created_at)});
++  if(claims.amount!==BACKEND_PACKAGES[claims.package].advance) throw new Error("Invalid stored amount");
++  const order=await trustedOrder(env,claims);
++  const collection=z.object({items:z.array(paymentSchema)}).parse(await api(env,`orders/${record.order_id}/payments`));
++  // Validate every payment before deciding what the order means.
++  for(const payment of collection.items) statusOf(payment,claims);
++  const settled=collection.items.find(p=>p.status==="captured"||p.status==="refunded"||p.amount_refunded>0);
++  if(settled) return statusOf(settled,claims);
++  if(order.ledgerSettled) throw new Error("Stored settlement requires owner review");
++  // Technical failures and business mismatches can be late-authorized. Only
++  // explicit customer/issuer declines permit another order, after a fresh GET.
++  const declines=new Set(["incorrect_pin","incorrect_atm_pin","incorrect_otp","incorrect_cvv","insufficient_funds","incorrect_card_details","incorrect_card_expiry_date"]);
++  if(collection.items.length && collection.items.every(p=>p.status==="failed" && declines.has(p.error_reason??""))) return {status:"failed"};
++  // Razorpay Orders normally do not expire. Never infer expiry from browser age.
++  if(order.status==="expired" && collection.items.length===0) return {status:"expired"};
++  return {status:"pending"};
++}
+ export async function paymentWebhook(request: Request, context: unknown) {
+   if (request.method !== "POST") return paymentJson({ error: "Method not allowed" },405);
+   const env = paymentEnv(context);
+@@ -173,6 +238,10 @@ export async function paymentWebhook(request: Request, context: unknown) {
+     const raw = await request.text();
+     if (raw.length > 100000) return paymentJson({ error: "Request too large" },413);
+     if (!await verify(raw,request.headers.get("x-razorpay-signature") ?? "",env.RAZORPAY_WEBHOOK_SECRET!)) return paymentJson({ error: "Invalid signature" },403);
++    const eventId=request.headers.get("x-razorpay-event-id") ?? "";
++    if (!/^[A-Za-z0-9_-]{1,200}$/.test(eventId)) return paymentJson({error:"Missing or invalid event ID"},400);
++    const store=paymentStore(env);
++    if (await store.hasEvent(eventId)) return paymentJson({received:true,alreadyProcessed:true});
+     const event = JSON.parse(raw);
+     let orderId = event.payload?.payment?.entity?.order_id;
+     const refundPaymentId = event.payload?.refund?.entity?.payment_id;
+@@ -181,16 +250,22 @@ export async function paymentWebhook(request: Request, context: unknown) {
+       if (payment.id !== refundPaymentId) throw new Error("Invalid refund payment");
+       orderId = payment.order_id;
+     }
+-    if (typeof orderId !== "string" || !/^order_[A-Za-z0-9]+$/.test(orderId)) return paymentJson({ received: true });
+-    const record = await paymentStore(env).find(orderId);
+-    if (!record || record.key_id !== env.RAZORPAY_KEY_ID) return paymentJson({ received: true });
++    if (typeof orderId !== "string" || !/^order_[A-Za-z0-9]+$/.test(orderId)) {
++      const inserted=await store.completeWebhook(eventId,null,null,null);
++      return paymentJson({received:true,...(!inserted?{alreadyProcessed:true}:{})});
++    }
++    const record = await store.find(orderId);
++    if (!record || record.key_id !== env.RAZORPAY_KEY_ID) {
++      const inserted=await store.completeWebhook(eventId,orderId,null,null);
++      return paymentJson({received:true,...(!inserted?{alreadyProcessed:true}:{})});
++    }
+     const claims = claimsSchema.parse({ orderId, amount: record.amount, package: record.package, keyId: record.key_id, issuedAt: Date.parse(record.created_at) });
+     await trustedOrder(env,claims);
+     // Current provider state plus monotonic database writes tolerate repeated/out-of-order events.
+     const collection = z.object({ items: z.array(paymentSchema) }).parse(await api(env,`orders/${orderId}/payments`));
+     const settled = collection.items.find(p => p.status === "captured" || p.status === "refunded" || p.amount_refunded > 0);
+-    if (settled) await recordStatus(env,statusOf(settled,claims),orderId);
+-    return paymentJson({ received: true });
++    const status=settled?statusOf(settled,claims):null;
++    const inserted=await store.completeWebhook(eventId,orderId,status?.paymentId??null,status?.status??null,status?.refundedAmount??0);
++    return paymentJson({ received: true,...(!inserted?{alreadyProcessed:true}:{}) });
+   } catch { return paymentJson({ error: "Unable to store payment event" },503); }
+ }
+-
+diff --git a/supabase/functions/_shared/payment-store.ts b/supabase/functions/_shared/payment-store.ts
+index 6a24d37..a973e2c 100644
+--- a/supabase/functions/_shared/payment-store.ts
++++ b/supabase/functions/_shared/payment-store.ts
+@@ -5,10 +5,77 @@ function serviceDb(env: ServerEnv) {
+  return createClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+ }
+ 
+-export type PaymentRecord = { request_id: string; payload_hash: string; order_id: string | null; package: string; amount: number; key_id: string; created_at: string; status?: string; customer?: { admin_id?: string } };
++export type PaymentRecord = { request_id: string; payload_hash: string; order_id: string | null; package: string; amount: number; key_id: string; created_at: string; status?: string; reconciliation_state?: string; retry_parent?: string | null; retry_reserved_at?: string | null; customer?: Record<string, unknown> & { admin_id?: string } };
+ export function paymentStore(env: Partial<ServerEnv>) {
+   const db = serviceDb(env as ServerEnv);
+   return {
++    async queue(offset: number) {
++      const since=new Date(Date.now()-24*60*60000).toISOString();
++      const result=await db.from("payment_intents").select("request_id,order_id,payment_id,package,amount,status,reconciliation_state,created_at,last_checked_at,retry_parent,retry_reserved_at").eq("status","pending")
++        .or(`reconciliation_state.in.(pending,needs_reconciliation),and(reconciliation_state.in.(failed,expired),last_checked_at.gte.${since})`)
++        .order("created_at",{ascending:false}).order("request_id").range(offset,offset+49);
++      if(result.error) throw new Error("Payment queue unavailable");
++      const runs=await db.from("payment_reconciliation_runs").select("id,source,state,started_at,error,checked,errors").eq("alert",true).order("started_at",{ascending:false}).limit(20);
++      const alerts=await db.from("payment_reconciliation_log").select("id,request_id,order_id,new_state,error,created_at,payment_intents!inner(status,reconciliation_state)").eq("alert",true).eq("payment_intents.status","pending").in("payment_intents.reconciliation_state",["pending","needs_reconciliation"]).order("created_at",{ascending:false}).limit(20);
++      if(runs.error || alerts.error) throw new Error("Payment alerts unavailable");
++      return {orders:result.data,runs:runs.data,alerts:alerts.data,nextOffset:result.data.length===50?offset+50:null};
++    },
++    async history(requestId: string, offset: number) {
++      const result=await db.from("payment_reconciliation_log").select("id,order_id,old_state,new_state,error,alert,created_at,run_id").eq("request_id",requestId).order("created_at",{ascending:false}).order("id").range(offset,offset+49);
++      if(result.error) throw new Error("Payment history unavailable");
++      return {history:result.data,nextOffset:result.data.length===50?offset+50:null};
++    },
++    async byRequest(requestId: string): Promise<PaymentRecord|null> {
++      const result=await db.from("payment_intents").select().eq("request_id",requestId).maybeSingle();
++      if(result.error) throw new Error("Payment record unavailable");
++      return result.data;
++    },
++    async startRun(source: "admin" | "retry") {
++      const result=await db.from("payment_reconciliation_runs").insert({source,state:"running"}).select("id").single();
++      if(result.error) throw new Error("Run storage unavailable");
++      return result.data.id as string;
++    },
++    async reserveRetry(parent: string, record: Record<string, unknown>): Promise<{created:boolean;record:PaymentRecord}> {
++      const result=await db.rpc("reserve_payment_retry",{p_parent:parent,p_record:record});
++      if(result.error) throw new Error("Previous payment is not confirmed safe to retry. Check status or contact SiteNova.");
++      return result.data;
++    },
++    async verifyScheduler(token: string) {
++      const result=await db.rpc("verify_payment_scheduler",{p_token:token});
++      if(result.error) throw new Error("Scheduler authentication unavailable");
++      return result.data===true;
++    },
++    async claimRun(runId: string) {
++      const result=await db.rpc("claim_payment_reconciliation_run",{p_run:runId});
++      if(result.error) throw new Error("Run storage unavailable");
++      return result.data===true;
++    },
++    async dueOrders(before: string, after?: string): Promise<PaymentRecord[]> {
++      let query=db.from("payment_intents").select().eq("status","pending").lt("created_at",before).order("request_id").limit(100);
++      if(after) query=query.gt("request_id",after);
++      const result=await query;
++      if(result.error) throw new Error("Payment queue unavailable");
++      return result.data;
++    },
++    async recordReconciliation(runId: string, record: PaymentRecord, status: {status:string;paymentId?:string;refundedAmount?:number}, error: string|null) {
++      const result=await db.rpc("record_payment_reconciliation",{p_run:runId,p_request:record.request_id,p_payment:status.paymentId??null,p_status:status.status,p_refunded:status.refundedAmount??0,p_error:error});
++      if(result.error) throw new Error("Reconciliation storage unavailable");
++      return result.data as string;
++    },
++    async finishRun(runId: string, checked: number, errors: number, error: string|null) {
++      const result=await db.from("payment_reconciliation_runs").update({state:error||errors?"failed":"completed",checked,errors,error,alert:!!error||errors>0,finished_at:new Date().toISOString()}).eq("id",runId).eq("state","running");
++      if(result.error) throw new Error("Run storage unavailable");
++    },
++    async hasEvent(eventId: string) {
++      const result = await db.from("payment_webhook_events").select("event_id").eq("event_id",eventId).maybeSingle();
++      if (result.error) throw new Error("Event storage unavailable");
++      return !!result.data;
++    },
++    async completeWebhook(eventId: string, orderId: string | null, paymentId: string | null, status: string | null, refunded = 0) {
++      const result = await db.rpc("complete_payment_webhook",{p_event:eventId,p_order:orderId,p_payment:paymentId,p_status:status,p_refunded:refunded});
++      if (result.error) throw new Error("Event settlement unavailable");
++      return result.data === true;
++    },
+     async reserve(record: Record<string, unknown>): Promise<{ created: boolean; record: PaymentRecord }> {
+       const inserted = await db.from("payment_intents").insert(record).select().single();
+       if (!inserted.error) return { created: true, record: inserted.data };
+diff --git a/supabase/functions/_shared/reconciliation.ts b/supabase/functions/_shared/reconciliation.ts
+index e69de29..c49c7ab 100644
+--- /dev/null
++++ b/supabase/functions/_shared/reconciliation.ts
+@@ -0,0 +1,48 @@
++import { z } from "zod";
++import { paymentStore, type PaymentRecord } from "./payment-store.ts";
++import { fetchStoredPaymentStatus, paymentJson, type PaymentEnv } from "./razorpay.ts";
++
++export async function reconcileOne(env: PaymentEnv, runId: string, record: PaymentRecord) {
++  const store=paymentStore(env);
++  try {
++    const status=await fetchStoredPaymentStatus(env,record);
++    const state=await store.recordReconciliation(runId,record,status,null);
++    return {state,error:false};
++  } catch {
++    // Never persist provider bodies, authorization headers or raw exceptions.
++    await store.recordReconciliation(runId,record,{status:"pending"},"Provider verification or ledger update failed; owner review required.");
++    return {state:"needs_reconciliation",error:true};
++  }
++}
++export async function handleReconciliation(request: Request, env: PaymentEnv) {
++  if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
++  const token=request.headers.get("x-payment-scheduler-token")??"";
++  if(!/^[a-f0-9]{64}$/.test(token)) return paymentJson({error:"Unauthorized"},401);
++  const store=paymentStore(env);
++  let runId:string|undefined,checked=0,errors=0;
++  try {
++    if(!await store.verifyScheduler(token)) return paymentJson({error:"Unauthorized"},401);
++    const raw=await request.text();if(raw.length>1000) return paymentJson({error:"Request too large"},413);
++    runId=z.object({runId:z.string().uuid()}).strict().parse(JSON.parse(raw)).runId;
++    if(!await store.claimRun(runId)) return paymentJson({alreadyProcessed:true});
++    const before=new Date(Date.now()-15*60000).toISOString();
++    const deadline=Date.now()+110000;
++    let after:string|undefined;
++    while(true){
++      const records=await store.dueOrders(before,after);
++      if(!records.length) break;
++      for(let offset=0;offset<records.length;offset+=4){
++        if(Date.now()>deadline) throw new Error("Run time budget exceeded");
++        const results=await Promise.all(records.slice(offset,offset+4).map(record=>reconcileOne(env,runId!,record)));
++        checked+=results.length; errors+=results.filter(result=>result.error).length;
++      }
++      after=records.at(-1)!.request_id;
++      if(records.length<100) break;
++    }
++    await store.finishRun(runId,checked,errors,errors?"One or more orders need owner review.":null);
++    return paymentJson({checked,errors});
++  } catch {
++    if(runId){try{await store.finishRun(runId,checked,errors+1,"Reconciliation did not complete; retry scheduled.");}catch{/* SQL watchdog flags abandoned runs. */}}
++    return paymentJson({error:"Reconciliation unavailable"},503);
++  }
++}
+diff --git a/supabase/functions/_shared/admin-payments.ts b/supabase/functions/_shared/admin-payments.ts
+index e69de29..48dabed 100644
+--- /dev/null
++++ b/supabase/functions/_shared/admin-payments.ts
+@@ -0,0 +1,34 @@
++import {z} from "zod";
++import {paymentJson,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts";
++import {paymentStore} from "./payment-store.ts";
++import {reconcileOne} from "./reconciliation.ts";
++
++// Called only after the gateway verifies Auth identity AND site_admins membership.
++export async function adminPayments(request: Request, env: PaymentEnv, action: string, admin: VerifiedTestAdmin) {
++  if(!admin?.id) return paymentJson({error:"Admin sign-in required"},401);
++  if(!["queue","history","recheck"].includes(action)) return paymentJson({error:"Not found"},404);
++  let run:string|undefined;
++  const store=paymentStore(env);
++  try {
++    if(!await env.PAYMENT_RATE_LIMITER?.limit({key:`check:admin:${admin.id}`}).then(result=>result.success)) return paymentJson({error:"Too many checks. Try again in a minute."},429);
++    const raw=await request.text();if(raw.length>1000)return paymentJson({error:"Request too large"},413);
++    const body=JSON.parse(raw);
++    const offset=z.number().int().min(0).max(100000).default(0);
++    if(action==="queue"){
++      const input=z.object({offset}).strict().parse(body);
++      return paymentJson(await store.queue(input.offset));
++    }
++    const input=z.object({requestId:z.string().uuid(),...(action==="history"?{offset}:{})}).strict().parse(body);
++    const record=await store.byRequest(input.requestId);
++    if(!record) return paymentJson({error:"Order not found"},404);
++    if(action==="history") return paymentJson(await store.history(input.requestId,(input as {offset:number}).offset));
++    run=await store.startRun("admin");
++    const result=await reconcileOne(env,run,record);
++    await store.finishRun(run,1,result.error?1:0,result.error?"Provider verification failed; owner review required.":null);
++    return paymentJson({state:result.state,needsReview:result.error});
++  } catch(error) {
++    if(run){try{await store.finishRun(run,0,1,"Admin reconciliation did not complete; owner review required.");}catch{/* Cron watchdog flags abandoned runs. */}}
++    if(error instanceof z.ZodError || error instanceof SyntaxError) return paymentJson({error:"Invalid payment request"},400);
++    return paymentJson({error:"Unable to check payments. Try again later."},503);
++  }
++}
+diff --git a/supabase/functions/razorpay-reconcile/index.ts b/supabase/functions/razorpay-reconcile/index.ts
+index e69de29..0d5da30 100644
+--- /dev/null
++++ b/supabase/functions/razorpay-reconcile/index.ts
+@@ -0,0 +1,2 @@
++import { handleReconciliation } from "../_shared/reconciliation.ts";
++Deno.serve((request: Request)=>handleReconciliation(request,Deno.env.toObject()));
+diff --git a/app/lib/payment-admin-client.ts b/app/lib/payment-admin-client.ts
+index e69de29..482cf70 100644
+--- /dev/null
++++ b/app/lib/payment-admin-client.ts
+@@ -0,0 +1,9 @@
++import {supabase} from "./supabaseClient";
++export async function adminPaymentRequest<T>(action:"queue"|"history"|"recheck",body:unknown):Promise<T>{
++  const {data,error}=await supabase.auth.getSession();
++  if(error || !data.session?.access_token) throw new Error("Sign in again to check payments.");
++  const response=await fetch(`/api/admin/payments/${action}`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`},body:JSON.stringify(body),signal:AbortSignal.timeout(40000)});
++  const result=await response.json();
++  if(!response.ok) throw new Error(result.error||"Unable to load payments.");
++  return result;
++}
+diff --git a/app/pages/admin/tabs/PaymentsTab.tsx b/app/pages/admin/tabs/PaymentsTab.tsx
+index e69de29..2ac6629 100644
+--- /dev/null
++++ b/app/pages/admin/tabs/PaymentsTab.tsx
+@@ -0,0 +1,38 @@
++import {useCallback,useEffect,useState} from "react";
++import {Button} from "@/components/ui/button";
++import {adminPaymentRequest} from "@/lib/payment-admin-client";
++import {formatINR} from "@/lib/payments";
++type Order={request_id:string;order_id:string|null;package:string;amount:number;status:string;reconciliation_state:string;created_at:string;last_checked_at:string|null};
++type History={id:string;old_state:string;new_state:string;error:string|null;alert:boolean;created_at:string};
++type Queue={orders:Order[];runs:{id:string;error:string|null;started_at:string}[];alerts:{id:string;request_id:string;order_id:string|null;new_state:string;error:string|null;created_at:string}[];nextOffset:number|null};
++type HistoryPage={history:History[];nextOffset:number|null};
++const time=(value:string|null)=>value?new Date(value).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}):"Not checked";
++export default function PaymentsTab(){
++  const [queue,setQueue]=useState<Queue|null>(null),[offset,setOffset]=useState(0),[selected,setSelected]=useState<Order|null>(null),[history,setHistory]=useState<HistoryPage>({history:[],nextOffset:null});
++  const [busy,setBusy]=useState(false),[error,setError]=useState(""),[notice,setNotice]=useState("");
++  const refresh=useCallback(async()=>{setBusy(true);setError("");try{setQueue(await adminPaymentRequest<Queue>("queue",{offset}));}catch(e){setError(e instanceof Error?e.message:"Unable to load payments.");}finally{setBusy(false);}},[offset]);
++  useEffect(()=>{void refresh();},[refresh]);
++  async function showHistory(order:Order,more=false){
++    setBusy(true);setError("");if(!more){setSelected(order);setHistory({history:[],nextOffset:null});}
++    try{const page=await adminPaymentRequest<HistoryPage>("history",{requestId:order.request_id,offset:more?history.nextOffset:0});setHistory(previous=>({history:more?[...previous.history,...page.history]:page.history,nextOffset:page.nextOffset}));}
++    catch(e){setError(e instanceof Error?e.message:"Unable to load history.");}finally{setBusy(false);}
++  }
++  async function recheck(order:Order){
++    setBusy(true);setError("");setNotice("");
++    try{
++      const result=await adminPaymentRequest<{state:string;needsReview:boolean}>("recheck",{requestId:order.request_id});
++      setNotice(`${order.order_id??order.request_id}: ${result.state.replace(/_/g," ")}${result.needsReview?" — owner review required":""}.`);
++      setQueue(await adminPaymentRequest<Queue>("queue",{offset}));
++      await showHistory(order);
++    }catch(e){setError(e instanceof Error?e.message:"Unable to check payment.");}finally{setBusy(false);}
++  }
++  return <div className="space-y-6">
++    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Pending payments and failures checked in the last 24 hours. Automatic checks run every 10 minutes. Times shown in IST.</p><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh payments</Button></div>
++    {error&&<p role="alert" className="text-destructive">{error}</p>}{notice&&<p role="status">{notice}</p>}
++    {!!queue?.runs.length&&<section className="rounded-xl border border-destructive/40 p-4"><h2 className="font-semibold mb-2">Reconciliation failures — review required</h2>{queue.runs.map(run=><p key={run.id} className="text-sm">{time(run.started_at)} · {run.error??"A scheduled check failed."}</p>)}</section>}
++    {!!queue?.alerts.length&&<section className="rounded-xl border border-amber-500/40 p-4"><h2 className="font-semibold mb-2">Flagged orders</h2>{queue.alerts.map(alert=><div key={alert.id} className="text-sm py-2 break-all"><p>{alert.order_id??alert.request_id} · {time(alert.created_at)}</p><p>{alert.error??"Unresolved for over 24 hours — review required."}</p><Button variant="ghost" disabled={busy} onClick={()=>void showHistory({request_id:alert.request_id,order_id:alert.order_id,package:"",amount:0,status:"pending",reconciliation_state:alert.new_state,created_at:alert.created_at,last_checked_at:null})}>View history</Button></div>)}</section>}
++    <div className="rounded-xl border border-border overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="p-3">Order / service</th><th className="p-3">Amount</th><th className="p-3">State</th><th className="p-3">Last checked</th><th className="p-3">Actions</th></tr></thead><tbody>{queue?.orders.map(order=><tr key={order.request_id} className="border-b border-border"><td className="p-3 break-all">{order.order_id??"Order creation unresolved"}<span className="block text-muted-foreground">{order.package} · {time(order.created_at)}</span></td><td className="p-3 whitespace-nowrap">{formatINR(order.amount)}</td><td className="p-3">{order.reconciliation_state.replace(/_/g," ")}</td><td className="p-3">{time(order.last_checked_at)}</td><td className="p-3"><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy} onClick={()=>void recheck(order)}>Re-check with Razorpay</Button><Button variant="ghost" disabled={busy} onClick={()=>void showHistory(order)}>History</Button></div></td></tr>)}</tbody></table>{queue&&!queue.orders.length&&<p className="p-5 text-muted-foreground">No payments in this queue.</p>}{!queue&&busy&&<p className="p-5">Loading payments…</p>}</div>
++    <div className="flex gap-3"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous</Button><Button variant="outline" disabled={busy||queue?.nextOffset==null} onClick={()=>setOffset(queue!.nextOffset!)}>Next</Button></div>
++    {selected&&<section className="rounded-xl border border-border p-5"><h2 className="font-semibold break-all mb-3">Reconciliation history: {selected.order_id??selected.request_id}</h2><Button variant="outline" disabled={busy} onClick={()=>void recheck(selected)}>Re-check with Razorpay</Button>{history.history.map(item=><div key={item.id} className="border-t border-border py-3 mt-3"><p className="text-sm">{time(item.created_at)} · {item.old_state.replace(/_/g," ")} → {item.new_state.replace(/_/g," ")}</p>{item.alert&&<p className="text-amber-500 text-sm">Flagged for review</p>}{item.error&&<p className="text-sm text-destructive">{item.error}</p>}</div>)}{!history.history.length&&!busy&&<p className="mt-3 text-sm text-muted-foreground">No reconciliation checks recorded yet.</p>}{history.nextOffset!==null&&<Button variant="outline" disabled={busy} onClick={()=>void showHistory(selected,true)}>Load older checks</Button>}</section>}
++  </div>;
++}
+diff --git a/app/routes/api.payments.retry.ts b/app/routes/api.payments.retry.ts
+index e69de29..1498c3a 100644
+--- /dev/null
++++ b/app/routes/api.payments.retry.ts
+@@ -0,0 +1,2 @@
++import { paymentAction } from "@/lib/razorpay.server";
++export const action = ({request,context}: {request: Request;context: unknown}) => paymentAction(request,context,"retry");
+diff --git a/app/lib/payment-retry.test.ts b/app/lib/payment-retry.test.ts
+index e69de29..580b690 100644
+--- /dev/null
++++ b/app/lib/payment-retry.test.ts
+@@ -0,0 +1,51 @@
++// @vitest-environment node
++import {beforeEach,it,expect,vi} from 'vitest';
++const ledger=vi.hoisted(()=>({find:vi.fn(),byRequest:vi.fn(),startRun:vi.fn(),recordReconciliation:vi.fn(),finishRun:vi.fn(),reserveRetry:vi.fn(),attach:vi.fn()}));
++vi.mock('../../supabase/functions/_shared/payment-store.ts',()=>({paymentStore:()=>ledger}));
++import {createPaymentToken,paymentAction} from '../../supabase/functions/_shared/razorpay';
++const env={SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake',RAZORPAY_KEY_ID:'rzp_test_example',RAZORPAY_KEY_SECRET:'fake',RAZORPAY_WEBHOOK_SECRET:'fake',RAZORPAY_ENABLED:'true',PAYMENT_RATE_LIMITER:{limit:async()=>({success:true})}};
++const requestId='00000000-0000-4000-8000-000000000002';
++const record={request_id:'00000000-0000-4000-8000-000000000001',order_id:'order_old',package:'starter' as const,amount:500000,key_id:env.RAZORPAY_KEY_ID,created_at:new Date(Date.now()-3600000).toISOString(),status:'pending',customer:{package:'starter',name:'Test Client',email:'test@example.com',phone:'9876543210',business:'Test Project',accepted:true}};
++const order={id:'order_old',amount:500000,currency:'INR',status:'attempted',notes:{package:'starter'}};
++const payment={id:'pay_old',order_id:'order_old',amount:500000,currency:'INR',status:'failed',error_reason:'incorrect_pin'};
++const fetcher=vi.fn();
++async function req(extra={}){const token=await createPaymentToken({orderId:record.order_id,amount:record.amount,package:record.package,keyId:env.RAZORPAY_KEY_ID,issuedAt:Date.parse(record.created_at)},env.RAZORPAY_KEY_SECRET);return new Request('https://sitenova.dev/api/payments/retry',{method:'POST',headers:{origin:'https://sitenova.dev'},body:JSON.stringify({token,requestId,...extra})});}
++beforeEach(()=>{vi.resetAllMocks();vi.stubGlobal('fetch',fetcher);ledger.find.mockResolvedValue(record);ledger.startRun.mockResolvedValue('run');ledger.reserveRetry.mockImplementation(async(parent,data)=>({created:true,record:{...data,created_at:new Date().toISOString()}}));fetcher.mockResolvedValueOnce({ok:true,json:async()=>order}).mockResolvedValueOnce({ok:true,json:async()=>({items:[payment]})}).mockResolvedValueOnce({ok:true,json:async()=>({...order,id:'order_new',status:'created'})});});
++it('creates one fresh server-priced order only after provider-confirmed decline',async()=>{
++ const response=await paymentAction(await req(),{env},'retry');expect(response.status).toBe(200);expect((await response.json()).orderId).toBe('order_new');
++ expect(fetcher.mock.calls.map(([,options])=>options.method)).toEqual(['GET','GET','POST']);
++ expect(JSON.parse(fetcher.mock.calls[2][1].body).amount).toBe(500000);
++ expect(ledger.reserveRetry).toHaveBeenCalledWith(record.request_id,expect.objectContaining({customer:record.customer}));
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith('run',record,{status:'failed'},null);
++});
++it.each(['authorized','created','failed'])('blocks uncertain %s status and sends it to reconciliation',async status=>{
++ fetcher.mockReset().mockResolvedValueOnce({ok:true,json:async()=>order}).mockResolvedValueOnce({ok:true,json:async()=>({items:[{...payment,status,error_reason:'payment_timed_out'}]})});
++ expect((await paymentAction(await req(),{env},'retry')).status).toBe(409);expect(ledger.reserveRetry).not.toHaveBeenCalled();expect(fetcher.mock.calls.every(([,options])=>options.method==='GET')).toBe(true);
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith('run',record,{status:'pending'},null);
++});
++it('blocks on provider outage and records a generic error',async()=>{
++ fetcher.mockReset().mockRejectedValue(new Error('secret-value'));
++ expect((await paymentAction(await req(),{env},'retry')).status).toBe(409);expect(ledger.reserveRetry).not.toHaveBeenCalled();
++ expect(ledger.finishRun).toHaveBeenCalledWith('run',1,1,expect.not.stringContaining('secret-value'));
++});
++it('blocks captured orders, mismatched paise amounts and client failure overrides',async()=>{
++ fetcher.mockReset().mockResolvedValueOnce({ok:true,json:async()=>order}).mockResolvedValueOnce({ok:true,json:async()=>({items:[{...payment,status:'captured'}]})});
++ expect((await paymentAction(await req(),{env},'retry')).status).toBe(409);expect(ledger.recordReconciliation).toHaveBeenCalledWith('run',record,{status:'paid',paymentId:'pay_old'},null);
++ fetcher.mockReset().mockResolvedValueOnce({ok:true,json:async()=>({...order,amount:1})});
++ expect((await paymentAction(await req(),{env},'retry')).status).toBe(409);
++ expect((await paymentAction(await req({failed:true}),{env},'retry')).status).toBe(400);expect(ledger.reserveRetry).not.toHaveBeenCalled();
++});
++it('keeps public retries disabled and never uses browser age as expiry proof',async()=>{
++ expect((await paymentAction(await req(),{env:{...env,RAZORPAY_ENABLED:'false'}},'retry')).status).toBe(503);expect(fetcher).not.toHaveBeenCalled();
++ fetcher.mockReset().mockResolvedValueOnce({ok:true,json:async()=>({...order,status:'created'})}).mockResolvedValueOnce({ok:true,json:async()=>({items:[]})});
++ expect((await paymentAction(await req(),{env},'retry')).status).toBe(409);
++});
++it('blocks a reserved successor if an earlier attempt becomes captured before checkout',async()=>{
++ ledger.find.mockResolvedValue({...record,retry_parent:'parent'});ledger.byRequest.mockResolvedValue(record);
++ fetcher.mockReset().mockResolvedValueOnce({ok:true,json:async()=>({...order,status:'created'})}).mockResolvedValueOnce({ok:true,json:async()=>({items:[]})}).mockResolvedValueOnce({ok:true,json:async()=>order}).mockResolvedValueOnce({ok:true,json:async()=>({items:[{...payment,status:'captured'}]})});
++ const original=await req();const body=await original.json();
++ const request=new Request(original.url,{method:'POST',headers:{origin:'https://sitenova.dev'},body:JSON.stringify({token:body.token})});
++ expect((await paymentAction(request,{env},'checkout')).status).toBe(409);
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith('run',record,{status:'paid',paymentId:'pay_old'},null);
++ expect(fetcher.mock.calls.every(([,options])=>options.method==='GET')).toBe(true);
++});
+diff --git a/app/lib/payment-reconciliation.test.ts b/app/lib/payment-reconciliation.test.ts
+index e69de29..b9d37c0 100644
+--- /dev/null
++++ b/app/lib/payment-reconciliation.test.ts
+@@ -0,0 +1,40 @@
++// @vitest-environment node
++import {beforeEach,it,expect,vi} from 'vitest';
++const ledger=vi.hoisted(()=>({verifyScheduler:vi.fn(),claimRun:vi.fn(),dueOrders:vi.fn(),find:vi.fn(),recordReconciliation:vi.fn(),finishRun:vi.fn()}));
++vi.mock('../../supabase/functions/_shared/payment-store.ts',()=>({paymentStore:()=>ledger}));
++import {handleReconciliation} from '../../supabase/functions/_shared/reconciliation';
++const env={SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake',RAZORPAY_KEY_ID:'rzp_test_example',RAZORPAY_KEY_SECRET:'fake'};
++const record={request_id:'00000000-0000-4000-8000-000000000001',order_id:'order_1',package:'starter',amount:500000,key_id:env.RAZORPAY_KEY_ID,created_at:new Date(Date.now()-3600000).toISOString(),status:'pending'};
++const runId='00000000-0000-4000-8000-000000000002';
++const req=(token='a'.repeat(64))=>new Request('https://example.supabase.co/functions/v1/razorpay-reconcile',{method:'POST',headers:{'x-payment-scheduler-token':token},body:JSON.stringify({runId})});
++const fetcher=vi.fn();
++beforeEach(()=>{vi.resetAllMocks();vi.stubGlobal('fetch',fetcher);ledger.verifyScheduler.mockResolvedValue(true);ledger.claimRun.mockResolvedValue(true);ledger.dueOrders.mockResolvedValueOnce([record]);ledger.find.mockResolvedValue(record);ledger.recordReconciliation.mockResolvedValue('paid');fetcher.mockImplementation(async(url:string)=>({ok:true,json:async()=>url.endsWith('/payments')?{items:[{id:'pay_1',order_id:'order_1',amount:500000,currency:'INR',status:'captured'}]}:{id:'order_1',amount:500000,currency:'INR',status:'paid',notes:{package:'starter'}}}));});
++it('picks up a stuck order, validates provider state and records paid using only GET',async()=>{
++ const response=await handleReconciliation(req(),env);expect(response.status).toBe(200);
++ expect(await response.json()).toEqual({checked:1,errors:0});
++ expect(ledger.dueOrders.mock.calls[0][0]).toMatch(/T/);
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith(runId,record,{status:'paid',paymentId:'pay_1'},null);
++ expect(fetcher.mock.calls.every(([,options])=>options.method==='GET')).toBe(true);
++ expect(ledger.finishRun).toHaveBeenCalledWith(runId,1,0,null);
++});
++it('does not process the same run twice',async()=>{
++ await handleReconciliation(req(),env);ledger.claimRun.mockResolvedValueOnce(false);
++ expect(await (await handleReconciliation(req(),env)).json()).toEqual({alreadyProcessed:true});
++ expect(fetcher).toHaveBeenCalledTimes(2);expect(ledger.recordReconciliation).toHaveBeenCalledTimes(1);
++});
++it('flags provider outages without creating orders or logging provider secrets',async()=>{
++ fetcher.mockRejectedValue(new Error('SECRET'));expect((await handleReconciliation(req(),env)).status).toBe(200);
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith(runId,record,{status:'pending'},expect.not.stringContaining('SECRET'));
++ expect(ledger.finishRun).toHaveBeenCalledWith(runId,1,1,expect.any(String));
++ expect(fetcher.mock.calls.every(([,options])=>options.method==='GET')).toBe(true);
++});
++it('rejects mismatched paise amounts instead of recording paid',async()=>{
++ fetcher.mockResolvedValue({ok:true,json:async()=>({id:'order_1',amount:1,currency:'INR',status:'paid',notes:{package:'starter'}})});
++ await handleReconciliation(req(),env);
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith(runId,record,{status:'pending'},expect.any(String));
++});
++it('rejects unauthorized scheduler requests before processing the queue',async()=>{
++ expect((await handleReconciliation(req('invalid'),env)).status).toBe(401);
++ ledger.verifyScheduler.mockResolvedValueOnce(false);expect((await handleReconciliation(req(),env)).status).toBe(401);
++ expect(ledger.claimRun).not.toHaveBeenCalled();expect(fetcher).not.toHaveBeenCalled();
++});
+diff --git a/app/lib/payment-admin-queue.test.ts b/app/lib/payment-admin-queue.test.ts
+index e69de29..2090673 100644
+--- /dev/null
++++ b/app/lib/payment-admin-queue.test.ts
+@@ -0,0 +1,29 @@
++// @vitest-environment node
++import {beforeEach,it,expect,vi} from 'vitest';
++const ledger=vi.hoisted(()=>({queue:vi.fn(),history:vi.fn(),byRequest:vi.fn(),startRun:vi.fn(),finishRun:vi.fn(),recordReconciliation:vi.fn(),find:vi.fn()}));
++vi.mock('../../supabase/functions/_shared/payment-store.ts',()=>({paymentStore:()=>ledger}));
++import {adminPayments} from '../../supabase/functions/_shared/admin-payments';
++const admin={id:'admin',email:'admin@example.com'},requestId='00000000-0000-4000-8000-000000000001';
++const record={request_id:requestId,order_id:'order_1',package:'starter',amount:500000,key_id:'rzp_test_example',created_at:new Date().toISOString()};
++const env={SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake',RAZORPAY_KEY_ID:'rzp_test_example',RAZORPAY_KEY_SECRET:'fake',PAYMENT_RATE_LIMITER:{limit:async()=>({success:true})}};
++const fetcher=vi.fn();const req=(body:unknown)=>new Request('https://example.supabase.co',{method:'POST',body:JSON.stringify(body)});
++beforeEach(()=>{vi.resetAllMocks();vi.stubGlobal('fetch',fetcher);ledger.byRequest.mockResolvedValue(record);ledger.find.mockResolvedValue(record);ledger.startRun.mockResolvedValue('run');ledger.recordReconciliation.mockResolvedValue('paid');ledger.queue.mockResolvedValue({orders:[],runs:[],alerts:[],nextOffset:null});ledger.history.mockResolvedValue({history:[],nextOffset:null});fetcher.mockImplementation(async(url:string)=>({ok:true,json:async()=>url.endsWith('/payments')?{items:[{id:'pay_1',order_id:'order_1',amount:500000,currency:'INR',status:'captured'}]}:{id:'order_1',amount:500000,currency:'INR',status:'paid',notes:{package:'starter'}}}));});
++it('reads the queue and per-order history without changing provider or ledger state',async()=>{
++ expect((await adminPayments(req({}),env,'queue',admin)).status).toBe(200);
++ expect((await adminPayments(req({requestId,offset:50}),env,'history',admin)).status).toBe(200);
++ expect(ledger.history).toHaveBeenCalledWith(requestId,50);expect(fetcher).not.toHaveBeenCalled();expect(ledger.startRun).not.toHaveBeenCalled();
++});
++it('re-checks through verified provider GETs and logs the resulting settlement',async()=>{
++ const result=await adminPayments(req({requestId}),env,'recheck',admin);expect(await result.json()).toEqual({state:'paid',needsReview:false});
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith('run',record,{status:'paid',paymentId:'pay_1'},null);
++ expect(fetcher.mock.calls.every(([,options])=>options.method==='GET')).toBe(true);
++});
++it('rejects manual paid, price and payment-ID overrides before provider access',async()=>{
++ for(const extra of [{status:'paid'},{amount:1},{paymentId:'pay_fake'}])expect((await adminPayments(req({requestId,...extra}),env,'recheck',admin)).status).toBe(400);
++ expect((await adminPayments(req({requestId}),env,'mark-paid',admin)).status).toBe(404);expect(fetcher).not.toHaveBeenCalled();
++});
++it('flags an unsuccessful check without exposing provider errors',async()=>{
++ fetcher.mockRejectedValue(new Error('secret-value'));ledger.recordReconciliation.mockResolvedValue('needs_reconciliation');
++ const result=await adminPayments(req({requestId}),env,'recheck',admin);expect(await result.json()).toEqual({state:'needs_reconciliation',needsReview:true});
++ expect(ledger.finishRun).toHaveBeenCalledWith('run',1,1,expect.not.stringContaining('secret-value'));
++});
+diff --git a/app/lib/payment-queue-store.test.ts b/app/lib/payment-queue-store.test.ts
+index e69de29..3328a56 100644
+--- /dev/null
++++ b/app/lib/payment-queue-store.test.ts
+@@ -0,0 +1,21 @@
++// @vitest-environment node
++import {afterEach,it,expect,vi} from 'vitest';
++import {paymentStore} from '../../supabase/functions/_shared/payment-store';
++afterEach(()=>vi.unstubAllGlobals());
++it('reads a paginated minimal queue and excludes resolved alerts through the ledger relationship',async()=>{
++ const fetcher=vi.fn<typeof fetch>(async()=>Response.json([]));vi.stubGlobal('fetch',fetcher);
++ const result=await paymentStore({SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake-service-key'}).queue(50);
++ expect(result).toEqual({orders:[],runs:[],alerts:[],nextOffset:null});
++ const urls=fetcher.mock.calls.map(call=>new URL(String(call[0])));
++ expect(urls[0].searchParams.get('status')).toBe('eq.pending');
++ expect(urls[0].searchParams.get('offset')).toBe('50');
++ expect(urls[0].searchParams.get('select')).not.toMatch(/customer|key_id|payload_hash|dedupe_hash/);
++ expect(urls[0].searchParams.get('or')).toContain('reconciliation_state.in.(failed,expired)');
++ expect(urls[2].searchParams.get('select')).toContain('payment_intents!inner');
++ expect(urls[2].searchParams.get('payment_intents.status')).toBe('eq.pending');
++ expect(urls[2].searchParams.get('payment_intents.reconciliation_state')).toBe('in.(pending,needs_reconciliation)');
++});
++it('fails closed when queue storage denies access',async()=>{
++ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({code:'42501',message:'permission denied'},{status:403})));
++ await expect(paymentStore({SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake-service-key'}).queue(0)).rejects.toThrow('Payment queue unavailable');
++});
+diff --git a/app/pages/admin/tabs/PaymentsTab.test.tsx b/app/pages/admin/tabs/PaymentsTab.test.tsx
+index e69de29..e0b9af0 100644
+--- /dev/null
++++ b/app/pages/admin/tabs/PaymentsTab.test.tsx
+@@ -0,0 +1,19 @@
++import {beforeEach,afterEach,it,expect,vi} from 'vitest';
++import {render,screen,fireEvent,waitFor,cleanup} from '@testing-library/react';
++import PaymentsTab from './PaymentsTab';
++import {adminPaymentRequest} from '@/lib/payment-admin-client';
++vi.mock('@/lib/payment-admin-client',()=>({adminPaymentRequest:vi.fn()}));
++const order={request_id:'request',order_id:'order_1',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-10T10:00:00Z',last_checked_at:null};
++beforeEach(()=>{vi.resetAllMocks();vi.mocked(adminPaymentRequest).mockResolvedValue({orders:[order],runs:[],alerts:[],nextOffset:null});});
++afterEach(cleanup);
++it('shows ₹1 in rupees and re-checks only by order reference, with history',async()=>{
++ render(<PaymentsTab/>);expect(await screen.findByText('₹1.00')).toBeTruthy();
++ vi.mocked(adminPaymentRequest).mockResolvedValueOnce({state:'paid',needsReview:false}).mockResolvedValueOnce({orders:[],runs:[],alerts:[],nextOffset:null}).mockResolvedValueOnce({history:[{id:'log',old_state:'needs_reconciliation',new_state:'paid',error:null,alert:false,created_at:order.created_at}],nextOffset:null});
++ fireEvent.click(screen.getByRole('button',{name:'Re-check with Razorpay'}));
++ await waitFor(()=>expect(adminPaymentRequest).toHaveBeenCalledWith('recheck',{requestId:'request'}));
++ expect(await screen.findByText(/needs reconciliation → paid/)).toBeTruthy();expect(screen.queryByRole('button',{name:/mark.*paid/i})).toBeNull();
++});
++it('shows failed runs and over-24-hour flags',async()=>{
++ vi.mocked(adminPaymentRequest).mockResolvedValueOnce({orders:[order],runs:[{id:'run',started_at:order.created_at,error:'Provider unavailable'}],alerts:[{id:'alert',request_id:'request',order_id:'order_1',new_state:'needs_reconciliation',created_at:order.created_at,error:null}],nextOffset:null});
++ render(<PaymentsTab/>);expect(await screen.findByText('Reconciliation failures — review required')).toBeTruthy();expect(screen.getByText(/Unresolved for over 24 hours/)).toBeTruthy();
++});
+diff --git a/scripts/test-webhook-events-db.mjs b/scripts/test-webhook-events-db.mjs
+index e69de29..7a7a8b9 100644
+--- /dev/null
++++ b/scripts/test-webhook-events-db.mjs
+@@ -0,0 +1,25 @@
++import { PGlite } from '@electric-sql/pglite';
++import { readFile } from 'node:fs/promises';
++import assert from 'node:assert/strict';
++const db=new PGlite();
++await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
++await db.exec(await readFile('supabase/migrations/20261010170200_razorpay_backend_payments.sql','utf8'));
++await db.exec(await readFile('supabase/migrations/20261011085842_payment_webhook_events.sql','utf8'));
++for(const role of ['anon','authenticated']){
++ await db.exec(`set role ${role}`);
++ await assert.rejects(db.query('select * from payment_webhook_events'),/permission denied/);
++ await assert.rejects(db.query("select complete_payment_webhook('evt_1',null,null,null,0)"),/permission denied/);
++ await db.exec('reset role');
++}
++await db.exec('set role service_role');
++await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id) values('00000000-0000-4000-8000-000000000001','hash','dedupe','starter',500000,'rzp_test_example','{}','2026-10-10','order_1')");
++const sql="select complete_payment_webhook($1,'order_1',$2,'paid',0) as inserted";
++assert.equal((await db.query(sql,['evt_1','pay_1'])).rows[0].inserted,true);
++assert.equal((await db.query(sql,['evt_1','pay_other'])).rows[0].inserted,false);
++assert.equal((await db.query('select count(*)::int as n from payment_webhook_events')).rows[0].n,1);
++assert.equal((await db.query('select payment_id,status from payment_intents')).rows[0].payment_id,'pay_1');
++await assert.rejects(db.query(sql,['evt_failed','pay_other']),/conflicting/);
++assert.equal((await db.query("select count(*)::int as n from payment_webhook_events where event_id='evt_failed'")).rows[0].n,0);
++await assert.rejects(db.query("insert into payment_webhook_events(event_id) values('evt_1')"),/unique/);
++await db.close();
++console.log('PASS: UNIQUE event IDs, duplicate 200 semantics, atomic rollback and browser denial.');
+diff --git a/scripts/test-reconciliation-db.mjs b/scripts/test-reconciliation-db.mjs
+index e69de29..445b4c4 100644
+--- /dev/null
++++ b/scripts/test-reconciliation-db.mjs
+@@ -0,0 +1,31 @@
++import {PGlite} from '@electric-sql/pglite';
++import {readFile} from 'node:fs/promises';
++import assert from 'node:assert/strict';
++const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
++await db.exec(await readFile('supabase/migrations/20261010170200_razorpay_backend_payments.sql','utf8'));
++await db.exec(await readFile('supabase/migrations/20261011090250_payment_reconciliation.sql','utf8'));
++// Observe the real pending -> paid transition, where fulfillment could attach.
++// Repeated reconciliations must not produce a second transition.
++await db.exec("create table fulfillment_observer(request_id uuid); grant insert on fulfillment_observer to service_role; create function observe_paid_transition() returns trigger language plpgsql as $$begin if old.status<>'paid' and new.status='paid' then insert into public.fulfillment_observer values(new.request_id); end if; return new; end;$$; create trigger paid_transition after update on payment_intents for each row execute function observe_paid_transition();");
++for(const role of ['anon','authenticated']){await db.exec(`set role ${role}`);await assert.rejects(db.query('select * from payment_reconciliation_log'),/permission denied/);await assert.rejects(db.query("select verify_payment_scheduler('guess')"),/permission denied/);await db.exec('reset role');}
++await db.exec('set role service_role');
++const request='00000000-0000-4000-8000-000000000001',run='00000000-0000-4000-8000-000000000002';
++await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id,created_at) values($1,'hash','dedupe','starter',500000,'rzp_test_example','{}','2026-10-10','order_1',now()-interval '25 hours')",[request]);
++await db.query('insert into payment_reconciliation_runs(id) values($1)',[run]);
++assert.equal((await db.query('select claim_payment_reconciliation_run($1) as claimed',[run])).rows[0].claimed,true);
++assert.equal((await db.query('select claim_payment_reconciliation_run($1) as claimed',[run])).rows[0].claimed,false);
++const record="select record_payment_reconciliation($1,$2,$3,$4,$5,$6) as state";
++await db.query(record,[run,request,null,'pending',0,null]);
++assert.equal((await db.query('select alert from payment_reconciliation_log')).rows[0].alert,true);
++await db.query(record,[run,request,'pay_1','paid',0,null]);
++await db.query(record,[run,request,'pay_1','paid',0,null]);
++await db.query(record,[run,request,null,'pending',0,'Provider unavailable']);
++assert.equal((await db.query('select status from payment_intents')).rows[0].status,'paid');
++await db.query(record,[run,request,'pay_1','refunded',250000,null]);
++await db.query(record,[run,request,'pay_1','paid',0,null]);
++const result=(await db.query('select status,refunded_amount from payment_intents')).rows[0];
++assert.equal(result.status,'refunded');assert.equal(result.refunded_amount,250000);
++await assert.rejects(db.query(record,[run,request,'pay_other','paid',0,null]),/conflicting/);
++await db.exec('reset role');
++assert.equal((await db.query('select count(*)::int as n from fulfillment_observer')).rows[0].n,1);
++await db.close();console.log('PASS: run claim uniqueness, 24-hour flags, monotonic paid/refunded state, conflicting payment denial and browser denial.');
+diff --git a/scripts/test-reconciliation-schedule-db.mjs b/scripts/test-reconciliation-schedule-db.mjs
+index e69de29..748b2e1 100644
+--- /dev/null
++++ b/scripts/test-reconciliation-schedule-db.mjs
+@@ -0,0 +1,32 @@
++import {PGlite} from '@electric-sql/pglite';
++import {readFile} from 'node:fs/promises';
++import assert from 'node:assert/strict';
++const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
++await db.exec(await readFile('supabase/migrations/20261010170200_razorpay_backend_payments.sql','utf8'));
++await db.exec(await readFile('supabase/migrations/20261011090250_payment_reconciliation.sql','utf8'));
++// Only external extensions are stubbed; execute the real scheduling function.
++await db.exec(`create schema extensions;create schema vault;create schema net;create schema cron;
++create table vault.decrypted_secrets(name text,decrypted_secret text);
++create function extensions.gen_random_bytes(integer) returns bytea language sql as $$select decode(repeat('ab',32),'hex')$$;
++create function vault.create_secret(text,text,text) returns uuid language plpgsql as $$begin insert into vault.decrypted_secrets values($2,$1);return gen_random_uuid();end;$$;
++create table cron.jobs(name text,schedule text,command text);
++create function cron.schedule(text,text,text) returns bigint language plpgsql as $$begin insert into cron.jobs values($1,$2,$3);return 1;end;$$;
++create table net.calls(url text,body jsonb);
++create function net.http_post(url text,headers jsonb,body jsonb,timeout_milliseconds integer) returns bigint language plpgsql as $$begin insert into net.calls values(url,body);return 1;end;$$;`);
++const schedule=(await readFile('supabase/migrations/20261011090645_payment_reconciliation_schedule.sql','utf8')).replace('create extension if not exists pg_net with schema extensions;','');
++await db.exec(schedule);
++await db.exec(await readFile('supabase/migrations/20261011091631_payment_confirmed_retry.sql','utf8'));
++await db.exec(await readFile('supabase/migrations/20261011092645_payment_queue_alerts.sql','utf8'));
++await db.exec("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id,created_at,reconciliation_state) values(gen_random_uuid(),'h','failed','starter',500000,'rzp_test_example','{}','2026-10-10','order_failed',now()-interval '25 hours','failed'),(gen_random_uuid(),'h','pending','starter',500000,'rzp_test_example','{}','2026-10-10','order_pending',now()-interval '25 hours','needs_reconciliation')");
++assert.equal((await db.query('select schedule from cron.jobs')).rows[0].schedule,'*/10 * * * *');
++await db.query('select enqueue_payment_reconciliation()');
++assert.equal((await db.query("select count(*)::int as n from payment_reconciliation_log where order_id='order_failed' and alert")).rows[0].n,0);
++assert.equal((await db.query("select count(*)::int as n from payment_reconciliation_log where order_id='order_pending' and alert")).rows[0].n,1);
++await db.query('select enqueue_payment_reconciliation()');
++assert.equal((await db.query('select count(*)::int as n from net.calls')).rows[0].n,1);
++await db.exec("update payment_reconciliation_runs set started_at=now()-interval '16 minutes'");
++await db.query('select enqueue_payment_reconciliation()');
++assert.equal((await db.query("select alert from payment_reconciliation_runs where state='failed'")).rows[0].alert,true);
++assert.equal((await db.query('select count(*)::int as n from net.calls')).rows[0].n,2);
++for(const role of ['anon','authenticated','service_role']){await db.exec(`set role ${role}`);await assert.rejects(db.query('select enqueue_payment_reconciliation()'),/permission denied/);await db.exec('reset role');}
++await db.close();console.log('PASS: 10-minute schedule, overlap prevention, abandoned-run alert and enqueue privilege denial.');
+diff --git a/scripts/test-payment-retry-db.mjs b/scripts/test-payment-retry-db.mjs
+index e69de29..be122b3 100644
+--- /dev/null
++++ b/scripts/test-payment-retry-db.mjs
+@@ -0,0 +1,21 @@
++import {PGlite} from '@electric-sql/pglite';
++import {readFile} from 'node:fs/promises';
++import assert from 'node:assert/strict';
++const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
++for(const file of ['20261010170200_razorpay_backend_payments.sql','20261011090250_payment_reconciliation.sql','20261011091631_payment_confirmed_retry.sql'])await db.exec(await readFile('supabase/migrations/'+file,'utf8'));
++const parent='00000000-0000-4000-8000-000000000001',child='00000000-0000-4000-8000-000000000002',run='00000000-0000-4000-8000-000000000003';
++const data={request_id:child,payload_hash:'hash',dedupe_hash:'child',package:'starter',amount:500000,key_id:'rzp_test_example',customer:{},terms_version:'2026-10-10'};
++await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id) values($1,'hash','parent','starter',500000,'rzp_test_example','{}','2026-10-10','order_old')",[parent]);
++for(const role of ['anon','authenticated']){await db.exec(`set role ${role}`);await assert.rejects(db.query('select reserve_payment_retry($1,$2)',[parent,data]),/permission denied/);await db.exec('reset role');}
++await db.exec('set role service_role');
++const reserve=()=>db.query('select reserve_payment_retry($1,$2) as result',[parent,data]);
++await assert.rejects(reserve(),/retry_not_verified/);
++await db.query("insert into payment_reconciliation_runs(id,state) values($1,'running')",[run]);
++await db.query("select record_payment_reconciliation($1,$2,null,'failed',0,null)",[run,parent]);
++assert.equal((await reserve()).rows[0].result.created,true);assert.equal((await reserve()).rows[0].result.created,false);
++assert.ok((await db.query('select retry_reserved_at from payment_intents where request_id=$1',[parent])).rows[0].retry_reserved_at);
++await assert.rejects(db.query('select reserve_payment_retry($1,$2)',[parent,{...data,request_id:run}]),/already_reserved/);
++assert.equal((await db.query('select count(*)::int as n from payment_intents')).rows[0].n,2);
++await db.query("select record_payment_reconciliation($1,$2,'pay_late','paid',0,null)",[run,parent]);
++await assert.rejects(reserve(),/retry_not_verified/);
++await db.close();console.log('PASS: uncertain retries blocked, confirmed retries idempotent, one successor, retired parent, late capture blocks retries, browser denial.');
+diff --git a/supabase/migrations/20261011085842_payment_webhook_events.sql b/supabase/migrations/20261011085842_payment_webhook_events.sql
+index e69de29..1be085f 100644
+--- /dev/null
++++ b/supabase/migrations/20261011085842_payment_webhook_events.sql
+@@ -0,0 +1,29 @@
++begin;
++create table public.payment_webhook_events (
++  id uuid primary key default gen_random_uuid(),
++  event_id text not null constraint payment_webhook_events_event_id_key unique,
++  order_id text,
++  processed_at timestamptz not null default now(),
++  check (length(event_id) between 1 and 200)
++);
++alter table public.payment_webhook_events enable row level security;
++revoke all on public.payment_webhook_events from public, anon, authenticated;
++grant select, insert on public.payment_webhook_events to service_role;
++
++-- The event marker and settlement commit together. A failure rolls both back.
++create function public.complete_payment_webhook(p_event text,p_order text,p_payment text,p_status text,p_refunded integer)
++returns boolean language plpgsql security invoker set search_path='' as $$
++declare inserted text;
++begin
++  insert into public.payment_webhook_events(event_id,order_id) values(p_event,p_order)
++  on conflict(event_id) do nothing returning event_id into inserted;
++  if inserted is null then return false; end if;
++  if p_status is not null then
++    perform public.record_package_payment(p_order,p_payment,p_status,p_refunded);
++  end if;
++  return true;
++end;
++$$;
++revoke all on function public.complete_payment_webhook(text,text,text,text,integer) from public,anon,authenticated;
++grant execute on function public.complete_payment_webhook(text,text,text,text,integer) to service_role;
++commit;
+diff --git a/supabase/migrations/20261011090250_payment_reconciliation.sql b/supabase/migrations/20261011090250_payment_reconciliation.sql
+index e69de29..cbfcafb 100644
+--- /dev/null
++++ b/supabase/migrations/20261011090250_payment_reconciliation.sql
+@@ -0,0 +1,59 @@
++begin;
++alter table public.payment_intents add column reconciliation_state text not null default 'pending'
++  check (reconciliation_state in ('pending','needs_reconciliation','failed','expired','settled'));
++alter table public.payment_intents add column last_checked_at timestamptz;
++create index payment_intents_reconciliation_due on public.payment_intents(created_at,request_id) where status='pending';
++create table public.payment_reconciliation_runs (
++ id uuid primary key default gen_random_uuid(), source text not null default 'cron' check(source in ('cron','admin','retry')),
++ state text not null default 'queued' check(state in ('queued','running','completed','failed')),
++ started_at timestamptz not null default now(), finished_at timestamptz,
++ checked integer not null default 0, errors integer not null default 0,
++ alert boolean not null default false, error text, http_request_id bigint
++);
++create table public.payment_reconciliation_log (
++ id uuid primary key default gen_random_uuid(), run_id uuid not null references public.payment_reconciliation_runs(id),
++ request_id uuid not null references public.payment_intents(request_id), order_id text,
++ old_state text not null, new_state text not null, error text, alert boolean not null default false,
++ created_at timestamptz not null default now()
++);
++create index payment_reconciliation_log_order_history on public.payment_reconciliation_log(request_id,created_at desc);
++create table public.payment_scheduler_auth(singleton boolean primary key default true check(singleton),token_hash text not null);
++alter table public.payment_reconciliation_runs enable row level security;
++alter table public.payment_reconciliation_log enable row level security;
++alter table public.payment_scheduler_auth enable row level security;
++revoke all on public.payment_reconciliation_runs,public.payment_reconciliation_log,public.payment_scheduler_auth from public,anon,authenticated;
++grant select,insert,update on public.payment_reconciliation_runs to service_role;
++grant select,insert on public.payment_reconciliation_log to service_role;
++grant select on public.payment_scheduler_auth to service_role;
++
++create function public.verify_payment_scheduler(p_token text) returns boolean language sql security invoker set search_path='' as $$
++ select coalesce((select token_hash=encode(sha256(convert_to(p_token,'UTF8')),'hex') from public.payment_scheduler_auth where singleton),false);
++$$;
++create function public.claim_payment_reconciliation_run(p_run uuid) returns boolean language plpgsql security invoker set search_path='' as $$
++begin
++ update public.payment_reconciliation_runs set state='running' where id=p_run and state='queued';
++ return found;
++end;$$;
++create function public.record_payment_reconciliation(p_run uuid,p_request uuid,p_payment text,p_status text,p_refunded integer,p_error text)
++returns text language plpgsql security invoker set search_path='' as $$
++declare r public.payment_intents; previous text; resulting text; flagged boolean;
++begin
++ if not exists(select 1 from public.payment_reconciliation_runs where id=p_run and state='running') then raise exception 'invalid_reconciliation_run'; end if;
++ select * into r from public.payment_intents where request_id=p_request for update;
++ if not found then raise exception 'payment_record_missing'; end if;
++ previous=case when r.status='pending' then r.reconciliation_state else r.status end;
++ if p_status in ('paid','refunded') then
++   perform public.record_package_payment(r.order_id,p_payment,p_status,p_refunded);
++ elsif p_status is distinct from 'pending' then raise exception 'invalid_reconciliation_status';
++ end if;
++ select * into r from public.payment_intents where request_id=p_request;
++ resulting=case when r.status='pending' then 'needs_reconciliation' else r.status end;
++ flagged=p_error is not null or (r.status='pending' and r.created_at<now()-interval '24 hours');
++ update public.payment_intents set last_checked_at=now(),reconciliation_state=case when status='pending' then 'needs_reconciliation' else 'settled' end where request_id=p_request;
++ insert into public.payment_reconciliation_log(run_id,request_id,order_id,old_state,new_state,error,alert)
++ values(p_run,p_request,r.order_id,previous,resulting,p_error,flagged);
++ return resulting;
++end;$$;
++revoke all on function public.verify_payment_scheduler(text),public.claim_payment_reconciliation_run(uuid),public.record_payment_reconciliation(uuid,uuid,text,text,integer,text) from public,anon,authenticated;
++grant execute on function public.verify_payment_scheduler(text),public.claim_payment_reconciliation_run(uuid),public.record_payment_reconciliation(uuid,uuid,text,text,integer,text) to service_role;
++commit;
+diff --git a/supabase/migrations/20261011090645_payment_reconciliation_schedule.sql b/supabase/migrations/20261011090645_payment_reconciliation_schedule.sql
+index e69de29..67ed7bd 100644
+--- /dev/null
++++ b/supabase/migrations/20261011090645_payment_reconciliation_schedule.sql
+@@ -0,0 +1,39 @@
++begin;
++create extension if not exists pg_net with schema extensions;
++-- Generate the scheduler credential inside PostgreSQL. It is never returned.
++do $$
++declare token text; secret_id uuid;
++begin
++ token=encode(extensions.gen_random_bytes(32),'hex');
++ select vault.create_secret(token,'sitenova_payment_scheduler','Payment reconciliation scheduler only') into secret_id;
++ insert into public.payment_scheduler_auth(singleton,token_hash) values(true,encode(sha256(convert_to(token,'UTF8')),'hex'));
++end;$$;
++
++create function public.enqueue_payment_reconciliation() returns uuid language plpgsql security invoker set search_path='' as $$
++declare run uuid; http_id bigint;
++begin
++ perform pg_advisory_xact_lock(hashtextextended('sitenova-payment-reconciliation',0));
++ -- Database watchdog also runs when the Edge Function is unavailable.
++ update public.payment_reconciliation_runs set state='failed',alert=true,error='Scheduled function did not complete within 15 minutes.',finished_at=now()
++ where state in ('queued','running') and started_at<now()-interval '15 minutes';
++ if exists(select 1 from public.payment_reconciliation_runs where source='cron' and state in ('queued','running')) then return null; end if;
++ insert into public.payment_reconciliation_runs default values returning id into run;
++ insert into public.payment_reconciliation_log(run_id,request_id,order_id,old_state,new_state,error,alert)
++ select run,request_id,order_id,reconciliation_state,reconciliation_state,'Order unresolved for over 24 hours.',true
++ from public.payment_intents where status='pending' and created_at<now()-interval '24 hours';
++ begin
++   select net.http_post(
++     url:='https://bklmtwblsoitafynpikc.supabase.co/functions/v1/razorpay-reconcile',
++     headers:=jsonb_build_object('Content-Type','application/json','x-payment-scheduler-token',(select decrypted_secret from vault.decrypted_secrets where name='sitenova_payment_scheduler')),
++     body:=jsonb_build_object('runId',run),timeout_milliseconds:=150000
++   ) into http_id;
++   update public.payment_reconciliation_runs set http_request_id=http_id where id=run;
++ exception when others then
++   update public.payment_reconciliation_runs set state='failed',alert=true,error='Unable to dispatch scheduled reconciliation.',finished_at=now() where id=run;
++ end;
++ return run;
++end;$$;
++-- Only the database scheduler/operator may enqueue; no browser or service RPC.
++revoke all on function public.enqueue_payment_reconciliation() from public,anon,authenticated,service_role;
++select cron.schedule('sitenova-payment-reconciliation','*/10 * * * *','select public.enqueue_payment_reconciliation();');
++commit;
+diff --git a/supabase/migrations/20261011091631_payment_confirmed_retry.sql b/supabase/migrations/20261011091631_payment_confirmed_retry.sql
+index e69de29..3445452 100644
+--- /dev/null
++++ b/supabase/migrations/20261011091631_payment_confirmed_retry.sql
+@@ -0,0 +1,47 @@
++begin;
++alter table public.payment_intents add column retry_parent uuid unique references public.payment_intents(request_id);
++alter table public.payment_intents add column retry_reserved_at timestamptz;
++create or replace function public.record_payment_reconciliation(p_run uuid,p_request uuid,p_payment text,p_status text,p_refunded integer,p_error text)
++returns text language plpgsql security invoker set search_path='' as $$
++declare r public.payment_intents; previous text; resulting text; flagged boolean;
++begin
++ if not exists(select 1 from public.payment_reconciliation_runs where id=p_run and state='running') then raise exception 'invalid_reconciliation_run'; end if;
++ select * into r from public.payment_intents where request_id=p_request for update;
++ if not found then raise exception 'payment_record_missing'; end if;
++ previous=case when r.status='pending' then r.reconciliation_state else r.status end;
++ if p_status in ('paid','refunded') then
++   perform public.record_package_payment(r.order_id,p_payment,p_status,p_refunded);
++ elsif p_status not in ('pending','failed','expired') or p_status is null then raise exception 'invalid_reconciliation_status';
++ end if;
++ select * into r from public.payment_intents where request_id=p_request;
++ resulting=case when r.status<>'pending' then r.status when p_status in ('failed','expired') and p_error is null then p_status else 'needs_reconciliation' end;
++ flagged=p_error is not null or (resulting='needs_reconciliation' and r.created_at<now()-interval '24 hours');
++ update public.payment_intents set last_checked_at=now(),reconciliation_state=case when status='pending' then resulting else 'settled' end where request_id=p_request;
++ insert into public.payment_reconciliation_log(run_id,request_id,order_id,old_state,new_state,error,alert)
++ values(p_run,p_request,r.order_id,previous,resulting,p_error,flagged);
++ return resulting;
++end;$$;
++create function public.reserve_payment_retry(p_parent uuid,p_record jsonb) returns jsonb
++language plpgsql security invoker set search_path='' as $$
++declare parent public.payment_intents; child public.payment_intents;
++begin
++ select * into parent from public.payment_intents where request_id=p_parent for update;
++ if not found or parent.status<>'pending' or parent.reconciliation_state not in ('failed','expired')
++ or parent.last_checked_at is null or parent.last_checked_at<now()-interval '1 minute' then raise exception 'retry_not_verified'; end if;
++ if parent.package='test' then raise exception 'invalid_retry_channel'; end if;
++ select * into child from public.payment_intents where retry_parent=p_parent;
++ if found then
++   if child.request_id<>(p_record->>'request_id')::uuid or child.payload_hash<>p_record->>'payload_hash' then raise exception 'retry_already_reserved'; end if;
++   return jsonb_build_object('created',false,'record',to_jsonb(child));
++ end if;
++ if p_record->>'package'<>parent.package or (p_record->>'amount')::integer<>parent.amount
++ or p_record->>'key_id'<>parent.key_id or p_record->'customer'<>parent.customer then raise exception 'retry_details_mismatch'; end if;
++ insert into public.payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,retry_parent)
++ values((p_record->>'request_id')::uuid,p_record->>'payload_hash',p_record->>'dedupe_hash',parent.package,parent.amount,parent.key_id,parent.customer,parent.terms_version,p_parent)
++ returning * into child;
++ update public.payment_intents set retry_reserved_at=now() where request_id=p_parent;
++ return jsonb_build_object('created',true,'record',to_jsonb(child));
++end;$$;
++revoke all on function public.reserve_payment_retry(uuid,jsonb) from public,anon,authenticated;
++grant execute on function public.reserve_payment_retry(uuid,jsonb) to service_role;
++commit;
+diff --git a/supabase/migrations/20261011092645_payment_queue_alerts.sql b/supabase/migrations/20261011092645_payment_queue_alerts.sql
+index e69de29..7bf0dd2 100644
+--- /dev/null
++++ b/supabase/migrations/20261011092645_payment_queue_alerts.sql
+@@ -0,0 +1,26 @@
++begin;
++create or replace function public.enqueue_payment_reconciliation() returns uuid language plpgsql security invoker set search_path='' as $$
++declare run uuid; http_id bigint;
++begin
++ perform pg_advisory_xact_lock(hashtextextended('sitenova-payment-reconciliation',0));
++ -- Database watchdog also runs when the Edge Function is unavailable.
++ update public.payment_reconciliation_runs set state='failed',alert=true,error='Scheduled function did not complete within 15 minutes.',finished_at=now()
++ where state in ('queued','running') and started_at<now()-interval '15 minutes';
++ if exists(select 1 from public.payment_reconciliation_runs where source='cron' and state in ('queued','running')) then return null; end if;
++ insert into public.payment_reconciliation_runs default values returning id into run;
++ insert into public.payment_reconciliation_log(run_id,request_id,order_id,old_state,new_state,error,alert)
++ select run,request_id,order_id,reconciliation_state,reconciliation_state,'Order unresolved for over 24 hours.',true
++ from public.payment_intents where status='pending' and reconciliation_state in ('pending','needs_reconciliation') and created_at<now()-interval '24 hours';
++ begin
++   select net.http_post(
++     url:='https://bklmtwblsoitafynpikc.supabase.co/functions/v1/razorpay-reconcile',
++     headers:=jsonb_build_object('Content-Type','application/json','x-payment-scheduler-token',(select decrypted_secret from vault.decrypted_secrets where name='sitenova_payment_scheduler')),
++     body:=jsonb_build_object('runId',run),timeout_milliseconds:=150000
++   ) into http_id;
++   update public.payment_reconciliation_runs set http_request_id=http_id where id=run;
++ exception when others then
++   update public.payment_reconciliation_runs set state='failed',alert=true,error='Unable to dispatch scheduled reconciliation.',finished_at=now() where id=run;
++ end;
++ return run;
++end;$$;
++commit;
+diff --git a/app/pages/admin/AdminDashboard.tsx b/app/pages/admin/AdminDashboard.tsx
+index 2715d2b..091fabc 100644
+--- a/app/pages/admin/AdminDashboard.tsx
++++ b/app/pages/admin/AdminDashboard.tsx
+@@ -27,6 +27,7 @@ import TopicsTab from "./tabs/TopicsTab";
+ import QuoteRequestsTab from "./tabs/QuoteRequestsTab";
+ import SettingsTab from "./tabs/SettingsTab";
+ import ActivityLogTab from "./tabs/ActivityLogTab";
++import PaymentsTab from "./tabs/PaymentsTab";
+ 
+ // Realtime hook
+ import { useRealtimeLeads } from "./hooks/useRealtimeLeads";
+@@ -446,6 +447,7 @@ export default function AdminDashboard() {
+ 
+   // ── Tab content map ────────────────────────────────────────────────────────
+   const tabContent: Record<AdminTab, React.ReactNode> = {
++    payments: <PaymentsTab />,
+     scheduled_calls: <ScheduledCallsTab {...scheduled} />,
+     overview: (
+       <OverviewTab
+diff --git a/app/pages/admin/components/AdminSidebar.tsx b/app/pages/admin/components/AdminSidebar.tsx
+index ec2b1bf..28eb075 100644
+--- a/app/pages/admin/components/AdminSidebar.tsx
++++ b/app/pages/admin/components/AdminSidebar.tsx
+@@ -28,10 +28,12 @@ import {
+   Bot,
+   ListChecks,
+   ArrowUpRight,
++  CreditCard,
+ } from "lucide-react";
+ import { cn } from "@/lib/utils";
+ 
+ export type AdminTab =
++  | "payments"
+   | "scheduled_calls"
+   | "overview"
+   | "leads"
+@@ -124,6 +126,7 @@ export default function AdminSidebar({
+     {
+       label: "Manage",
+       items: [
++        { id: "payments", label: "Payments", icon: CreditCard },
+         { id: "settings", label: "Settings", icon: Settings },
+         { id: "activity_log", label: "Activity log", icon: History },
+       ],
+diff --git a/app/pages/admin/components/CommandPalette.tsx b/app/pages/admin/components/CommandPalette.tsx
+index 62fef6e..c257150 100644
+--- a/app/pages/admin/components/CommandPalette.tsx
++++ b/app/pages/admin/components/CommandPalette.tsx
+@@ -16,7 +16,7 @@ import {
+ } from "@/components/ui/command";
+ import {
+   CalendarDays, LayoutDashboard, Users, FileText, Megaphone, TrendingUp,
+-  Target, Plus, Settings, History, FileSignature, Bot, ListChecks,
++  Target, Plus, Settings, History, FileSignature, Bot, ListChecks, CreditCard,
+ } from "lucide-react";
+ import type { AdminTab } from "./AdminSidebar";
+ import type { AuditRequest, QuoteRequest } from "../AdminDashboard";
+@@ -30,6 +30,7 @@ interface CommandPaletteProps {
+ }
+ 
+ const TAB_COMMANDS: { tab: AdminTab; label: string; icon: React.ElementType }[] = [
++  { tab: "payments", label: "Payments", icon: CreditCard },
+   { tab: "scheduled_calls", label: "Scheduled Calls", icon: CalendarDays },
+   { tab: "overview",       label: "Overview",        icon: LayoutDashboard },
+   { tab: "leads",          label: "Audit Requests",  icon: Users },
+diff --git a/app/lib/razorpay.server.ts b/app/lib/razorpay.server.ts
+index 358cfcc..b4a38ee 100644
+--- a/app/lib/razorpay.server.ts
++++ b/app/lib/razorpay.server.ts
+@@ -16,7 +16,7 @@ export async function paymentConfiguration(context: unknown) {
+  try { const response=await edge(paymentEnv(context),"config"); if(!response.ok) throw new Error("Unavailable"); const config=await response.json(); return {enabled:config.enabled===true,testMode:config.testMode===true,packages:PAYMENT_PACKAGES}; }
+  catch { return {enabled:false,testMode:false,packages:PAYMENT_PACKAGES}; }
+ }
+-export async function paymentAction(request: Request,context: unknown,action:"order"|"verify"|"status"|"checkout") {
++export async function paymentAction(request: Request,context: unknown,action:"order"|"retry"|"verify"|"status"|"checkout") {
+  if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
+  if(request.headers.get("origin")!==new URL(request.url).origin) return paymentJson({error:"Invalid origin"},403);
+  try { const body=await request.text(); if(body.length>6000) return paymentJson({error:"Request too large"},413); const response=await edge(paymentEnv(context),action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local"); return paymentJson(await response.json(),response.status); }
+@@ -27,12 +27,13 @@ export const paymentWebhook=(_request:Request,_context:unknown)=>paymentJson({er
+ export async function adminTestPaymentAction(request:Request,context:unknown,action:string) {
+  if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
+  if(request.headers.get("origin")!==new URL(request.url).origin) return paymentJson({error:"Invalid origin"},403);
+- if(!["order","checkout","verify","status"].includes(action)) return paymentJson({error:"Not found"},404);
++ if(!["order","checkout","verify","status","queue","history","recheck"].includes(action)) return paymentJson({error:"Not found"},404);
+  const authorization=request.headers.get("authorization") ?? "";
+  if(!authorization.startsWith("Bearer ") || authorization.length>8010 || authorization.length<8) return paymentJson({error:"Admin sign-in required"},401);
+  try {
+   const body=await request.text(); if(body.length>6000) return paymentJson({error:"Request too large"},413);
+-  const response=await edge(paymentEnv(context),"admin-test/"+action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local",authorization.slice(7));
++  const channel=["queue","history","recheck"].includes(action)?"admin-queue/":"admin-test/";
++  const response=await edge(paymentEnv(context),channel+action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local",authorization.slice(7));
+   return paymentJson(await response.json(),response.status);
+  } catch { return paymentJson({error:"Unable to confirm test payment. Check status before retrying."},503); }
+ }
+diff --git a/app/lib/razorpay-client.ts b/app/lib/razorpay-client.ts
+index 62fce57..ae3e746 100644
+--- a/app/lib/razorpay-client.ts
++++ b/app/lib/razorpay-client.ts
+@@ -26,7 +26,14 @@ export async function loadRazorpay() {
+   }
+   await scriptPromise;
+ }
+-export async function paymentRequest<T>(action: "order" | "status" | "verify" | "checkout", body: unknown): Promise<T> {
++export async function paymentRequest<T>(action: "order" | "retry" | "status" | "verify" | "checkout", body: unknown): Promise<T> {
++  if(action==="retry") {
++    const input=body as {token:string;orderId:string};
++    const key=`sitenova-payment-retry-${input.orderId}`;
++    let requestId=sessionStorage.getItem(key);
++    if(!requestId){requestId=crypto.randomUUID();sessionStorage.setItem(key,requestId);}
++    body={token:input.token,requestId};
++  }
+   if (action === "order") {
+     const details = body as Record<string, unknown>;
+     const storageKey = `sitenova-payment-request-${details.package}`;
+diff --git a/app/pages/Pay.tsx b/app/pages/Pay.tsx
+index af63322..28c191b 100644
+--- a/app/pages/Pay.tsx
++++ b/app/pages/Pay.tsx
+@@ -45,6 +45,16 @@ export default function Pay() {
+     catch (e) { setError(e instanceof Error ? e.message : "Unable to check payment"); }
+     finally { setBusy(false); }
+   }
++  async function retry() {
++    if(!session || busy || !enabled) return;
++    setBusy(true);setError("");setNotice("");
++    try {
++      const next=await paymentRequest<PaymentSession>("retry",{token:session.token,orderId:session.orderId});
++      savePayment(next);setSession(next);setStatus(null);
++      setNotice("Your previous attempt was confirmed failed. A new checkout is ready; choose Continue checkout.");
++    } catch(e){setError(e instanceof Error?e.message:"Unable to verify the previous payment.");}
++    finally{setBusy(false);}
++  }
+   async function openCheckout(details?: PaymentDetails) {
+     if (!pack || !packageId || !enabled || busy) return;
+     setBusy(true); setError(""); setNotice("");
+@@ -102,7 +112,7 @@ export default function Pay() {
+             <p className="text-sm text-muted-foreground mt-3">50% of the {formatINR(pack.startingPrice)} starting price. This advance is credited against your final project invoice.</p>
+           </div>
+           <p className="text-sm text-muted-foreground mb-6">The final price, scope and delivery schedule are agreed in your proposal. Additional requirements may cost more. Payment does not include domain, hosting or third-party costs unless included in your proposal.</p>
+-          {!enabled ? <div className="rounded-xl border border-border p-4"><h2 className="font-semibold mb-2">Online payments are coming soon</h2><p className="text-sm text-muted-foreground">Contact us to confirm your project and arrange the next steps.</p></div> : status?.status === "paid" ? <div role="status" className="rounded-xl border border-primary/30 p-5"><CheckCircle2 className="text-primary mb-3" /><h2 className="font-heading text-xl font-bold">{testMode ? "Test payment verified" : "Advance received"}</h2><p className="text-sm text-muted-foreground mt-2">{testMode ? "This was a simulated transaction." : "Thank you. Contact SiteNova with your payment reference to confirm your project scope and schedule."}</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p></div> : status?.status === "refunded" ? <div role="status" className="rounded-xl border border-border p-5"><h2 className="font-semibold">A refund has been recorded</h2><p className="text-sm text-muted-foreground mt-2">Refund amount: {formatINR(status.refundedAmount ?? 0)}. Contact us to confirm your project and refund details.</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p></div> : session ? <div className="space-y-3"><p className="text-sm text-muted-foreground break-all">Order reference: {session.orderId}</p><Button disabled={busy} className="w-full" onClick={() => openCheckout()}>{busy ? <Loader2 className="animate-spin mr-2" size={18} /> : <CreditCard className="mr-2" size={18} />}Continue checkout</Button><Button disabled={busy} variant="outline" className="w-full" onClick={refresh}>Check payment status</Button></div> : <form onSubmit={form.handleSubmit(details => openCheckout(details))} className="space-y-4">
++          {!enabled ? <div className="rounded-xl border border-border p-4"><h2 className="font-semibold mb-2">Online payments are coming soon</h2><p className="text-sm text-muted-foreground">Contact us to confirm your project and arrange the next steps.</p></div> : status?.status === "paid" ? <div role="status" className="rounded-xl border border-primary/30 p-5"><CheckCircle2 className="text-primary mb-3" /><h2 className="font-heading text-xl font-bold">{testMode ? "Test payment verified" : "Advance received"}</h2><p className="text-sm text-muted-foreground mt-2">{testMode ? "This was a simulated transaction." : "Thank you. Contact SiteNova with your payment reference to confirm your project scope and schedule."}</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p></div> : status?.status === "refunded" ? <div role="status" className="rounded-xl border border-border p-5"><h2 className="font-semibold">A refund has been recorded</h2><p className="text-sm text-muted-foreground mt-2">Refund amount: {formatINR(status.refundedAmount ?? 0)}. Contact us to confirm your project and refund details.</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p></div> : session ? <div className="space-y-3"><p className="text-sm text-muted-foreground break-all">Order reference: {session.orderId}</p><Button disabled={busy} className="w-full" onClick={() => openCheckout()}>{busy ? <Loader2 className="animate-spin mr-2" size={18} /> : <CreditCard className="mr-2" size={18} />}Continue checkout</Button><Button disabled={busy} variant="outline" className="w-full" onClick={refresh}>Check payment status</Button><Button disabled={busy} variant="outline" className="w-full" onClick={retry}>Check eligibility for a fresh checkout</Button></div> : <form onSubmit={form.handleSubmit(details => openCheckout(details))} className="space-y-4">
+             {([ ["name", "Full name", "name"], ["business", "Business or project name", "organization"], ["email", "Email address", "email"], ["phone", "Mobile number", "tel-national"] ] as const).map(([field, label, autoComplete]) => <div key={field}><label htmlFor={`pay-${field}`} className="block text-sm font-medium mb-2">{label}</label><Input id={`pay-${field}`} autoComplete={autoComplete} type={field === "email" ? "email" : field === "phone" ? "tel" : "text"} inputMode={field === "phone" ? "numeric" : undefined} maxLength={field === "phone" ? 10 : field === "email" ? 254 : 100} {...form.register(field)} aria-invalid={!!form.formState.errors[field]} aria-describedby={form.formState.errors[field] ? `error-${field}` : undefined} />{form.formState.errors[field] && <p id={`error-${field}`} className="text-sm text-destructive mt-1">{form.formState.errors[field]?.message}</p>}</div>)}
+             <label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1 h-4 w-4 shrink-0" {...form.register("accepted")} /><span>I understand this is a project advance and agree to the <Link className="text-primary underline" to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">terms</Link>, <Link className="text-primary underline" to="/refund-policy" target="_blank" rel="noopener noreferrer">refund policy</Link> and <Link className="text-primary underline" to="/privacy-policy" target="_blank" rel="noopener noreferrer">privacy policy</Link>.</span></label>
+             {form.formState.errors.accepted && <p className="text-sm text-destructive">{form.formState.errors.accepted.message}</p>}
+diff --git a/app/pages/admin/components/AdminHeader.tsx b/app/pages/admin/components/AdminHeader.tsx
+index bac784c..e58d549 100644
+--- a/app/pages/admin/components/AdminHeader.tsx
++++ b/app/pages/admin/components/AdminHeader.tsx
+@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
+ import { SidebarTrigger } from "@/components/ui/sidebar";
+ import TestPaymentButton from "./TestPaymentButton";
+ export const TAB_LABELS: Record<string, string> = {
++  payments: "Payments",
+   scheduled_calls: "Scheduled calls",
+   overview: "Overview",
+   leads: "Audit requests",
+@@ -27,6 +28,7 @@ export const TAB_LABELS: Record<string, string> = {
+   activity_log: "Activity log",
+ };
+ export const TAB_DESCRIPTIONS: Record<string, string> = {
++  payments: "Review pending payments, provider checks, and reconciliation alerts.",
+   overview: "A clear view of your leads, calls, and content.",
+   scheduled_calls: "Keep upcoming conversations and Calendar updates in view.",
+   leads: "Review website audit requests and manage your follow-ups.",

@@ -28,10 +28,12 @@ import {
   Bot,
   ListChecks,
   ArrowUpRight,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type AdminTab =
+  | "payments"
   | "scheduled_calls"
   | "overview"
   | "leads"
@@ -48,6 +50,7 @@ interface AdminSidebarProps {
   activeTab: AdminTab;
   onTabChange: (tab: AdminTab) => void;
   badges: {
+    payments?: number;
     scheduled_calls: number;
     leads: number;
     quote_requests: number;
@@ -124,6 +127,7 @@ export default function AdminSidebar({
     {
       label: "Manage",
       items: [
+        { id: "payments", label: "Payments", icon: CreditCard, badge: badges.payments },
         { id: "settings", label: "Settings", icon: Settings },
         { id: "activity_log", label: "Activity log", icon: History },
       ],

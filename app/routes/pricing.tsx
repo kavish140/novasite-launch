@@ -1,5 +1,13 @@
 import { buildMeta } from "@/lib/meta";
+import type { LoaderFunctionArgs } from "react-router";
+import { paymentConfiguration, paymentJson } from "@/lib/razorpay.server";
 export { default } from "@/pages/Pricing";
+
+export async function loader({ context }: LoaderFunctionArgs) {
+  const config = await paymentConfiguration(context);
+  return paymentJson({ paymentsEnabled: config.enabled, packages: config.packages });
+}
+export function headers() { return { "Cache-Control": "no-store" }; }
 
 export function meta() {
   return buildMeta({

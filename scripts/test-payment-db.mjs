@@ -1,0 +1,38 @@
+import { PGlite } from "@electric-sql/pglite";
+import { readFile } from "node:fs/promises";
+import assert from "node:assert/strict";
+const db = new PGlite();
+await db.exec("create role anon; create role authenticated; create role service_role bypassrls;");
+const sql = await readFile("supabase/migrations/20261010170200_razorpay_backend_payments.sql","utf8");
+await db.exec(sql); await db.exec(sql);
+const limits = await readFile("supabase/migrations/20261010173513_payment_edge_rate_limits.sql","utf8");
+await db.exec(limits); await db.exec(limits);
+const adminTest = await readFile("supabase/migrations/20261011064503_admin_test_payment.sql","utf8");
+await db.exec(adminTest); await db.exec(adminTest);
+for (const role of ["anon","authenticated"]) {
+  await db.exec(`set role ${role}`);
+  await assert.rejects(db.query("select * from payment_intents"),/permission denied/);
+  await assert.rejects(db.query("select record_package_payment('order_1','pay_1','paid',0)"),/permission denied/);
+  await assert.rejects(db.query("select consume_payment_limit('browser')"),/permission denied/);
+  await db.exec("reset role");
+}
+await db.exec("set role service_role");
+for(let i=0;i<31;i++) assert.equal((await db.query("select consume_payment_limit('test-bucket') as allowed")).rows[0].allowed,i<30);
+await db.query("update payment_rate_limits set window_start=now()-interval '61 seconds'");
+assert.equal((await db.query("select consume_payment_limit('test-bucket') as allowed")).rows[0].allowed,true);
+const insert = "insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id) values($1,'hash',$2,'starter',$3,'rzp_test_example','{}','2026-10-10',$4)";
+await db.query(insert,["00000000-0000-4000-8000-000000000001","dedupe",500000,"order_1"]);
+await assert.rejects(db.query(insert,["00000000-0000-4000-8000-000000000002","dedupe",500000,"order_2"]),/unique/);
+await assert.rejects(db.query(insert,["00000000-0000-4000-8000-000000000003","other",1,"order_3"]),/check/);
+await db.query("select record_package_payment('order_1','pay_1','paid',0)");
+await db.query("select record_package_payment('order_1','pay_1','refunded',250000)");
+await db.query("select record_package_payment('order_1','pay_1','paid',0)");
+const row = (await db.query("select status,refunded_amount from payment_intents")).rows[0];
+assert.equal(row.status,"refunded"); assert.equal(row.refunded_amount,250000);
+await assert.rejects(db.query("select record_package_payment('order_1','pay_other','paid',0)"),/conflicting/);
+console.log("PASS: migration rerun, browser access denied, service-only RPC, duplicate requests, fixed prices, monotonic refunds and conflicting payment protection.");
+const testInsert="insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version) values($1::text::uuid,'hash',$1::text,'test',$2,'rzp_live_example',$3,'2026-10-10')";
+for(const [amount,customer] of [[1,{admin_id:'owner'}],[100,{}],[100,{admin_id:null}],[100,{admin_id:''}]]) await assert.rejects(db.query(testInsert,["00000000-0000-4000-8000-000000000009",amount,JSON.stringify(customer)]),/check/);
+await db.query(testInsert,["00000000-0000-4000-8000-000000000009",100,JSON.stringify({admin_id:'owner'})]);
+console.log("PASS: admin test ledger accepts only 100 paise with an owner marker; package constraints and browser denial preserved.");
+await db.close();

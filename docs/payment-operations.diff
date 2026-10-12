@@ -1,0 +1,1183 @@
+diff --git a/app/components/PaymentReceiptLink.test.tsx b/app/components/PaymentReceiptLink.test.tsx
+--- /dev/null
++++ b/app/components/PaymentReceiptLink.test.tsx
+@@ -0,0 +1,10 @@
++import {afterEach,it,expect,vi} from "vitest";
++import {render,screen,cleanup} from "@testing-library/react";
++import PaymentReceiptLink from "./PaymentReceiptLink";
++vi.mock("@/lib/supabaseClient",()=>({supabase:{auth:{getSession:async()=>({data:{session:null}})}}}));
++afterEach(()=>{cleanup();vi.unstubAllGlobals();});
++it("adds a durable receipt link separately from checkout and verification",async()=>{
++ const url=`https://sitenova.dev/receipt#00000000-0000-4000-8000-000000000001.${"a".repeat(64)}`;
++ const fetcher=vi.fn(async()=>Response.json({url}));vi.stubGlobal("fetch",fetcher);render(<PaymentReceiptLink token="signed-payment-token"/>);
++ expect((await screen.findByRole("link")).getAttribute("href")).toBe(url);expect(fetcher).toHaveBeenCalledWith("/api/payments/receipt-link",expect.objectContaining({method:"POST",body:JSON.stringify({token:"signed-payment-token"})}));
++});
+diff --git a/app/components/PaymentReceiptLink.tsx b/app/components/PaymentReceiptLink.tsx
+--- /dev/null
++++ b/app/components/PaymentReceiptLink.tsx
+@@ -0,0 +1,10 @@
++import {useEffect,useState} from "react";
++import {supabase} from "@/lib/supabaseClient";
++export default function PaymentReceiptLink({token,admin=false}:{token:string;admin?:boolean}){
++ const [url,setUrl]=useState(""),[error,setError]=useState(false);
++ useEffect(()=>{let active=true;const controller=new AbortController();setUrl("");setError(false);
++  async function load(){try{const session=admin?await supabase.auth.getSession():null;if(admin&&!session?.data.session)throw new Error("Sign in required");const response=await fetch(admin?"/api/admin/payments/receipt-link":"/api/payments/receipt-link",{method:"POST",headers:{"Content-Type":"application/json",...(session?.data.session?{Authorization:`Bearer ${session.data.session.access_token}`}:{})},body:JSON.stringify({token}),signal:controller.signal});if(!response.ok)throw new Error("Receipt unavailable");const result=await response.json();if(!/^https:\/\/sitenova\.dev\/receipt#[0-9a-f.-]+$/.test(result.url))throw new Error("Invalid link");if(active)setUrl(result.url);}catch{if(active)setError(true);}}
++  void load();return()=>{active=false;controller.abort();};
++ },[token,admin]);
++ return <div className="mt-3 text-sm">{url?<>{!admin&&<p>Save this receipt link to check your payment on another device.</p>}<a href={url} title="Save this receipt link to check payment on another device" className="text-primary underline break-all" referrerPolicy="no-referrer">{admin?"Payment receipt":url}</a></>:error?<p>Receipt link unavailable. Your verified payment remains recorded; try checking status again later.</p>:<p>Preparing receipt link…</p>}</div>;
++}
+diff --git a/app/entry.client.tsx b/app/entry.client.tsx
+--- a/app/entry.client.tsx
++++ b/app/entry.client.tsx
+@@ -7,7 +7,7 @@ hydrateRoot(
+ );
+ 
+ // Sentry — delayed init (preserves existing pattern from main.tsx)
+-if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && !window.location.pathname.startsWith("/admin")) {
++if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && !window.location.pathname.startsWith("/admin")) {
+   setTimeout(() => {
+     import("@sentry/react").then((Sentry) => {
+       Sentry.init({
+diff --git a/app/lib/booking.ts b/app/lib/booking.ts
+--- a/app/lib/booking.ts
++++ b/app/lib/booking.ts
+@@ -28,7 +28,7 @@ export function bookingAvailable(settings: BookingSettings): boolean {
+ }
+ 
+ export function suppressPromotions(path: string): boolean {
+-  return /^\/(?:admin(?:\/|$)|lp(?:\/|$)|pay\/?$|quote\/?$|free-audit\/?$|ads-contact\/?$|contact-us\/?$|book-a-call\/?$|thank-you\/?$)/.test(
++  return /^\/(?:admin(?:\/|$)|lp(?:\/|$)|pay\/?$|receipt\/?$|quote\/?$|free-audit\/?$|ads-contact\/?$|contact-us\/?$|book-a-call\/?$|thank-you\/?$)/.test(
+     path,
+   );
+ }
+diff --git a/app/lib/payment-admin-client.ts b/app/lib/payment-admin-client.ts
+--- a/app/lib/payment-admin-client.ts
++++ b/app/lib/payment-admin-client.ts
+@@ -1,5 +1,5 @@
+ import {supabase} from "./supabaseClient";
+-export async function adminPaymentRequest<T>(action:"queue"|"history"|"recheck",body:unknown):Promise<T>{
++export async function adminPaymentRequest<T>(action:"queue"|"history"|"recheck"|"paid"|"acknowledge"|"investigations",body:unknown):Promise<T>{
+   const {data,error}=await supabase.auth.getSession();
+   if(error || !data.session?.access_token) throw new Error("Sign in again to check payments.");
+   const response=await fetch(`/api/admin/payments/${action}`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`},body:JSON.stringify(body),signal:AbortSignal.timeout(40000)});
+diff --git a/app/lib/payment-admin-edge.test.ts b/app/lib/payment-admin-edge.test.ts
+--- a/app/lib/payment-admin-edge.test.ts
++++ b/app/lib/payment-admin-edge.test.ts
+@@ -14,7 +14,7 @@ describe("admin test payment authorization",()=>{
+   const summary=new Request(original.url.replace("admin-test/order","admin-queue/queue"),{method:"POST",headers:original.headers,body:JSON.stringify({summaryOnly:true})});
+   expect((await handlePaymentEdge(summary,env)).status).toBe(403);expect(mocks.queue).not.toHaveBeenCalled();
+  });
+- it.each(["queue","history","recheck"])("denies non-admins access to payment %s",async action=>{
++ it.each(["queue","history","recheck","paid","acknowledge","investigations"])("denies non-admins access to payment %s",async action=>{
+   const queueReq=(token?:string)=>{const original=req(token);return new Request(original.url.replace("admin-test/order",`admin-queue/${action}`),original);};
+   expect((await handlePaymentEdge(queueReq(),env)).status).toBe(401);
+   mocks.getUser.mockResolvedValueOnce({data:{user:null},error:{message:"forged"}});
+diff --git a/app/lib/payment-disputes.test.ts b/app/lib/payment-disputes.test.ts
+--- a/app/lib/payment-disputes.test.ts
++++ b/app/lib/payment-disputes.test.ts
+@@ -4,7 +4,7 @@ import {beforeEach,it,expect,vi} from "vitest";
+ const store=vi.hoisted(()=>({hasEvent:vi.fn(),recordDispute:vi.fn(),completeWebhook:vi.fn(),settle:vi.fn()}));
+ vi.mock("../../supabase/functions/_shared/payment-store.ts",()=>({paymentStore:()=>store}));
+ import {paymentWebhook} from "../../supabase/functions/_shared/razorpay";
+-import {openDisputes,type DisputeEvent} from "../../supabase/functions/_shared/payment-health";
++import {openDisputes,lostDisputes,type DisputeEvent} from "../../supabase/functions/_shared/payment-health";
+ const env={SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"fake",RAZORPAY_KEY_ID:"rzp_test_fake",RAZORPAY_KEY_SECRET:"fake",RAZORPAY_WEBHOOK_SECRET:"fake-signing-secret"};
+ const event={event:"payment.dispute.created",created_at:1791712800,payload:{payment:{entity:{id:"pay_1",order_id:"order_1",status:"captured"}},dispute:{entity:{id:"disp_1",payment_id:"pay_1",amount:100,currency:"INR",status:"open",respond_by:1791799200}}}};
+ function req(body:unknown=event,bad=false){const raw=JSON.stringify(body);return new Request("https://example.test/webhook",{method:"POST",body:raw,headers:{"x-razorpay-event-id":"evt_1","x-razorpay-signature":bad?"bad":createHmac("sha256",env.RAZORPAY_WEBHOOK_SECRET).update(raw).digest("hex")}});}
+@@ -36,3 +36,11 @@ it("uses provider event time and clears closed disputes, even with out-of-order
+  expect(openDisputes([row("closed","2026-10-11T12:00:00Z"),row("open","2026-10-11T11:00:00Z")])).toEqual([]);
+  expect(openDisputes([row("future_status","2026-10-11T12:00:00Z")])).toHaveLength(1);
+ });
++it("keeps a lost dispute alert after closed until its loss event is acknowledged",()=>{
++ const row=(status:string,time:string):DisputeEvent=>({event_id:`evt_${status}`,processed_at:time,dispute:{id:"disp_1",event:`payment.dispute.${status}`,status,amount:100,currency:"INR",paymentId:"pay_1",orderId:"order_1",responseDueAt:null,occurredAt:time}});
++ const rows=[row("lost","2026-10-11T11:00:00Z"),row("closed","2026-10-11T12:00:00Z")];
++ expect(openDisputes(rows)).toEqual([]);expect(lostDisputes(rows,new Set())).toHaveLength(1);
++ expect(lostDisputes(rows,new Set(["disp_1"]))).toEqual([]);
++ expect(lostDisputes([...rows,{...rows[0],event_id:"sync_lost",processed_at:"2026-10-11T14:00:00Z"}],new Set(["disp_1"]))).toEqual([]);
++ expect(lostDisputes([row("won","2026-10-11T12:00:00Z")],new Set())).toEqual([]);
++});
+diff --git a/app/lib/payment-health-store.test.ts b/app/lib/payment-health-store.test.ts
+--- a/app/lib/payment-health-store.test.ts
++++ b/app/lib/payment-health-store.test.ts
+@@ -8,13 +8,17 @@ it("counts the entire ledger, excludes resolved orders, and uses scheduled compl
+   const url=new URL(String(input));
+   if(options?.method==="HEAD")return new Response(null,{headers:{"content-range":"*/61"}});
+   if(url.pathname.endsWith("payment_webhook_events"))return Response.json([]);
++  if(url.pathname.endsWith("payment_dispute_acknowledgements"))return Response.json([]);
++  if(url.pathname.endsWith("payment_dispute_snapshots"))return Response.json([]);
+   if(url.searchParams.get("select")==="state")return Response.json([{state:"failed"}]);
+   return Response.json([{finished_at:"2026-10-11T10:00:00Z"}]);
+  });vi.stubGlobal("fetch",fetcher);
+  const health=await paymentStore(env).health();
+  expect(health.needsReconciliation).toBe(61);expect(health.overdue).toBe(61);expect(health.refunded).toBe(61);expect(health.latestRunFailed).toBe(true);
+  const calls=fetcher.mock.calls.map(([url,options])=>({url:new URL(String(url)),options}));
+- const head=calls.filter(call=>call.options?.method==="HEAD");expect(head).toHaveLength(3);
++ const head=calls.filter(call=>call.options?.method==="HEAD");expect(head).toHaveLength(5);
++ expect(health.investigations).toBe(61);
++ expect(health.unacknowledgedPaid).toBe(61);
+  expect(head.every(call=>call.url.searchParams.get("limit")===null)).toBe(true);
+  const overdue=head.find(call=>call.url.searchParams.has("created_at"))!;
+  expect(overdue.url.searchParams.get("status")).toBe("eq.pending");expect(overdue.url.searchParams.get("reconciliation_state")).toBe("in.(pending,needs_reconciliation)");
+diff --git a/app/lib/payment-investigations.test.ts b/app/lib/payment-investigations.test.ts
+--- /dev/null
++++ b/app/lib/payment-investigations.test.ts
+@@ -0,0 +1,29 @@
++// @vitest-environment node
++import {createHmac} from "node:crypto";
++import {beforeEach,it,expect,vi} from "vitest";
++const mocks=vi.hoisted(()=>({hasEvent:vi.fn(),find:vi.fn(),recordInvestigation:vi.fn(),unattached:vi.fn(),completeWebhook:vi.fn()}));
++vi.mock("../../supabase/functions/_shared/payment-store.ts",()=>({paymentStore:()=>mocks}));
++vi.mock("../../supabase/functions/_shared/payment-operations.ts",()=>({operationsStore:()=>mocks}));
++import {paymentWebhook} from "../../supabase/functions/_shared/razorpay";
++import {syncUnattachedOrders} from "../../supabase/functions/_shared/investigation-sync";
++const env={SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"fake",RAZORPAY_KEY_ID:"rzp_test_fake",RAZORPAY_KEY_SECRET:"fake",RAZORPAY_WEBHOOK_SECRET:"fake"};
++const fetcher=vi.fn(),id="00000000-0000-4000-8000-000000000001";
++function request(bad=false){const raw=JSON.stringify({event:"payment.captured",payload:{payment:{entity:{id:"pay_unknown",order_id:"order_unknown",amount:100,currency:"INR",status:"captured",email:"must not be stored"}}}});return new Request("https://example.test/webhook",{method:"POST",body:raw,headers:{"x-razorpay-event-id":"evt_unknown","x-razorpay-signature":bad?"bad":createHmac("sha256","fake").update(raw).digest("hex")}});}
++beforeEach(()=>{vi.resetAllMocks();vi.stubGlobal("fetch",fetcher);mocks.hasEvent.mockResolvedValue(false);mocks.find.mockResolvedValue(null);mocks.recordInvestigation.mockResolvedValue(true);});
++it("records unknown signed payments atomically with their event IDs without settlement or personal data",async()=>{
++ expect((await paymentWebhook(request(),{env})).status).toBe(200);
++ expect(mocks.recordInvestigation).toHaveBeenCalledWith({kind:"unknown_payment",orderId:"order_unknown",paymentId:"pay_unknown",amount:100,currency:"INR",status:"captured"},"evt_unknown","payment.captured");
++ expect(mocks.completeWebhook).not.toHaveBeenCalled();expect(fetcher).not.toHaveBeenCalled();
++ mocks.recordInvestigation.mockResolvedValue(false);expect(await(await paymentWebhook(request(),{env})).json()).toEqual({received:true,alreadyProcessed:true});
++});
++it("rejects forged unknown events and retries storage failures",async()=>{
++ expect((await paymentWebhook(request(true),{env})).status).toBe(403);expect(mocks.recordInvestigation).not.toHaveBeenCalled();
++ mocks.recordInvestigation.mockRejectedValue(new Error("secret"));expect((await paymentWebhook(request(),{env})).status).toBe(503);
++});
++it("discovers unattached orders by server reservation receipt using GET only, without attaching or paying them",async()=>{
++ mocks.unattached.mockResolvedValue([{request_id:id,created_at:new Date().toISOString(),key_id:env.RAZORPAY_KEY_ID}]);
++ fetcher.mockResolvedValue(Response.json({items:[{id:"order_orphan",receipt:id,amount:500000,currency:"INR",status:"created"},{id:"order_other",receipt:"not ours",amount:100,currency:"INR",status:"created"}]}));
++ await syncUnattachedOrders(env,Date.now()+10000);expect(mocks.recordInvestigation).toHaveBeenCalledTimes(1);
++ expect(mocks.recordInvestigation).toHaveBeenCalledWith({kind:"unattached_order",orderId:"order_orphan",paymentId:null,requestId:id,amount:500000,currency:"INR",status:"created"});
++ expect(fetcher.mock.calls[0][1].method).toBe("GET");
++});
+diff --git a/app/lib/payment-operations-admin.test.ts b/app/lib/payment-operations-admin.test.ts
+--- /dev/null
++++ b/app/lib/payment-operations-admin.test.ts
+@@ -0,0 +1,20 @@
++// @vitest-environment node
++import {beforeEach,it,expect,vi} from "vitest";
++const ops=vi.hoisted(()=>({paid:vi.fn(),acknowledgePaid:vi.fn(),acknowledgeDispute:vi.fn(),investigations:vi.fn()}));
++vi.mock("../../supabase/functions/_shared/payment-operations.ts",()=>({operationsStore:()=>ops}));
++vi.mock("../../supabase/functions/_shared/payment-store.ts",()=>({paymentStore:()=>({})}));
++import {adminPayments} from "../../supabase/functions/_shared/admin-payments";
++const env={PAYMENT_RATE_LIMITER:{limit:async()=>({success:true})}},admin={id:"00000000-0000-4000-8000-000000000001",email:"owner@example.test"};
++const req=(body:unknown)=>new Request("https://example.test",{method:"POST",body:JSON.stringify(body)});
++beforeEach(()=>vi.resetAllMocks());
++it("reads paid and investigation pages and accepts only acknowledgement metadata",async()=>{
++ ops.paid.mockResolvedValue({orders:[],nextOffset:null});ops.investigations.mockResolvedValue({items:[],nextOffset:null});
++ expect((await adminPayments(req({offset:50}),env,"paid",admin)).status).toBe(200);expect(ops.paid).toHaveBeenCalledWith(50);
++ expect((await adminPayments(req({}),env,"investigations",admin)).status).toBe(200);
++ expect((await adminPayments(req({kind:"paid",id:admin.id,acknowledged:true}),env,"acknowledge",admin)).status).toBe(200);expect(ops.acknowledgePaid).toHaveBeenCalledWith(admin.id,true,admin.id);
++ expect((await adminPayments(req({kind:"dispute",eventId:"evt_lost"}),env,"acknowledge",admin)).status).toBe(200);expect(ops.acknowledgeDispute).toHaveBeenCalledWith("evt_lost",admin.id);
++});
++it("rejects manual status, amount and actor overrides and missing admin identity",async()=>{
++ for(const extra of [{status:"paid"},{amount:1},{acknowledged_by:"attacker"}])expect((await adminPayments(req({kind:"paid",id:admin.id,acknowledged:true,...extra}),env,"acknowledge",admin)).status).toBe(400);
++ expect((await adminPayments(req({}),env,"paid",{id:"",email:""})).status).toBe(401);expect(ops.paid).not.toHaveBeenCalled();expect(ops.acknowledgePaid).not.toHaveBeenCalled();
++});
+diff --git a/app/lib/payment-operations-store.test.ts b/app/lib/payment-operations-store.test.ts
+--- /dev/null
++++ b/app/lib/payment-operations-store.test.ts
+@@ -0,0 +1,20 @@
++// @vitest-environment node
++import {afterEach,it,expect,vi} from "vitest";
++import {operationsStore} from "../../supabase/functions/_shared/payment-operations";
++const env={SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"fake"};
++afterEach(()=>vi.unstubAllGlobals());
++it("reads paid orders newest first, restricts receipts to minimal fields, and limits recovery to 30 days",async()=>{
++ const fetcher=vi.fn<typeof fetch>(async()=>Response.json([]));vi.stubGlobal("fetch",fetcher);const ops=operationsStore(env);
++ await ops.paid(50);await ops.recentPaid("2026-09-11T00:00:00Z","after");await ops.receipt("id");await ops.unattached();
++ const urls=fetcher.mock.calls.map(([url])=>new URL(String(url)));
++ expect(urls[0].searchParams.get("payment_intents.status")).toBe("in.(paid,refunded)");expect(urls[0].searchParams.get("order")).toContain("paid_at.desc");expect(urls[0].searchParams.get("offset")).toBe("50");
++ expect(urls[0].searchParams.get("select")).not.toMatch(/key_id|payload_hash|dedupe_hash|receipt_id/);
++ expect(urls[1].searchParams.get("paid_at")).toBe("gte.2026-09-11T00:00:00Z");expect(urls[1].searchParams.get("request_id")).toBe("gt.after");
++ expect(urls[2].searchParams.get("select")).toBe("payment_intents!inner(package,amount,status)");
++ expect(urls[3].searchParams.get("order_id")).toBe("is.null");expect(urls[3].searchParams.get("created_at")).toMatch(/^lt\./);
++});
++it("acknowledges only a recorded lost event and never accepts a browser actor for settlement",async()=>{
++ const fetcher=vi.fn<typeof fetch>(async(input)=>String(input).includes("payment_webhook_events")?Response.json([{event_id:"evt_lost",dispute:{id:"disp_1",status:"lost"}}]):Response.json({}));vi.stubGlobal("fetch",fetcher);
++ await operationsStore(env).acknowledgeDispute("evt_lost","verified-admin");const url=new URL(String(fetcher.mock.calls[0][0]));expect(url.searchParams.get("dispute->>status")).toBe("eq.lost");
++ expect(fetcher.mock.calls.some(([url])=>String(url).includes("payment_intents"))).toBe(false);
++});
+diff --git a/app/lib/payment-receipt.test.ts b/app/lib/payment-receipt.test.ts
+--- /dev/null
++++ b/app/lib/payment-receipt.test.ts
+@@ -0,0 +1,47 @@
++// @vitest-environment node
++import {beforeEach,it,expect,vi} from "vitest";
++const ledger=vi.hoisted(()=>({find:vi.fn(),receiptByRequest:vi.fn(),receipt:vi.fn()}));
++vi.mock("../../supabase/functions/_shared/payment-store.ts",()=>({paymentStore:()=>ledger}));
++vi.mock("../../supabase/functions/_shared/payment-operations.ts",()=>({operationsStore:()=>ledger}));
++import {paymentReceipt,receiptToken} from "../../supabase/functions/_shared/payment-receipt";
++import {createPaymentToken} from "../../supabase/functions/_shared/razorpay";
++const env={PAYMENT_RECEIPT_SECRET:"fake-receipt-".repeat(4),RAZORPAY_KEY_ID:"rzp_test_example",RAZORPAY_KEY_SECRET:"fake",PAYMENT_RATE_LIMITER:{limit:async()=>({success:true})},RAZORPAY_ENABLED:"false"};
++const id="00000000-0000-4000-8000-000000000001",receiptId="00000000-0000-4000-8000-000000000002";
++const req=(token:string)=>new Request("https://example.test",{method:"POST",body:JSON.stringify({token})});
++async function checkoutToken(pack:"starter"|"test"="starter"){return createPaymentToken({orderId:"order_1",package:pack,amount:pack==="test"?100:500000,keyId:env.RAZORPAY_KEY_ID,issuedAt:Date.now()},env.RAZORPAY_KEY_SECRET);}
++beforeEach(()=>{vi.resetAllMocks();ledger.find.mockResolvedValue({request_id:id,order_id:"order_1",key_id:env.RAZORPAY_KEY_ID,package:"starter",amount:500000,status:"paid",customer:{email:"private@example.test"}});ledger.receiptByRequest.mockResolvedValue(receiptId);ledger.receipt.mockResolvedValue({package:"starter",amount:500000,status:"paid",customer:"must never escape"});});
++it("issues a durable signed receipt only for a confirmed ledger payment, with checkout disabled",async()=>{
++ const response=await paymentReceipt(req(await checkoutToken()),env,"receipt-link");expect(response.status).toBe(200);
++ expect(await response.json()).toEqual({url:`https://sitenova.dev/receipt#${await receiptToken(receiptId,env.PAYMENT_RECEIPT_SECRET)}`});
++ ledger.find.mockResolvedValueOnce({...await ledger.find(),status:"pending"});expect((await paymentReceipt(req(await checkoutToken()),env,"receipt-link")).status).toBe(409);
++});
++it("works after refresh and on another device without exposing customer or payment identifiers",async()=>{
++ const token=await receiptToken(receiptId,env.PAYMENT_RECEIPT_SECRET);
++ for(let i=0;i<2;i++){const response=await paymentReceipt(req(token),env,"receipt");expect(await response.json()).toEqual({package:"starter",amount:500000,status:"paid"});expect(response.headers.get("Cache-Control")).toBe("no-store");}
++ ledger.receipt.mockResolvedValueOnce({package:"starter",amount:500000,status:"refunded"});expect(await(await paymentReceipt(req(token),env,"receipt")).json()).toEqual({package:"starter",amount:500000,status:"refunded"});
++});
++it("rejects tampering, unsigned tokens and checkout tokens on the public receipt reader",async()=>{
++ for(const token of [receiptId,`${receiptId}.${"0".repeat(64)}`,await checkoutToken()])expect((await paymentReceipt(req(token),env,"receipt")).status).toBe(403);
++ expect(ledger.receipt).not.toHaveBeenCalled();
++});
++it("keeps links valid across Razorpay key rotation and supports a previous receipt signing key",async()=>{
++ const token=await receiptToken(receiptId,env.PAYMENT_RECEIPT_SECRET);
++ const rotated={...env,RAZORPAY_KEY_ID:"rzp_live_rotated",RAZORPAY_KEY_SECRET:"new",PAYMENT_RECEIPT_SECRET:"new-receipt-".repeat(4),PAYMENT_RECEIPT_PREVIOUS_SECRET:env.PAYMENT_RECEIPT_SECRET};
++ expect((await paymentReceipt(req(token),rotated,"receipt")).status).toBe(200);
++});
++it("enforces test admin ownership and fails closed when signing or storage is unavailable",async()=>{
++ const token=await checkoutToken("test");expect((await paymentReceipt(req(token),env,"receipt-link")).status).toBe(403);
++ ledger.find.mockResolvedValueOnce({request_id:id,key_id:env.RAZORPAY_KEY_ID,package:"test",amount:100,status:"paid",customer:{admin_id:"another-admin"}});
++ expect((await paymentReceipt(req(token),env,"receipt-link",{id:"owner",email:"owner@example.test"})).status).toBe(403);
++ expect((await paymentReceipt(req(token),{...env,PAYMENT_RECEIPT_SECRET:undefined},"receipt-link")).status).toBe(503);
++});
++it("fails closed on receipt storage errors and enforces the reader rate limit",async()=>{
++ const token=await receiptToken(receiptId,env.PAYMENT_RECEIPT_SECRET);
++ ledger.receipt.mockRejectedValueOnce(new Error("sensitive-provider-body"));const response=await paymentReceipt(req(token),env,"receipt");expect(response.status).toBe(503);expect(await response.text()).not.toContain("sensitive-provider-body");
++ ledger.receipt.mockClear();expect((await paymentReceipt(req(token),{...env,PAYMENT_RATE_LIMITER:{limit:async()=>({success:false})}},"receipt")).status).toBe(429);expect(ledger.receipt).not.toHaveBeenCalled();
++});
++it("returns no receipt for a missing record and rejects malformed or oversized input",async()=>{
++ const token=await receiptToken(receiptId,env.PAYMENT_RECEIPT_SECRET);ledger.receipt.mockResolvedValueOnce(null);expect((await paymentReceipt(req(token),env,"receipt")).status).toBe(404);
++ for(const body of ["{",JSON.stringify({token,customer:"override"})])expect((await paymentReceipt(new Request("https://example.test",{method:"POST",body}),env,"receipt")).status).toBe(400);
++ expect((await paymentReceipt(req("x".repeat(4001)),env,"receipt")).status).toBe(413);
++});
+diff --git a/app/lib/payment-reconciliation.test.ts b/app/lib/payment-reconciliation.test.ts
+--- a/app/lib/payment-reconciliation.test.ts
++++ b/app/lib/payment-reconciliation.test.ts
+@@ -2,6 +2,8 @@
+ import {beforeEach,it,expect,vi} from 'vitest';
+ const ledger=vi.hoisted(()=>({verifyScheduler:vi.fn(),claimRun:vi.fn(),dueOrders:vi.fn(),find:vi.fn(),recordReconciliation:vi.fn(),finishRun:vi.fn()}));
+ vi.mock('../../supabase/functions/_shared/payment-store.ts',()=>({paymentStore:()=>ledger}));
++vi.mock('../../supabase/functions/_shared/investigation-sync.ts',()=>({syncUnattachedOrders:vi.fn(async()=>{})}));
++vi.mock('../../supabase/functions/_shared/payment-recovery.ts',()=>({recoverRecentPaid:vi.fn(async()=>({checked:0,errors:0})),syncProviderDisputes:vi.fn(async()=>{})}));
+ import {handleReconciliation} from '../../supabase/functions/_shared/reconciliation';
+ const env={SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake',RAZORPAY_KEY_ID:'rzp_test_example',RAZORPAY_KEY_SECRET:'fake'};
+ const record={request_id:'00000000-0000-4000-8000-000000000001',order_id:'order_1',package:'starter',amount:500000,key_id:env.RAZORPAY_KEY_ID,created_at:new Date(Date.now()-3600000).toISOString(),status:'pending'};
+diff --git a/app/lib/payment-recovery.test.ts b/app/lib/payment-recovery.test.ts
+--- /dev/null
++++ b/app/lib/payment-recovery.test.ts
+@@ -0,0 +1,54 @@
++// @vitest-environment node
++import {beforeEach,it,expect,vi} from "vitest";
++const ledger=vi.hoisted(()=>({recentPaid:vi.fn(),recordReconciliation:vi.fn(),find:vi.fn(),recordDispute:vi.fn(),saveDisputeSnapshot:vi.fn()}));
++vi.mock("../../supabase/functions/_shared/payment-store.ts",()=>({paymentStore:()=>ledger}));
++vi.mock("../../supabase/functions/_shared/payment-operations.ts",()=>({operationsStore:()=>ledger}));
++import {recoverRecentPaid,syncProviderDisputes} from "../../supabase/functions/_shared/payment-recovery";
++const env={RAZORPAY_KEY_ID:"rzp_test_fake",RAZORPAY_KEY_SECRET:"fake"};
++const record={request_id:"00000000-0000-4000-8000-000000000001",order_id:"order_1",package:"starter",amount:500000,key_id:env.RAZORPAY_KEY_ID,created_at:new Date().toISOString(),status:"paid"};
++const fetcher=vi.fn();
++beforeEach(()=>{vi.resetAllMocks();vi.stubGlobal("fetch",fetcher);ledger.recentPaid.mockResolvedValue([record]);ledger.find.mockResolvedValue(record);ledger.recordReconciliation.mockResolvedValue("refunded");});
++it("recovers a missed partial refund from a paid order in the 30-day window using only GET",async()=>{
++ fetcher.mockImplementation(async(url:string)=>Response.json(url.endsWith("/payments")?{items:[{id:"pay_1",order_id:"order_1",amount:500000,currency:"INR",status:"captured",amount_refunded:100}]}:{id:"order_1",amount:500000,currency:"INR",status:"paid",notes:{package:"starter"}}));
++ expect(await recoverRecentPaid(env,"run",Date.now()+10000)).toEqual({checked:1,errors:0});
++ expect(Math.abs(Date.parse(ledger.recentPaid.mock.calls[0][0])-(Date.now()-30*86400000))).toBeLessThan(1000);
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith("run",record,{status:"refunded",paymentId:"pay_1",refundedAmount:100},null);
++ expect(fetcher.mock.calls.every(([,options])=>options.method==="GET")).toBe(true);
++});
++it("never downgrades a paid order on a provider mismatch or outage",async()=>{
++ fetcher.mockRejectedValue(new Error("secret"));
++ expect(await recoverRecentPaid(env,"run",Date.now()+10000)).toEqual({checked:1,errors:1});
++ expect(ledger.recordReconciliation).toHaveBeenCalledWith("run",record,{status:"pending"},expect.not.stringContaining("secret"));
++});
++it("syncs disputes with GET only, keeps minimal snapshots and stable IDs without settlement",async()=>{
++ fetcher.mockImplementation(async(url:string)=>Response.json(url.includes("/disputes?")?{items:[{id:"disp_1",payment_id:"pay_1",status:"lost",amount:100,currency:"INR",respond_by:1791799200,evidence:{summary:"private"}}]}:{id:"pay_1",order_id:"order_1",amount:500000,currency:"INR"}));
++ await syncProviderDisputes(env,Date.now()+10000);await syncProviderDisputes(env,Date.now()+10000);
++ expect(ledger.recordDispute).toHaveBeenCalledTimes(2);expect(ledger.recordDispute.mock.calls[0][0]).toBe(ledger.recordDispute.mock.calls[1][0]);
++ expect(ledger.saveDisputeSnapshot.mock.calls[0][1]).toEqual(expect.objectContaining({status:"lost",orderId:"order_1",amount:100}));
++ expect(JSON.stringify(ledger.recordDispute.mock.calls)).not.toContain("private");expect(ledger.recordReconciliation).not.toHaveBeenCalled();
++ expect(fetcher.mock.calls.every(([,options])=>options.method==="GET")).toBe(true);
++});
++it("fails visibly when dispute listing is unavailable and refuses mismatched linked payments",async()=>{
++ fetcher.mockResolvedValue(Response.json({error:"private"},{status:403}));await expect(syncProviderDisputes(env,Date.now()+10000)).rejects.toThrow("Provider read failed");
++ expect(ledger.recordDispute).not.toHaveBeenCalled();
++});
++it("refuses mismatched dispute payment identity, currency and amount before recording anything",async()=>{
++ for(const payment of [{id:"pay_wrong",amount:500000,currency:"INR"},{id:"pay_1",amount:500000,currency:"USD"},{id:"pay_1",amount:99,currency:"INR"}]){
++  fetcher.mockImplementation(async(url:string)=>Response.json(url.includes("/disputes?")?{items:[{id:"disp_1",payment_id:"pay_1",status:"open",amount:100,currency:"INR"}]}:{...payment,order_id:"order_1"}));
++  await expect(syncProviderDisputes(env,Date.now()+10000)).rejects.toThrow("Dispute reference mismatch");
++ }
++ expect(ledger.recordDispute).not.toHaveBeenCalled();expect(ledger.saveDisputeSnapshot).not.toHaveBeenCalled();
++});
++it("continues paid recovery beyond a full page and stops without any provider request when its budget is exhausted",async()=>{
++ const page=Array.from({length:100},(_,i)=>({...record,request_id:`request-${i}`}));ledger.recentPaid.mockResolvedValueOnce(page).mockResolvedValueOnce([record]);
++ fetcher.mockImplementation(async(url:string)=>Response.json(url.endsWith("/payments")?{items:[{id:"pay_1",order_id:"order_1",amount:500000,currency:"INR",status:"captured",amount_refunded:0}]}:{id:"order_1",amount:500000,currency:"INR",status:"paid",notes:{package:"starter"}}));
++ expect(await recoverRecentPaid(env,"run",Date.now()+30000)).toEqual({checked:101,errors:0});expect(ledger.recentPaid.mock.calls[1][1]).toBe("request-99");
++ fetcher.mockClear();ledger.recentPaid.mockClear();await expect(recoverRecentPaid(env,"run",Date.now()-1)).rejects.toThrow("incomplete");expect(fetcher).not.toHaveBeenCalled();expect(ledger.recentPaid).not.toHaveBeenCalled();
++});
++it("paginates dispute reads past 100 entries and rejects redirects rather than following them",async()=>{
++ const entity={id:"disp_1",payment_id:"pay_1",status:"closed",amount:100,currency:"INR"};
++ fetcher.mockImplementation(async(url:string)=>Response.json(url.includes("/disputes?")?{items:url.endsWith("skip=0")?Array.from({length:100},(_,i)=>({...entity,id:`disp_${i}`})):[]}:{id:"pay_1",order_id:"order_1",amount:500000,currency:"INR"}));
++ await syncProviderDisputes(env,Date.now()+30000);expect(fetcher.mock.calls.some(([url])=>url.endsWith("skip=100"))).toBe(true);expect(ledger.saveDisputeSnapshot).toHaveBeenCalledTimes(100);
++ expect(fetcher.mock.calls.every(([,options])=>options.redirect==="error")).toBe(true);
++ fetcher.mockResolvedValue(new Response(null,{status:302,headers:{Location:"https://example.test"}}));await expect(syncProviderDisputes(env,Date.now()+10000)).rejects.toThrow("Provider read failed");
++});
+diff --git a/app/lib/razorpay.server.ts b/app/lib/razorpay.server.ts
+--- a/app/lib/razorpay.server.ts
++++ b/app/lib/razorpay.server.ts
+@@ -4,7 +4,7 @@ type GatewayEnv = { SUPABASE_URL?: string; PAYMENT_GATEWAY_SECRET?: string; PAYM
+ export function paymentEnv(context: unknown): GatewayEnv { return (context as { cloudflare?: { env?: GatewayEnv } })?.cloudflare?.env ?? {}; }
+ export function paymentJson(body: unknown,status=200) { return Response.json(body,{status,headers:{"Cache-Control":"no-store","Referrer-Policy":"no-referrer","X-Content-Type-Options":"nosniff"}}); }
+ async function edge(env: GatewayEnv,action: string,body="{}",origin="https://sitenova.dev",ip="local",adminToken?:string) {
+- const recovery=action==="status" || action==="verify";
++ const recovery=action==="status" || action==="verify" || action==="receipt" || action==="receipt-link";
+  if((env.PAYMENT_EDGE_ENABLED!=="true" && !adminToken && !recovery) || !env.PAYMENT_GATEWAY_SECRET || env.PAYMENT_GATEWAY_SECRET.length<32 || !env.SUPABASE_URL) return paymentJson({error:"Online payments are not available yet. Please contact SiteNova."},503);
+  const base=new URL(env.SUPABASE_URL);
+  if(base.protocol!=="https:" || !base.hostname.endsWith(".supabase.co") || base.username || base.password) throw new Error("Invalid backend URL");
+@@ -27,13 +27,18 @@ export const paymentWebhook=(_request:Request,_context:unknown)=>paymentJson({er
+ export async function adminTestPaymentAction(request:Request,context:unknown,action:string) {
+  if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
+  if(request.headers.get("origin")!==new URL(request.url).origin) return paymentJson({error:"Invalid origin"},403);
+- if(!["order","checkout","verify","status","queue","history","recheck"].includes(action)) return paymentJson({error:"Not found"},404);
++ if(!["order","checkout","verify","status","queue","history","recheck","paid","acknowledge","investigations","receipt-link"].includes(action)) return paymentJson({error:"Not found"},404);
+  const authorization=request.headers.get("authorization") ?? "";
+  if(!authorization.startsWith("Bearer ") || authorization.length>8010 || authorization.length<8) return paymentJson({error:"Admin sign-in required"},401);
+  try {
+   const body=await request.text(); if(body.length>6000) return paymentJson({error:"Request too large"},413);
+-  const channel=["queue","history","recheck"].includes(action)?"admin-queue/":"admin-test/";
++  const channel=["queue","history","recheck","paid","acknowledge","investigations"].includes(action)?"admin-queue/":"admin-test/";
+   const response=await edge(paymentEnv(context),channel+action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local",authorization.slice(7));
+   return paymentJson(await response.json(),response.status);
+  } catch { return paymentJson({error:"Unable to confirm test payment. Check status before retrying."},503); }
+ }
++export async function receiptAction(request:Request,context:unknown,action:"receipt"|"receipt-link"){
++ if(request.method!=="POST")return paymentJson({error:"Method not allowed"},405);
++ if(request.headers.get("origin")!==new URL(request.url).origin)return paymentJson({error:"Invalid origin"},403);
++ try{const body=await request.text();if(body.length>4000)return paymentJson({error:"Request too large"},413);const response=await edge(paymentEnv(context),action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local");return paymentJson(await response.json(),response.status);}catch{return paymentJson({error:"Receipt unavailable"},503);}
++}
+diff --git a/app/pages/admin/components/PaidOrders.test.tsx b/app/pages/admin/components/PaidOrders.test.tsx
+--- /dev/null
++++ b/app/pages/admin/components/PaidOrders.test.tsx
+@@ -0,0 +1,16 @@
++import {afterEach,it,expect,vi} from "vitest";
++import {render,screen,fireEvent,waitFor,cleanup} from "@testing-library/react";
++import PaidOrders from "./PaidOrders";
++import {adminPaymentRequest} from "@/lib/payment-admin-client";
++vi.mock("@/lib/payment-admin-client",()=>({adminPaymentRequest:vi.fn()}));
++afterEach(()=>{cleanup();vi.resetAllMocks();});
++it("shows stored contact and project details and acknowledges without changing settlement",async()=>{
++ const refresh=vi.fn(),order={request_id:"request",paid_at:"2026-10-11T10:00:00Z",acknowledged_at:null,payment_intents:{order_id:"order_1",package:"starter",amount:500000,status:"paid",customer:{name:"Customer",email:"customer@example.test",business:"Website project",requirements:"Booking website"}}};
++ vi.mocked(adminPaymentRequest).mockImplementation(async(action)=>action==="paid"?{orders:[order],nextOffset:null}:{});
++ render(<PaidOrders refreshHealth={refresh}/>);
++ expect(await screen.findByText("email: customer@example.test")).toBeTruthy();expect(screen.getByText("requirements: Booking website")).toBeTruthy();
++ fireEvent.click(screen.getByRole("checkbox",{name:"Acknowledged"}));
++ await waitFor(()=>expect(adminPaymentRequest).toHaveBeenCalledWith("acknowledge",{kind:"paid",id:"request",acknowledged:true}));
++ await waitFor(()=>expect(refresh).toHaveBeenCalled());
++ expect(vi.mocked(adminPaymentRequest).mock.calls.every(([action])=>["paid","acknowledge"].includes(action))).toBe(true);
++});
+diff --git a/app/pages/admin/components/PaidOrders.tsx b/app/pages/admin/components/PaidOrders.tsx
+--- /dev/null
++++ b/app/pages/admin/components/PaidOrders.tsx
+@@ -0,0 +1,14 @@
++import {useCallback,useEffect,useState} from "react";
++import {adminPaymentRequest} from "@/lib/payment-admin-client";
++import {formatINR} from "@/lib/payments";
++import {Button} from "@/components/ui/button";
++type PaidOrder={request_id:string;paid_at:string;acknowledged_at:string|null;payment_intents:{order_id:string;package:string;amount:number;status:string;customer:Record<string,unknown>}};
++type Page={orders:PaidOrder[];nextOffset:number|null};
++export default function PaidOrders({refreshHealth}:{refreshHealth?:()=>Promise<void>}){
++ const [page,setPage]=useState<Page|null>(null),[offset,setOffset]=useState(0),[error,setError]=useState(""),[busy,setBusy]=useState(false);
++ const refresh=useCallback(async()=>{setBusy(true);setError("");try{setPage(await adminPaymentRequest<Page>("paid",{offset}));}catch{setError("Unable to load paid orders.");}finally{setBusy(false);}},[offset]);
++ useEffect(()=>{void refresh();},[refresh]);
++ async function acknowledge(order:PaidOrder){setBusy(true);setError("");try{await adminPaymentRequest("acknowledge",{kind:"paid",id:order.request_id,acknowledged:!order.acknowledged_at});await refresh();await refreshHealth?.();}catch{setError("Unable to save acknowledgement.");}finally{setBusy(false);}}
++ return <section className="rounded-xl border border-border p-5"><div className="flex flex-wrap justify-between gap-3"><h2 className="font-semibold text-lg">Recent paid orders</h2><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh paid orders</Button></div><p className="text-sm text-muted-foreground mt-2">Paid and refunded orders, newest confirmation first. Acknowledgement records your review; it does not change payment status.</p>{error&&<p role="alert">{error}</p>}{page?.orders.map(order=>{const p=order.payment_intents;return <article key={order.request_id} className="mt-4 border-t border-border pt-4 text-sm space-y-2 break-words"><p className="font-semibold">{p.package} · {formatINR(p.amount)} · {p.status}</p><p>Paid confirmation: {new Date(order.paid_at).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"})} IST</p><p className="break-all">{p.order_id}</p>{["name","email","phone","business","project_type","requirements","timeline"].map(key=>typeof p.customer[key]==="string"&&p.customer[key]?<p key={key}>{key.replace(/_/g," ")}: {String(p.customer[key])}</p>:null)}<label className="flex gap-2 items-center"><input type="checkbox" checked={!!order.acknowledged_at} disabled={busy} onChange={()=>void acknowledge(order)}/>Acknowledged</label></article>;})}{page&&!page.orders.length&&<p className="mt-4 text-muted-foreground">No paid orders yet.</p>}<div className="flex flex-wrap gap-2 mt-4"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous paid orders</Button><Button variant="outline" disabled={busy||page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next paid orders</Button></div></section>;
++}
++
+diff --git a/app/pages/admin/components/PaymentAlerts.test.tsx b/app/pages/admin/components/PaymentAlerts.test.tsx
+--- a/app/pages/admin/components/PaymentAlerts.test.tsx
++++ b/app/pages/admin/components/PaymentAlerts.test.tsx
+@@ -7,6 +7,9 @@ const healthy:PaymentHealth={observedAt:new Date(now).toISOString(),lastComplete
+ afterEach(cleanup);
+ describe("dashboard payment alerts",()=>{
+  it.each([
++  [{unacknowledgedPaid:2},"paid order(s) awaiting acknowledgement"],
++  [{investigations:1},"payment record(s) need investigation"],
++  [{lostDisputes:[{eventId:"evt_lost",id:"disp_lost",event:"payment.dispute.lost",status:"lost",paymentId:"pay_1",orderId:"order_1",amount:100,currency:"INR",responseDueAt:null,occurredAt:null}]},"lost dispute(s) awaiting acknowledgement"],
+   [{latestRunFailed:true},"The latest reconciliation run failed."],
+   [{lastCompletedAt:new Date(now-30*60000-1).toISOString()},"scheduler may be stopped"],
+   [{overdue:1},"unresolved for over 24 hours"],
+diff --git a/app/pages/admin/components/PaymentAlerts.tsx b/app/pages/admin/components/PaymentAlerts.tsx
+--- a/app/pages/admin/components/PaymentAlerts.tsx
++++ b/app/pages/admin/components/PaymentAlerts.tsx
+@@ -9,6 +9,9 @@ export default function PaymentAlerts({health,isAdmin,error,now,onOpen}:{health:
+  return <section role="alert" aria-label="Payment alerts" className="mb-6 rounded-xl border-2 border-amber-500 bg-amber-500/10 p-5">
+   <h2 className="flex items-center gap-2 text-lg font-semibold"><AlertTriangle className="h-5 w-5"/>Payments need attention</h2>
+   <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
++   {!!health.unacknowledgedPaid&&<li>{health.unacknowledgedPaid} paid order(s) awaiting acknowledgement.</li>}
++   {!!health.investigations&&<li>{health.investigations} payment record(s) need investigation.</li>}
++   {!!health.lostDisputes?.length&&<li>{health.lostDisputes.length} lost dispute(s) awaiting acknowledgement. Review the financial loss in Razorpay.</li>}
+    {health.latestRunFailed&&<li>The latest reconciliation run failed.</li>}
+    {staleCron(health,now)&&<li>No scheduled reconciliation has completed in the last 30 minutes. The scheduler may be stopped.</li>}
+    {!!health.overdue&&<li>{health.overdue} order(s) unresolved for over 24 hours.</li>}
+diff --git a/app/pages/admin/components/PaymentInvestigations.test.tsx b/app/pages/admin/components/PaymentInvestigations.test.tsx
+--- /dev/null
++++ b/app/pages/admin/components/PaymentInvestigations.test.tsx
+@@ -0,0 +1,10 @@
++import {afterEach,it,expect,vi} from "vitest";
++import {render,screen,cleanup} from "@testing-library/react";
++import PaymentInvestigations from "./PaymentInvestigations";
++import {adminPaymentRequest} from "@/lib/payment-admin-client";
++vi.mock("@/lib/payment-admin-client",()=>({adminPaymentRequest:vi.fn()}));
++afterEach(()=>{cleanup();vi.resetAllMocks();});
++it("shows unknown payment and unattached reservation evidence without settlement controls",async()=>{
++ vi.mocked(adminPaymentRequest).mockResolvedValue({items:[{id:"one",kind:"unknown_payment",order_id:"order_unknown",payment_id:"pay_unknown",request_id:null,amount:100,currency:"INR",provider_status:"captured"},{id:"two",kind:"unattached_order",order_id:"order_orphan",payment_id:null,request_id:"reservation",amount:100,currency:"INR",provider_status:"created"}],nextOffset:null});
++ render(<PaymentInvestigations/>);expect(await screen.findByText(/pay_unknown/)).toBeTruthy();expect(screen.getByText("Reservation: reservation")).toBeTruthy();expect(screen.queryByRole("button",{name:/paid|attach/i})).toBeNull();
++});
+diff --git a/app/pages/admin/components/PaymentInvestigations.tsx b/app/pages/admin/components/PaymentInvestigations.tsx
+--- /dev/null
++++ b/app/pages/admin/components/PaymentInvestigations.tsx
+@@ -0,0 +1,12 @@
++import {useCallback,useEffect,useState} from "react";
++import {adminPaymentRequest} from "@/lib/payment-admin-client";
++import {formatINR} from "@/lib/payments";
++import {Button} from "@/components/ui/button";
++type Item={id:string;kind:string;order_id:string|null;payment_id:string|null;request_id:string|null;amount:number|null;currency:string|null;provider_status:string|null};
++type Page={items:Item[];nextOffset:number|null};
++export default function PaymentInvestigations(){
++ const [page,setPage]=useState<Page|null>(null),[offset,setOffset]=useState(0),[error,setError]=useState("");
++ const refresh=useCallback(async()=>{setError("");try{setPage(await adminPaymentRequest<Page>("investigations",{offset}));}catch{setError("Unable to load investigations.");}},[offset]);useEffect(()=>{void refresh();},[refresh]);
++ return <section className="rounded-xl border border-amber-500/50 p-5"><h2 className="font-semibold text-lg">Needs investigation</h2><p className="text-sm text-muted-foreground mt-2">Record-only evidence. Check these references in Razorpay before deciding the next step; this list cannot attach orders or change paid status.</p>{error&&<p role="alert">{error}</p>}{page?.items.map(item=><article key={item.id} className="mt-4 border-t border-border pt-3 text-sm break-all"><p>{item.kind.replace(/_/g," ")} · {item.provider_status??"Unknown status"}</p><p>Order: {item.order_id??"Unknown"} · Payment: {item.payment_id??"Not supplied"}</p>{item.request_id&&<p>Reservation: {item.request_id}</p>}<p>Amount: {item.amount===null?"Not supplied":item.currency==="INR"?formatINR(item.amount):`${item.amount} subunits (${item.currency??"unknown currency"})`}</p></article>)}{page&&!page.items.length&&<p className="mt-3 text-muted-foreground">No investigation records.</p>}<div className="flex flex-wrap gap-2 mt-3"><Button variant="outline" onClick={()=>void refresh()}>Refresh investigations</Button><Button variant="outline" disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous investigations</Button><Button variant="outline" disabled={page?.nextOffset==null} onClick={()=>setOffset(page!.nextOffset!)}>Next investigations</Button></div></section>;
++}
++
+diff --git a/app/pages/admin/components/TestPaymentButton.tsx b/app/pages/admin/components/TestPaymentButton.tsx
+--- a/app/pages/admin/components/TestPaymentButton.tsx
++++ b/app/pages/admin/components/TestPaymentButton.tsx
+@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
+ import { loadRazorpay, type CheckoutResult } from "@/lib/razorpay-client";
+ import type { PaymentStatus } from "@/lib/payments";
+ import { useToast } from "@/hooks/use-toast";
++import PaymentReceiptLink from "@/components/PaymentReceiptLink";
+ 
+ type Session = { requestId: string; token?: string; orderId?: string; complete?: boolean };
+ type Authorization = PaymentStatus & { checkout?: { keyId: string; orderId: string; amount: number } };
+@@ -13,6 +14,7 @@ export default function TestPaymentButton() {
+   const { toast } = useToast();
+   const [busy, setBusy] = useState(false);
+   const [hasSession, setHasSession] = useState(false);
++  const [receiptSession,setReceiptSession]=useState("");
+   const lock = useRef(false);
+   useEffect(() => {
+     let active = true;
+@@ -47,6 +49,7 @@ export default function TestPaymentButton() {
+       if (session.complete && !checkOnly) session = { requestId: crypto.randomUUID() };
+       const save = () => { sessionStorage.setItem(sessionKey, JSON.stringify(session)); setHasSession(!!session.token); };
+       const report = (status: PaymentStatus) => {
++        if(status.status!=="pending"&&session.token)setReceiptSession(session.token);
+         if (status.status !== "pending") { session.complete = true; save(); }
+         toast({ title: status.status === "paid" ? "₹1 Test payment verified" : status.status === "refunded" ? "Test payment refunded" : "Payment is pending", description: status.status === "pending" ? "Check status before starting another payment." : status.paymentId });
+       };
+@@ -83,5 +86,6 @@ export default function TestPaymentButton() {
+       {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FlaskConical className="mr-2 h-4 w-4" />}Test ₹1 payment
+     </Button>
+     {hasSession && <Button variant="ghost" size="sm" disabled={busy} onClick={() => run(true)}>Check status</Button>}
++    {receiptSession&&<PaymentReceiptLink token={receiptSession} admin/>}
+   </div>;
+ }
+diff --git a/app/pages/admin/tabs/PaymentsTab.test.tsx b/app/pages/admin/tabs/PaymentsTab.test.tsx
+--- a/app/pages/admin/tabs/PaymentsTab.test.tsx
++++ b/app/pages/admin/tabs/PaymentsTab.test.tsx
+@@ -3,6 +3,9 @@ import {render,screen,fireEvent,waitFor,cleanup} from '@testing-library/react';
+ import PaymentsTab from './PaymentsTab';
+ import {adminPaymentRequest} from '@/lib/payment-admin-client';
+ vi.mock('@/lib/payment-admin-client',()=>({adminPaymentRequest:vi.fn()}));
++// New sections have dedicated tests; retain the original queue scenarios unchanged.
++vi.mock('../components/PaidOrders',()=>({default:()=>null}));
++vi.mock('../components/PaymentInvestigations',()=>({default:()=>null}));
+ const order={request_id:'request',order_id:'order_1',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-10T10:00:00Z',last_checked_at:null};
+ beforeEach(()=>{vi.resetAllMocks();vi.mocked(adminPaymentRequest).mockResolvedValue({orders:[order],runs:[],alerts:[],nextOffset:null});});
+ afterEach(cleanup);
+diff --git a/app/pages/admin/tabs/PaymentsTab.tsx b/app/pages/admin/tabs/PaymentsTab.tsx
+--- a/app/pages/admin/tabs/PaymentsTab.tsx
++++ b/app/pages/admin/tabs/PaymentsTab.tsx
+@@ -4,6 +4,8 @@ import {adminPaymentRequest} from "@/lib/payment-admin-client";
+ import {formatINR} from "@/lib/payments";
+ import type {PaymentHealth} from "@/lib/payment-health";
+ import PaymentCronHealth from "../components/PaymentCronHealth";
++import PaidOrders from "../components/PaidOrders";
++import PaymentInvestigations from "../components/PaymentInvestigations";
+ type Order={request_id:string;order_id:string|null;package:string;amount:number;status:string;reconciliation_state:string;created_at:string;last_checked_at:string|null};
+ type History={id:string;old_state:string;new_state:string;error:string|null;alert:boolean;created_at:string};
+ type Queue={orders:Order[];runs:{id:string;error:string|null;started_at:string}[];alerts:{id:string;request_id:string;order_id:string|null;new_state:string;error:string|null;created_at:string}[];nextOffset:number|null};
+@@ -31,6 +33,9 @@ export default function PaymentsTab({health,refreshHealth,now=Date.now()}:{healt
+   }
+   return <div className="space-y-6">
+     <PaymentCronHealth health={health} now={now}/>
++    <PaidOrders refreshHealth={refreshHealth}/>
++    <PaymentInvestigations/>
++    {!!health?.lostDisputes?.length&&<section className="rounded-xl border-2 border-destructive p-5"><h2 className="font-semibold">Lost disputes — acknowledgement required</h2>{health.lostDisputes.map(dispute=><div key={dispute.eventId} className="mt-3 text-sm break-all"><p>{dispute.id} · Payment: {dispute.paymentId??"Unknown"} · {dispute.amount===null?"Amount not supplied":dispute.currency==="INR"?formatINR(dispute.amount):`${dispute.amount} subunits (${dispute.currency??"unknown"})`}</p><p>Acknowledging records your review. It does not change payment status or move money.</p><Button variant="outline" disabled={busy} onClick={async()=>{setBusy(true);setError("");try{await adminPaymentRequest("acknowledge",{kind:"dispute",eventId:dispute.eventId});await refreshHealth?.();}catch{setError("Unable to acknowledge lost dispute.");}finally{setBusy(false);}}}>Acknowledge lost dispute</Button></div>)}</section>}
+     <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Pending payments and failures checked in the last 24 hours. Automatic checks run every 10 minutes. Times shown in IST.</p><Button variant="outline" disabled={busy} onClick={()=>{void refresh();void refreshHealth?.();}}>Refresh payments</Button></div>
+     {!!health?.disputes.length&&<section className="rounded-xl border border-amber-500 p-5"><h2 className="font-semibold">Open disputes</h2>{health.disputes.map(dispute=><div key={dispute.id} className="mt-3 border-t border-border pt-3 text-sm break-all"><p>{dispute.id} · {dispute.status.replace(/_/g," ")}</p><p>Payment: {dispute.paymentId??"Not supplied"} · Order: {dispute.orderId??"Unknown / not supplied"}</p><p>Disputed amount: {dispute.amount===null?"Not supplied":dispute.currency==="INR"?formatINR(dispute.amount):`${dispute.amount} subunits (${dispute.currency??"currency not supplied"})`}</p><p>Response due: {dispute.responseDueAt?`${time(dispute.responseDueAt)} IST`:"Not supplied by Razorpay"}</p><p className="text-muted-foreground">Respond in the Razorpay dashboard. This audit entry does not change paid status.</p></div>)}</section>}
+     {error&&<p role="alert" className="text-destructive">{error}</p>}{notice&&<p role="status">{notice}</p>}
+diff --git a/app/pages/Pay.tsx b/app/pages/Pay.tsx
+--- a/app/pages/Pay.tsx
++++ b/app/pages/Pay.tsx
+@@ -1,3 +1,4 @@
++import PaymentReceiptLink from "@/components/PaymentReceiptLink";
+ import { useEffect, useState } from "react";
+ import { Link, useLoaderData, useSearchParams } from "react-router";
+ import { useForm } from "react-hook-form";
+@@ -112,7 +113,7 @@ export default function Pay() {
+             <p className="text-sm text-muted-foreground mt-3">50% of the {formatINR(pack.startingPrice)} starting price. This advance is credited against your final project invoice.</p>
+           </div>
+           <p className="text-sm text-muted-foreground mb-6">The final price, scope and delivery schedule are agreed in your proposal. Additional requirements may cost more. Payment does not include domain, hosting or third-party costs unless included in your proposal.</p>
+-          {!enabled ? <div className="rounded-xl border border-border p-4"><h2 className="font-semibold mb-2">Online payments are coming soon</h2><p className="text-sm text-muted-foreground">Contact us to confirm your project and arrange the next steps.</p></div> : status?.status === "paid" ? <div role="status" className="rounded-xl border border-primary/30 p-5"><CheckCircle2 className="text-primary mb-3" /><h2 className="font-heading text-xl font-bold">{testMode ? "Test payment verified" : "Advance received"}</h2><p className="text-sm text-muted-foreground mt-2">{testMode ? "This was a simulated transaction." : "Thank you. Contact SiteNova with your payment reference to confirm your project scope and schedule."}</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p></div> : status?.status === "refunded" ? <div role="status" className="rounded-xl border border-border p-5"><h2 className="font-semibold">A refund has been recorded</h2><p className="text-sm text-muted-foreground mt-2">Refund amount: {formatINR(status.refundedAmount ?? 0)}. Contact us to confirm your project and refund details.</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p></div> : session ? <div className="space-y-3"><p className="text-sm text-muted-foreground break-all">Order reference: {session.orderId}</p><Button disabled={busy} className="w-full" onClick={() => openCheckout()}>{busy ? <Loader2 className="animate-spin mr-2" size={18} /> : <CreditCard className="mr-2" size={18} />}Continue checkout</Button><Button disabled={busy} variant="outline" className="w-full" onClick={refresh}>Check payment status</Button><Button disabled={busy} variant="outline" className="w-full" onClick={retry}>Check eligibility for a fresh checkout</Button></div> : <form onSubmit={form.handleSubmit(details => openCheckout(details))} className="space-y-4">
++          {!enabled ? <div className="rounded-xl border border-border p-4"><h2 className="font-semibold mb-2">Online payments are coming soon</h2><p className="text-sm text-muted-foreground">Contact us to confirm your project and arrange the next steps.</p></div> : status?.status === "paid" ? <div role="status" className="rounded-xl border border-primary/30 p-5"><CheckCircle2 className="text-primary mb-3" /><h2 className="font-heading text-xl font-bold">{testMode ? "Test payment verified" : "Advance received"}</h2><p className="text-sm text-muted-foreground mt-2">{testMode ? "This was a simulated transaction." : "Thank you. Contact SiteNova with your payment reference to confirm your project scope and schedule."}</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p>{session&&<PaymentReceiptLink token={session.token}/>}</div> : status?.status === "refunded" ? <div role="status" className="rounded-xl border border-border p-5"><h2 className="font-semibold">A refund has been recorded</h2><p className="text-sm text-muted-foreground mt-2">Refund amount: {formatINR(status.refundedAmount ?? 0)}. Contact us to confirm your project and refund details.</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p>{session&&<PaymentReceiptLink token={session.token}/>}</div> : session ? <div className="space-y-3"><p className="text-sm text-muted-foreground break-all">Order reference: {session.orderId}</p><Button disabled={busy} className="w-full" onClick={() => openCheckout()}>{busy ? <Loader2 className="animate-spin mr-2" size={18} /> : <CreditCard className="mr-2" size={18} />}Continue checkout</Button><Button disabled={busy} variant="outline" className="w-full" onClick={refresh}>Check payment status</Button><Button disabled={busy} variant="outline" className="w-full" onClick={retry}>Check eligibility for a fresh checkout</Button></div> : <form onSubmit={form.handleSubmit(details => openCheckout(details))} className="space-y-4">
+             {([ ["name", "Full name", "name"], ["business", "Business or project name", "organization"], ["email", "Email address", "email"], ["phone", "Mobile number", "tel-national"] ] as const).map(([field, label, autoComplete]) => <div key={field}><label htmlFor={`pay-${field}`} className="block text-sm font-medium mb-2">{label}</label><Input id={`pay-${field}`} autoComplete={autoComplete} type={field === "email" ? "email" : field === "phone" ? "tel" : "text"} inputMode={field === "phone" ? "numeric" : undefined} maxLength={field === "phone" ? 10 : field === "email" ? 254 : 100} {...form.register(field)} aria-invalid={!!form.formState.errors[field]} aria-describedby={form.formState.errors[field] ? `error-${field}` : undefined} />{form.formState.errors[field] && <p id={`error-${field}`} className="text-sm text-destructive mt-1">{form.formState.errors[field]?.message}</p>}</div>)}
+             <label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1 h-4 w-4 shrink-0" {...form.register("accepted")} /><span>I understand this is a project advance and agree to the <Link className="text-primary underline" to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">terms</Link>, <Link className="text-primary underline" to="/refund-policy" target="_blank" rel="noopener noreferrer">refund policy</Link> and <Link className="text-primary underline" to="/privacy-policy" target="_blank" rel="noopener noreferrer">privacy policy</Link>.</span></label>
+             {form.formState.errors.accepted && <p className="text-sm text-destructive">{form.formState.errors.accepted.message}</p>}
+diff --git a/app/pages/Receipt.test.tsx b/app/pages/Receipt.test.tsx
+--- /dev/null
++++ b/app/pages/Receipt.test.tsx
+@@ -0,0 +1,9 @@
++import {afterEach,it,expect,vi} from "vitest";
++import {render,screen,cleanup} from "@testing-library/react";
++import Receipt from "./Receipt";
++afterEach(()=>{cleanup();vi.unstubAllGlobals();window.location.hash="";});
++it("reads a fragment token without session storage and displays only package, amount and status on revisits",async()=>{
++ window.location.hash="opaque-signed-token";const fetcher=vi.fn(async()=>Response.json({package:"starter",amount:500000,status:"paid"}));vi.stubGlobal("fetch",fetcher);
++ const view=render(<Receipt/>);expect(await screen.findByText("paid")).toBeTruthy();view.unmount();render(<Receipt/>);expect(await screen.findByText("paid")).toBeTruthy();
++ expect(fetcher.mock.calls).toHaveLength(2);expect(fetcher).toHaveBeenCalledWith("/api/payments/receipt",expect.objectContaining({method:"POST",body:JSON.stringify({token:"opaque-signed-token"})}));
++});
+diff --git a/app/pages/Receipt.tsx b/app/pages/Receipt.tsx
+--- /dev/null
++++ b/app/pages/Receipt.tsx
+@@ -0,0 +1,8 @@
++import {useEffect,useState} from "react";
++import {formatINR} from "@/lib/payments";
++type Receipt={package:string;amount:number;status:string};
++export default function Receipt(){
++ const [receipt,setReceipt]=useState<Receipt|null>(null),[error,setError]=useState("");
++ useEffect(()=>{let active=true;const controller=new AbortController();async function load(){try{const token=window.location.hash.slice(1);if(!token)throw new Error("Open your complete receipt link.");const response=await fetch("/api/payments/receipt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token}),signal:controller.signal});const body=await response.json();if(!response.ok)throw new Error(body.error??"Receipt unavailable");if(active)setReceipt(body);}catch(e){if(active)setError(e instanceof Error?e.message:"Receipt unavailable");}}void load();return()=>{active=false;controller.abort();};},[]);
++ return <main className="min-h-screen bg-background px-5 py-14"><section className="mx-auto max-w-lg rounded-2xl border border-border p-7"><h1 className="text-2xl font-heading font-bold">SiteNova payment receipt</h1>{receipt?<dl className="mt-5 space-y-2"><dt>Package</dt><dd>{receipt.package}</dd><dt>Amount</dt><dd>{formatINR(receipt.amount)}</dd><dt>Status</dt><dd>{receipt.status}</dd></dl>:error?<p role="alert" className="mt-4">{error}</p>:<p className="mt-4">Checking receipt…</p>}<p className="mt-5 text-sm text-muted-foreground">Keep this link private. Anyone with the complete link can view this payment summary.</p></section></main>;
++}
+diff --git a/app/root.tsx b/app/root.tsx
+--- a/app/root.tsx
++++ b/app/root.tsx
+@@ -25,7 +25,7 @@ const AnnouncementBanner = lazy(() => import("@/components/AnnouncementBanner"))
+ 
+ export function Layout({ children }: { children: React.ReactNode }) {
+   const pathname = useLocation().pathname;
+-  const paymentPage = pathname === "/pay" || pathname.startsWith("/admin");
++  const paymentPage = pathname === "/pay" || pathname === "/receipt" || pathname.startsWith("/admin");
+   return (
+     <html lang="en" suppressHydrationWarning>
+       <head>
+diff --git a/app/routes/api.payments.receipt-link.ts b/app/routes/api.payments.receipt-link.ts
+--- /dev/null
++++ b/app/routes/api.payments.receipt-link.ts
+@@ -0,0 +1,4 @@
++import type {ActionFunctionArgs} from "react-router";
++import {receiptAction,paymentJson} from "@/lib/razorpay.server";
++export const action=({request,context}:ActionFunctionArgs)=>receiptAction(request,context,"receipt-link");
++export const loader=()=>paymentJson({error:"Method not allowed"},405);
+diff --git a/app/routes/api.payments.receipt.ts b/app/routes/api.payments.receipt.ts
+--- /dev/null
++++ b/app/routes/api.payments.receipt.ts
+@@ -0,0 +1,4 @@
++import type {ActionFunctionArgs} from "react-router";
++import {receiptAction,paymentJson} from "@/lib/razorpay.server";
++export const action=({request,context}:ActionFunctionArgs)=>receiptAction(request,context,"receipt");
++export const loader=()=>paymentJson({error:"Method not allowed"},405);
+diff --git a/app/routes/receipt.tsx b/app/routes/receipt.tsx
+--- /dev/null
++++ b/app/routes/receipt.tsx
+@@ -0,0 +1,4 @@
++import {buildMeta} from "@/lib/meta";
++export {default} from "@/pages/Receipt";
++export function headers(){return {"Cache-Control":"no-store","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow"};}
++export function meta(){return buildMeta({title:"Payment receipt | SiteNova",description:"Your SiteNova payment summary.",canonicalPath:"/receipt",noindex:true});}
+diff --git a/supabase/functions/_shared/admin-payments.ts b/supabase/functions/_shared/admin-payments.ts
+--- a/supabase/functions/_shared/admin-payments.ts
++++ b/supabase/functions/_shared/admin-payments.ts
+@@ -2,11 +2,12 @@ import {z} from "zod";
+ import {paymentJson,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts";
+ import {paymentStore} from "./payment-store.ts";
+ import {reconcileOne} from "./reconciliation.ts";
++import {operationsStore} from "./payment-operations.ts";
+ 
+ // Called only after the gateway verifies Auth identity AND site_admins membership.
+ export async function adminPayments(request: Request, env: PaymentEnv, action: string, admin: VerifiedTestAdmin) {
+   if(!admin?.id) return paymentJson({error:"Admin sign-in required"},401);
+-  if(!["queue","history","recheck"].includes(action)) return paymentJson({error:"Not found"},404);
++  if(!["queue","history","recheck","paid","acknowledge","investigations"].includes(action)) return paymentJson({error:"Not found"},404);
+   let run:string|undefined;
+   const store=paymentStore(env);
+   try {
+@@ -14,6 +15,14 @@ export async function adminPayments(request: Request, env: PaymentEnv, action: s
+     const raw=await request.text();if(raw.length>1000)return paymentJson({error:"Request too large"},413);
+     const body=JSON.parse(raw);
+     const offset=z.number().int().min(0).max(100000).default(0);
++    if(action==="investigations")return paymentJson(await operationsStore(env).investigations(z.object({offset}).strict().parse(body).offset));
++    if(action==="paid")return paymentJson(await operationsStore(env).paid(z.object({offset}).strict().parse(body).offset));
++    if(action==="acknowledge"){
++      const input=z.discriminatedUnion("kind",[z.object({kind:z.literal("paid"),id:z.string().uuid(),acknowledged:z.boolean()}).strict(),z.object({kind:z.literal("dispute"),eventId:z.string().regex(/^[A-Za-z0-9_-]{1,200}$/)}).strict()]).parse(body);
++      if(input.kind==="paid")await operationsStore(env).acknowledgePaid(input.id,input.acknowledged,admin.id);
++      else await operationsStore(env).acknowledgeDispute(input.eventId,admin.id);
++      return paymentJson({acknowledged:input.kind==="paid"?input.acknowledged:true});
++    }
+     if(action==="queue"){
+       const input=z.object({offset,summaryOnly:z.boolean().optional()}).strict().parse(body);
+       if(input.summaryOnly)return paymentJson(await store.health());
+diff --git a/supabase/functions/_shared/edge-handler.ts b/supabase/functions/_shared/edge-handler.ts
+--- a/supabase/functions/_shared/edge-handler.ts
++++ b/supabase/functions/_shared/edge-handler.ts
+@@ -1,6 +1,7 @@
+ import { createClient } from "@supabase/supabase-js";
+ import { paymentAction, paymentWebhook, paymentJson, paymentsEnabled, PAYMENT_PACKAGES, type PaymentEnv } from "./razorpay.ts";
+ import { adminPayments } from "./admin-payments.ts";
++import {paymentReceipt} from "./payment-receipt.ts";
+ type EdgeEnv = PaymentEnv & { PAYMENT_GATEWAY_SECRET?: string };
+ async function sameSecret(actual: string, expected: string) {
+   const encoder = new TextEncoder();
+@@ -29,7 +30,7 @@ export async function handlePaymentEdge(request: Request, env: EdgeEnv) {
+   const adminQueue = new URL(request.url).pathname.split("/").at(-2) === "admin-queue";
+   const backend = configured(env);
+   if (action === "config" && !adminQueue) return paymentJson({enabled:paymentsEnabled(backend),testMode:env.RAZORPAY_KEY_ID?.startsWith("rzp_test_") ?? false,packages:PAYMENT_PACKAGES});
+-  if (!(adminQueue?["queue","history","recheck"]:["order","retry","verify","status","checkout"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
++  if (!(adminQueue?["queue","history","recheck","paid","acknowledge","investigations"]:["order","retry","verify","status","checkout","receipt","receipt-link"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
+   const origin = request.headers.get("x-payment-origin") ?? "";
+   if (!/^https:\/\/sitenova\.dev$|^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return paymentJson({error:"Invalid origin"},403);
+   const headers = new Headers({origin,"cf-connecting-ip":request.headers.get("x-payment-client-ip") ?? "local"});
+@@ -49,6 +50,7 @@ export async function handlePaymentEdge(request: Request, env: EdgeEnv) {
+     } catch { return paymentJson({error:"Unable to verify admin access"},503); }
+   }
+   if(adminQueue && admin) return adminPayments(request,backend,action!,admin);
++  if(action==="receipt"||action==="receipt-link")return paymentReceipt(request,backend,action,admin);
+   const forwarded = new Request(`${origin}/api/payments/${action}`,{method:"POST",headers,body:request.body,duplex:"half"} as RequestInit);
+   return paymentAction(forwarded,{env:backend},action as "order"|"retry"|"verify"|"status"|"checkout",admin);
+ }
+diff --git a/supabase/functions/_shared/investigation-sync.ts b/supabase/functions/_shared/investigation-sync.ts
+--- /dev/null
++++ b/supabase/functions/_shared/investigation-sync.ts
+@@ -0,0 +1,17 @@
++import {z} from "zod";
++import {operationsStore} from "./payment-operations.ts";
++import {providerGet} from "./provider-read.ts";
++import type {PaymentEnv} from "./razorpay.ts";
++const order=z.object({id:z.string().regex(/^order_[A-Za-z0-9]+$/),receipt:z.string().nullable(),amount:z.number().int().nonnegative(),currency:z.string(),status:z.string()});
++export async function syncUnattachedOrders(env:PaymentEnv,deadline:number){
++ const store=operationsStore(env);let after:string|undefined;const pending=new Map<string,string>();let earliest=Date.now();
++ while(true){if(Date.now()>deadline)throw new Error("Investigation scan incomplete");const page=await store.unattached(after);for(const row of page){if(row.key_id===env.RAZORPAY_KEY_ID){pending.set(row.request_id,row.created_at);earliest=Math.min(earliest,Date.parse(row.created_at));}}if(page.length<100)break;after=page.at(-1)!.request_id;}
++ if(!pending.size)return;
++ const from=Math.floor(earliest/1000)-60,to=Math.floor(Date.now()/1000);let skip=0;
++ while(true){
++  if(Date.now()>deadline)throw new Error("Investigation scan incomplete");
++  const page=z.object({items:z.array(order)}).parse(await providerGet(env,`orders?from=${from}&to=${to}&count=100&skip=${skip}`));
++  for(const item of page.items)if(item.receipt&&pending.has(item.receipt))await store.recordInvestigation({kind:"unattached_order",orderId:item.id,paymentId:null,requestId:item.receipt,amount:item.amount,currency:item.currency,status:item.status});
++  if(page.items.length<100)break;skip+=100;
++ }
++}
+diff --git a/supabase/functions/_shared/payment-health.ts b/supabase/functions/_shared/payment-health.ts
+--- a/supabase/functions/_shared/payment-health.ts
++++ b/supabase/functions/_shared/payment-health.ts
+@@ -1,5 +1,12 @@
+ export type Dispute = {id:string; event:string; status:string; paymentId:string|null; orderId:string|null; amount:number|null; currency:string|null; responseDueAt:string|null; occurredAt:string|null};
+ export type DisputeEvent = {event_id:string;processed_at:string;dispute:Dispute};
++export type LostDispute=Dispute&{eventId:string};
++// A later closed/won delivery must not silently erase a recorded financial loss.
++export function lostDisputes(events:DisputeEvent[],acknowledged:Set<string>):LostDispute[]{
++ const latest=new Map<string,DisputeEvent>();
++ for(const row of events){if(row.dispute.status!=="lost")continue;const old=latest.get(row.dispute.id);if(!old||Date.parse(row.dispute.occurredAt??row.processed_at)>Date.parse(old.dispute.occurredAt??old.processed_at))latest.set(row.dispute.id,row);}
++ return [...latest.values()].filter(row=>!acknowledged.has(row.dispute.id)).map(row=>({...row.dispute,eventId:row.event_id}));
++}
+ const closed=new Set(["won","lost","closed"]);
+ // Event time, rather than delivery time, prevents late delivery reopening a dispute.
+ export function openDisputes(events:DisputeEvent[]):Dispute[]{
+@@ -11,10 +18,10 @@ export function openDisputes(events:DisputeEvent[]):Dispute[]{
+  }
+  return [...latest.values()].map(row=>row.dispute).filter(dispute=>!closed.has(dispute.status)).sort((a,b)=>(a.responseDueAt??"9999").localeCompare(b.responseDueAt??"9999"));
+ }
+-export type PaymentHealth = {observedAt:string;latestRunFailed:boolean;lastCompletedAt:string|null;lastSuccessfulAt:string|null;needsReconciliation:number;overdue:number;refunded:number;disputes:Dispute[]};
++export type PaymentHealth = {lostDisputes?:LostDispute[];investigations?:number;unacknowledgedPaid?:number;observedAt:string;latestRunFailed:boolean;lastCompletedAt:string|null;lastSuccessfulAt:string|null;needsReconciliation:number;overdue:number;refunded:number;disputes:Dispute[]};
+ export function staleCron(health:PaymentHealth,now=Date.now()){
+  return !health.lastCompletedAt || now-Date.parse(health.lastCompletedAt)>30*60000;
+ }
+ export function paymentAlertCount(health:PaymentHealth,now=Date.now()){
+- return Number(health.latestRunFailed)+Number(staleCron(health,now))+health.needsReconciliation+health.overdue+health.refunded+health.disputes.length;
++ return (health.lostDisputes?.length??0)+(health.investigations??0)+(health.unacknowledgedPaid??0)+Number(health.latestRunFailed)+Number(staleCron(health,now))+health.needsReconciliation+health.overdue+health.refunded+health.disputes.length;
+ }
+diff --git a/supabase/functions/_shared/payment-operations.ts b/supabase/functions/_shared/payment-operations.ts
+--- /dev/null
++++ b/supabase/functions/_shared/payment-operations.ts
+@@ -0,0 +1,63 @@
++import {createClient} from "@supabase/supabase-js";
++import type {PaymentEnv} from "./razorpay.ts";
++import type {PaymentRecord} from "./payment-store.ts";
++import type {Dispute,DisputeEvent} from "./payment-health.ts";
++export function operationsStore(env:PaymentEnv){
++ if(!env.SUPABASE_URL||!env.SUPABASE_SERVICE_ROLE_KEY)throw new Error("Payment operations unavailable");
++ const db=createClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
++ return {
++  async receiptByRequest(requestId:string){
++   const result=await db.from("payment_order_operations").select("receipt_id").eq("request_id",requestId).maybeSingle();if(result.error||!result.data)throw new Error("Receipt unavailable");return result.data.receipt_id as string;
++  },
++  async receipt(receiptId:string){
++   const result=await db.from("payment_order_operations").select("payment_intents!inner(package,amount,status)").eq("receipt_id",receiptId).in("payment_intents.status",["paid","refunded"]).maybeSingle();
++   if(result.error)throw new Error("Receipt unavailable");return result.data?.payment_intents as unknown as {package:string;amount:number;status:string}|null;
++  },
++  async recentPaid(since:string,after?:string):Promise<PaymentRecord[]>{
++   let query=db.from("payment_order_operations").select("request_id,payment_intents!inner(*)").gte("paid_at",since).in("payment_intents.status",["paid","refunded"]).order("request_id").limit(100);
++   if(after)query=query.gt("request_id",after);const result=await query;if(result.error)throw new Error("Recent settlement read failed");return result.data.map(row=>row.payment_intents as unknown as PaymentRecord);
++  },
++  async disputeSnapshots():Promise<DisputeEvent[]>{
++   const rows:DisputeEvent[]=[];for(let offset=0;;offset+=1000){const page=await db.from("payment_dispute_snapshots").select("event_id,observed_at,dispute").order("id").range(offset,offset+999);if(page.error)throw new Error("Dispute sync read failed");rows.push(...page.data.map(row=>({event_id:row.event_id,processed_at:row.observed_at,dispute:row.dispute})));if(page.data.length<1000)break;}return rows;
++  },
++  async saveDisputeSnapshot(eventId:string,dispute:Dispute){
++   const result=await db.from("payment_dispute_snapshots").upsert({id:dispute.id,event_id:eventId,dispute,observed_at:dispute.occurredAt},{onConflict:"id"});if(result.error)throw new Error("Dispute sync write failed");
++  },
++  async disputeAcknowledgements(){
++   const ids:string[]=[];for(let offset=0;;offset+=1000){const page=await db.from("payment_dispute_acknowledgements").select("dispute_id").order("dispute_id").range(offset,offset+999);if(page.error)throw new Error("Dispute acknowledgements unavailable");ids.push(...page.data.map(row=>row.dispute_id));if(page.data.length<1000)break;}return new Set(ids);
++  },
++  async acknowledgeDispute(eventId:string,adminId:string){
++   const event=await db.from("payment_webhook_events").select("event_id,dispute").eq("event_id",eventId).eq("dispute->>status","lost").maybeSingle();
++   if(event.error||!event.data||typeof event.data.dispute?.id!=="string")throw new Error("Lost dispute not found");
++   const result=await db.from("payment_dispute_acknowledgements").upsert({dispute_id:event.data.dispute.id,event_id:eventId,acknowledged_by:adminId},{onConflict:"dispute_id"});if(result.error)throw new Error("Dispute acknowledgement unavailable");
++  },
++  async investigations(offset=0){
++   const result=await db.from("payment_investigations").select("id,kind,order_id,payment_id,request_id,amount,currency,provider_status,first_seen_at,last_seen_at").order("first_seen_at",{ascending:false}).order("id").range(offset,offset+49);
++   if(result.error)throw new Error("Investigation queue unavailable");return {items:result.data,nextOffset:result.data.length===50?offset+50:null};
++  },
++  async investigationCount(){
++   const result=await db.from("payment_investigations").select("id",{count:"exact",head:true});if(result.error)throw new Error("Investigation alerts unavailable");return result.count??0;
++  },
++  async recordInvestigation(input:{kind:string;orderId:string|null;paymentId:string|null;requestId?:string|null;amount:number|null;currency:string|null;status:string|null},eventId?:string,eventType?:string){
++   const result=await db.rpc("record_payment_investigation",{p_kind:input.kind,p_order:input.orderId,p_payment:input.paymentId,p_request:input.requestId??null,p_amount:input.amount,p_currency:input.currency,p_status:input.status,p_event:eventId??null,p_type:eventType??null});
++   if(result.error)throw new Error("Investigation storage unavailable");return result.data===true;
++  },
++  async unattached(after?:string){
++   let query=db.from("payment_intents").select("request_id,created_at,key_id").is("order_id",null).lt("created_at",new Date(Date.now()-15*60000).toISOString()).order("request_id").limit(100);
++   if(after)query=query.gt("request_id",after);const result=await query;if(result.error)throw new Error("Reservation read failed");return result.data as {request_id:string;created_at:string;key_id:string}[];
++  },
++  async paid(offset:number){
++   const result=await db.from("payment_order_operations").select("request_id,paid_at,acknowledged_at,payment_intents!inner(order_id,package,amount,status,customer)").in("payment_intents.status",["paid","refunded"]).order("paid_at",{ascending:false}).order("request_id").range(offset,offset+49);
++   if(result.error)throw new Error("Paid orders unavailable");
++   return {orders:result.data,nextOffset:result.data.length===50?offset+50:null};
++  },
++  async unacknowledged(){
++   const result=await db.from("payment_order_operations").select("request_id",{count:"exact",head:true}).is("acknowledged_at",null);
++   if(result.error)throw new Error("Paid alerts unavailable");return result.count??0;
++  },
++  async acknowledgePaid(requestId:string,acknowledged:boolean,adminId:string){
++   const result=await db.from("payment_order_operations").update({acknowledged_at:acknowledged?new Date().toISOString():null,acknowledged_by:acknowledged?adminId:null}).eq("request_id",requestId).select("request_id").maybeSingle();
++   if(result.error||!result.data)throw new Error("Paid acknowledgement unavailable");
++  },
++ };
++}
+diff --git a/supabase/functions/_shared/payment-receipt.ts b/supabase/functions/_shared/payment-receipt.ts
+--- /dev/null
++++ b/supabase/functions/_shared/payment-receipt.ts
+@@ -0,0 +1,38 @@
++import {z} from "zod";
++import {operationsStore} from "./payment-operations.ts";
++import {paymentStore} from "./payment-store.ts";
++import {readToken,paymentJson,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts";
++const encoder=new TextEncoder();
++async function key(secret:string){return crypto.subtle.importKey("raw",encoder.encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign","verify"]);}
++export async function receiptToken(id:string,secret:string){
++ const digest=await crypto.subtle.sign("HMAC",await key(secret),encoder.encode(`sitenova-receipt-v1:${id}`));
++ return `${id}.${Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("")}`;
++}
++async function verifyReceipt(token:string,env:PaymentEnv){
++ const match=/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.([0-9a-f]{64})$/.exec(token);if(!match)return null;
++ const signature=new Uint8Array(match[2].match(/../g)!.map(byte=>parseInt(byte,16)));
++ for(const secret of [env.PAYMENT_RECEIPT_SECRET,env.PAYMENT_RECEIPT_PREVIOUS_SECRET])if(secret&&secret.length>=32&&await crypto.subtle.verify("HMAC",await key(secret),signature,encoder.encode(`sitenova-receipt-v1:${match[1]}`)))return match[1];
++ return null;
++}
++// Read-only capability endpoints. Never calls Razorpay or a settlement writer.
++export async function paymentReceipt(request:Request,env:PaymentEnv,action:string,admin?:VerifiedTestAdmin){
++ if(!env.PAYMENT_RECEIPT_SECRET||env.PAYMENT_RECEIPT_SECRET.length<32)return paymentJson({error:"Receipt links unavailable"},503);
++ try{
++  if(!await env.PAYMENT_RATE_LIMITER?.limit({key:`check:receipt:${request.headers.get("x-payment-client-ip")??"local"}`}).then(r=>r.success))return paymentJson({error:"Too many receipt requests"},429);
++  const raw=await request.text();if(raw.length>4000)return paymentJson({error:"Request too large"},413);
++  const input=z.object({token:z.string().max(3000)}).strict().parse(JSON.parse(raw));
++  const ops=operationsStore(env);
++  if(action==="receipt"){
++   const id=await verifyReceipt(input.token,env);if(!id)return paymentJson({error:"Invalid receipt link"},403);
++   const receipt=await ops.receipt(id);if(!receipt)return paymentJson({error:"Receipt not found"},404);
++   // Explicit projection: no customer/order/payment identifiers may escape.
++   return paymentJson({package:receipt.package,amount:receipt.amount,status:receipt.status});
++  }
++  const claims=await readToken(input.token,env);if((claims.package==="test")!==!!admin)return paymentJson({error:"Invalid receipt channel"},403);
++  const record=await paymentStore(env).find(claims.orderId);
++  if(!record||record.key_id!==claims.keyId||record.package!==claims.package||record.amount!==claims.amount||(admin&&record.customer?.admin_id!==admin.id))return paymentJson({error:"Invalid payment session"},403);
++  if(!["paid","refunded"].includes(record.status??""))return paymentJson({error:"Payment is not yet confirmed"},409);
++  const id=await ops.receiptByRequest(record.request_id);
++  return paymentJson({url:`https://sitenova.dev/receipt#${await receiptToken(id,env.PAYMENT_RECEIPT_SECRET)}`});
++ }catch(error){if(error instanceof z.ZodError||error instanceof SyntaxError)return paymentJson({error:"Invalid receipt request"},400);return paymentJson({error:"Receipt unavailable"},503);}
++}
+diff --git a/supabase/functions/_shared/payment-recovery.ts b/supabase/functions/_shared/payment-recovery.ts
+--- /dev/null
++++ b/supabase/functions/_shared/payment-recovery.ts
+@@ -0,0 +1,35 @@
++import {z} from "zod";
++import {operationsStore} from "./payment-operations.ts";
++import {paymentStore} from "./payment-store.ts";
++import {reconcileOne} from "./reconciliation.ts";
++import {providerGet} from "./provider-read.ts";
++import type {PaymentEnv} from "./razorpay.ts";
++const seconds=z.number().int().positive().max(253402300799).nullable().optional();
++const disputeSchema=z.object({id:z.string().regex(/^disp_[A-Za-z0-9]+$/),payment_id:z.string().regex(/^pay_[A-Za-z0-9]+$/),status:z.string().max(200),amount:z.number().int().nonnegative(),currency:z.string().max(20),respond_by:seconds});
++export async function recoverRecentPaid(env:PaymentEnv,runId:string,deadline:number){
++ const store=operationsStore(env),since=new Date(Date.now()-30*24*60*60000).toISOString();let after:string|undefined,checked=0,errors=0;
++ while(true){
++  if(Date.now()>deadline)throw new Error("Paid recovery incomplete");const page=await store.recentPaid(since,after);
++  for(let offset=0;offset<page.length;offset+=4){if(Date.now()>deadline)throw new Error("Paid recovery incomplete");const results=await Promise.all(page.slice(offset,offset+4).map(record=>reconcileOne(env,runId,record)));checked+=results.length;errors+=results.filter(result=>result.error).length;}
++  if(page.length<100)break;after=page.at(-1)!.request_id;
++ }return {checked,errors};
++}
++export async function syncProviderDisputes(env:PaymentEnv,deadline:number){
++ const ops=operationsStore(env);let skip=0;
++ while(true){
++  if(Date.now()>deadline)throw new Error("Dispute sync incomplete");
++  const page=z.object({items:z.array(disputeSchema)}).parse(await providerGet(env,`disputes?count=100&skip=${skip}`));
++  for(const entity of page.items){
++   if(Date.now()>deadline)throw new Error("Dispute sync incomplete");
++   const payment=z.object({id:z.string(),order_id:z.string().nullable(),amount:z.number().int().nonnegative(),currency:z.string()}).parse(await providerGet(env,`payments/${entity.payment_id}`));
++   if(payment.id!==entity.payment_id||payment.currency!==entity.currency||entity.amount>payment.amount)throw new Error("Dispute reference mismatch");
++   const dispute={id:entity.id,event:"payment.dispute.sync",status:entity.status,paymentId:entity.payment_id,orderId:payment.order_id,amount:entity.amount,currency:entity.currency,responseDueAt:entity.respond_by?new Date(entity.respond_by*1000).toISOString():null,occurredAt:new Date().toISOString()};
++   const identity=JSON.stringify({...dispute,occurredAt:null});
++   const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(identity));
++   const eventId="sync_"+Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
++   await paymentStore(env).recordDispute(eventId,dispute.event,dispute);
++   await ops.saveDisputeSnapshot(eventId,dispute);
++  }
++  if(page.items.length<100)break;skip+=100;
++ }
++}
+diff --git a/supabase/functions/_shared/payment-store.ts b/supabase/functions/_shared/payment-store.ts
+--- a/supabase/functions/_shared/payment-store.ts
++++ b/supabase/functions/_shared/payment-store.ts
+@@ -1,5 +1,6 @@
+ import { createClient } from "@supabase/supabase-js";
+-import {openDisputes,type Dispute,type DisputeEvent,type PaymentHealth} from "./payment-health.ts";
++import {operationsStore} from "./payment-operations.ts";
++import {openDisputes,lostDisputes,type Dispute,type DisputeEvent,type PaymentHealth} from "./payment-health.ts";
+ type ServerEnv = { SUPABASE_URL: string; SUPABASE_SERVICE_ROLE_KEY: string };
+ function serviceDb(env: ServerEnv) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Database unavailable");
+@@ -28,7 +29,7 @@ export function paymentStore(env: Partial<ServerEnv>) {
+         events.push(...page.data as DisputeEvent[]);
+         if(page.data.length<1000)break;
+       }
+-      return {observedAt,latestRunFailed:latest.data?.[0]?.state==="failed",lastCompletedAt:completed.data?.[0]?.finished_at??null,lastSuccessfulAt:successful.data?.[0]?.finished_at??null,needsReconciliation:needs.count??0,overdue:overdue.count??0,refunded:refunded.count??0,disputes:openDisputes(events)};
++      return {observedAt,lostDisputes:lostDisputes(events,await operationsStore(env).disputeAcknowledgements()),investigations:await operationsStore(env).investigationCount(),unacknowledgedPaid:await operationsStore(env).unacknowledged(),latestRunFailed:latest.data?.[0]?.state==="failed",lastCompletedAt:completed.data?.[0]?.finished_at??null,lastSuccessfulAt:successful.data?.[0]?.finished_at??null,needsReconciliation:needs.count??0,overdue:overdue.count??0,refunded:refunded.count??0,disputes:openDisputes([...events,...await operationsStore(env).disputeSnapshots()])};
+     },
+     async recordDispute(eventId:string,eventType:string,dispute:Dispute){
+       const result=await db.rpc("record_payment_dispute_event",{p_event:eventId,p_type:eventType,p_order:dispute.orderId,p_dispute:dispute});
+diff --git a/supabase/functions/_shared/provider-read.ts b/supabase/functions/_shared/provider-read.ts
+--- /dev/null
++++ b/supabase/functions/_shared/provider-read.ts
+@@ -0,0 +1,7 @@
++import type {PaymentEnv} from "./razorpay.ts";
++// This module deliberately exposes GET only. No capture/order/refund API exists here.
++export async function providerGet(env:PaymentEnv,path:string){
++ if(!env.RAZORPAY_KEY_ID||!env.RAZORPAY_KEY_SECRET)throw new Error("Provider unavailable");
++ const response=await fetch(`https://api.razorpay.com/v1/${path}`,{method:"GET",redirect:"error",signal:AbortSignal.timeout(15000),headers:{Authorization:`Basic ${btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`)}`}});
++ if(!response.ok)throw new Error("Provider read failed");return response.json();
++}
+diff --git a/supabase/functions/_shared/razorpay.ts b/supabase/functions/_shared/razorpay.ts
+--- a/supabase/functions/_shared/razorpay.ts
++++ b/supabase/functions/_shared/razorpay.ts
+@@ -1,13 +1,14 @@
+ import { z } from "zod";
+ import { paymentStore, type PaymentRecord } from "./payment-store.ts";
+ import { paymentDetailsSchema, type PaymentStatus } from "./payments.ts";
++import {operationsStore} from "./payment-operations.ts";
+ 
+ // Paise amounts are owned exclusively by the backend; client requests cannot override them.
+ export { PAYMENT_PACKAGES } from "./catalog.ts";
+ import { PAYMENT_PACKAGES } from "./catalog.ts";
+ const BACKEND_PACKAGES = { ...PAYMENT_PACKAGES, test: { name: "Test", advance: 100 } };
+ export type VerifiedTestAdmin = { id: string; email: string };
+-export type PaymentEnv = { SUPABASE_URL?: string; SUPABASE_SERVICE_ROLE_KEY?: string; RAZORPAY_WEBHOOK_SECRET?: string; RAZORPAY_ENABLED?: string; RAZORPAY_KEY_ID?: string; RAZORPAY_KEY_SECRET?: string; PAYMENT_RATE_LIMITER?: { limit(input: { key: string }): Promise<{ success: boolean }> } };
++export type PaymentEnv = { PAYMENT_RECEIPT_SECRET?:string;PAYMENT_RECEIPT_PREVIOUS_SECRET?:string;SUPABASE_URL?: string; SUPABASE_SERVICE_ROLE_KEY?: string; RAZORPAY_WEBHOOK_SECRET?: string; RAZORPAY_ENABLED?: string; RAZORPAY_KEY_ID?: string; RAZORPAY_KEY_SECRET?: string; PAYMENT_RATE_LIMITER?: { limit(input: { key: string }): Promise<{ success: boolean }> } };
+ export function paymentEnv(context: unknown): PaymentEnv {
+   return (context as { env?: PaymentEnv })?.env ?? {};
+ }
+@@ -44,7 +45,7 @@ export async function createPaymentToken(claims: z.infer<typeof claimsSchema>, s
+   const payload = btoa(JSON.stringify(claims));
+   return `${payload}.${await sign(`sitenova-payment-v1:${payload}`, secret)}`;
+ }
+-async function readToken(token: string, env: PaymentEnv) {
++export async function readToken(token: string, env: PaymentEnv) {
+   const [payload, signature, extra] = token.split(".");
+   if (!payload || !signature || extra || !await verify(`sitenova-payment-v1:${payload}`, signature, env.RAZORPAY_KEY_SECRET!))
+     throw new PaymentError("Invalid payment session. Please contact SiteNova.", 403);
+@@ -268,12 +269,17 @@ export async function paymentWebhook(request: Request, context: unknown) {
+       orderId = payment.order_id;
+     }
+     if (typeof orderId !== "string" || !/^order_[A-Za-z0-9]+$/.test(orderId)) {
++      const unknownPayment=event.payload?.payment?.entity;
++      if(typeof unknownPayment?.id==="string"&&/^pay_[A-Za-z0-9]+$/.test(unknownPayment.id)){
++        const inserted=await recordUnknownPayment(env,eventId,event.event,null,unknownPayment);
++        return paymentJson({received:true,...(!inserted?{alreadyProcessed:true}:{})});
++      }
+       const inserted=await store.completeWebhook(eventId,null,null,null);
+       return paymentJson({received:true,...(!inserted?{alreadyProcessed:true}:{})});
+     }
+     const record = await store.find(orderId);
+     if (!record || record.key_id !== env.RAZORPAY_KEY_ID) {
+-      const inserted=await store.completeWebhook(eventId,orderId,null,null);
++      const inserted=await recordUnknownPayment(env,eventId,event.event,orderId,event.payload?.payment?.entity??{id:refundPaymentId});
+       return paymentJson({received:true,...(!inserted?{alreadyProcessed:true}:{})});
+     }
+     const claims = claimsSchema.parse({ orderId, amount: record.amount, package: record.package, keyId: record.key_id, issuedAt: Date.parse(record.created_at) });
+@@ -286,3 +292,6 @@ export async function paymentWebhook(request: Request, context: unknown) {
+     return paymentJson({ received: true,...(!inserted?{alreadyProcessed:true}:{}) });
+   } catch { return paymentJson({ error: "Unable to store payment event" },503); }
+ }
++async function recordUnknownPayment(env:PaymentEnv,eventId:string,eventType:unknown,orderId:string|null,payment:Record<string,unknown>){
++ return operationsStore(env).recordInvestigation({kind:"unknown_payment",orderId,paymentId:typeof payment.id==="string"&&/^pay_[A-Za-z0-9]+$/.test(payment.id)?payment.id:null,amount:typeof payment.amount==="number"&&Number.isSafeInteger(payment.amount)&&payment.amount>=0?payment.amount:null,currency:typeof payment.currency==="string"?payment.currency.slice(0,20):null,status:typeof payment.status==="string"?payment.status.slice(0,200):null},eventId,typeof eventType==="string"?eventType.slice(0,200):"unknown");
++}
+diff --git a/supabase/functions/_shared/reconciliation.ts b/supabase/functions/_shared/reconciliation.ts
+--- a/supabase/functions/_shared/reconciliation.ts
++++ b/supabase/functions/_shared/reconciliation.ts
+@@ -1,6 +1,8 @@
+ import { z } from "zod";
+ import { paymentStore, type PaymentRecord } from "./payment-store.ts";
+ import { fetchStoredPaymentStatus, paymentJson, type PaymentEnv } from "./razorpay.ts";
++import {syncUnattachedOrders} from "./investigation-sync.ts";
++import {recoverRecentPaid,syncProviderDisputes} from "./payment-recovery.ts";
+ 
+ export async function reconcileOne(env: PaymentEnv, runId: string, record: PaymentRecord) {
+   const store=paymentStore(env);
+@@ -39,6 +41,9 @@ export async function handleReconciliation(request: Request, env: PaymentEnv) {
+       after=records.at(-1)!.request_id;
+       if(records.length<100) break;
+     }
++    const recovered=await recoverRecentPaid(env,runId,deadline);checked+=recovered.checked;errors+=recovered.errors;
++    await syncUnattachedOrders(env,deadline);
++    await syncProviderDisputes(env,deadline);
+     await store.finishRun(runId,checked,errors,errors?"One or more orders need owner review.":null);
+     return paymentJson({checked,errors});
+   } catch {
+diff --git a/supabase/migrations/20261011113535_payment_operations.sql b/supabase/migrations/20261011113535_payment_operations.sql
+--- /dev/null
++++ b/supabase/migrations/20261011113535_payment_operations.sql
+@@ -0,0 +1,25 @@
++begin;
++-- Sidecar metadata only; existing checkout and settlement functions are unchanged.
++create table public.payment_order_operations (
++ request_id uuid primary key references public.payment_intents(request_id),
++ paid_at timestamptz not null,
++ acknowledged_at timestamptz,
++ acknowledged_by uuid,
++ receipt_id uuid not null default gen_random_uuid() unique
++);
++alter table public.payment_order_operations enable row level security;
++revoke all on public.payment_order_operations from public,anon,authenticated;
++grant select,insert,update on public.payment_order_operations to service_role;
++create function public.observe_payment_operations() returns trigger language plpgsql security invoker set search_path='' as $$
++begin
++ if new.status in ('paid','refunded') then
++  insert into public.payment_order_operations(request_id,paid_at) values(new.request_id,coalesce(new.verified_at,now())) on conflict(request_id) do nothing;
++ end if;
++ return new;
++end;$$;
++revoke all on function public.observe_payment_operations() from public,anon,authenticated;
++grant execute on function public.observe_payment_operations() to service_role;
++create trigger payment_operations_observer after insert or update of status on public.payment_intents for each row execute function public.observe_payment_operations();
++insert into public.payment_order_operations(request_id,paid_at) select request_id,coalesce(verified_at,created_at) from public.payment_intents where status in ('paid','refunded') on conflict do nothing;
++create index payment_operations_paid_time on public.payment_order_operations(paid_at desc,request_id);
++commit;
+diff --git a/supabase/migrations/20261011114005_payment_investigations.sql b/supabase/migrations/20261011114005_payment_investigations.sql
+--- /dev/null
++++ b/supabase/migrations/20261011114005_payment_investigations.sql
+@@ -0,0 +1,33 @@
++begin;
++create table public.payment_investigations (
++ id uuid primary key default gen_random_uuid(),
++ identity text not null unique,
++ kind text not null check(kind in ('unknown_payment','unattached_order')),
++ order_id text, payment_id text, request_id uuid,
++ amount bigint check(amount>=0), currency text, provider_status text,
++ first_seen_at timestamptz not null default now(), last_seen_at timestamptz not null default now()
++);
++alter table public.payment_investigations enable row level security;
++revoke all on public.payment_investigations from public,anon,authenticated;
++grant select,insert,update on public.payment_investigations to service_role;
++create function public.record_payment_investigation(p_kind text,p_order text,p_payment text,p_request uuid,p_amount bigint,p_currency text,p_status text,p_event text default null,p_type text default null)
++returns boolean language plpgsql security invoker set search_path='' as $$
++declare marker text; investigation_identity text;
++begin
++ if p_kind not in ('unknown_payment','unattached_order') then raise exception 'invalid_investigation'; end if;
++ -- Recheck the reservation inside the write to avoid a scan/attachment race.
++ if p_kind='unattached_order' and not exists(select 1 from public.payment_intents where request_id=p_request and order_id is null) then return false; end if;
++ if p_event is not null then
++  insert into public.payment_webhook_events(event_id,event_type,order_id) values(p_event,left(p_type,200),p_order) on conflict(event_id) do nothing returning event_id into marker;
++  if marker is null then return false; end if;
++ end if;
++ investigation_identity=p_kind||':'||coalesce(p_payment,p_order,p_event);
++ if investigation_identity is null then raise exception 'missing_reference'; end if;
++ insert into public.payment_investigations(identity,kind,order_id,payment_id,request_id,amount,currency,provider_status)
++ values(investigation_identity,p_kind,p_order,p_payment,p_request,p_amount,left(p_currency,20),left(p_status,200))
++ on conflict(identity) do update set last_seen_at=now(),provider_status=excluded.provider_status;
++ return true;
++end;$$;
++revoke all on function public.record_payment_investigation(text,text,text,uuid,bigint,text,text,text,text) from public,anon,authenticated;
++grant execute on function public.record_payment_investigation(text,text,text,uuid,bigint,text,text,text,text) to service_role;
++commit;
+diff --git a/supabase/migrations/20261011114600_payment_dispute_acknowledgements.sql b/supabase/migrations/20261011114600_payment_dispute_acknowledgements.sql
+--- /dev/null
++++ b/supabase/migrations/20261011114600_payment_dispute_acknowledgements.sql
+@@ -0,0 +1,10 @@
++begin;
++create table public.payment_dispute_acknowledgements (
++ dispute_id text primary key,
++ event_id text not null references public.payment_webhook_events(event_id),
++ acknowledged_at timestamptz not null default now(), acknowledged_by uuid not null
++);
++alter table public.payment_dispute_acknowledgements enable row level security;
++revoke all on public.payment_dispute_acknowledgements from public,anon,authenticated;
++grant select,insert,update on public.payment_dispute_acknowledgements to service_role;
++commit;
+diff --git a/supabase/migrations/20261011115037_payment_dispute_sync.sql b/supabase/migrations/20261011115037_payment_dispute_sync.sql
+--- /dev/null
++++ b/supabase/migrations/20261011115037_payment_dispute_sync.sql
+@@ -0,0 +1,12 @@
++begin;
++-- Minimal current provider snapshots; evidence/customer details are never persisted.
++create table public.payment_dispute_snapshots (
++ id text primary key,
++ event_id text not null references public.payment_webhook_events(event_id),
++ dispute jsonb not null check(jsonb_typeof(dispute)='object'),
++ observed_at timestamptz not null
++);
++alter table public.payment_dispute_snapshots enable row level security;
++revoke all on public.payment_dispute_snapshots from public,anon,authenticated;
++grant select,insert,update on public.payment_dispute_snapshots to service_role;
++commit;
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -551,6 +551,13 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
+ 
+ ## 9. Data & Backend (Supabase)
+ 
++### Payment operations additions — LOCAL ONLY (2026-10-11)
++- Four unapplied migrations add service-only sidecars for paid-order acknowledgement/receipt identity, record-only investigations, dispute acknowledgement by dispute ID, and minimal dispute snapshots. No existing settlement RPC or checkout/verification body changes. Public activation remains disabled; no push, deployment or charge was performed.
++- Admin Payments adds recent paid/refunded orders with stored contact/project details and acknowledgement, investigation evidence, and persistent lost-dispute alerts. Overview and Payments badge include their counts. Fresh existing admin authentication protects every read/write; browser roles have no table grants.
++- The scheduler adds GET-only recovery for paid/refunded orders confirmed within 30 days, orphan order evidence matched to unattached reservations older than 15 minutes, and paginated dispute reads. It retains existing monotonic reconciliation, 110-second budget and visible failure reporting. No creation, capture, refund, attachment or fulfilment action is added.
++- Receipt success links use random UUID/HMAC fragment tokens and expose only package, amount and saved paid/refunded status. Dedicated Supabase PAYMENT_RECEIPT_SECRET (minimum 32 bytes) is required after approval; optional PAYMENT_RECEIPT_PREVIOUS_SECRET preserves one previous signing key. Neither is configured by this pass. Receipt pages suppress tracking/replay/promotions and are noindex/no-store/no-referrer.
++- Validation: 160 tests pass (all 133 existing retained), isolated PostgreSQL migration/access/atomicity/monotonicity checks pass, scoped lint and production build pass; application typecheck has zero payment diagnostics and 62 unrelated diagnostics. Provider/auth reads and cross-device behaviour are mocked/simulated; all new live behaviour is unverified. Review: docs/payment-operations-review.md and docs/payment-operations.diff. After explicit approval, migrations/functions deploy before website.
++
+ ### Untouched checkout reconciliation classification (2026-10-11)
+ - Fresh provider GETs distinguish a created order with zero payment attempts from uncertain attempted payments. The server-only internal `unattempted` result is persisted as `pending` by `record_payment_reconciliation`; it never grants fresh-order retry eligibility. Provider errors/ambiguous attempts still require reconciliation, and pending orders older than 24 hours remain flagged.
+ - Applied `20261011105638_payment_unattempted_reconciliation.sql`; deployed razorpay-payments v8 and razorpay-reconcile v3. Checkout authorization, callback verification, settlement RPC, webhook v6 and website Worker are unchanged. Public payments remain disabled.
+@@ -936,6 +943,9 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
+ 
+ ## 16. Changelog
+ 
++### Payment operations review (2026-10-11)
++- Prepared local-only paid-order acknowledgement, investigations, persistent lost-dispute acknowledgement, GET-only refund/dispute recovery and minimal durable signed receipts. See section 9 and docs/payment-operations-review.md for evidence and limits. Nothing pushed or deployed; public payments remain disabled. Final suite: 160 passing tests, including all 133 baseline tests.
++
+ ### [2026-10-11] — Correct warnings for untouched checkouts
+ - Diagnosed six unpaid review-queue entries: five had no Razorpay payment attempts; the earlier GPay order had a failed risk-check attempt. Both captured website orders were already paid and correctly excluded from the review queue.
+ - Added provider-confirmed untouched classification and an audited pending-state write, preserving uncertainty warnings, paid-state protection, existing retry and checkout rules, 24-hour alerts and server-only permissions. Applied migration and deployed payment API v8/reconciler v3 after all 133 tests and isolated database tests passed; live cron confirms classification correction on the eligible untouched order. No Git push, website deployment, order creation, charge, capture or refund.
+diff --git a/scripts/test-payment-operations-db.mjs b/scripts/test-payment-operations-db.mjs
+--- /dev/null
++++ b/scripts/test-payment-operations-db.mjs
+@@ -0,0 +1,45 @@
++import {PGlite} from '@electric-sql/pglite';
++import {readFile} from 'node:fs/promises';
++import assert from 'node:assert/strict';
++const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
++for(const file of ['20261010170200_razorpay_backend_payments.sql','20261011085842_payment_webhook_events.sql','20261011100002_payment_dispute_audit.sql','20261011113535_payment_operations.sql','20261011114005_payment_investigations.sql','20261011114600_payment_dispute_acknowledgements.sql','20261011115037_payment_dispute_sync.sql'])await db.exec(await readFile(`supabase/migrations/${file}`,'utf8'));
++const id='00000000-0000-4000-8000-000000000001';
++await db.exec('set role service_role');
++await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id) values($1,'hash','dedupe','starter',500000,'fake','{}','2026-10-10','order_1')",[id]);
++await db.query("select record_package_payment('order_1','pay_1','paid',0)");
++const first=(await db.query('select * from payment_order_operations')).rows[0];
++assert.equal(first.acknowledged_at,null);
++await db.query('update payment_order_operations set acknowledged_at=now(),acknowledged_by=$1 where request_id=$1',[id]);
++await db.query("select record_package_payment('order_1','pay_1','refunded',100)");
++const after=(await db.query('select * from payment_order_operations')).rows[0];
++assert.equal(String(after.paid_at),String(first.paid_at));assert.equal(after.receipt_id,first.receipt_id);assert.ok(after.acknowledged_at);
++assert.equal((await db.query('select status from payment_intents')).rows[0].status,'refunded');
++await db.query("select record_payment_dispute_event('evt_lost','payment.dispute.lost','order_1','{\"id\":\"disp_1\",\"status\":\"lost\"}')");
++await db.query("insert into payment_dispute_acknowledgements(dispute_id,event_id,acknowledged_by) values('disp_1','evt_lost',$1)",[id]);
++assert.equal((await db.query('select count(*)::int as n from payment_dispute_acknowledgements')).rows[0].n,1);
++await db.query("insert into payment_dispute_snapshots values('disp_1','evt_lost','{\"id\":\"disp_1\",\"status\":\"lost\"}',now())");
++assert.equal((await db.query('select status from payment_intents')).rows[0].status,'refunded');
++await db.query('update payment_order_operations set acknowledged_at=null,acknowledged_by=null where request_id=$1',[id]);
++assert.equal((await db.query('select count(*)::int as n from payment_order_operations where acknowledged_at is null')).rows[0].n,1);
++const unknown="select record_payment_investigation('unknown_payment','order_unknown','pay_unknown',null,100,'INR','captured','evt_unknown','payment.captured') as inserted";
++assert.equal((await db.query(unknown)).rows[0].inserted,true);assert.equal((await db.query(unknown)).rows[0].inserted,false);
++await assert.rejects(db.query("select record_payment_investigation('invalid','order_bad',null,null,100,'INR','paid','evt_bad','payment.captured')"));
++assert.equal((await db.query("select count(*)::int as n from payment_webhook_events where event_id='evt_bad'")).rows[0].n,0);
++const orphan='00000000-0000-4000-8000-000000000003';
++await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version) values($1,'hash','orphan','starter',500000,'fake','{}','2026-10-10')",[orphan]);
++await db.query("select record_payment_investigation('unattached_order','order_orphan',null,$1,500000,'INR','created')",[orphan]);
++assert.equal((await db.query("select record_payment_investigation('unattached_order','order_attached',null,$1,500000,'INR','paid') as recorded",[id])).rows[0].recorded,false);
++assert.equal((await db.query('select count(*)::int as n from payment_investigations')).rows[0].n,2);
++assert.equal((await db.query('select status from payment_intents where request_id=$1',[id])).rows[0].status,'refunded');
++await db.exec('reset role');
++// A sidecar failure cannot leave a successful settlement or webhook marker behind.
++const blocked='00000000-0000-4000-8000-000000000004';
++await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id) values($1,'hash','blocked','starter',500000,'fake','{}','2026-10-10','order_blocked')",[blocked]);
++await db.exec("create function public.test_sidecar_failure() returns trigger language plpgsql as $$ begin raise exception 'test_storage_failure'; end; $$; create trigger test_sidecar_failure before insert on public.payment_order_operations for each row execute function public.test_sidecar_failure();");
++await db.exec('set role service_role');
++await assert.rejects(db.query("select complete_payment_webhook('evt_blocked','order_blocked','pay_blocked','paid',0)"),/test_storage_failure/);
++assert.equal((await db.query('select status from payment_intents where request_id=$1',[blocked])).rows[0].status,'pending');
++assert.equal((await db.query("select count(*)::int as n from payment_webhook_events where event_id='evt_blocked'")).rows[0].n,0);
++await db.exec('reset role;drop trigger test_sidecar_failure on public.payment_order_operations;drop function public.test_sidecar_failure();');
++for(const role of ['anon','authenticated']){await db.exec(`set role ${role}`);for(const table of ['payment_order_operations','payment_investigations','payment_dispute_acknowledgements','payment_dispute_snapshots']){await assert.rejects(db.query(`select * from ${table}`),/permission denied/);await assert.rejects(db.query(`delete from ${table}`),/permission denied/);}await assert.rejects(db.query('update payment_order_operations set acknowledged_at=now()'),/permission denied/);await assert.rejects(db.query(unknown),/permission denied/);await db.exec('reset role');}
++await db.close();console.log('PASS: paid sidecar, first paid time, stable receipt identity, acknowledgement leaves settlement unchanged, browser denial.');
+diff --git a/docs/payment-operations-review.md b/docs/payment-operations-review.md
+--- /dev/null
++++ b/docs/payment-operations-review.md
+@@ -0,0 +1,46 @@
++# Payment operations additions — local review
++
++Nothing in this change set has been deployed, committed or pushed. No order, charge, capture or refund was made by the agent. Public activation settings were not changed. The previously deployed payment API v8, webhook v6, reconciler v3 and website Worker 9854dd6c-b230-4150-a755-49f6164240e9 remain the last confirmed deployment; they were not re-audited live in this pass.
++
++## What changes
++
++1. **Recent paid orders:** admin Payments shows paid/refunded entries newest first, stored contact/project details and an acknowledgement toggle. A separate sidecar stores the first paid confirmation time and acknowledgement. Existing records are backfilled from their stored verification time (this is not a verified provider capture timestamp). The Overview banner and existing Payments badge count unacknowledged entries. Toggling acknowledgement never writes settlement fields.
++2. **Needs investigation:** unknown signed webhook payment references are atomically recorded with the existing unique event-ID marker, returning 200 for duplicates. The scheduled GET-only order scan matches provider `receipt` to unattached server reservations older than 15 minutes, then rechecks that the reservation is still unattached inside SQL. It records evidence only; it cannot attach, settle, fulfil or create orders. The list/banner intentionally retain investigation evidence; no manual paid or resolution override was added. Historical unknown events without payment metadata cannot be reconstructed automatically.
++3. **Lost disputes:** distinct alerts persist until an admin acknowledges the dispute. Acknowledgement is by dispute identity, so a webhook replay or scheduled snapshot cannot reopen the same acknowledged loss. Open-dispute warnings continue to clear on won/closed. A later closed event cannot erase an unacknowledged recorded loss. No dispute event changes the paid ledger.
++4. **Scheduled recovery:** after the existing pending check, the same scheduled function re-fetches paid/refunded orders confirmed within the last 30 days, using the existing provider validation and monotonic reconciliation writer. Paid cannot become pending/failed; refunds retain the existing partial/full refund semantics. The new dispute sync uses `GET /v1/disputes?count=100&skip=...` and GETs linked payments, storing minimal current snapshots and deduplicated audit entries. No evidence or customer data is copied from disputes. Permission/API errors fail the run visibly instead of being treated as an empty dispute list. Provider reads and history are paginated and retain the existing 110-second run budget; a run that cannot finish is flagged. Large-volume runtime/load behaviour remains unverified.
++5. **Receipt:** success screens request a separate link after verification. The URL uses a random UUID signed with a dedicated HMAC secret and contains its token in the fragment (`/receipt#...`), avoiding URL/request/referrer logs. The anonymous reader verifies that signature and projects only package, amount and current saved status. It never calls Razorpay or settlement. It works while public checkout is disabled and without browser session storage. Receipt routes suppress tracking/replay/promotions, are noindex/no-store/no-referrer and have no checkout controls. A bearer link should be kept private.
++
++The existing paymentAction, callback verification, checkout authorization, recordStatus and fetchStoredPaymentStatus bodies are unchanged. Existing settlement migrations/functions are unchanged. The added observer writes only sidecar metadata in the same database transaction. If sidecar storage fails, the transaction fails closed; it cannot report a paid receipt without a saved settlement.
++
++## Evidence
++
++All 133 existing scenarios remain in the suite. Publication review on 2026-10-12: **165 tests, 31 files, passing**, plus four real-browser checks. Existing queue tests isolate the two new sections (which have dedicated tests); health-query expectations include the added queries. No test scenario was removed. Browser checks use a real local production build with mocked account/provider data; receipt refresh across two fresh browser contexts, admin acknowledgement/alert clearing, non-admin isolation, public disabled checkout and mobile width pass. Mobile investigation buttons overflowed before the fix and now wrap. See `payment-publication-review.md` for final checks and remaining warnings.
++
++| Addition | Local evidence | Live evidence for this addition |
++|---|---|---|
++| Paid list, acknowledgement, banner | `PaidOrders.test.tsx`, `PaymentAlerts.test.tsx`, `payment-operations-admin.test.ts`, `payment-admin-edge.test.ts`, actual PostgreSQL sidecar test | Unverified; undeployed |
++| Unknown webhooks/orphans | `payment-investigations.test.ts`, `PaymentInvestigations.test.tsx`, actual PostgreSQL unique-ID/rollback/attachment-race/access tests | Unverified; provider API/storage mocked in unit tests |
++| Lost disputes | `payment-disputes.test.ts`, banner cases, `payment-operations-store.test.ts`, PostgreSQL acknowledgement/snapshot access test | Unverified; no real dispute created |
++| Refund/dispute recovery | `payment-recovery.test.ts`, unchanged `payment-reconciliation.test.ts`, `payment-operations-store.test.ts`, actual PostgreSQL monotonic settlement tests | Unverified; Razorpay reads mocked; no live cron/new API check |
++| Receipts | `payment-receipt.test.ts`, `Receipt.test.tsx`, `PaymentReceiptLink.test.tsx`, PostgreSQL stable receipt identity/browser-denial test | Unverified; cross-device behaviour simulated without session storage |
++
++`scripts/test-payment-operations-db.mjs` executes all four new migrations against isolated PGlite/PostgreSQL and checks service-only access, atomic unknown-event markers, duplicate suppression, record-only investigations/disputes, first paid time, acknowledgement, stable receipt identity and unchanged settlement. Existing event/dispute/retry/reconciliation/schedule PostgreSQL scripts also pass; pg_cron/pg_net/Vault calls in the schedule test remain stubs. UI tests use jsdom and provider/auth HTTP requests use mocks. This is not a real bank, real concurrent delivery, live Supabase/PostgREST relationship or account-permission test.
++
++Scoped source lint and production client/SSR build pass. Application type-check retains **62 unrelated diagnostics**, zero payment/receipt diagnostics. No unrelated code errors were fixed.
++
++## Deployment order after owner approval
++
++1. Keep both public activation flags false. Review the diff and apply the four new migrations in timestamp order: payment_operations, payment_investigations, payment_dispute_acknowledgements, payment_dispute_sync.
++2. The owner reports saving a random 64-character `PAYMENT_RECEIPT_SECRET` in **Supabase Edge Function secrets** on 2026-10-12. Its live configuration has not been independently checked; no value was read or printed. It is required for receipt links only. Do not place it in a VITE variable or the website. For local Edge tests use the ignored Edge environment file. Keep it stable; when rotating it retain the old value as `PAYMENT_RECEIPT_PREVIOUS_SECRET` while old receipts need to remain valid. One previous key is supported; removing it invalidates links signed with it.
++3. Deploy backend **before website**: updated razorpay-webhook, razorpay-payments and razorpay-reconcile with their shared modules. Preserve the existing custom authentication configuration and scheduler credential. Do not change keys, webhook signature configuration, public activation or checkout settings.
++4. Check schema/grants, rejected bad signatures/non-admin calls, signed receipt projection and a scheduled completion with GET-only recovery. Account access to dispute listing and actual relational query shapes must be verified here. No charges are required for these read-only checks.
++5. Only then deploy the website while preserving runtime bindings and public payments disabled. This document is a review/deployment plan, not authorization to execute it.
++
++## Admin walkthrough after deployment
++
++1. Log in at `/admin`, open Overview: previously paid entries backfilled by migration should show an unacknowledged-paid banner and Payments badge.
++2. Open Manage → Payments → Recent paid orders. Confirm the three previously recorded test payments/contact details against Razorpay. Toggle Acknowledged; return to Overview and refresh. That entry must stop contributing to the paid banner. Uncheck it to verify reappearance.
++3. Open Needs investigation. It displays references only, with no Attach/Mark paid action. Empty production data is not proof of unknown-payment ingestion; use isolated fixtures/Test Mode for that case.
++4. A lost dispute fixture should appear distinctly in the banner and queue; click Acknowledge lost dispute and refresh. A repeated webhook or scheduled snapshot of that dispute must not re-alert. Do not manufacture a live dispute to test this.
++5. Check last successful reconciliation time after the next scheduled run. For a missed-refund test, use a controlled Test Mode fixture with webhook suppressed and a dashboard-issued refund, then wait for recovery. A live refund moves real money and needs separate owner authorization.
++6. Use Check status for an existing confirmed admin test to request its Payment receipt link (no new payment). Copy that full link to another device/private window and refresh it. Confirm only package, amount and status appear. A modified signature must fail. Receipt pages must offer no payment action, even while checkout is disabled.

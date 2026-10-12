@@ -11,7 +11,9 @@ import { Link } from "react-router";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import TestPaymentButton from "./TestPaymentButton";
 export const TAB_LABELS: Record<string, string> = {
+  payments: "Payments",
   scheduled_calls: "Scheduled calls",
   overview: "Overview",
   leads: "Audit requests",
@@ -26,6 +28,7 @@ export const TAB_LABELS: Record<string, string> = {
   activity_log: "Activity log",
 };
 export const TAB_DESCRIPTIONS: Record<string, string> = {
+  payments: "Review pending payments, provider checks, and reconciliation alerts.",
   overview: "A clear view of your leads, calls, and content.",
   scheduled_calls: "Keep upcoming conversations and Calendar updates in view.",
   leads: "Review website audit requests and manage your follow-ups.",
@@ -126,6 +129,7 @@ export default function AdminHeader({
           <span className="hidden sm:inline">New post</span>
         </Link>
       </Button>
+      <TestPaymentButton />
     </header>
   );
 }

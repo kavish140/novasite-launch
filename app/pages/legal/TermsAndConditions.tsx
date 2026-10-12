@@ -1,6 +1,8 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
+import { Link } from "react-router";
+import { EMAIL } from "@/lib/constants";
 
 const TermsAndConditions = () => {
   return (
@@ -13,7 +15,7 @@ const TermsAndConditions = () => {
               Terms & Conditions
             </h1>
             <div className="prose prose-invert max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-primary">
-              <p>Last updated: {new Date().toLocaleDateString()}</p>
+              <p>Last updated: 10 October 2026</p>
               
               <h2>1. Agreement to Terms</h2>
               <p>
@@ -29,6 +31,10 @@ const TermsAndConditions = () => {
               <p>
                 Payment terms, including deposit requirements and milestone payments, will be specified in the project proposal or invoice. Unless otherwise stated, a deposit is required before work begins. Final payment is due upon project completion or before the website is launched on the client's domain.
               </p>
+
+              <h3>Online package advances</h3>
+              <p>When online checkout is enabled, Starter and Business packages accept advances of ₹5,000 and ₹7,500 respectively, equal to 50% of their advertised starting prices. The advance is credited toward the final agreed project price; it is not payment for the entire project. The final scope, any additional costs and remaining payments are agreed in your proposal. Premium and custom projects require a separate quote.</p>
+              <p>Online payments are processed by Razorpay. A payment is confirmed when it is captured and verified, rather than solely when checkout closes. If your account is debited but confirmation is pending, contact us with your payment reference before making another payment. Cancellation and refund requests follow our <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link>. Delivery follows our <Link to="/delivery-policy">Digital Delivery Policy</Link>.</p>
 
               <h2>4. Intellectual Property Rights</h2>
               <p>
@@ -53,7 +59,7 @@ const TermsAndConditions = () => {
               <h2>8. Contact Us</h2>
               <p>
                 In order to resolve a complaint regarding the Site or to receive further information regarding use of the Site, please contact us at:<br/>
-                Email: kavishganatra5@gmail.com
+                Email: <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
               </p>
             </div>
           </div>

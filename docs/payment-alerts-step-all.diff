@@ -1,0 +1,776 @@
+diff --git a/AGENTS.md b/AGENTS.md
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -551,6 +551,14 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
+ 
+ ## 9. Data & Backend (Supabase)
+ 
++### Local payment monitoring and dispute audit (2026-10-11)
++- Scoped application typecheck finds zero payment diagnostics; 62 pre-existing diagnostics remain in unrelated files, unchanged. Read-only production checks confirm payment API v6, webhook v5, reconciler v2, active ten-minute cron, and scheduled completion at 2026-10-11 10:10:02.340 UTC with checked=1/errors=0. Production event table still has only id/event_id/order_id/processed_at, so new dispute metadata is not live.
++- `PaymentCronHealth` shows the last successful scheduled completion and the next expected ten-minute wall-clock run in IST, using the server observation clock. Manual admin checks do not mask a dead cron. Missing summary data is explicitly unverified.
++- Staged migration `20261011100002_payment_dispute_audit.sql` adds `event_type` and a minimal `dispute` JSON record to the existing, service-only `payment_webhook_events` table. `record_payment_dispute_event` deduplicates with its existing UNIQUE(event_id). It never calls settlement or updates payment_intents. Signed unknown dispute events/payment references are recorded; raw payloads, evidence and customer details are not stored.
++- The existing authenticated admin queue operation accepts `summaryOnly:true` locally, reading scheduled run health, ledger-wide exact counts and open dispute history. No new HTTP API/service or email. Terminal dispute states won/lost/closed clear the open-dispute warning; provider event time prevents late delivery reopening it. Refund warnings reflect the durable ledger and remain while refunds are recorded.
++- Dashboard alerts are visible on Overview and other tabs, with a Payments issue-count badge. Fresh Auth identity and is_site_admin membership gate payment queries; existing Edge authorization independently rechecks membership. Refresh runs every 60 seconds, on focus and explicit refresh. Logout/revocation clears state and stale in-flight results are discarded. Issue count counts conditions/items; an overdue order needing reconciliation contributes to both conditions.
++- These monitoring/dispute changes are LOCAL ONLY; migration, updated payment/webhook functions and UI are not deployed or pushed. Existing production checkout, cron, settlement and public disabled flags remain unchanged. Deployment must apply the additive migration and update razorpay-webhook/razorpay-payments before the website UI uses the new summary.
++
+ **Project URL**: `https://bklmtwblsoitafynpikc.supabase.co`
+ 
+ ### Database Tables
+@@ -921,6 +929,11 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
+ 
+ ## 16. Changelog
+ 
++### [2026-10-11] — Local admin payment alerts and record-only disputes
++- Completed in order: dashboard alerts/dispute audit (124 tests passing before the next step), cron health visibility (five targeted UI tests passing), scoped typecheck cleanup (no payment errors; 62 unrelated diagnostics left untouched), final regression checks (129 tests passing, including clearing of historical failure warnings). Scoped lint, production build and isolated dispute PostgreSQL checks pass. Existing 100 tests remain intact and passing.
++- Added a main-dashboard alert/banner and Payments count badge, automatic membership-gated refresh, open dispute/deadline visibility and scheduled-run health. Added only a signed record-only dispute branch and service-only event metadata migration; existing checkout and settlement path are unchanged. Duplicate dispute events use the same unique event-ID table; unknown events/payment references return 200 after durable storage. Bad signatures are denied before storage.
++- All new changes remain local, with no push/deployment or payment. Current live payment functions/cron and disabled public checkout were checked read-only. Authenticated new production UI and actual dispute delivery are unverified. Setup, deployment distinctions and click-by-click verification: docs/payment-alerts-verification.md; review diffs: docs/payment-alerts-step-1.diff and docs/payment-alerts-step-2.diff.
++
+ ### [2026-10-10] — Prepare Razorpay package advance checkout
+ 
+ - Added direct package checkout for owner-approved Starter ₹5,000 and Business ₹7,500 advances. Preserved quotes and disabled payment CTAs until runtime configuration is complete.
+diff --git a/supabase/functions/_shared/payment-store.ts b/supabase/functions/_shared/payment-store.ts
+--- a/supabase/functions/_shared/payment-store.ts
++++ b/supabase/functions/_shared/payment-store.ts
+@@ -1,4 +1,5 @@
+ import { createClient } from "@supabase/supabase-js";
++import {openDisputes,type Dispute,type DisputeEvent,type PaymentHealth} from "./payment-health.ts";
+ type ServerEnv = { SUPABASE_URL: string; SUPABASE_SERVICE_ROLE_KEY: string };
+ function serviceDb(env: ServerEnv) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Database unavailable");
+@@ -9,6 +10,31 @@ export type PaymentRecord = { request_id: string; payload_hash: string; order_id
+ export function paymentStore(env: Partial<ServerEnv>) {
+   const db = serviceDb(env as ServerEnv);
+   return {
++    async health():Promise<PaymentHealth> {
++      const observedAt=new Date().toISOString(),before=new Date(Date.now()-24*60*60000).toISOString();
++      const [latest,completed,successful,needs,overdue,refunded]=await Promise.all([
++        db.from("payment_reconciliation_runs").select("state").in("state",["completed","failed"]).order("started_at",{ascending:false}).order("id").limit(1),
++        db.from("payment_reconciliation_runs").select("finished_at").eq("source","cron").in("state",["completed","failed"]).not("finished_at","is",null).order("finished_at",{ascending:false}).limit(1),
++        db.from("payment_reconciliation_runs").select("finished_at").eq("source","cron").eq("state","completed").order("finished_at",{ascending:false}).limit(1),
++        db.from("payment_intents").select("request_id",{count:"exact",head:true}).eq("status","pending").eq("reconciliation_state","needs_reconciliation"),
++        db.from("payment_intents").select("request_id",{count:"exact",head:true}).eq("status","pending").in("reconciliation_state",["pending","needs_reconciliation"]).lt("created_at",before),
++        db.from("payment_intents").select("request_id",{count:"exact",head:true}).or("status.eq.refunded,refunded_amount.gt.0"),
++      ]);
++      if([latest,completed,successful,needs,overdue,refunded].some(result=>result.error))throw new Error("Payment health unavailable");
++      const events:DisputeEvent[]=[];
++      for(let offset=0;;offset+=1000){
++        const page=await db.from("payment_webhook_events").select("event_id,processed_at,dispute").not("dispute","is",null).order("processed_at").order("id").range(offset,offset+999);
++        if(page.error)throw new Error("Dispute history unavailable");
++        events.push(...page.data as DisputeEvent[]);
++        if(page.data.length<1000)break;
++      }
++      return {observedAt,latestRunFailed:latest.data?.[0]?.state==="failed",lastCompletedAt:completed.data?.[0]?.finished_at??null,lastSuccessfulAt:successful.data?.[0]?.finished_at??null,needsReconciliation:needs.count??0,overdue:overdue.count??0,refunded:refunded.count??0,disputes:openDisputes(events)};
++    },
++    async recordDispute(eventId:string,eventType:string,dispute:Dispute){
++      const result=await db.rpc("record_payment_dispute_event",{p_event:eventId,p_type:eventType,p_order:dispute.orderId,p_dispute:dispute});
++      if(result.error)throw new Error("Dispute storage unavailable");
++      return result.data===true;
++    },
+     async queue(offset: number) {
+       const since=new Date(Date.now()-24*60*60000).toISOString();
+       const result=await db.from("payment_intents").select("request_id,order_id,payment_id,package,amount,status,reconciliation_state,created_at,last_checked_at,retry_parent,retry_reserved_at").eq("status","pending")
+diff --git a/supabase/functions/_shared/admin-payments.ts b/supabase/functions/_shared/admin-payments.ts
+--- a/supabase/functions/_shared/admin-payments.ts
++++ b/supabase/functions/_shared/admin-payments.ts
+@@ -15,7 +15,8 @@ export async function adminPayments(request: Request, env: PaymentEnv, action: s
+     const body=JSON.parse(raw);
+     const offset=z.number().int().min(0).max(100000).default(0);
+     if(action==="queue"){
+-      const input=z.object({offset}).strict().parse(body);
++      const input=z.object({offset,summaryOnly:z.boolean().optional()}).strict().parse(body);
++      if(input.summaryOnly)return paymentJson(await store.health());
+       return paymentJson(await store.queue(input.offset));
+     }
+     const input=z.object({requestId:z.string().uuid(),...(action==="history"?{offset}:{})}).strict().parse(body);
+diff --git a/supabase/functions/_shared/razorpay.ts b/supabase/functions/_shared/razorpay.ts
+--- a/supabase/functions/_shared/razorpay.ts
++++ b/supabase/functions/_shared/razorpay.ts
+@@ -243,6 +243,20 @@ export async function paymentWebhook(request: Request, context: unknown) {
+     const store=paymentStore(env);
+     if (await store.hasEvent(eventId)) return paymentJson({received:true,alreadyProcessed:true});
+     const event = JSON.parse(raw);
++    // Record-only branch: no provider mutations, settlement or ledger writes.
++    // Preserve unknown dispute event names/payment references for owner review.
++    if(typeof event.event==="string"&&event.event.startsWith("payment.dispute.")){
++      const entity=event.payload?.dispute?.entity??{},payment=event.payload?.payment?.entity??{};
++      const text=(value:unknown)=>typeof value==="string"?value.slice(0,200):null;
++      const timestamp=(value:unknown)=>typeof value==="number"&&Number.isSafeInteger(value)&&value>0&&value<253402300800?new Date(value*1000).toISOString():null;
++      const inserted=await store.recordDispute(eventId,event.event.slice(0,200),{
++        id:text(entity.id)??eventId,event:event.event.slice(0,200),status:text(entity.status)??"unknown",
++        paymentId:text(entity.payment_id)??text(payment.id),orderId:text(payment.order_id),
++        amount:typeof entity.amount==="number"&&Number.isSafeInteger(entity.amount)&&entity.amount>=0?entity.amount:null,
++        currency:text(entity.currency),responseDueAt:timestamp(entity.respond_by),occurredAt:timestamp(event.created_at),
++      });
++      return paymentJson({received:true,...(!inserted?{alreadyProcessed:true}:{})});
++    }
+     let orderId = event.payload?.payment?.entity?.order_id;
+     const refundPaymentId = event.payload?.refund?.entity?.payment_id;
+     if (!orderId && typeof refundPaymentId === "string" && /^pay_[A-Za-z0-9]+$/.test(refundPaymentId)) {
+diff --git a/supabase/functions/_shared/payment-health.ts b/supabase/functions/_shared/payment-health.ts
+--- /dev/null
++++ b/supabase/functions/_shared/payment-health.ts
+@@ -0,0 +1,20 @@
++export type Dispute = {id:string; event:string; status:string; paymentId:string|null; orderId:string|null; amount:number|null; currency:string|null; responseDueAt:string|null; occurredAt:string|null};
++export type DisputeEvent = {event_id:string;processed_at:string;dispute:Dispute};
++const closed=new Set(["won","lost","closed"]);
++// Event time, rather than delivery time, prevents late delivery reopening a dispute.
++export function openDisputes(events:DisputeEvent[]):Dispute[]{
++ const latest=new Map<string,DisputeEvent>();
++ for(const row of events){
++  const key=row.dispute.id||row.event_id,previous=latest.get(key);
++  const at=Date.parse(row.dispute.occurredAt??row.processed_at),before=previous?Date.parse(previous.dispute.occurredAt??previous.processed_at):-Infinity;
++  if(!previous||at>before||(at===before&&closed.has(row.dispute.status))) latest.set(key,row);
++ }
++ return [...latest.values()].map(row=>row.dispute).filter(dispute=>!closed.has(dispute.status)).sort((a,b)=>(a.responseDueAt??"9999").localeCompare(b.responseDueAt??"9999"));
++}
++export type PaymentHealth = {observedAt:string;latestRunFailed:boolean;lastCompletedAt:string|null;lastSuccessfulAt:string|null;needsReconciliation:number;overdue:number;refunded:number;disputes:Dispute[]};
++export function staleCron(health:PaymentHealth,now=Date.now()){
++ return !health.lastCompletedAt || now-Date.parse(health.lastCompletedAt)>30*60000;
++}
++export function paymentAlertCount(health:PaymentHealth,now=Date.now()){
++ return Number(health.latestRunFailed)+Number(staleCron(health,now))+health.needsReconciliation+health.overdue+health.refunded+health.disputes.length;
++}
+diff --git a/supabase/migrations/20261011100002_payment_dispute_audit.sql b/supabase/migrations/20261011100002_payment_dispute_audit.sql
+--- /dev/null
++++ b/supabase/migrations/20261011100002_payment_dispute_audit.sql
+@@ -0,0 +1,17 @@
++begin;
++-- Additive, record-only metadata. Existing settlement RPCs are unchanged.
++alter table public.payment_webhook_events add column event_type text;
++alter table public.payment_webhook_events add column dispute jsonb;
++create index payment_webhook_dispute_events on public.payment_webhook_events(processed_at,id) where dispute is not null;
++create function public.record_payment_dispute_event(p_event text,p_type text,p_order text,p_dispute jsonb)
++returns boolean language plpgsql security invoker set search_path='' as $$
++declare inserted text;
++begin
++ if p_type not like 'payment.dispute.%' or jsonb_typeof(p_dispute) is distinct from 'object' or octet_length(p_dispute::text)>8000 then raise exception 'invalid_dispute_event'; end if;
++ insert into public.payment_webhook_events(event_id,event_type,order_id,dispute)
++ values(p_event,p_type,p_order,p_dispute) on conflict(event_id) do nothing returning event_id into inserted;
++ return inserted is not null;
++end;$$;
++revoke all on function public.record_payment_dispute_event(text,text,text,jsonb) from public,anon,authenticated;
++grant execute on function public.record_payment_dispute_event(text,text,text,jsonb) to service_role;
++commit;
+diff --git a/app/lib/payment-health.ts b/app/lib/payment-health.ts
+--- /dev/null
++++ b/app/lib/payment-health.ts
+@@ -0,0 +1,4 @@
++export {paymentAlertCount,staleCron, type PaymentHealth,type Dispute} from "../../supabase/functions/_shared/payment-health";
++export function nextReconciliationAt(now:number){
++ return new Date((Math.floor(now/(10*60000))+1)*10*60000).toISOString();
++}
+diff --git a/app/lib/payment-health-store.test.ts b/app/lib/payment-health-store.test.ts
+--- /dev/null
++++ b/app/lib/payment-health-store.test.ts
+@@ -0,0 +1,27 @@
++// @vitest-environment node
++import {afterEach,it,expect,vi} from "vitest";
++import {paymentStore} from "../../supabase/functions/_shared/payment-store";
++const env={SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"fake"};
++afterEach(()=>vi.unstubAllGlobals());
++it("counts the entire ledger, excludes resolved orders, and uses scheduled completion rather than admin checks for cron freshness",async()=>{
++ const fetcher=vi.fn<typeof fetch>(async(input,options)=>{
++  const url=new URL(String(input));
++  if(options?.method==="HEAD")return new Response(null,{headers:{"content-range":"*/61"}});
++  if(url.pathname.endsWith("payment_webhook_events"))return Response.json([]);
++  if(url.searchParams.get("select")==="state")return Response.json([{state:"failed"}]);
++  return Response.json([{finished_at:"2026-10-11T10:00:00Z"}]);
++ });vi.stubGlobal("fetch",fetcher);
++ const health=await paymentStore(env).health();
++ expect(health.needsReconciliation).toBe(61);expect(health.overdue).toBe(61);expect(health.refunded).toBe(61);expect(health.latestRunFailed).toBe(true);
++ const calls=fetcher.mock.calls.map(([url,options])=>({url:new URL(String(url)),options}));
++ const head=calls.filter(call=>call.options?.method==="HEAD");expect(head).toHaveLength(3);
++ expect(head.every(call=>call.url.searchParams.get("limit")===null)).toBe(true);
++ const overdue=head.find(call=>call.url.searchParams.has("created_at"))!;
++ expect(overdue.url.searchParams.get("status")).toBe("eq.pending");expect(overdue.url.searchParams.get("reconciliation_state")).toBe("in.(pending,needs_reconciliation)");
++ for(const call of calls.filter(call=>call.url.searchParams.get("select")==="finished_at"))expect(call.url.searchParams.get("source")).toBe("eq.cron");
++ expect(calls.every(call=>!call.url.searchParams.get("select")?.match(/customer|key_id|payload_hash/))).toBe(true);
++});
++it("fails closed instead of reporting zero issues when any health query fails",async()=>{
++ vi.stubGlobal("fetch",vi.fn(async()=>Response.json({message:"denied"},{status:403})));
++ await expect(paymentStore(env).health()).rejects.toThrow("Payment health unavailable");
++});
+diff --git a/app/lib/payment-disputes.test.ts b/app/lib/payment-disputes.test.ts
+--- /dev/null
++++ b/app/lib/payment-disputes.test.ts
+@@ -0,0 +1,38 @@
++// @vitest-environment node
++import {createHmac} from "node:crypto";
++import {beforeEach,it,expect,vi} from "vitest";
++const store=vi.hoisted(()=>({hasEvent:vi.fn(),recordDispute:vi.fn(),completeWebhook:vi.fn(),settle:vi.fn()}));
++vi.mock("../../supabase/functions/_shared/payment-store.ts",()=>({paymentStore:()=>store}));
++import {paymentWebhook} from "../../supabase/functions/_shared/razorpay";
++import {openDisputes,type DisputeEvent} from "../../supabase/functions/_shared/payment-health";
++const env={SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"fake",RAZORPAY_KEY_ID:"rzp_test_fake",RAZORPAY_KEY_SECRET:"fake",RAZORPAY_WEBHOOK_SECRET:"fake-signing-secret"};
++const event={event:"payment.dispute.created",created_at:1791712800,payload:{payment:{entity:{id:"pay_1",order_id:"order_1",status:"captured"}},dispute:{entity:{id:"disp_1",payment_id:"pay_1",amount:100,currency:"INR",status:"open",respond_by:1791799200}}}};
++function req(body:unknown=event,bad=false){const raw=JSON.stringify(body);return new Request("https://example.test/webhook",{method:"POST",body:raw,headers:{"x-razorpay-event-id":"evt_1","x-razorpay-signature":bad?"bad":createHmac("sha256",env.RAZORPAY_WEBHOOK_SECRET).update(raw).digest("hex")}});}
++beforeEach(()=>{vi.clearAllMocks();store.hasEvent.mockResolvedValue(false);store.recordDispute.mockResolvedValue(true);});
++it("records amount in paise, references and deadline without touching settlement or provider",async()=>{
++ const fetch=vi.spyOn(globalThis,"fetch");
++ expect((await paymentWebhook(req(),{env})).status).toBe(200);
++ expect(store.recordDispute).toHaveBeenCalledWith("evt_1",event.event,expect.objectContaining({amount:100,paymentId:"pay_1",orderId:"order_1",status:"open",responseDueAt:new Date(1791799200000).toISOString()}));
++ expect(store.completeWebhook).not.toHaveBeenCalled();expect(store.settle).not.toHaveBeenCalled();expect(fetch).not.toHaveBeenCalled();fetch.mockRestore();
++});
++it("deduplicates both replay and concurrent insert conflicts",async()=>{
++ store.hasEvent.mockResolvedValueOnce(true);
++ expect(await(await paymentWebhook(req(),{env})).json()).toEqual({received:true,alreadyProcessed:true});
++ expect(store.recordDispute).not.toHaveBeenCalled();
++ store.recordDispute.mockResolvedValueOnce(false);
++ expect(await(await paymentWebhook(req(),{env})).json()).toEqual({received:true,alreadyProcessed:true});
++});
++it("records a dispute for an unknown payment with an unknown event name and returns 200",async()=>{
++ const body={...event,event:"payment.dispute.future_event",payload:{dispute:{entity:{id:"disp_unknown",payment_id:"pay_unknown",status:"future_status",amount:100}}}};
++ expect((await paymentWebhook(req(body),{env})).status).toBe(200);
++ expect(store.recordDispute).toHaveBeenCalledWith("evt_1",body.event,expect.objectContaining({paymentId:"pay_unknown",orderId:null,status:"future_status"}));
++});
++it("rejects a bad signature before any storage query",async()=>{
++ expect((await paymentWebhook(req(event,true),{env})).status).toBe(403);
++ expect(store.hasEvent).not.toHaveBeenCalled();expect(store.recordDispute).not.toHaveBeenCalled();
++});
++it("uses provider event time and clears closed disputes, even with out-of-order delivery",()=>{
++ const row=(status:string,occurredAt:string):DisputeEvent=>({event_id:status,processed_at:"2026-10-11T13:00:00Z",dispute:{id:"disp_1",event:"payment.dispute.created",status,amount:100,currency:"INR",paymentId:"pay_1",orderId:"order_1",responseDueAt:null,occurredAt}});
++ expect(openDisputes([row("closed","2026-10-11T12:00:00Z"),row("open","2026-10-11T11:00:00Z")])).toEqual([]);
++ expect(openDisputes([row("future_status","2026-10-11T12:00:00Z")])).toHaveLength(1);
++});
+diff --git a/app/lib/payment-admin-edge.test.ts b/app/lib/payment-admin-edge.test.ts
+--- /dev/null
++++ b/app/lib/payment-admin-edge.test.ts
+@@ -0,0 +1,50 @@
++// @vitest-environment node
++import { describe,it,expect,vi,beforeEach } from "vitest";
++const mocks=vi.hoisted(()=>({getUser:vi.fn(),owner:vi.fn(),payment:vi.fn(),queue:vi.fn()}));
++vi.mock("../../supabase/functions/_shared/admin-payments.ts",()=>({adminPayments:mocks.queue}));
++vi.mock("@supabase/supabase-js",()=>({createClient:()=>({auth:{getUser:mocks.getUser},from:()=>({select:()=>({eq:()=>({maybeSingle:mocks.owner})})})})}));
++vi.mock("../../supabase/functions/_shared/razorpay.ts",async original=>({...await original<typeof import("../../supabase/functions/_shared/razorpay")>(),paymentAction:mocks.payment}));
++import { handlePaymentEdge } from "../../supabase/functions/_shared/edge-handler";
++const env={PAYMENT_GATEWAY_SECRET:"a".repeat(40),SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"server-key"};
++const req=(token?:string)=>new Request("https://example.supabase.co/functions/v1/razorpay-payments/admin-test/order",{method:"POST",headers:{"x-payment-gateway-secret":env.PAYMENT_GATEWAY_SECRET,"x-payment-origin":"https://sitenova.dev",...(token?{"x-payment-admin-token":token}:{})},body:"{}"});
++beforeEach(()=>{vi.clearAllMocks();mocks.getUser.mockResolvedValue({data:{user:{id:"owner",email:"owner@example.com"}},error:null});mocks.owner.mockResolvedValue({data:{user_id:"owner"},error:null});mocks.payment.mockResolvedValue(Response.json({ok:true}));mocks.queue.mockResolvedValue(Response.json({orders:[]}));});
++describe("admin test payment authorization",()=>{
++ it("denies non-admin summary requests before querying alert storage",async()=>{
++  const original=req("nonadmin");mocks.owner.mockResolvedValueOnce({data:null,error:null});
++  const summary=new Request(original.url.replace("admin-test/order","admin-queue/queue"),{method:"POST",headers:original.headers,body:JSON.stringify({summaryOnly:true})});
++  expect((await handlePaymentEdge(summary,env)).status).toBe(403);expect(mocks.queue).not.toHaveBeenCalled();
++ });
++ it.each(["queue","history","recheck"])("denies non-admins access to payment %s",async action=>{
++  const queueReq=(token?:string)=>{const original=req(token);return new Request(original.url.replace("admin-test/order",`admin-queue/${action}`),original);};
++  expect((await handlePaymentEdge(queueReq(),env)).status).toBe(401);
++  mocks.getUser.mockResolvedValueOnce({data:{user:null},error:{message:"forged"}});
++  expect((await handlePaymentEdge(queueReq("forged"),env)).status).toBe(401);
++  mocks.owner.mockResolvedValueOnce({data:null,error:null});
++  expect((await handlePaymentEdge(queueReq("nonadmin"),env)).status).toBe(403);
++  expect(mocks.queue).not.toHaveBeenCalled();
++  expect((await handlePaymentEdge(queueReq("admin"),env)).status).toBe(200);
++  expect(mocks.queue).toHaveBeenLastCalledWith(expect.any(Request),expect.any(Object),action,{id:"owner",email:"owner@example.com"});
++ });
++ it("does not expose queue operations through public or test channels",async()=>{
++  for(const path of ["queue","admin-test/queue","admin-queue/mark-paid","admin-queue/order"]){const original=req("admin");expect((await handlePaymentEdge(new Request(original.url.replace("admin-test/order",path),original),env)).status).toBe(404);}
++  expect(mocks.queue).not.toHaveBeenCalled();
++ });
++ it("requires a fresh Auth-verified identity and database admin membership",async()=>{
++  expect((await handlePaymentEdge(req(),env)).status).toBe(401);
++  mocks.getUser.mockResolvedValueOnce({data:{user:null},error:{message:"invalid"}});
++  expect((await handlePaymentEdge(req("forged"),env)).status).toBe(401);
++  mocks.owner.mockResolvedValueOnce({data:null,error:null});
++  expect((await handlePaymentEdge(req("signed-nonadmin"),env)).status).toBe(403);
++  expect(mocks.payment).not.toHaveBeenCalled();
++ });
++ it("passes only verified identity to the fixed-price test flow",async()=>{
++  expect((await handlePaymentEdge(req("signed-admin"),env)).status).toBe(200);
++  expect(mocks.getUser).toHaveBeenCalledWith("signed-admin");
++  expect(mocks.payment.mock.calls[0][3]).toEqual({id:"owner",email:"owner@example.com"});
++ });
++ it("fails closed when authorization storage is unavailable",async()=>{
++  mocks.owner.mockResolvedValueOnce({data:null,error:{message:"offline"}});
++  expect((await handlePaymentEdge(req("signed-admin"),env)).status).toBe(503);
++  expect(mocks.payment).not.toHaveBeenCalled();
++ });
++});
+diff --git a/app/pages/admin/AdminDashboard.tsx b/app/pages/admin/AdminDashboard.tsx
+--- a/app/pages/admin/AdminDashboard.tsx
++++ b/app/pages/admin/AdminDashboard.tsx
+@@ -28,6 +28,9 @@ import QuoteRequestsTab from "./tabs/QuoteRequestsTab";
+ import SettingsTab from "./tabs/SettingsTab";
+ import ActivityLogTab from "./tabs/ActivityLogTab";
+ import PaymentsTab from "./tabs/PaymentsTab";
++import PaymentAlerts from "./components/PaymentAlerts";
++import {usePaymentHealth} from "./hooks/usePaymentHealth";
++import {paymentAlertCount} from "@/lib/payment-health";
+ 
+ // Realtime hook
+ import { useRealtimeLeads } from "./hooks/useRealtimeLeads";
+@@ -121,6 +124,7 @@ export type LeadNote = {
+ 
+ export default function AdminDashboard() {
+   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
++  const paymentHealth=usePaymentHealth();
+   const scheduled = useScheduledCalls(activeTab === "overview" || activeTab === "scheduled_calls");
+   const upcomingCalls = scheduled.calls.filter(c => c.status === "scheduled" && Date.parse(c.ends_at) >= Date.now()).length;
+   const [requests, setRequests] = useState<AuditRequest[]>([]);
+@@ -437,6 +441,7 @@ export default function AdminDashboard() {
+   }, []);
+ 
+   const badges = {
++    payments: paymentHealth.isAdmin&&paymentHealth.health?paymentAlertCount(paymentHealth.health,paymentHealth.clock):0,
+     scheduled_calls: upcomingCalls,
+     leads:          requests.filter((r) => r.status !== "completed" && r.source !== "paid_ad").length,
+     quote_requests: quoteRequests.filter((r) => r.status === "new").length,
+@@ -447,7 +452,7 @@ export default function AdminDashboard() {
+ 
+   // ── Tab content map ────────────────────────────────────────────────────────
+   const tabContent: Record<AdminTab, React.ReactNode> = {
+-    payments: <PaymentsTab />,
++    payments: paymentHealth.isAdmin?<PaymentsTab health={paymentHealth.health} refreshHealth={paymentHealth.refresh} now={paymentHealth.clock}/>:<p>Checking admin access…</p>,
+     scheduled_calls: <ScheduledCallsTab {...scheduled} />,
+     overview: (
+       <OverviewTab
+@@ -544,7 +549,7 @@ export default function AdminDashboard() {
+         <AdminHeader
+           activeTab={activeTab}
+           loading={loading}
+-          onRefresh={() => { fetchData(); scheduled.refresh(); }}
++          onRefresh={() => { fetchData(); scheduled.refresh(); void paymentHealth.refresh(); }}
+           onExportCSV={handleExportCSV}
+           onCopyBlogs={handleCopyBlogs}
+           onSearch={() => setCmdOpen(true)}
+@@ -559,6 +564,7 @@ export default function AdminDashboard() {
+             </div>
+             <span className="rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">{new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric" }).format(new Date())}</span>
+           </div>
++          <PaymentAlerts health={paymentHealth.health} isAdmin={paymentHealth.isAdmin} error={paymentHealth.error} now={paymentHealth.clock} onOpen={()=>setActiveTab("payments")}/>
+           <AnimatePresence mode="wait">
+             <motion.div
+               key={activeTab}
+diff --git a/app/pages/admin/components/AdminSidebar.tsx b/app/pages/admin/components/AdminSidebar.tsx
+--- a/app/pages/admin/components/AdminSidebar.tsx
++++ b/app/pages/admin/components/AdminSidebar.tsx
+@@ -50,6 +50,7 @@ interface AdminSidebarProps {
+   activeTab: AdminTab;
+   onTabChange: (tab: AdminTab) => void;
+   badges: {
++    payments?: number;
+     scheduled_calls: number;
+     leads: number;
+     quote_requests: number;
+@@ -126,7 +127,7 @@ export default function AdminSidebar({
+     {
+       label: "Manage",
+       items: [
+-        { id: "payments", label: "Payments", icon: CreditCard },
++        { id: "payments", label: "Payments", icon: CreditCard, badge: badges.payments },
+         { id: "settings", label: "Settings", icon: Settings },
+         { id: "activity_log", label: "Activity log", icon: History },
+       ],
+diff --git a/app/pages/admin/components/PaymentAlerts.tsx b/app/pages/admin/components/PaymentAlerts.tsx
+--- /dev/null
++++ b/app/pages/admin/components/PaymentAlerts.tsx
+@@ -0,0 +1,22 @@
++import {AlertTriangle} from "lucide-react";
++import {Button} from "@/components/ui/button";
++import {paymentAlertCount,staleCron,type PaymentHealth} from "@/lib/payment-health";
++export const paymentTime=(value:string)=>new Date(value).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"});
++export default function PaymentAlerts({health,isAdmin,error,now,onOpen}:{health:PaymentHealth|null;isAdmin:boolean;error:boolean;now:number;onOpen:()=>void}){
++ if(!isAdmin)return null;
++ if(error)return <section role="alert" className="mb-6 rounded-xl border-2 border-amber-500 bg-amber-500/10 p-5"><h2 className="font-semibold">Payment monitoring unavailable</h2><p className="mt-1 text-sm">Unable to confirm payment alerts. Open Payments and refresh; monitoring is unverified.</p><Button className="mt-3" variant="outline" onClick={onOpen}>Open Payments</Button></section>;
++ if(!health||!paymentAlertCount(health,now))return null;
++ return <section role="alert" aria-label="Payment alerts" className="mb-6 rounded-xl border-2 border-amber-500 bg-amber-500/10 p-5">
++  <h2 className="flex items-center gap-2 text-lg font-semibold"><AlertTriangle className="h-5 w-5"/>Payments need attention</h2>
++  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
++   {health.latestRunFailed&&<li>The latest reconciliation run failed.</li>}
++   {staleCron(health,now)&&<li>No scheduled reconciliation has completed in the last 30 minutes. The scheduler may be stopped.</li>}
++   {!!health.overdue&&<li>{health.overdue} order(s) unresolved for over 24 hours.</li>}
++   {!!health.needsReconciliation&&<li>{health.needsReconciliation} order(s) need reconciliation.</li>}
++   {!!health.refunded&&<li>{health.refunded} payment(s) refunded, including partial refunds.</li>}
++   {!!health.disputes.length&&<li>{health.disputes.length} open dispute(s).{health.disputes[0].responseDueAt?` Earliest response due: ${paymentTime(health.disputes[0].responseDueAt)} IST.`:" Response deadline not supplied."}</li>}
++  </ul>
++  {!!health.disputes.length&&<ul className="mt-3 space-y-1 text-sm">{health.disputes.map(dispute=><li key={dispute.id} className="break-all">{dispute.id} · {dispute.status.replace(/_/g," ")} · Response due: {dispute.responseDueAt?`${paymentTime(dispute.responseDueAt)} IST`:"not supplied"}</li>)}</ul>}
++  <Button className="mt-4" variant="outline" onClick={onOpen}>Review Payments</Button>
++ </section>;
++}
+diff --git a/app/pages/admin/components/PaymentAlerts.test.tsx b/app/pages/admin/components/PaymentAlerts.test.tsx
+--- /dev/null
++++ b/app/pages/admin/components/PaymentAlerts.test.tsx
+@@ -0,0 +1,35 @@
++import {afterEach,describe,it,expect} from "vitest";
++import {render,screen,cleanup} from "@testing-library/react";
++import PaymentAlerts from "./PaymentAlerts";
++import {staleCron,type PaymentHealth} from "@/lib/payment-health";
++const now=Date.parse("2026-10-11T10:00:00Z");
++const healthy:PaymentHealth={observedAt:new Date(now).toISOString(),lastCompletedAt:new Date(now).toISOString(),lastSuccessfulAt:new Date(now).toISOString(),latestRunFailed:false,needsReconciliation:0,overdue:0,refunded:0,disputes:[]};
++afterEach(cleanup);
++describe("dashboard payment alerts",()=>{
++ it.each([
++  [{latestRunFailed:true},"The latest reconciliation run failed."],
++  [{lastCompletedAt:new Date(now-30*60000-1).toISOString()},"scheduler may be stopped"],
++  [{overdue:1},"unresolved for over 24 hours"],
++  [{needsReconciliation:1},"need reconciliation"],
++  [{refunded:1},"refunded, including partial refunds"],
++  [{disputes:[{id:"disp_1",event:"payment.dispute.created",status:"open",amount:100,currency:"INR",paymentId:"pay_1",orderId:"order_1",responseDueAt:"2026-10-12T10:00:00Z",occurredAt:healthy.observedAt}]},"Earliest response due"],
++ ] as [Partial<PaymentHealth>,string][])("appears and clears for %j",(change,message)=>{
++  const view=render(<PaymentAlerts health={{...healthy,...change}} isAdmin error={false} now={now} onOpen={()=>{}}/>);
++  expect(screen.getByRole("alert").textContent).toContain(message);
++  view.rerender(<PaymentAlerts health={healthy} isAdmin error={false} now={now} onOpen={()=>{}}/>);
++  expect(screen.queryByRole("alert")).toBeNull();
++ });
++ it("uses the strict 30-minute boundary and treats missing runs as stale",()=>{
++  expect(staleCron({...healthy,lastCompletedAt:new Date(now-30*60000).toISOString()},now)).toBe(false);
++  expect(staleCron({...healthy,lastCompletedAt:new Date(now-30*60000-1).toISOString()},now)).toBe(true);
++  expect(staleCron({...healthy,lastCompletedAt:null},now)).toBe(true);
++ });
++ it("never renders payment data for a non-admin",()=>{
++  render(<PaymentAlerts health={{...healthy,refunded:2}} isAdmin={false} error now={now} onOpen={()=>{}}/>);
++  expect(screen.queryByRole("alert")).toBeNull();
++ });
++ it("shows monitoring as unverified when the admin summary cannot be loaded",()=>{
++  render(<PaymentAlerts health={null} isAdmin error now={now} onOpen={()=>{}}/>);
++  expect(screen.getByRole("alert").textContent).toContain("monitoring is unverified");
++ });
++});
+diff --git a/app/pages/admin/hooks/usePaymentHealth.ts b/app/pages/admin/hooks/usePaymentHealth.ts
+--- /dev/null
++++ b/app/pages/admin/hooks/usePaymentHealth.ts
+@@ -0,0 +1,45 @@
++import {useCallback,useEffect,useRef,useState} from "react";
++import {supabase} from "@/lib/supabaseClient";
++import {adminPaymentRequest} from "@/lib/payment-admin-client";
++import type {PaymentHealth} from "@/lib/payment-health";
++export function usePaymentHealth(){
++ const [health,setHealth]=useState<PaymentHealth|null>(null),[isAdmin,setAdmin]=useState(false),[error,setError]=useState(false);
++ const [clock,setClock]=useState(Date.now());
++ const refreshRef=useRef<()=>Promise<void>>(async()=>{});
++ const refresh=useCallback(()=>refreshRef.current(),[]);
++ useEffect(()=>{
++  let alive=true,generation=0,busy=false,clockOffset=0;
++  const clear=()=>{setHealth(null);setAdmin(false);setError(false);};
++  const load=async()=>{
++   if(busy)return;
++   busy=true;const current=generation;
++   try{
++    // No payment request is made until fresh identity and database membership pass.
++    const identity=await supabase.auth.getUser();
++    if(!alive||current!==generation)return;
++    if(identity.error||!identity.data.user){clear();return;}
++    const membership=await supabase.rpc("is_site_admin");
++    if(!alive||current!==generation)return;
++    if(membership.error||membership.data!==true){clear();return;}
++    setAdmin(true);
++    const result=await adminPaymentRequest<PaymentHealth>("queue",{summaryOnly:true});
++    if(!alive||current!==generation)return;
++    clockOffset=Date.parse(result.observedAt)-Date.now();
++    setClock(Date.now()+clockOffset);setHealth(result);setError(false);
++   }catch{if(alive&&current===generation){setHealth(null);setError(true);}}
++   finally{busy=false;if(alive&&current!==generation)void load();}
++  };
++  refreshRef.current=load;
++  void load();
++  const poll=window.setInterval(()=>void load(),60000);
++  const timer=window.setInterval(()=>setClock(Date.now()+clockOffset),10000);
++  const focus=()=>void load();window.addEventListener("focus",focus);
++  const {data:{subscription}}=supabase.auth.onAuthStateChange(()=>{
++   generation++;clear();
++   // Supabase warns against awaiting Auth calls inside this callback.
++   window.setTimeout(()=>{if(alive)void load();},0);
++  });
++  return ()=>{alive=false;generation++;window.clearInterval(poll);window.clearInterval(timer);window.removeEventListener("focus",focus);subscription.unsubscribe();refreshRef.current=async()=>{};};
++ },[]);
++ return {health,isAdmin,error,clock,refresh};
++}
+diff --git a/app/pages/admin/hooks/usePaymentHealth.test.tsx b/app/pages/admin/hooks/usePaymentHealth.test.tsx
+--- /dev/null
++++ b/app/pages/admin/hooks/usePaymentHealth.test.tsx
+@@ -0,0 +1,39 @@
++import {beforeEach,afterEach,it,expect,vi} from "vitest";
++import {renderHook,act,cleanup} from "@testing-library/react";
++const mock=vi.hoisted(()=>({identity:vi.fn(),membership:vi.fn(),request:vi.fn(),subscribe:vi.fn(),unsubscribe:vi.fn()}));
++vi.mock("@/lib/supabaseClient",()=>({supabase:{auth:{getUser:mock.identity,onAuthStateChange:mock.subscribe},rpc:mock.membership}}));
++vi.mock("@/lib/payment-admin-client",()=>({adminPaymentRequest:mock.request}));
++import {usePaymentHealth} from "./usePaymentHealth";
++const healthy={observedAt:"2026-10-11T10:00:00Z",lastCompletedAt:"2026-10-11T10:00:00Z",lastSuccessfulAt:"2026-10-11T10:00:00Z",latestRunFailed:false,needsReconciliation:0,overdue:0,refunded:0,disputes:[]};
++let authChange:()=>void;
++beforeEach(()=>{vi.useFakeTimers();vi.clearAllMocks();mock.identity.mockResolvedValue({data:{user:{id:"owner"}},error:null});mock.membership.mockResolvedValue({data:true,error:null});mock.request.mockResolvedValue(healthy);mock.subscribe.mockImplementation(callback=>{authChange=callback;return {data:{subscription:{unsubscribe:mock.unsubscribe}}};});});
++afterEach(()=>{cleanup();vi.useRealTimers();});
++const flush=()=>act(async()=>{await Promise.resolve();await Promise.resolve();await Promise.resolve();});
++it.each(["anonymous","nonadmin","membership unavailable"])("never queries alert data for %s",async kind=>{
++ if(kind==="anonymous")mock.identity.mockResolvedValue({data:{user:null},error:null});
++ else mock.membership.mockResolvedValue({data:false,error:kind==="membership unavailable"?{}:null});
++ const {result}=renderHook(usePaymentHealth);await flush();
++ expect(mock.request).not.toHaveBeenCalled();expect(result.current.isAdmin).toBe(false);expect(result.current.health).toBeNull();
++});
++it("loads on landing and refreshes every minute, clearing resolved issues",async()=>{
++ mock.request.mockResolvedValueOnce({...healthy,needsReconciliation:1});
++ const {result}=renderHook(usePaymentHealth);await flush();
++ expect(result.current.health?.needsReconciliation).toBe(1);
++ await act(async()=>{await vi.advanceTimersByTimeAsync(60000);});
++ expect(result.current.health?.needsReconciliation).toBe(0);
++ expect(mock.request).toHaveBeenCalledTimes(2);expect(mock.request).toHaveBeenCalledWith("queue",{summaryOnly:true});
++});
++it("clears on logout and discards a late in-flight admin response",async()=>{
++ let finish:(value:typeof healthy)=>void=()=>{};
++ mock.request.mockImplementation(()=>new Promise(resolve=>{finish=resolve;}));
++ const {result}=renderHook(usePaymentHealth);await flush();
++ mock.identity.mockResolvedValue({data:{user:null},error:null});
++ await act(async()=>{authChange();finish(healthy);await vi.advanceTimersByTimeAsync(1);});
++ expect(result.current.health).toBeNull();expect(result.current.isAdmin).toBe(false);
++});
++it("checks membership again before each refresh and stops querying after revocation",async()=>{
++ const {result}=renderHook(usePaymentHealth);await flush();
++ mock.membership.mockResolvedValue({data:false,error:null});
++ await act(async()=>{await vi.advanceTimersByTimeAsync(60000);});
++ expect(mock.request).toHaveBeenCalledTimes(1);expect(result.current.health).toBeNull();
++});
+diff --git a/app/pages/admin/tabs/PaymentsTab.tsx b/app/pages/admin/tabs/PaymentsTab.tsx
+--- a/app/pages/admin/tabs/PaymentsTab.tsx
++++ b/app/pages/admin/tabs/PaymentsTab.tsx
+@@ -2,12 +2,14 @@ import {useCallback,useEffect,useState} from "react";
+ import {Button} from "@/components/ui/button";
+ import {adminPaymentRequest} from "@/lib/payment-admin-client";
+ import {formatINR} from "@/lib/payments";
++import type {PaymentHealth} from "@/lib/payment-health";
++import PaymentCronHealth from "../components/PaymentCronHealth";
+ type Order={request_id:string;order_id:string|null;package:string;amount:number;status:string;reconciliation_state:string;created_at:string;last_checked_at:string|null};
+ type History={id:string;old_state:string;new_state:string;error:string|null;alert:boolean;created_at:string};
+ type Queue={orders:Order[];runs:{id:string;error:string|null;started_at:string}[];alerts:{id:string;request_id:string;order_id:string|null;new_state:string;error:string|null;created_at:string}[];nextOffset:number|null};
+ type HistoryPage={history:History[];nextOffset:number|null};
+ const time=(value:string|null)=>value?new Date(value).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}):"Not checked";
+-export default function PaymentsTab(){
++export default function PaymentsTab({health,refreshHealth,now=Date.now()}:{health?:PaymentHealth|null;refreshHealth?:()=>Promise<void>;now?:number}){
+   const [queue,setQueue]=useState<Queue|null>(null),[offset,setOffset]=useState(0),[selected,setSelected]=useState<Order|null>(null),[history,setHistory]=useState<HistoryPage>({history:[],nextOffset:null});
+   const [busy,setBusy]=useState(false),[error,setError]=useState(""),[notice,setNotice]=useState("");
+   const refresh=useCallback(async()=>{setBusy(true);setError("");try{setQueue(await adminPaymentRequest<Queue>("queue",{offset}));}catch(e){setError(e instanceof Error?e.message:"Unable to load payments.");}finally{setBusy(false);}},[offset]);
+@@ -24,12 +26,15 @@ export default function PaymentsTab(){
+       setNotice(`${order.order_id??order.request_id}: ${result.state.replace(/_/g," ")}${result.needsReview?" — owner review required":""}.`);
+       setQueue(await adminPaymentRequest<Queue>("queue",{offset}));
+       await showHistory(order);
++      await refreshHealth?.();
+     }catch(e){setError(e instanceof Error?e.message:"Unable to check payment.");}finally{setBusy(false);}
+   }
+   return <div className="space-y-6">
+-    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Pending payments and failures checked in the last 24 hours. Automatic checks run every 10 minutes. Times shown in IST.</p><Button variant="outline" disabled={busy} onClick={()=>void refresh()}>Refresh payments</Button></div>
++    <PaymentCronHealth health={health} now={now}/>
++    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Pending payments and failures checked in the last 24 hours. Automatic checks run every 10 minutes. Times shown in IST.</p><Button variant="outline" disabled={busy} onClick={()=>{void refresh();void refreshHealth?.();}}>Refresh payments</Button></div>
++    {!!health?.disputes.length&&<section className="rounded-xl border border-amber-500 p-5"><h2 className="font-semibold">Open disputes</h2>{health.disputes.map(dispute=><div key={dispute.id} className="mt-3 border-t border-border pt-3 text-sm break-all"><p>{dispute.id} · {dispute.status.replace(/_/g," ")}</p><p>Payment: {dispute.paymentId??"Not supplied"} · Order: {dispute.orderId??"Unknown / not supplied"}</p><p>Disputed amount: {dispute.amount===null?"Not supplied":dispute.currency==="INR"?formatINR(dispute.amount):`${dispute.amount} subunits (${dispute.currency??"currency not supplied"})`}</p><p>Response due: {dispute.responseDueAt?`${time(dispute.responseDueAt)} IST`:"Not supplied by Razorpay"}</p><p className="text-muted-foreground">Respond in the Razorpay dashboard. This audit entry does not change paid status.</p></div>)}</section>}
+     {error&&<p role="alert" className="text-destructive">{error}</p>}{notice&&<p role="status">{notice}</p>}
+-    {!!queue?.runs.length&&<section className="rounded-xl border border-destructive/40 p-4"><h2 className="font-semibold mb-2">Reconciliation failures — review required</h2>{queue.runs.map(run=><p key={run.id} className="text-sm">{time(run.started_at)} · {run.error??"A scheduled check failed."}</p>)}</section>}
++    {!!queue?.runs.length&&(!health||health.latestRunFailed)&&<section className="rounded-xl border border-destructive/40 p-4"><h2 className="font-semibold mb-2">Reconciliation failures — review required</h2>{queue.runs.map(run=><p key={run.id} className="text-sm">{time(run.started_at)} · {run.error??"A scheduled check failed."}</p>)}</section>}
+     {!!queue?.alerts.length&&<section className="rounded-xl border border-amber-500/40 p-4"><h2 className="font-semibold mb-2">Flagged orders</h2>{queue.alerts.map(alert=><div key={alert.id} className="text-sm py-2 break-all"><p>{alert.order_id??alert.request_id} · {time(alert.created_at)}</p><p>{alert.error??"Unresolved for over 24 hours — review required."}</p><Button variant="ghost" disabled={busy} onClick={()=>void showHistory({request_id:alert.request_id,order_id:alert.order_id,package:"",amount:0,status:"pending",reconciliation_state:alert.new_state,created_at:alert.created_at,last_checked_at:null})}>View history</Button></div>)}</section>}
+     <div className="rounded-xl border border-border overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="p-3">Order / service</th><th className="p-3">Amount</th><th className="p-3">State</th><th className="p-3">Last checked</th><th className="p-3">Actions</th></tr></thead><tbody>{queue?.orders.map(order=><tr key={order.request_id} className="border-b border-border"><td className="p-3 break-all">{order.order_id??"Order creation unresolved"}<span className="block text-muted-foreground">{order.package} · {time(order.created_at)}</span></td><td className="p-3 whitespace-nowrap">{formatINR(order.amount)}</td><td className="p-3">{order.reconciliation_state.replace(/_/g," ")}</td><td className="p-3">{time(order.last_checked_at)}</td><td className="p-3"><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy} onClick={()=>void recheck(order)}>Re-check with Razorpay</Button><Button variant="ghost" disabled={busy} onClick={()=>void showHistory(order)}>History</Button></div></td></tr>)}</tbody></table>{queue&&!queue.orders.length&&<p className="p-5 text-muted-foreground">No payments in this queue.</p>}{!queue&&busy&&<p className="p-5">Loading payments…</p>}</div>
+     <div className="flex gap-3"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous</Button><Button variant="outline" disabled={busy||queue?.nextOffset==null} onClick={()=>setOffset(queue!.nextOffset!)}>Next</Button></div>
+diff --git a/app/pages/admin/tabs/PaymentsTab.test.tsx b/app/pages/admin/tabs/PaymentsTab.test.tsx
+--- /dev/null
++++ b/app/pages/admin/tabs/PaymentsTab.test.tsx
+@@ -0,0 +1,33 @@
++import {beforeEach,afterEach,it,expect,vi} from 'vitest';
++import {render,screen,fireEvent,waitFor,cleanup} from '@testing-library/react';
++import PaymentsTab from './PaymentsTab';
++import {adminPaymentRequest} from '@/lib/payment-admin-client';
++vi.mock('@/lib/payment-admin-client',()=>({adminPaymentRequest:vi.fn()}));
++const order={request_id:'request',order_id:'order_1',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-10T10:00:00Z',last_checked_at:null};
++beforeEach(()=>{vi.resetAllMocks();vi.mocked(adminPaymentRequest).mockResolvedValue({orders:[order],runs:[],alerts:[],nextOffset:null});});
++afterEach(cleanup);
++it('shows open disputes with payment, order, paise amount and deadline, then removes resolved disputes',async()=>{
++ const health={observedAt:order.created_at,latestRunFailed:false,lastCompletedAt:order.created_at,lastSuccessfulAt:order.created_at,overdue:0,needsReconciliation:0,refunded:0,disputes:[{id:'disp_1',event:'payment.dispute.created',status:'open',amount:100,currency:'INR',paymentId:'pay_1',orderId:'order_1',responseDueAt:'2026-10-12T10:00:00Z',occurredAt:order.created_at}]};
++ const view=render(<PaymentsTab health={health}/>);
++ expect(screen.getByText('Open disputes')).toBeTruthy();expect(screen.getByText(/Payment: pay_1/)).toBeTruthy();expect(screen.getByText(/Disputed amount: ₹1.00/)).toBeTruthy();expect(screen.getByText(/Response due:.*IST/)).toBeTruthy();
++ await screen.findByText('₹1.00');view.rerender(<PaymentsTab health={{...health,disputes:[]}}/>);
++ expect(screen.queryByText('Open disputes')).toBeNull();
++});
++it('shows ₹1 in rupees and re-checks only by order reference, with history',async()=>{
++ render(<PaymentsTab/>);expect(await screen.findByText('₹1.00')).toBeTruthy();
++ vi.mocked(adminPaymentRequest).mockResolvedValueOnce({state:'paid',needsReview:false}).mockResolvedValueOnce({orders:[],runs:[],alerts:[],nextOffset:null}).mockResolvedValueOnce({history:[{id:'log',old_state:'needs_reconciliation',new_state:'paid',error:null,alert:false,created_at:order.created_at}],nextOffset:null});
++ fireEvent.click(screen.getByRole('button',{name:'Re-check with Razorpay'}));
++ await waitFor(()=>expect(adminPaymentRequest).toHaveBeenCalledWith('recheck',{requestId:'request'}));
++ expect(await screen.findByText(/needs reconciliation → paid/)).toBeTruthy();expect(screen.queryByRole('button',{name:/mark.*paid/i})).toBeNull();
++});
++it('shows failed runs and over-24-hour flags',async()=>{
++ vi.mocked(adminPaymentRequest).mockResolvedValueOnce({orders:[order],runs:[{id:'run',started_at:order.created_at,error:'Provider unavailable'}],alerts:[{id:'alert',request_id:'request',order_id:'order_1',new_state:'needs_reconciliation',created_at:order.created_at,error:null}],nextOffset:null});
++ render(<PaymentsTab/>);expect(await screen.findByText('Reconciliation failures — review required')).toBeTruthy();expect(screen.getByText(/Unresolved for over 24 hours/)).toBeTruthy();
++});
++it('hides historical failure warnings after the current run issue resolves',async()=>{
++ vi.mocked(adminPaymentRequest).mockResolvedValueOnce({orders:[],runs:[{id:'run',started_at:order.created_at,error:'Old failure'}],alerts:[],nextOffset:null});
++ const health={observedAt:order.created_at,latestRunFailed:true,lastCompletedAt:order.created_at,lastSuccessfulAt:order.created_at,overdue:0,needsReconciliation:0,refunded:0,disputes:[]};
++ const view=render(<PaymentsTab health={health}/>);expect(await screen.findByText('Reconciliation failures — review required')).toBeTruthy();
++ view.rerender(<PaymentsTab health={{...health,latestRunFailed:false}}/>);
++ expect(screen.queryByText('Reconciliation failures — review required')).toBeNull();
++});
+diff --git a/scripts/test-payment-disputes-db.mjs b/scripts/test-payment-disputes-db.mjs
+--- /dev/null
++++ b/scripts/test-payment-disputes-db.mjs
+@@ -0,0 +1,21 @@
++import {PGlite} from '@electric-sql/pglite';
++import {readFile} from 'node:fs/promises';
++import assert from 'node:assert/strict';
++const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
++for(const file of ['20261010170200_razorpay_backend_payments.sql','20261011085842_payment_webhook_events.sql','20261011100002_payment_dispute_audit.sql'])await db.exec(await readFile(`supabase/migrations/${file}`,'utf8'));
++await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id,status,payment_id) values('00000000-0000-4000-8000-000000000001','hash','dedupe','starter',500000,'fake','{}','2026-10-10','order_1','paid','pay_1')");
++for(const role of ['anon','authenticated']){
++ await db.exec(`set role ${role}`);await assert.rejects(db.query('select dispute from payment_webhook_events'),/permission denied/);await assert.rejects(db.query("select record_payment_dispute_event('evt','payment.dispute.created',null,'{}')"),/permission denied/);await db.exec('reset role');
++}
++await db.exec('set role service_role');
++const sql='select record_payment_dispute_event($1,$2,$3,$4) as inserted';
++const dispute={id:'disp_1',status:'open',amount:100,paymentId:'pay_1',orderId:'order_1',responseDueAt:'2026-10-12T00:00:00Z'};
++assert.equal((await db.query(sql,['evt_1','payment.dispute.created','order_1',dispute])).rows[0].inserted,true);
++assert.equal((await db.query(sql,['evt_1','payment.dispute.closed','order_1',{...dispute,status:'closed'}])).rows[0].inserted,false);
++assert.equal((await db.query("select complete_payment_webhook('evt_1','order_1','pay_1','refunded',100) as inserted")).rows[0].inserted,false);
++assert.equal((await db.query(sql,['evt_unknown','payment.dispute.future_event',null,{id:'disp_unknown',paymentId:'pay_unknown',status:'unknown'}])).rows[0].inserted,true);
++const ledger=(await db.query('select status,payment_id,refunded_amount from payment_intents')).rows[0];
++assert.deepEqual(ledger,{status:'paid',payment_id:'pay_1',refunded_amount:0});
++assert.equal((await db.query('select count(*)::int as n from payment_webhook_events')).rows[0].n,2);
++assert.deepEqual((await db.query("select dispute from payment_webhook_events where event_id='evt_1'")).rows[0].dispute,dispute);
++await db.close();console.log('PASS: additive dispute audit, shared event-ID deduplication, unknown payment recording, paid ledger unchanged, browser denial.');
+diff --git a/app/pages/admin/components/PaymentCronHealth.tsx b/app/pages/admin/components/PaymentCronHealth.tsx
+--- /dev/null
++++ b/app/pages/admin/components/PaymentCronHealth.tsx
+@@ -0,0 +1,10 @@
++import {nextReconciliationAt,type PaymentHealth} from "@/lib/payment-health";
++import {paymentTime} from "./PaymentAlerts";
++export default function PaymentCronHealth({health,now}:{health:PaymentHealth|null|undefined;now:number}){
++ return <section aria-label="Reconciliation scheduler" className="rounded-xl border border-border bg-card p-5 text-sm space-y-2">
++  <h2 className="font-semibold">Reconciliation scheduler</h2>
++  <p>Last successful reconciliation run: {health?.lastSuccessfulAt?`${paymentTime(health.lastSuccessfulAt)} IST`:health?"No successful scheduled run recorded":"Unverified — monitoring data unavailable"}</p>
++  <p>Next expected run: {health?`${paymentTime(nextReconciliationAt(now))} IST`:"Unverified"}</p>
++  <p className="text-muted-foreground">Scheduled every 10 minutes. Admin re-checks do not reset scheduler health. This is the expected schedule, not confirmation that the next run will complete.</p>
++ </section>;
++}
+diff --git a/app/pages/admin/components/PaymentCronHealth.test.tsx b/app/pages/admin/components/PaymentCronHealth.test.tsx
+--- /dev/null
++++ b/app/pages/admin/components/PaymentCronHealth.test.tsx
+@@ -0,0 +1,18 @@
++import {it,expect,afterEach} from "vitest";
++import {render,screen,cleanup} from "@testing-library/react";
++import PaymentCronHealth from "./PaymentCronHealth";
++import {nextReconciliationAt} from "@/lib/payment-health";
++afterEach(cleanup);
++const now=Date.parse("2026-10-11T10:07:00Z");
++it("shows the successful scheduled completion and the next wall-clock cron run in IST",()=>{
++ render(<PaymentCronHealth health={{observedAt:new Date(now).toISOString(),lastCompletedAt:"2026-10-11T10:00:02Z",lastSuccessfulAt:"2026-10-11T10:00:02Z",latestRunFailed:false,needsReconciliation:0,overdue:0,refunded:0,disputes:[]}} now={now}/>);
++ expect(screen.getByText(/Last successful reconciliation run:/).textContent).toContain("3:30:02 pm IST");
++ expect(screen.getByText(/Next expected run:/).textContent).toContain("3:40:00 pm IST");
++ expect(nextReconciliationAt(now)).toBe("2026-10-11T10:10:00.000Z");
++ expect(nextReconciliationAt(Date.parse("2026-10-11T10:10:00Z"))).toBe("2026-10-11T10:20:00.000Z");
++});
++it("never claims scheduler health is verified without data",()=>{
++ render(<PaymentCronHealth health={null} now={now}/>);
++ expect(screen.getByText(/Last successful reconciliation run:/).textContent).toContain("Unverified");
++ expect(screen.getByText(/Next expected run:/).textContent).toContain("Unverified");
++});
+diff --git a/app/lib/payment-health-admin.test.ts b/app/lib/payment-health-admin.test.ts
+--- /dev/null
++++ b/app/lib/payment-health-admin.test.ts
+@@ -0,0 +1,19 @@
++// @vitest-environment node
++import {beforeEach,it,expect,vi} from "vitest";
++const store=vi.hoisted(()=>({health:vi.fn(),queue:vi.fn()}));
++vi.mock("../../supabase/functions/_shared/payment-store.ts",()=>({paymentStore:()=>store}));
++import {adminPayments} from "../../supabase/functions/_shared/admin-payments";
++const env={PAYMENT_RATE_LIMITER:{limit:async()=>({success:true})}};
++const admin={id:"owner",email:"owner@example.com"};
++const req=(body:unknown)=>new Request("https://example.test",{method:"POST",body:JSON.stringify(body)});
++beforeEach(()=>vi.clearAllMocks());
++it("returns only the health projection through the existing queue operation",async()=>{
++ store.health.mockResolvedValue({needsReconciliation:1});
++ expect(await(await adminPayments(req({summaryOnly:true}),env,"queue",admin)).json()).toEqual({needsReconciliation:1});
++ expect(store.health).toHaveBeenCalledTimes(1);expect(store.queue).not.toHaveBeenCalled();
++});
++it("denies missing identity and rejects mutation fields before querying alerts",async()=>{
++ expect((await adminPayments(req({summaryOnly:true}),env,"queue",{id:"",email:""})).status).toBe(401);
++ expect((await adminPayments(req({summaryOnly:true,status:"paid"}),env,"queue",admin)).status).toBe(400);
++ expect(store.health).not.toHaveBeenCalled();
++});
+diff --git a/docs/payment-alerts-verification.md b/docs/payment-alerts-verification.md
+--- /dev/null
++++ b/docs/payment-alerts-verification.md
+@@ -0,0 +1,64 @@
++# Payment monitoring — local implementation, 11 October 2026
++
++No Git push, production deployment, charge, capture or refund was performed in this pass. No credentials or activation flags were changed. Public package checkout remains disabled, confirmed by read-only live probes.
++
++## Verified now
++
++- All 129 Vitest tests pass, including all 100 original tests. New tests cover each alert condition and clearing, historical failure warning clearing, the strict >30-minute cron threshold, periodic refresh, logout/in-flight response isolation, membership revocation, non-admin fetch denial, scheduled timestamps, open-dispute queue details, duplicate dispute IDs, unknown payments/events and bad signatures.
++- Isolated PostgreSQL dispute migration tests pass: shared event-ID uniqueness across dispute/settlement, unknown-payment storage, browser-role denial and unchanged paid/payment/refund ledger values.
++- Scoped payment lint and production client/SSR build pass. The temporary Windows build workaround was restored; Vite configuration is unchanged.
++- Application typecheck: zero payment errors; 62 unrelated existing diagnostics remain. No unrelated error files were edited.
++- Read-only Supabase checks: payment API v6, webhook v5 and reconciler v2 are ACTIVE. Job `sitenova-payment-reconciliation` is active with `*/10 * * * *`. The checked run completed at 11 October 2026 15:40:02.340 IST, checked=1/errors=0.
++
++## Deployed versus local
++
++| Item | Deployed now | Local changes awaiting approval/deployment |
++|---|---|---|
++| Ledger and security | payment_intents, browser denial/RLS, fixed paise amounts, safe settlement | Unchanged |
++| Event IDs | payment_webhook_events with UNIQUE(event_id), atomic settlement event completion | Add event_type/dispute metadata and a record-only dispute RPC |
++| Reconciliation | run/log tables, watchdog/flags, ten-minute scheduled GET reconciliation | Read-only aggregate health projection through the existing admin queue operation |
++| Retry/admin queue | confirmed retry reservation; existing admin queue/history/recheck | Dashboard banner, issue-count badge, open disputes and deadlines, cron health panel |
++| Edge Functions | razorpay-payments v6; razorpay-webhook v5; razorpay-reconcile v2 | Updated payment and webhook source; reconciler itself unchanged |
++| Website | Previous Worker version c0fd2b62-ddd7-4980-ba1b-12b5b11cf6f2, from the prior deployment | New monitoring UI in local code/build; no new Worker deployment |
++
++Previously applied payment migrations: razorpay_backend_payments, payment_edge_rate_limits, admin_test_payment, payment_webhook_events, payment_reconciliation, payment_reconciliation_schedule, payment_confirmed_retry and payment_queue_alerts. The ads-inquiries security migration was also applied previously. **20261011100002_payment_dispute_audit.sql has NOT been applied to production.** Live event columns remain id/event_id/order_id/processed_at.
++
++A website Git push alone does not deploy Supabase changes. After owner approval, apply the additive dispute migration, deploy the updated existing razorpay-webhook and razorpay-payments functions, then deploy the website. Keep both public activation flags false. No new endpoint, service, email or scheduler is introduced.
++
++## Click-by-click check after those deployments
++
++1. Open https://sitenova.dev/admin and sign in with the existing owner admin account.
++2. On the initial **Overview** screen, look above the overview cards for **Payments need attention**. An existing needs-reconciliation order should trigger it. The Payments menu badge counts alert items/conditions; an overdue order also needing reconciliation contributes to both.
++3. Click **Review Payments** in the banner, or **Manage → Payments** in the sidebar.
++4. Read **Last successful reconciliation run** and **Next expected run** in the scheduler panel. Times are IST. The next time is an expectation based on the ten-minute schedule, not proof of future execution. Admin re-checks do not update the scheduled-run time.
++5. Click **Refresh payments**. The banner, badge and health panel should refresh. Leave the page open: monitoring refreshes every 60 seconds and refreshes again when the window gains focus.
++6. Allow the next scheduled run to finish, then refresh. The last successful time should advance. If no scheduled run completes for more than 30 minutes, the main Overview banner should warn that the scheduler may be stopped. Do not disable the production cron just to manufacture this condition; stale/failure scenarios are covered by isolated tests.
++7. Select an existing pending order and click **Re-check with Razorpay**, then **History**. This fetches provider state and uses existing safe reconciliation. An uncertain order remains flagged; it clears only when its actual underlying state resolves. There is no manual paid button. Do not create a payment for this check.
++8. For an actual signed dispute event, check **Open disputes** in Payments and each dispute/deadline in the Overview banner. Unknown payments show the supplied payment reference and an unknown/not-supplied order. Respond through Razorpay's dashboard. Won/lost/closed statuses remove the open-dispute warning; the audit remains. Do not create a real dispute to test the UI; synthetic dispute events are covered locally.
++9. Sign out. In a private window open /admin/dashboard: it should redirect to login and show no payment alerts. A signed-in non-admin's payment data access is denied; this was tested locally. A live signed-in non-admin check is unverified.
++10. Open /pricing and confirm public package advance links remain absent. Do not click the admin ₹1 test button during these monitoring checks.
++
++## Razorpay webhook event selections
++
++Keep the existing payment/refund subscriptions. Add all six dispute events:
++
++- payment.dispute.created
++- payment.dispute.action_required
++- payment.dispute.under_review
++- payment.dispute.won
++- payment.dispute.lost
++- payment.dispute.closed
++
++Razorpay Dashboard → Accounts & Settings → Webhooks → open the existing Supabase webhook → Edit → search each exact event name → tick it → Save. Some accounts group this under Developers → Webhooks. Do not change the URL or signing secret.
++
++Source: https://razorpay.com/docs/webhooks/disputes/ — official event list and payloads. Status, amount/currency, payment/order, respond_by and event creation time are stored from the signed payload. Raw payloads, evidence, payment customer details and secrets are not stored or logged. Dispute handling never writes to payment_intents or calls settlement/provider mutations.
++
++## Explicitly unverified
++
++- New UI in an authenticated production browser: not deployed this pass.
++- Real Razorpay dispute webhook delivery/account event subscriptions and live dispute resolution: no real dispute was created or received for testing.
++- Backfill of disputes predating the new recorder: not provided; existing historical event markers do not contain dispute payloads. Review existing Razorpay disputes separately.
++- Provider-independent discovery of missed dispute events: this recorder relies on signed webhook delivery; the unchanged cron reconciles payment state, not disputes.
++- Refund warnings clear only if the actual current ledger no longer records a refund. A real partial/full refund remains visible; dismissing it locally does not erase financial history.
++
++Source diffs: payment-alerts-step-1.diff and payment-alerts-step-2.diff. New code and the additive migration remain local.
+diff --git a/scripts/write-payment-alert-diff.mjs b/scripts/write-payment-alert-diff.mjs
+--- /dev/null
++++ b/scripts/write-payment-alert-diff.mjs
+@@ -0,0 +1,26 @@
++import {existsSync,writeFileSync} from 'node:fs';
++import {join,resolve} from 'node:path';
++import {tmpdir} from 'node:os';
++import {spawnSync} from 'node:child_process';
++const step=process.argv[2]??'1';
++const files=step==='1'||step==='all'?[
++ 'AGENTS.md','supabase/functions/_shared/payment-store.ts','supabase/functions/_shared/admin-payments.ts','supabase/functions/_shared/razorpay.ts','supabase/functions/_shared/payment-health.ts','supabase/migrations/20261011100002_payment_dispute_audit.sql',
++ 'app/lib/payment-health.ts','app/lib/payment-health-store.test.ts','app/lib/payment-disputes.test.ts','app/lib/payment-admin-edge.test.ts','app/pages/admin/AdminDashboard.tsx','app/pages/admin/components/AdminSidebar.tsx','app/pages/admin/components/PaymentAlerts.tsx','app/pages/admin/components/PaymentAlerts.test.tsx','app/pages/admin/hooks/usePaymentHealth.ts','app/pages/admin/hooks/usePaymentHealth.test.tsx','app/pages/admin/tabs/PaymentsTab.tsx','app/pages/admin/tabs/PaymentsTab.test.tsx','scripts/test-payment-disputes-db.mjs',
++]:['AGENTS.md','app/pages/admin/tabs/PaymentsTab.tsx','app/pages/admin/tabs/PaymentsTab.test.tsx','app/pages/admin/components/PaymentCronHealth.tsx','app/pages/admin/components/PaymentCronHealth.test.tsx','app/pages/admin/AdminDashboard.tsx'];
++if(step==='all')files.push('app/pages/admin/components/PaymentCronHealth.tsx','app/pages/admin/components/PaymentCronHealth.test.tsx','app/lib/payment-health-admin.test.ts','docs/payment-alerts-verification.md','scripts/write-payment-alert-diff.mjs');
++const root=resolve('.'),baseline=join(tmpdir(),step==='2'?'sitenova-payment-alerts-step2-baseline':'sitenova-payment-alerts-baseline');
++const empty=join(tmpdir(),'sitenova-payment-alerts-empty');writeFileSync(empty,'');
++let diff='';
++for(const file of files){
++ const before=join(baseline,file),after=join(root,file);
++ if(!existsSync(after))continue;
++ const result=spawnSync('git',['diff','--no-index','--no-ext-diff','--text','--',existsSync(before)?before:empty,after],{encoding:'utf8',maxBuffer:8*1024*1024});
++ if(result.status!==0&&result.status!==1)throw new Error('Diff generation failed');
++ const chunk=result.stdout;
++ if(!chunk)continue;
++ // Replace machine-specific headers with reviewable repository paths.
++ const body=chunk.slice(chunk.indexOf('@@'));
++ diff+=`diff --git a/${file} b/${file}\n--- ${existsSync(before)?`a/${file}`:'/dev/null'}\n+++ b/${file}\n${body}`;
++}
++writeFileSync(`docs/payment-alerts-step-${step}.diff`,diff);
++console.log(`Saved step ${step} source diff (${diff.length} characters).`);
