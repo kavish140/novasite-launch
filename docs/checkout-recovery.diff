@@ -1,0 +1,554 @@
+# LOCAL REVIEW ONLY — no deployment or Git push
+# Compared to Git: overlapping Pay, gateway, admin-client and Payments files also contain previously reviewed pending pricing/project changes.
+# The narrow backend-only recovery delta against retrieved live source is docs/checkout-conflict-hotfix.diff.
+
+diff --git a/app/lib/razorpay-client.ts b/app/lib/razorpay-client.ts
+index ae3e746..83db495 100644
+--- a/app/lib/razorpay-client.ts
++++ b/app/lib/razorpay-client.ts
+@@ -30,15 +30,18 @@ export async function paymentRequest<T>(action: "order" | "retry" | "status" | "
+   if(action==="retry") {
+     const input=body as {token:string;orderId:string};
+     const key=`sitenova-payment-retry-${input.orderId}`;
+-    let requestId=sessionStorage.getItem(key);
+-    if(!requestId){requestId=crypto.randomUUID();sessionStorage.setItem(key,requestId);}
++    let requestId=readRecoveryValue(key);
++    if(!requestId){requestId=crypto.randomUUID();}
++    writeRecoveryValue(key,requestId);
+     body={token:input.token,requestId};
+   }
+   if (action === "order") {
+     const details = body as Record<string, unknown>;
+     const storageKey = `sitenova-payment-request-${details.package}`;
+-    let requestId = sessionStorage.getItem(storageKey);
+-    if (!requestId) { requestId = crypto.randomUUID(); sessionStorage.setItem(storageKey,requestId); }
++    let requestId = readRecoveryValue(storageKey);
++    if (!requestId) requestId = crypto.randomUUID();
++    // Save before POST so a tab closing during the response cannot lose the UUID.
++    writeRecoveryValue(storageKey,requestId);
+     body = { ...details, requestId };
+   }
+   const response = await fetch(`/api/payments/${action}`, {
+@@ -51,10 +54,23 @@ export async function paymentRequest<T>(action: "order" | "retry" | "status" | "
+ }
+ export function restorePayment(packageId: string): PaymentSession | null {
+   try {
+-    const session = JSON.parse(sessionStorage.getItem(`sitenova-payment-${packageId}`) ?? "null");
+-    return session?.package === packageId && typeof session.token === "string" && typeof session.orderId === "string" ? session : null;
++    const session = JSON.parse(readRecoveryValue(`sitenova-payment-${packageId}`) ?? "null");
++    return session?.package === packageId && typeof session.token === "string" && session.token.length<=4096 && typeof session.orderId === "string" && /^order_[A-Za-z0-9]+$/.test(session.orderId) ? {package:session.package,token:session.token,orderId:session.orderId} : null;
+   } catch { return null; }
+ }
+ export function savePayment(session: PaymentSession) {
+-  try { sessionStorage.setItem(`sitenova-payment-${session.package}`, JSON.stringify(session)); } catch { /* In-memory session still works. */ }
++  writeRecoveryValue(`sitenova-payment-${session.package}`,JSON.stringify({package:session.package,orderId:session.orderId,token:session.token}));
++}
++function readRecoveryValue(key:string):string|null{
++  try{const value=sessionStorage.getItem(key);if(value)return value;}catch{/* Fall back to durable recovery. */}
++  try{return localStorage.getItem(key);}catch{return null;}
++}
++function writeRecoveryValue(key:string,value:string){
++  try{localStorage.setItem(key,value);}catch{/* Do not discard the current session. */}
++  try{sessionStorage.setItem(key,value);}catch{/* In-memory checkout remains available. */}
++}
++// Owner-shared recovery capabilities use fragments, never query parameters.
++// Reading claims here gives routing information only; the server verifies HMAC/state.
++export function restoreSharedPayment(packageId:string):PaymentSession|null{
++  try{const token=new URLSearchParams(window.location.hash.slice(1)).get("resume");if(!token||token.length>4096)return null;const [payload,signature,...rest]=token.split(".");if(rest.length||!/^[a-f0-9]{64}$/.test(signature))return null;const claims=JSON.parse(atob(payload));if(claims.package!==packageId||!/^order_[A-Za-z0-9]+$/.test(claims.orderId))return null;return {token,orderId:claims.orderId,package:claims.package};}catch{return null;}
+ }
+diff --git a/app/pages/Pay.tsx b/app/pages/Pay.tsx
+index 7a5233d..ae1bfd1 100644
+--- a/app/pages/Pay.tsx
++++ b/app/pages/Pay.tsx
+@@ -7,11 +7,12 @@ import { CheckCircle2, LockKeyhole, Loader2, ArrowLeft, CreditCard } from "lucid
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { SITE_NAME, EMAIL, PHONE_TEL_LINK, PHONE_NUMBER } from "@/lib/constants";
+-import { paymentDetailsSchema, formatINR, type PackageCatalog, type CheckoutAuthorization, type PaymentDetails, type PaymentPackage, type PaymentSession, type PaymentStatus } from "@/lib/payments";
+-import { loadRazorpay, paymentRequest, restorePayment, savePayment } from "@/lib/razorpay-client";
++import { formatINR, type PackageCatalog, type CheckoutAuthorization, type PaymentDetails, type PaymentPackage, type PaymentSession, type PaymentStatus } from "@/lib/payments";
++import { loadRazorpay, paymentRequest, restorePayment, restoreSharedPayment, savePayment } from "@/lib/razorpay-client";
++import {paymentBookingSchema,PAYMENT_TIMELINES} from "@/lib/payments";
+ 
+ export default function Pay() {
+-  const { enabled, testMode, packages } = useLoaderData<{ enabled: boolean; testMode: boolean; packages: PackageCatalog }>();
++  const { enabled, testMode, packages,pricingVersion,pricingAvailable=true } = useLoaderData<{ enabled: boolean; testMode: boolean; packages: PackageCatalog;pricingVersion?:string|null;pricingAvailable?:boolean }>();
+   const [params] = useSearchParams();
+   const selected = params.get("package");
+   const packageId: PaymentPackage | null = selected === "starter" || selected === "business" ? selected : null;
+@@ -21,12 +22,21 @@ export default function Pay() {
+   const [busy, setBusy] = useState(false);
+   const [notice, setNotice] = useState("");
+   const [error, setError] = useState("");
+-  const form = useForm<PaymentDetails>({ resolver: zodResolver(paymentDetailsSchema), defaultValues: { package: packageId ?? "starter", name: "", email: "", phone: "", business: "" } });
++  const form = useForm<PaymentDetails>({ resolver: zodResolver(paymentBookingSchema), defaultValues: { package: packageId ?? "starter", name: "", email: "", phone: "", business: "",requirements:"",timeline:"Flexible",website_url:"" } });
+ 
+   useEffect(() => {
+     if (!packageId || !enabled) return;
+     let cancelled = false;
+-    const stored = restorePayment(packageId);
++    const shared=restoreSharedPayment(packageId);
++    const stored = shared??restorePayment(packageId);
++    if(shared){
++      savePayment(shared);
++      // Consume the link once so refreshing after a confirmed retry uses its successor.
++      const fragment=new URLSearchParams(window.location.hash.slice(1));
++      fragment.delete("resume");
++      const remaining=fragment.toString();
++      window.history.replaceState(window.history.state,"",`${window.location.pathname}${window.location.search}${remaining?`#${remaining}`:""}`);
++    }
+     setSession(stored); setStatus(null); setNotice(""); setError("");
+     form.setValue("package", packageId);
+     if (stored) {
+@@ -63,7 +73,7 @@ export default function Pay() {
+       let current = session;
+       if (!current) {
+         if (!details) throw new Error("Please enter your project details first.");
+-        current = await paymentRequest<PaymentSession>("order", details);
++        current = await paymentRequest<PaymentSession>("order", {...details,...(pricingVersion?{pricingVersion}:{})});
+         savePayment(current); setSession(current);
+       }
+       const result = await paymentRequest<CheckoutAuthorization>("checkout", { token: current.token });
+@@ -106,15 +116,16 @@ export default function Pay() {
+         <h1 className="font-heading text-3xl font-bold mb-3">Pay your project advance</h1>
+         <p className="text-muted-foreground mb-6">Reserve the next step for your website project.</p>
+         {testMode && enabled && <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm mb-5">Test checkout — no real money is collected. This does not confirm a paid project.</p>}
+-        {!pack ? <div className="space-y-3"><p className="text-muted-foreground">Choose your package to see its advance.</p>{Object.entries(packages).map(([id, item]) => <Link reloadDocument key={id} to={`/pay?package=${id}`} className="flex items-center justify-between rounded-xl border border-border p-4 hover:bg-secondary"><span>{item.name}</span><span>{formatINR(item.advance)} advance</span></Link>)}</div> : <>
+-          <div className="rounded-2xl border border-border bg-secondary/30 p-5 mb-5">
++        {!pricingAvailable?<p role="alert" className="rounded-xl border border-border p-4">Package pricing is temporarily unavailable. Reload or contact SiteNova before paying.</p>:!pack ? <div className="space-y-3"><p className="text-muted-foreground">Choose your package to see its advance.</p>{Object.entries(packages).map(([id, item]) => <Link reloadDocument key={id} to={`/pay?package=${id}`} className="flex items-center justify-between rounded-xl border border-border p-4 hover:bg-secondary"><span>{item.name}</span><span>{formatINR(item.advance)} advance</span></Link>)}</div> : <>
++          {!session?<div className="rounded-2xl border border-border bg-secondary/30 p-5 mb-5">
+             <h2 className="font-semibold text-lg">{pack.name} website</h2><p className="text-sm text-muted-foreground mb-4">{pack.description}</p>
+             <div className="flex flex-wrap justify-between gap-3 items-end"><span className="text-sm text-muted-foreground">Advance due now</span><strong className="font-heading text-3xl">{formatINR(pack.advance)}</strong></div>
+-            <p className="text-sm text-muted-foreground mt-3">50% of the {formatINR(pack.startingPrice)} starting price. This advance is credited against your final project invoice.</p>
+-          </div>
++            <p className="text-sm text-muted-foreground mt-3">Package starting price: {formatINR(pack.startingPrice)}. This advance is credited against your final project invoice.</p>
++          </div>:<p className="mb-5 rounded-xl border border-border p-4 text-sm text-muted-foreground">Your saved {pack.name} order keeps its original advance. Razorpay confirms that amount before payment, and your receipt shows it afterward.</p>}
+           <p className="text-sm text-muted-foreground mb-6">The final price, scope and delivery schedule are agreed in your proposal. Additional requirements may cost more. Payment does not include domain, hosting or third-party costs unless included in your proposal.</p>
+           {!enabled ? <div className="rounded-xl border border-border p-4"><h2 className="font-semibold mb-2">Online payments are coming soon</h2><p className="text-sm text-muted-foreground">Contact us to confirm your project and arrange the next steps.</p></div> : status?.status === "paid" ? <div role="status" className="rounded-xl border border-primary/30 p-5"><CheckCircle2 className="text-primary mb-3" /><h2 className="font-heading text-xl font-bold">{testMode ? "Test payment verified" : "Advance received"}</h2><p className="text-sm text-muted-foreground mt-2">{testMode ? "This was a simulated transaction." : "Thank you. Contact SiteNova with your payment reference to confirm your project scope and schedule."}</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p>{session&&<PaymentReceiptLink token={session.token}/>}</div> : status?.status === "refunded" ? <div role="status" className="rounded-xl border border-border p-5"><h2 className="font-semibold">A refund has been recorded</h2><p className="text-sm text-muted-foreground mt-2">Refund amount: {formatINR(status.refundedAmount ?? 0)}. Contact us to confirm your project and refund details.</p><p className="break-all text-sm mt-3">Payment reference: {status.paymentId}</p>{session&&<PaymentReceiptLink token={session.token}/>}</div> : session ? <div className="space-y-3"><p className="text-sm text-muted-foreground break-all">Order reference: {session.orderId}</p><Button disabled={busy} className="w-full" onClick={() => openCheckout()}>{busy ? <Loader2 className="animate-spin mr-2" size={18} /> : <CreditCard className="mr-2" size={18} />}Continue checkout</Button><Button disabled={busy} variant="outline" className="w-full" onClick={refresh}>Check payment status</Button><Button disabled={busy} variant="outline" className="w-full" onClick={retry}>Check eligibility for a fresh checkout</Button></div> : <form onSubmit={form.handleSubmit(details => openCheckout(details))} className="space-y-4">
+             {([ ["name", "Full name", "name"], ["business", "Business or project name", "organization"], ["email", "Email address", "email"], ["phone", "Mobile number", "tel-national"] ] as const).map(([field, label, autoComplete]) => <div key={field}><label htmlFor={`pay-${field}`} className="block text-sm font-medium mb-2">{label}</label><Input id={`pay-${field}`} autoComplete={autoComplete} type={field === "email" ? "email" : field === "phone" ? "tel" : "text"} inputMode={field === "phone" ? "numeric" : undefined} maxLength={field === "phone" ? 10 : field === "email" ? 254 : 100} {...form.register(field)} aria-invalid={!!form.formState.errors[field]} aria-describedby={form.formState.errors[field] ? `error-${field}` : undefined} />{form.formState.errors[field] && <p id={`error-${field}`} className="text-sm text-destructive mt-1">{form.formState.errors[field]?.message}</p>}</div>)}
++            <fieldset className="rounded-xl border border-border p-4 space-y-4"><legend className="px-1 text-sm font-semibold">Tell us about your project</legend><div><label htmlFor="pay-requirements" className="block text-sm font-medium mb-2">What should your website include?</label><textarea id="pay-requirements" rows={4} maxLength={2000} {...form.register("requirements")} placeholder="Your business, pages or sections, goals, and any features you need…" className="w-full rounded-md border border-input bg-background p-3 text-sm" aria-invalid={!!form.formState.errors.requirements} aria-describedby="pay-requirements-help"/><p id="pay-requirements-help" className="text-xs text-muted-foreground mt-1">20–2,000 characters. Share your requirements; please do not include passwords or payment details.</p>{form.formState.errors.requirements&&<p className="text-sm text-destructive mt-1">{form.formState.errors.requirements.message}</p>}</div><div><label htmlFor="pay-timeline" className="block text-sm font-medium mb-2">Preferred timeline</label><select id="pay-timeline" {...form.register("timeline")} className="w-full rounded-md border border-input bg-background p-3 text-sm">{PAYMENT_TIMELINES.map(value=><option key={value} value={value}>{value}</option>)}</select><p className="text-xs text-muted-foreground mt-1">This is your preference; delivery timing is agreed with SiteNova.</p></div><div><label htmlFor="pay-website" className="block text-sm font-medium mb-2">Existing website (optional)</label><Input id="pay-website" type="url" maxLength={512} placeholder="https://yourwebsite.com" {...form.register("website_url")} aria-invalid={!!form.formState.errors.website_url}/>{form.formState.errors.website_url&&<p className="text-sm text-destructive mt-1">{form.formState.errors.website_url.message}</p>}</div></fieldset>
+             <label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1 h-4 w-4 shrink-0" {...form.register("accepted")} /><span>I understand this is a project advance and agree to the <Link className="text-primary underline" to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">terms</Link>, <Link className="text-primary underline" to="/refund-policy" target="_blank" rel="noopener noreferrer">refund policy</Link> and <Link className="text-primary underline" to="/privacy-policy" target="_blank" rel="noopener noreferrer">privacy policy</Link>.</span></label>
+             {form.formState.errors.accepted && <p className="text-sm text-destructive">{form.formState.errors.accepted.message}</p>}
+             <Button type="submit" disabled={busy} className="w-full">{busy ? <Loader2 size={18} className="animate-spin mr-2" /> : <LockKeyhole size={18} className="mr-2" />}Pay {formatINR(pack.advance)} advance</Button>
+diff --git a/app/lib/payment-admin-client.ts b/app/lib/payment-admin-client.ts
+index fee3034..ff5891f 100644
+--- a/app/lib/payment-admin-client.ts
++++ b/app/lib/payment-admin-client.ts
+@@ -1,5 +1,5 @@
+ import {supabase} from "./supabaseClient";
+-export async function adminPaymentRequest<T>(action:"queue"|"history"|"recheck"|"paid"|"acknowledge"|"investigations"|"order-receipt",body:unknown):Promise<T>{
++export async function adminPaymentRequest<T>(action:"pricing"|"pricing-save"|"queue"|"history"|"recheck"|"paid"|"acknowledge"|"investigations"|"order-receipt"|"resume-checkout"|"projects"|"project-save"|"project-link"|"project-recheck"|"project-acknowledge",body:unknown):Promise<T>{
+   const {data,error}=await supabase.auth.getSession();
+   if(error || !data.session?.access_token) throw new Error("Sign in again to check payments.");
+   const response=await fetch(`/api/admin/payments/${action}`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${data.session.access_token}`},body:JSON.stringify(body),signal:AbortSignal.timeout(40000)});
+@@ -7,3 +7,4 @@ export async function adminPaymentRequest<T>(action:"queue"|"history"|"recheck"|
+   if(!response.ok) throw new Error(result.error||"Unable to load payments.");
+   return result;
+ }
++
+diff --git a/app/lib/razorpay.server.ts b/app/lib/razorpay.server.ts
+index 44bb817..7b5d52c 100644
+--- a/app/lib/razorpay.server.ts
++++ b/app/lib/razorpay.server.ts
+@@ -1,20 +1,22 @@
+ import { PAYMENT_PACKAGES } from "../../supabase/functions/_shared/catalog";
++import {z} from "zod";
++import {publicCatalogSchema} from "../../supabase/functions/_shared/pricing-schema";
+ export { PAYMENT_PACKAGES };
+ type GatewayEnv = { SUPABASE_URL?: string; PAYMENT_GATEWAY_SECRET?: string; PAYMENT_EDGE_ENABLED?: string };
+ export function paymentEnv(context: unknown): GatewayEnv { return (context as { cloudflare?: { env?: GatewayEnv } })?.cloudflare?.env ?? {}; }
+ export function paymentJson(body: unknown,status=200) { return Response.json(body,{status,headers:{"Cache-Control":"no-store","Referrer-Policy":"no-referrer","X-Content-Type-Options":"nosniff"}}); }
+ async function edge(env: GatewayEnv,action: string,body="{}",origin="https://sitenova.dev",ip="local",adminToken?:string) {
+- const recovery=action==="status" || action==="verify" || action==="receipt" || action==="receipt-link";
++ const recovery=action==="config" || action==="status" || action==="verify" || action==="receipt" || action==="receipt-link" || ["project/view","project/refresh","project/verify"].includes(action);
+  if((env.PAYMENT_EDGE_ENABLED!=="true" && !adminToken && !recovery) || !env.PAYMENT_GATEWAY_SECRET || env.PAYMENT_GATEWAY_SECRET.length<32 || !env.SUPABASE_URL) return paymentJson({error:"Online payments are not available yet. Please contact SiteNova."},503);
+  const base=new URL(env.SUPABASE_URL);
+  if(base.protocol!=="https:" || !base.hostname.endsWith(".supabase.co") || base.username || base.password) throw new Error("Invalid backend URL");
+- const response=await fetch(base.origin+"/functions/v1/razorpay-payments/"+action,{method:"POST",redirect:"manual",signal:AbortSignal.timeout(35000),headers:{"Content-Type":"application/json","x-payment-gateway-secret":env.PAYMENT_GATEWAY_SECRET,"x-payment-origin":origin,"x-payment-client-ip":ip,...(adminToken ? {"x-payment-admin-token":adminToken} : {})},body});
++ const response=await fetch(base.origin+"/functions/v1/razorpay-payments/"+action,{method:"POST",redirect:"manual",signal:AbortSignal.timeout(action==="config"?5000:35000),headers:{"Content-Type":"application/json","x-payment-gateway-secret":env.PAYMENT_GATEWAY_SECRET,"x-payment-origin":origin,"x-payment-client-ip":ip,...(adminToken ? {"x-payment-admin-token":adminToken} : {})},body});
+  if(response.status>=300 && response.status<400) throw new Error("Payment backend redirect rejected");
+  return response;
+ }
+ export async function paymentConfiguration(context: unknown) {
+- try { const response=await edge(paymentEnv(context),"config"); if(!response.ok) throw new Error("Unavailable"); const config=await response.json(); return {enabled:config.enabled===true,testMode:config.testMode===true,packages:PAYMENT_PACKAGES}; }
+- catch { return {enabled:false,testMode:false,packages:PAYMENT_PACKAGES}; }
++ try { const env=paymentEnv(context),response=await edge(env,"config"); if(!response.ok) throw new Error("Unavailable"); const config=await response.json();const packages=publicCatalogSchema.parse(config.packages),pricingVersion=z.string().uuid().parse(config.pricingVersion);return {enabled:env.PAYMENT_EDGE_ENABLED==="true"&&config.enabled===true,testMode:config.testMode===true,packages,pricingVersion,pricingAvailable:true}; }
++ catch { return {enabled:false,testMode:false,packages:PAYMENT_PACKAGES,pricingVersion:null,pricingAvailable:false}; }
+ }
+ export async function paymentAction(request: Request,context: unknown,action:"order"|"retry"|"verify"|"status"|"checkout") {
+  if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
+@@ -27,12 +29,12 @@ export const paymentWebhook=(_request:Request,_context:unknown)=>paymentJson({er
+ export async function adminTestPaymentAction(request:Request,context:unknown,action:string) {
+  if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
+  if(request.headers.get("origin")!==new URL(request.url).origin) return paymentJson({error:"Invalid origin"},403);
+- if(!["order","checkout","verify","status","queue","history","recheck","paid","acknowledge","investigations","receipt-link","order-receipt"].includes(action)) return paymentJson({error:"Not found"},404);
++ if(!["order","checkout","verify","status","queue","history","recheck","paid","acknowledge","investigations","receipt-link","order-receipt","resume-checkout","pricing","pricing-save","projects","project-save","project-link","project-recheck","project-acknowledge"].includes(action)) return paymentJson({error:"Not found"},404);
+  const authorization=request.headers.get("authorization") ?? "";
+  if(!authorization.startsWith("Bearer ") || authorization.length>8010 || authorization.length<8) return paymentJson({error:"Admin sign-in required"},401);
+  try {
+   const body=await request.text(); if(body.length>6000) return paymentJson({error:"Request too large"},413);
+-  const channel=["queue","history","recheck","paid","acknowledge","investigations","order-receipt"].includes(action)?"admin-queue/":"admin-test/";
++  const channel=["queue","history","recheck","paid","acknowledge","investigations","order-receipt","resume-checkout","pricing","pricing-save","projects","project-save","project-link","project-recheck","project-acknowledge"].includes(action)?"admin-queue/":"admin-test/";
+   const response=await edge(paymentEnv(context),channel+action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local",authorization.slice(7));
+   return paymentJson(await response.json(),response.status);
+  } catch { return paymentJson({error:"Unable to confirm test payment. Check status before retrying."},503); }
+@@ -42,3 +44,10 @@ export async function receiptAction(request:Request,context:unknown,action:"rece
+  if(request.headers.get("origin")!==new URL(request.url).origin)return paymentJson({error:"Invalid origin"},403);
+  try{const body=await request.text();if(body.length>4000)return paymentJson({error:"Request too large"},413);const response=await edge(paymentEnv(context),action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local");return paymentJson(await response.json(),response.status);}catch{return paymentJson({error:"Receipt unavailable"},503);}
+ }
++export async function projectAction(request:Request,context:unknown,action:string){
++ if(request.method!=="POST")return paymentJson({error:"Method not allowed"},405);
++ if(request.headers.get("origin")!==new URL(request.url).origin)return paymentJson({error:"Invalid origin"},403);
++ if(!["view","refresh","checkout","verify"].includes(action))return paymentJson({error:"Not found"},404);
++ try{const body=await request.text();if(body.length>4000)return paymentJson({error:"Request too large"},413);const env=paymentEnv(context),response=await edge(env,"project/"+action,body,new URL(request.url).origin,request.headers.get("cf-connecting-ip")??"local");const result=await response.json();if(response.ok&&action!=="checkout"&&env.PAYMENT_EDGE_ENABLED!=="true")result.canPay=false;return paymentJson(result,response.status);}catch{return paymentJson({error:"Unable to check project; contact SiteNova before paying again"},503);}
++}
++
+diff --git a/app/pages/admin/tabs/PaymentsTab.tsx b/app/pages/admin/tabs/PaymentsTab.tsx
+index 425c381..5b677f7 100644
+--- a/app/pages/admin/tabs/PaymentsTab.tsx
++++ b/app/pages/admin/tabs/PaymentsTab.tsx
+@@ -7,6 +7,8 @@ import type {PaymentHealth} from "@/lib/payment-health";
+ import PaymentCronHealth from "../components/PaymentCronHealth";
+ import PaidOrders from "../components/PaidOrders";
+ import PaymentInvestigations from "../components/PaymentInvestigations";
++import ClientProjects from "../components/ClientProjects";
++import ResumeCheckoutLink from "../components/ResumeCheckoutLink";
+ type Order={request_id:string;order_id:string|null;package:string;amount:number;status:string;reconciliation_state:string;created_at:string;last_checked_at:string|null;last_check_source?:string|null};
+ type History={id:string;old_state:string;new_state:string;error:string|null;alert:boolean;created_at:string;source?:string|null};
+ type Queue={orders:Order[];runs:{id:string;source?:string;error:string|null;started_at:string}[];alerts:{id:string;request_id:string;order_id:string|null;new_state:string;error:string|null;created_at:string}[];nextOffset:number|null};
+@@ -35,6 +37,7 @@ export default function PaymentsTab({health,refreshHealth,now=Date.now()}:{healt
+   const orders=[...new Map((queue?.orders??[]).map(order=>[order.request_id,order])).values()];
+   return <div className="space-y-6">
+     <PaidOrders refreshHealth={refreshHealth}/>
++    <ClientProjects refreshHealth={refreshHealth}/>
+     <PaymentInvestigations/>
+     {!!health?.lostDisputes?.length&&<section className="rounded-xl border-2 border-destructive p-5"><h2 className="font-semibold">Lost disputes — acknowledgement required</h2>{health.lostDisputes.map(dispute=><div key={dispute.eventId} className="mt-3 text-sm break-all"><p>{dispute.id} · Payment: {dispute.paymentId??"Unknown"} · {dispute.amount===null?"Amount not supplied":dispute.currency==="INR"?formatINR(dispute.amount):`${dispute.amount} subunits (${dispute.currency??"unknown"})`}</p><p>Acknowledging records your review. It does not change payment status or move money.</p><Button variant="outline" disabled={busy} onClick={async()=>{setBusy(true);setError("");try{await adminPaymentRequest("acknowledge",{kind:"dispute",eventId:dispute.eventId});await refreshHealth?.();}catch{setError("Unable to acknowledge lost dispute.");}finally{setBusy(false);}}}>Acknowledge lost dispute</Button></div>)}</section>}
+     <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">Checkout orders below are not confirmed payments. Status checks do not create orders or take money. All times use IST (24-hour clock).</p><Button variant="outline" disabled={busy} onClick={()=>{void refresh();void refreshHealth?.();}}>Refresh payments</Button></div>
+@@ -47,7 +50,7 @@ export default function PaymentsTab({health,refreshHealth,now=Date.now()}:{healt
+       {queue&&<p className="text-sm">{orders.length} checkout order(s) on this page.</p>}
+       <div className="overflow-x-auto"><table aria-label="Unpaid and unconfirmed checkout orders" className="w-full text-sm"><thead><tr className="text-left border-b border-border"><th className="p-3">Checkout order</th><th className="p-3">Checkout amount</th><th className="p-3">Current status</th><th className="p-3">Last status check</th><th className="p-3">Actions</th></tr></thead><tbody>{orders.map(order=>{
+         const overdue=order.status==="pending"&&["pending","needs_reconciliation"].includes(order.reconciliation_state)&&now-Date.parse(order.created_at)>86400000;
+-        return <tr key={order.request_id} className="border-b border-border"><td className="p-3 min-w-52"><p className="break-all">{order.order_id??"Order creation unconfirmed"}</p><p className="text-muted-foreground mt-1">{order.package==="test"?"₹1 test checkout":order.package}</p><p className="text-muted-foreground mt-1">Order created: {paymentDate(order.created_at)}</p></td><td className="p-3 whitespace-nowrap align-top">{formatINR(order.amount)}</td><td className="p-3 min-w-44 align-top"><p>{checkoutState(order)}</p>{overdue&&<p className="mt-2 text-amber-500">Unresolved for over 24 hours</p>}</td><td className="p-3 min-w-48 align-top"><p>{order.last_checked_at?paymentCheckSource(order.last_check_source):"Not checked yet"}</p>{order.last_checked_at&&<p className="text-muted-foreground mt-1">{paymentDate(order.last_checked_at)}</p>}</td><td className="p-3 align-top"><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy} onClick={()=>void recheck(order)}>Re-check with Razorpay</Button><Button variant="ghost" disabled={busy} onClick={()=>void showHistory(order)}>History</Button></div></td></tr>;
++        return <tr key={order.request_id} className="border-b border-border"><td className="p-3 min-w-52"><p className="break-all">{order.order_id??"Order creation unconfirmed"}</p><p className="text-muted-foreground mt-1">{order.package==="test"?"₹1 test checkout":order.package}</p><p className="text-muted-foreground mt-1">Order created: {paymentDate(order.created_at)}</p></td><td className="p-3 whitespace-nowrap align-top">{formatINR(order.amount)}</td><td className="p-3 min-w-44 align-top"><p>{checkoutState(order)}</p>{overdue&&<p className="mt-2 text-amber-500">Unresolved for over 24 hours</p>}</td><td className="p-3 min-w-48 align-top"><p>{order.last_checked_at?paymentCheckSource(order.last_check_source):"Not checked yet"}</p>{order.last_checked_at&&<p className="text-muted-foreground mt-1">{paymentDate(order.last_checked_at)}</p>}</td><td className="p-3 align-top"><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy} onClick={()=>void recheck(order)}>Re-check with Razorpay</Button><Button variant="ghost" disabled={busy} onClick={()=>void showHistory(order)}>History</Button>{order.order_id&&["starter","business"].includes(order.package)&&<ResumeCheckoutLink requestId={order.request_id}/>}</div></td></tr>;
+       })}</tbody></table>{queue&&!orders.length&&<p className="py-4 text-muted-foreground">No unpaid or unconfirmed checkouts in this queue.</p>}{!queue&&busy&&<p className="py-4">Loading checkout orders…</p>}</div>
+     </section>
+     {(offset>0||queue?.nextOffset!=null)&&<div className="flex flex-wrap gap-3"><Button variant="outline" disabled={busy||offset===0} onClick={()=>setOffset(Math.max(0,offset-50))}>Previous</Button><Button variant="outline" disabled={busy||queue?.nextOffset==null} onClick={()=>setOffset(queue!.nextOffset!)}>Next</Button></div>}
+@@ -55,3 +58,4 @@ export default function PaymentsTab({health,refreshHealth,now=Date.now()}:{healt
+     <details className="rounded-xl border border-border p-5"><summary className="font-semibold cursor-pointer">Automatic checks — scheduler health</summary><div className="mt-4"><PaymentCronHealth health={health} now={now}/></div><p className="mt-3 text-sm text-muted-foreground">These checks review existing orders. Their timestamps are not payment times.</p></details>
+   </div>;
+ }
++
+diff --git a/test-results/checkout-conflict/empty b/app/pages/admin/components/ResumeCheckoutLink.tsx
+index e69de29..5e7ca9b 100644
+--- a/test-results/checkout-conflict/empty
++++ b/app/pages/admin/components/ResumeCheckoutLink.tsx
+@@ -0,0 +1,8 @@
++import {useState} from "react";
++import {Button} from "@/components/ui/button";
++import {adminPaymentRequest} from "@/lib/payment-admin-client";
++export default function ResumeCheckoutLink({requestId}:{requestId:string}){
++ const [url,setUrl]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState("");
++ async function recover(){setBusy(true);setError("");setUrl("");try{const result=await adminPaymentRequest<{url:string}>("resume-checkout",{requestId});const link=new URL(result.url);if(link.origin!=="https://sitenova.dev"||link.pathname!=="/pay"||!["starter","business"].includes(link.searchParams.get("package")??"")||!link.hash.startsWith("#resume="))throw new Error("Unsafe recovery link");setUrl(result.url);}catch{setError("Unable to issue a safe recovery link. Re-check with Razorpay; do not start another payment while its status is uncertain.");}finally{setBusy(false);}}
++ return <div className="space-y-2"><Button variant="outline" disabled={busy} onClick={()=>void recover()}>{busy?"Checking checkout…":"Get recovery link"}</Button>{error&&<p role="alert" className="text-sm text-destructive">{error}</p>}{url&&<div className="space-y-2 text-sm"><p>Private link for the original untouched checkout. Share only with this customer. It does not create a new order or extend the 24-hour checkout window.</p><a href={url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="text-primary underline">Open recovered checkout</a><label className="block">Private checkout recovery link<input readOnly value={url} onFocus={e=>e.currentTarget.select()} className="mt-1 w-full rounded border border-border bg-background p-2"/></label></div>}</div>;
++}
+diff --git a/test-results/checkout-conflict/empty b/app/pages/admin/components/ResumeCheckoutLink.test.tsx
+index e69de29..3d69979 100644
+--- a/test-results/checkout-conflict/empty
++++ b/app/pages/admin/components/ResumeCheckoutLink.test.tsx
+@@ -0,0 +1,12 @@
++import {afterEach,it,expect,vi} from "vitest";
++import {render,screen,fireEvent,cleanup} from "@testing-library/react";
++import ResumeCheckoutLink from "./ResumeCheckoutLink";
++import {adminPaymentRequest} from "@/lib/payment-admin-client";
++vi.mock("@/lib/payment-admin-client",()=>({adminPaymentRequest:vi.fn()}));
++afterEach(()=>{cleanup();vi.resetAllMocks();});
++it("requests only an admin-verified private recovery link and exposes it for owner sharing",async()=>{
++ const url="https://sitenova.dev/pay?package=business#resume=fake-fixture-token";vi.mocked(adminPaymentRequest).mockResolvedValue({url});render(<ResumeCheckoutLink requestId="request"/>);fireEvent.click(screen.getByRole("button",{name:"Get recovery link"}));expect((await screen.findByRole("link",{name:"Open recovered checkout"})).getAttribute("href")).toBe(url);expect(adminPaymentRequest).toHaveBeenCalledWith("resume-checkout",{requestId:"request"});expect(screen.getByText(/does not create a new order/)).toBeTruthy();
++});
++it("does not publish an unsafe recovery URL or claim an uncertain order is payable",async()=>{
++ vi.mocked(adminPaymentRequest).mockResolvedValue({url:"https://unsafe.example/pay#resume=fake"});render(<ResumeCheckoutLink requestId="request"/>);fireEvent.click(screen.getByRole("button",{name:"Get recovery link"}));expect(await screen.findByRole("alert")).toBeTruthy();expect(screen.queryByRole("link",{name:"Open recovered checkout"})).toBeNull();
++});
+diff --git a/test-results/checkout-conflict/empty b/app/lib/payment-browser-recovery.test.ts
+index e69de29..60e9ebd 100644
+--- a/test-results/checkout-conflict/empty
++++ b/app/lib/payment-browser-recovery.test.ts
+@@ -0,0 +1,24 @@
++import {afterEach,beforeEach,it,expect,vi} from "vitest";
++import {paymentRequest,restorePayment,savePayment,restoreSharedPayment} from "./razorpay-client";
++const session={package:"business" as const,orderId:"order_original",token:"private-signed-token"};
++beforeEach(()=>{localStorage.clear();sessionStorage.clear();window.history.replaceState(null,"","/");vi.stubGlobal("AbortSignal",{timeout:()=>new AbortController().signal});});
++afterEach(()=>{vi.unstubAllGlobals();vi.restoreAllMocks();localStorage.clear();sessionStorage.clear();});
++it("recovers the private signed session after tab storage is lost without saving customer details",()=>{
++ savePayment({...session,...{email:"never-store@example.test",phone:"9876543210",business:"Private",requirements:"Private brief"}});sessionStorage.clear();expect(restorePayment("business")).toEqual(session);
++ const stored=localStorage.getItem("sitenova-payment-business")!;expect(stored).not.toMatch(/email|phone|business.*Private|requirements/);expect(restorePayment("starter")).toBeNull();
++});
++it("keeps the opaque original request UUID when a tab closes before the order response arrives",async()=>{
++ const fetcher=vi.fn<typeof fetch>(async()=>Response.json(session));vi.stubGlobal("fetch",fetcher);
++ const details={package:"business",name:"Fixture",email:"fixture@example.test",business:"Project",phone:"9876543210",accepted:true};
++ await paymentRequest("order",details);const first=JSON.parse(String(fetcher.mock.calls[0][1]?.body));sessionStorage.clear();await paymentRequest("order",details);const second=JSON.parse(String(fetcher.mock.calls[1][1]?.body));expect(second.requestId).toBe(first.requestId);expect(localStorage.getItem("sitenova-payment-request-business")).toBe(first.requestId);
++});
++it("keeps confirmed-decline retry request IDs stable across closing tabs",async()=>{
++ const fetcher=vi.fn<typeof fetch>(async()=>Response.json(session));vi.stubGlobal("fetch",fetcher);await paymentRequest("retry",{token:session.token,orderId:session.orderId});sessionStorage.clear();await paymentRequest("retry",{token:session.token,orderId:session.orderId});expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body)).requestId).toBe(JSON.parse(String(fetcher.mock.calls[1][1]?.body)).requestId);
++});
++it("migrates old tab-only storage and tolerates browsers blocking persistent storage",()=>{
++ sessionStorage.setItem("sitenova-payment-business",JSON.stringify(session));expect(restorePayment("business")).toEqual(session);vi.spyOn(Storage.prototype,"setItem").mockImplementation(()=>{throw new Error("blocked");});expect(()=>savePayment(session)).not.toThrow();
++});
++it("rejects corrupt/foreign sessions and only reads correctly shaped owner-shared fragments",()=>{
++ localStorage.setItem("sitenova-payment-business","invalid");expect(restorePayment("business")).toBeNull();
++ const token=btoa(JSON.stringify({package:"business",orderId:"order_original"}))+"."+"a".repeat(64);window.history.replaceState(null,"",`/pay?package=business#resume=${encodeURIComponent(token)}`);expect(restoreSharedPayment("business")).toEqual({...session,token});expect(restoreSharedPayment("starter")).toBeNull();window.history.replaceState(null,"","/pay#resume=invalid");expect(restoreSharedPayment("business")).toBeNull();
++});
+diff --git a/test-results/checkout-conflict/empty b/app/lib/payment-conflict.test.ts
+index e69de29..67be0c2 100644
+--- a/test-results/checkout-conflict/empty
++++ b/app/lib/payment-conflict.test.ts
+@@ -0,0 +1,30 @@
++// @vitest-environment node
++import {afterEach,it,expect,vi} from "vitest";
++import {paymentStore} from "../../supabase/functions/_shared/payment-store";
++import {PaymentConflictError} from "../../supabase/functions/_shared/payment-conflict";
++const env={SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"fake-service"};
++const record={request_id:"00000000-0000-4000-8000-000000000001",payload_hash:"same-hash",dedupe_hash:"private-fingerprint"};
++afterEach(()=>vi.unstubAllGlobals());
++function responses(existing:unknown=[],insertCode="23505",lookupError=false){const fetcher=vi.fn<typeof fetch>(async(_url,options)=>options?.method==="POST"?Response.json({code:insertCode,message:"internal database detail"},{status:409}):lookupError?Response.json({code:"XX000",message:"internal lookup detail"},{status:400}):Response.json(existing));vi.stubGlobal("fetch",fetcher);return fetcher;}
++it("blocks a duplicate booking from a fresh tab with an actionable conflict and no earlier booking disclosure",async()=>{
++ const fetcher=responses();const error=await paymentStore(env).reserve(record).catch(error=>error);
++ expect(error).toBeInstanceOf(PaymentConflictError);expect(error.message).toContain("original checkout tab");expect(error.message).not.toContain(record.dedupe_hash);expect(fetcher).toHaveBeenCalledTimes(2);
++});
++it("retains idempotent recovery for the same request and payload",async()=>{
++ responses([{...record,order_id:"order_existing"}]);expect(await paymentStore(env).reserve(record)).toEqual({created:false,record:{...record,order_id:"order_existing"}});
++});
++it("recovers the same order only when the customer retains its opaque request UUID and matching payload",async()=>{
++ const earlier={...record,request_id:"00000000-0000-4000-8000-000000000002",order_id:"order_original",amount:750000};
++ const fetcher=responses([earlier]);expect(await paymentStore(env).reserve({...record,request_id:earlier.request_id})).toEqual({created:false,record:earlier});expect(fetcher.mock.calls.filter(([,options])=>options?.method==="POST")).toHaveLength(1);
++ expect(new URL(String(fetcher.mock.calls[1][0])).searchParams.get("request_id")).toBe(`eq.${earlier.request_id}`);
++});
++it("does not use email or booking fingerprint alone to disclose another checkout",async()=>{
++ const fetcher=vi.fn<typeof fetch>(async(input,options)=>options?.method==="POST"?Response.json({code:"23505"},{status:409}):Response.json(String(input).includes("dedupe_hash=")?[{...record,payload_hash:"different",order_id:"order_private"}]:[]));vi.stubGlobal("fetch",fetcher);
++ const error=await paymentStore(env).reserve(record).catch(error=>error);expect(error).toBeInstanceOf(PaymentConflictError);expect(error.message).not.toContain("order_private");
++});
++it("rejects edited details without returning the saved checkout",async()=>{
++ responses([{...record,payload_hash:"different",order_id:"order_existing"}]);const error=await paymentStore(env).reserve(record).catch(error=>error);expect(error).toBeInstanceOf(PaymentConflictError);expect(error.message).toContain("details differ");expect(error.message).not.toContain("order_existing");
++});
++it.each([["53300",false],["23505",true]])("keeps database/lookup failure %s/%s distinct from a known conflict",async(code,lookupError)=>{
++ responses([],code,lookupError);const error=await paymentStore(env).reserve(record).catch(error=>error);expect(error).not.toBeInstanceOf(PaymentConflictError);expect(error.message).toBe("Payment storage unavailable");
++});
+diff --git a/test-results/checkout-conflict/empty b/app/lib/payment-admin-recovery.test.ts
+index e69de29..d50486a 100644
+--- a/test-results/checkout-conflict/empty
++++ b/app/lib/payment-admin-recovery.test.ts
+@@ -0,0 +1,18 @@
++// @vitest-environment node
++import {afterEach,beforeEach,it,expect,vi} from "vitest";
++const mocks=vi.hoisted(()=>({byRequest:vi.fn(),check:vi.fn(),sign:vi.fn()}));
++vi.mock("../../supabase/functions/_shared/payment-store.ts",()=>({paymentStore:()=>mocks}));
++vi.mock("../../supabase/functions/_shared/razorpay.ts",async original=>({...await original<typeof import("../../supabase/functions/_shared/razorpay")>(),fetchStoredPaymentStatus:mocks.check,createPaymentToken:mocks.sign}));
++import {adminPayments} from "../../supabase/functions/_shared/admin-payments";
++const requestId="00000000-0000-4000-8000-000000000001",env={RAZORPAY_KEY_SECRET:"fake",PAYMENT_RATE_LIMITER:{limit:async()=>({success:true})}},admin={id:"owner",email:"owner@example.test"};
++const record={request_id:requestId,order_id:"order_original",package:"business",amount:750000,key_id:"rzp_test_fake",status:"pending",created_at:new Date().toISOString()};
++const request=(extra={})=>new Request("https://example.test/admin",{method:"POST",body:JSON.stringify({requestId,...extra})});
++beforeEach(()=>{vi.clearAllMocks();mocks.byRequest.mockResolvedValue(record);mocks.check.mockResolvedValue({status:"unattempted"});mocks.sign.mockResolvedValue("private-token");});afterEach(()=>vi.resetAllMocks());
++it("issues an admin-only private link for the original provider-confirmed untouched order",async()=>{
++ const response=await adminPayments(request(),env,"resume-checkout",admin);expect(response.status).toBe(200);expect((await response.json()).url).toBe("https://sitenova.dev/pay?package=business#resume=private-token");expect(mocks.check).toHaveBeenCalledWith(env,record);expect(mocks.sign).toHaveBeenCalledWith(expect.objectContaining({orderId:record.order_id,amount:750000,issuedAt:Date.parse(record.created_at)}),"fake");
++});
++it.each(["pending","paid","refunded","failed","expired"])("does not mint recovery links when provider state is %s",async status=>{mocks.check.mockResolvedValue({status});expect((await adminPayments(request(),env,"resume-checkout",admin)).status).toBe(409);expect(mocks.sign).not.toHaveBeenCalled();});
++it.each([{status:"paid"},{status:"refunded"},{order_id:null},{retry_reserved_at:"now"},{created_at:new Date(Date.now()-25*3600000).toISOString()},{package:"test"}])("blocks unsafe ledger records: %j",async change=>{mocks.byRequest.mockResolvedValue({...record,...change});expect((await adminPayments(request(),env,"resume-checkout",admin)).status).toBe(409);expect(mocks.check).not.toHaveBeenCalled();expect(mocks.sign).not.toHaveBeenCalled();});
++it("blocks provider outage, anonymous actor and browser overrides without exposing tokens",async()=>{
++ mocks.check.mockRejectedValue(new Error("private provider detail"));const response=await adminPayments(request(),env,"resume-checkout",admin);expect(response.status).toBe(503);expect(await response.text()).not.toContain("private provider detail");expect((await adminPayments(request(),env,"resume-checkout",{id:"",email:""})).status).toBe(401);expect((await adminPayments(request({amount:1}),env,"resume-checkout",admin)).status).toBe(400);expect(mocks.sign).not.toHaveBeenCalled();
++});
+diff --git a/app/lib/payment-admin-edge.test.ts b/app/lib/payment-admin-edge.test.ts
+index 37ee80e..0aa6b76 100644
+--- a/app/lib/payment-admin-edge.test.ts
++++ b/app/lib/payment-admin-edge.test.ts
+@@ -2,6 +2,7 @@
+ import { describe,it,expect,vi,beforeEach } from "vitest";
+ const mocks=vi.hoisted(()=>({getUser:vi.fn(),owner:vi.fn(),payment:vi.fn(),queue:vi.fn()}));
+ vi.mock("../../supabase/functions/_shared/admin-payments.ts",()=>({adminPayments:mocks.queue}));
++vi.mock("../../supabase/functions/_shared/package-pricing.ts",()=>({pricingAdmin:mocks.queue,pricingStore:vi.fn()}));
+ vi.mock("@supabase/supabase-js",()=>({createClient:()=>({auth:{getUser:mocks.getUser},from:()=>({select:()=>({eq:()=>({maybeSingle:mocks.owner})})})})}));
+ vi.mock("../../supabase/functions/_shared/razorpay.ts",async original=>({...await original<typeof import("../../supabase/functions/_shared/razorpay")>(),paymentAction:mocks.payment}));
+ import { handlePaymentEdge } from "../../supabase/functions/_shared/edge-handler";
+@@ -14,7 +15,7 @@ describe("admin test payment authorization",()=>{
+   const summary=new Request(original.url.replace("admin-test/order","admin-queue/queue"),{method:"POST",headers:original.headers,body:JSON.stringify({summaryOnly:true})});
+   expect((await handlePaymentEdge(summary,env)).status).toBe(403);expect(mocks.queue).not.toHaveBeenCalled();
+  });
+- it.each(["queue","history","recheck","paid","acknowledge","investigations","order-receipt"])("denies non-admins access to payment %s",async action=>{
++ it.each(["queue","history","recheck","paid","acknowledge","investigations","order-receipt","resume-checkout","pricing","pricing-save"])("denies non-admins access to payment %s",async action=>{
+   const queueReq=(token?:string)=>{const original=req(token);return new Request(original.url.replace("admin-test/order",`admin-queue/${action}`),original);};
+   expect((await handlePaymentEdge(queueReq(),env)).status).toBe(401);
+   mocks.getUser.mockResolvedValueOnce({data:{user:null},error:{message:"forged"}});
+@@ -48,3 +49,4 @@ describe("admin test payment authorization",()=>{
+   expect(mocks.payment).not.toHaveBeenCalled();
+  });
+ });
++
+diff --git a/app/lib/payment-checkout.test.tsx b/app/lib/payment-checkout.test.tsx
+index a77e2c9..b0858bc 100644
+--- a/app/lib/payment-checkout.test.tsx
++++ b/app/lib/payment-checkout.test.tsx
+@@ -2,24 +2,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+ import { createMemoryRouter, RouterProvider } from "react-router";
+ import Pay from "@/pages/Pay";
+-import { paymentRequest, restorePayment, savePayment, loadRazorpay } from "./razorpay-client";
++import { paymentRequest, restorePayment, restoreSharedPayment, savePayment, loadRazorpay } from "./razorpay-client";
+ import type { PaymentSession } from "./payments";
+ import { PAYMENT_PACKAGES } from "./razorpay.server";
+ 
+-vi.mock("./razorpay-client", () => ({ paymentRequest: vi.fn(), restorePayment: vi.fn(), savePayment: vi.fn(), loadRazorpay: vi.fn() }));
++vi.mock("./razorpay-client", () => ({ paymentRequest: vi.fn(), restorePayment: vi.fn(), restoreSharedPayment:vi.fn(), savePayment: vi.fn(), loadRazorpay: vi.fn() }));
+ const session: PaymentSession = { token: "signed-test-token", orderId: "order_example", package: "starter" };
+ const checkout = { ...session, keyId: "rzp_test_example", amount: 500000, testMode: true };
+-function show(enabled = true) {
+-  return render(<RouterProvider router={createMemoryRouter([{ id: "pay", path: "/pay", loader: () => ({ enabled, testMode: true, packages: PAYMENT_PACKAGES }), element: <Pay /> }], { initialEntries: ["/pay?package=starter"], hydrationData: { loaderData: { pay: { enabled, testMode: true, packages: PAYMENT_PACKAGES } } } })} />);
++function show(enabled = true, selected = "starter",extra={}) {
++  const data={enabled,testMode:true,packages:PAYMENT_PACKAGES,...extra};
++  return render(<RouterProvider router={createMemoryRouter([{ id: "pay", path: "/pay", loader: () => data, element: <Pay /> }], { initialEntries: [`/pay?package=${selected}`], hydrationData: { loaderData: { pay: data } } })} />);
+ }
+-async function fillAndSubmit() {
++async function fillAndSubmit(brief="A landing page with our services, enquiry form and contact details.") {
+   for (const [label, value] of [["Full name", "Test Client"], ["Business or project name", "Test Business"], ["Email address", "test@example.com"], ["Mobile number", "9876543210"]])
+     fireEvent.change(screen.getByLabelText(label), { target: { value } });
++  fireEvent.change(screen.getByLabelText("What should your website include?"),{target:{value:brief}});
+   fireEvent.click(screen.getByRole("checkbox"));
+   fireEvent.click(screen.getByRole("button", { name: /Pay.*advance/ }));
+ }
+ beforeEach(() => {
+-  vi.clearAllMocks(); vi.mocked(restorePayment).mockReturnValue(null); vi.mocked(loadRazorpay).mockResolvedValue();
++  vi.clearAllMocks(); vi.mocked(restorePayment).mockReturnValue(null);vi.mocked(restoreSharedPayment).mockReturnValue(null); vi.mocked(loadRazorpay).mockResolvedValue();
+   window.Razorpay = class {
+     constructor(private options: ConstructorParameters<NonNullable<typeof window.Razorpay>>[0]) {}
+     open() { this.options.handler({ razorpay_order_id: session.orderId, razorpay_payment_id: "pay_example", razorpay_signature: "test-signature" }); }
+@@ -29,6 +31,23 @@ beforeEach(() => {
+ afterEach(() => { cleanup(); delete window.Razorpay; });
+ 
+ describe("package checkout", () => {
++  it.each([['starter','₹5,000.00'],['business','₹7,500.00']])("shows the enabled %s advance and refuses incomplete details", async (selected, amount) => {
++    show(true, selected);
++    const button = await screen.findByRole('button', {name:`Pay ${amount} advance`});
++    expect(screen.getByLabelText('Full name')).toBeTruthy();
++    fireEvent.click(button);
++    await screen.findByText('Enter your full name');
++    expect(paymentRequest).not.toHaveBeenCalled();
++    expect(loadRazorpay).not.toHaveBeenCalled();
++  });
++  it.each(['starter','business'])("keeps the disabled %s form and payment loader absent", async selected => {
++    show(false, selected);
++    await screen.findByText('Online payments are coming soon');
++    expect(screen.queryByRole('button', {name:/Pay.*advance/})).toBeNull();
++    expect(screen.queryByLabelText('Full name')).toBeNull();
++    expect(paymentRequest).not.toHaveBeenCalled();
++    expect(loadRazorpay).not.toHaveBeenCalled();
++  });
+   it("requests a backend-verified retry without opening checkout automatically", async () => {
+     vi.mocked(restorePayment).mockReturnValue(session);
+     vi.mocked(paymentRequest).mockResolvedValueOnce({status:"pending"}).mockResolvedValueOnce({...session,orderId:"order_fresh"});
+@@ -51,12 +70,49 @@ describe("package checkout", () => {
+     expect(paymentRequest).toHaveBeenNthCalledWith(3, "verify", expect.objectContaining({ token: session.token, razorpay_payment_id: "pay_example" }));
+     expect(screen.queryByRole("button", { name: /Continue checkout/ })).toBeNull();
+   });
++  it("reopens the same recovered order after the checkout tab was closed without paying",async()=>{
++    const opened:string[]=[];
++    window.Razorpay=class {constructor(private options:ConstructorParameters<NonNullable<typeof window.Razorpay>>[0]){}open(){opened.push(this.options.order_id);this.options.modal.ondismiss();}on(){}};
++    vi.mocked(paymentRequest).mockResolvedValueOnce(session).mockResolvedValueOnce({status:"pending",checkout});
++    show();await screen.findByLabelText("Full name");await fillAndSubmit();await screen.findByText(/Checkout closed/);cleanup();
++    // A fresh tab has no stored session. The server returns the earlier order.
++    vi.mocked(restorePayment).mockReturnValue(null);vi.mocked(paymentRequest).mockResolvedValueOnce(session).mockResolvedValueOnce({status:"pending",checkout});
++    show();await screen.findByLabelText("Full name");await fillAndSubmit();await screen.findByText(/Checkout closed/);
++    expect(opened).toEqual([session.orderId,session.orderId]);expect(paymentRequest).not.toHaveBeenCalledWith("retry",expect.anything());expect(screen.queryByText("Test payment verified")).toBeNull();
++  });
+   it("recovers paid orders on refresh without creating another order", async () => {
+     vi.mocked(restorePayment).mockReturnValue(session);
+     vi.mocked(paymentRequest).mockResolvedValueOnce({ status: "paid", paymentId: "pay_recovered" });
+     show(); expect(await screen.findByText("Test payment verified")).toBeTruthy();
+     expect(paymentRequest).toHaveBeenCalledTimes(1); expect(paymentRequest).toHaveBeenCalledWith("status", { token: session.token });
+   });
++  it("checks an owner-shared original checkout link before offering continuation",async()=>{
++    window.history.replaceState(null,"","/pay?package=starter#resume=fixture&section=checkout");
++    vi.mocked(restoreSharedPayment).mockReturnValue(session);vi.mocked(paymentRequest).mockResolvedValueOnce({status:"pending"});show();
++    expect(await screen.findByRole("button",{name:"Continue checkout"})).toBeTruthy();expect(paymentRequest).toHaveBeenCalledWith("status",{token:session.token});expect(paymentRequest).toHaveBeenCalledTimes(1);expect(loadRazorpay).not.toHaveBeenCalled();expect(savePayment).toHaveBeenCalledWith(session);
++    expect(window.location.hash).toBe("#section=checkout");
++    window.history.replaceState(null,"","/");
++  });
++  it("collects the project brief, timeline and existing URL along with the reviewed pricing version",async()=>{
++    const version="00000000-0000-4000-8000-000000000001";
++    vi.mocked(paymentRequest).mockResolvedValueOnce(session).mockResolvedValueOnce({status:"pending"});
++    show(true,"starter",{pricingVersion:version});await screen.findByLabelText("Full name");
++    fireEvent.change(screen.getByLabelText("Preferred timeline"),{target:{value:"Within 2–4 weeks"}});
++    fireEvent.change(screen.getByLabelText("Existing website (optional)"),{target:{value:"https://example.test"}});
++    await fillAndSubmit();await waitFor(()=>expect(paymentRequest).toHaveBeenCalledWith("order",expect.objectContaining({requirements:"A landing page with our services, enquiry form and contact details.",timeline:"Within 2–4 weeks",website_url:"https://example.test",pricingVersion:version})));
++  });
++  it("requires a meaningful project brief before starting checkout",async()=>{
++    show();await screen.findByLabelText("Full name");await fillAndSubmit("short");
++    expect(await screen.findByText("Describe your project in at least 20 characters")).toBeTruthy();expect(paymentRequest).not.toHaveBeenCalled();expect(loadRazorpay).not.toHaveBeenCalled();
++  });
++  it("blocks checkout and fabricated prices when the catalog is unavailable",async()=>{
++    show(true,"starter",{pricingAvailable:false});expect(await screen.findByRole("alert")).toBeTruthy();expect(screen.queryByLabelText("Full name")).toBeNull();expect(screen.queryByText("₹5,000.00")).toBeNull();expect(paymentRequest).not.toHaveBeenCalled();
++  });
++  it("does not label an older saved order with a newly edited advance",async()=>{
++    vi.mocked(restorePayment).mockReturnValue(session);vi.mocked(paymentRequest).mockResolvedValue({status:"pending"});
++    show(true,"starter",{packages:{...PAYMENT_PACKAGES,starter:{...PAYMENT_PACKAGES.starter,advance:420025}}});
++    expect(await screen.findByText(/Your saved Starter order keeps its original advance/)).toBeTruthy();expect(screen.queryByText("₹4,200.25")).toBeNull();expect(paymentRequest).toHaveBeenCalledWith("status",{token:session.token});
++  });
+   it("keeps uncertain payment recoverable without claiming success", async () => {
+     vi.mocked(paymentRequest).mockResolvedValueOnce(session).mockResolvedValueOnce({ status: "pending", checkout }).mockRejectedValueOnce(new Error("offline"));
+     show(); await screen.findByLabelText("Full name"); await fillAndSubmit();
+diff --git a/app/lib/razorpay.test.ts b/app/lib/razorpay.test.ts
+index dadfbac..b8e19fe 100644
+--- a/app/lib/razorpay.test.ts
++++ b/app/lib/razorpay.test.ts
+@@ -2,12 +2,14 @@
+ import { createHmac } from "node:crypto";
+ import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+ import { PAYMENT_PACKAGES, createPaymentToken, paymentAction, paymentsEnabled, paymentWebhook } from "../../supabase/functions/_shared/razorpay";
++import {PaymentConflictError} from "../../supabase/functions/_shared/payment-conflict";
+ 
+ const ledger = vi.hoisted(() => ({ reserve: vi.fn(), attach: vi.fn(), find: vi.fn(), settle: vi.fn(), hasEvent: vi.fn(), completeWebhook: vi.fn() }));
+ vi.mock("../../supabase/functions/_shared/payment-store.ts", () => ({ paymentStore: () => ledger }));
++vi.mock("../../supabase/functions/_shared/package-pricing.ts",async()=>({pricingStore:()=>({current:async()=>({version:"00000000-0000-4000-8000-000000000000",packages:(await import("../../supabase/functions/_shared/catalog")).PAYMENT_PACKAGES})}),pricingAdmin:vi.fn()}));
+ const env = { SUPABASE_URL: "https://example.supabase.co", SUPABASE_SERVICE_ROLE_KEY: "fake-service-role", RAZORPAY_WEBHOOK_SECRET: "fake-webhook-secret", RAZORPAY_ENABLED: "true", RAZORPAY_KEY_ID: "rzp_test_example", RAZORPAY_KEY_SECRET: "test-secret-never-real", PAYMENT_RATE_LIMITER: { limit: vi.fn(async () => ({ success: true })) } };
+ const context = { env };
+-const details = { requestId: "00000000-0000-4000-8000-000000000001", package: "starter", name: "Test Client", email: "test@example.com", phone: "9876543210", business: "Test Project", accepted: true };
++const details = { requestId: "00000000-0000-4000-8000-000000000001", package: "starter", name: "Test Client", email: "test@example.com", phone: "9876543210", business: "Test Project",requirements:"A landing page showing our services and contact form.",timeline:"Flexible", accepted: true };
+ const order = { id: "order_123", amount: 500000, currency: "INR", status: "created", notes: { package: "starter" } };
+ const payment = { id: "pay_123", order_id: order.id, amount: order.amount, currency: "INR", status: "captured", amount_refunded: 0 };
+ const mockFetch = vi.fn();
+@@ -22,7 +24,30 @@ beforeEach(() => {
+  ledger.find.mockReset().mockResolvedValue({ order_id: order.id, amount: order.amount, package: "starter", key_id: env.RAZORPAY_KEY_ID, created_at:new Date().toISOString() }); vi.stubGlobal("fetch", mockFetch); mockFetch.mockReset(); env.PAYMENT_RATE_LIMITER.limit.mockResolvedValue({ success: true }); });
+ afterEach(() => vi.unstubAllGlobals());
+ 
++it("returns a clear 409 for a duplicate checkout without creating another provider order",async()=>{
++ ledger.reserve.mockRejectedValueOnce(new PaymentConflictError("existing_booking"));const response=await paymentAction(req(details),context,"order");expect(response.status).toBe(409);expect(await response.json()).toEqual({error:expect.stringContaining("original checkout tab"),code:"checkout_conflict"});expect(mockFetch).not.toHaveBeenCalled();expect(ledger.attach).not.toHaveBeenCalled();
++});
++it("recovers an abandoned checkout in another tab using its original order and fresh checkout checks",async()=>{
++ const earlier={request_id:"00000000-0000-4000-8000-000000000002",order_id:order.id,amount:order.amount,key_id:env.RAZORPAY_KEY_ID,created_at:new Date().toISOString()};ledger.reserve.mockResolvedValueOnce({created:false,record:earlier});
++ const resumed=await paymentAction(req(details),context,"order");const session=await resumed.json();expect(session.orderId).toBe(order.id);expect(mockFetch).not.toHaveBeenCalled();
++ mockFetch.mockResolvedValueOnce(response(order)).mockResolvedValueOnce(response({items:[]}));const checked=await paymentAction(req({token:session.token}),context,"checkout");expect((await checked.json()).checkout.orderId).toBe(order.id);expect(mockFetch.mock.calls.every(([,options])=>options.method==="GET")).toBe(true);expect(ledger.attach).not.toHaveBeenCalled();
++});
++
+ describe("Razorpay package advances", () => {
++  it.each([['starter',500000],['business',750000]] as const)("verifies the %s immutable paise amount and rejects wrong currency", async (selected, amount) => {
++    const savedOrder = {...order, amount, notes:{package:selected}};
++    const captured = {...payment, amount};
++    ledger.find.mockResolvedValue({order_id:order.id,amount,package:selected,key_id:env.RAZORPAY_KEY_ID,created_at:new Date().toISOString()});
++    const signed = await createPaymentToken({orderId:order.id,amount,package:selected,keyId:env.RAZORPAY_KEY_ID,issuedAt:Date.now()},env.RAZORPAY_KEY_SECRET);
++    const body = {...await callback(),token:signed};
++    mockFetch.mockResolvedValueOnce(response(savedOrder)).mockResolvedValueOnce(response(captured));
++    expect(await (await paymentAction(req(body),context,'verify')).json()).toEqual({status:'paid',paymentId:payment.id});
++    expect(ledger.settle).toHaveBeenCalledWith(order.id,payment.id,'paid',0);
++    ledger.settle.mockClear();
++    mockFetch.mockResolvedValueOnce(response(savedOrder)).mockResolvedValueOnce(response({...captured,currency:'USD'}));
++    expect((await paymentAction(req(body),context,'verify')).status).toBe(403);
++    expect(ledger.settle).not.toHaveBeenCalled();
++  });
+   it("keeps payments disabled without explicit configuration", async () => {
+     expect(paymentsEnabled({})).toBe(false);
+     expect(paymentsEnabled({ ...env, RAZORPAY_ENABLED: "false" })).toBe(false);
+@@ -37,7 +62,7 @@ describe("Razorpay package advances", () => {
+     expect(data).not.toHaveProperty("amount"); expect(data).not.toHaveProperty("keyId");
+     expect(data).not.toHaveProperty("RAZORPAY_KEY_SECRET");
+     const sent = JSON.parse(mockFetch.mock.calls[0][1].body);
+-    expect(sent.amount).toBe(PAYMENT_PACKAGES.starter.advance); expect(sent.partial_payment).toBe(false); expect(sent.notes.business).toBe(details.business); expect(sent.notes.terms_version).toBe("2026-10-10");
++    expect(sent.amount).toBe(PAYMENT_PACKAGES.starter.advance); expect(sent.partial_payment).toBe(false); expect(sent.notes.business).toBe(details.business); expect(sent.notes.terms_version).toBe("2026-10-14");
+   });
+   it("uses the Business advance of 750000 paise", async () => {
+     mockFetch.mockResolvedValueOnce(response({ ...order, amount: 750000, notes: { package: "business" } }));

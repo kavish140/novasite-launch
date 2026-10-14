@@ -1,0 +1,25 @@
+diff --git a/app/lib/razorpay.test.ts b/app/lib/razorpay.test.ts
+index dadfbac..e088b21 100644
+--- a/app/lib/razorpay.test.ts
++++ b/app/lib/razorpay.test.ts
+@@ -23,6 +23,20 @@ beforeEach(() => {
+ afterEach(() => vi.unstubAllGlobals());
+ 
+ describe("Razorpay package advances", () => {
++  it.each([['starter',500000],['business',750000]] as const)("verifies the %s immutable paise amount and rejects wrong currency", async (selected, amount) => {
++    const savedOrder = {...order, amount, notes:{package:selected}};
++    const captured = {...payment, amount};
++    ledger.find.mockResolvedValue({order_id:order.id,amount,package:selected,key_id:env.RAZORPAY_KEY_ID,created_at:new Date().toISOString()});
++    const signed = await createPaymentToken({orderId:order.id,amount,package:selected,keyId:env.RAZORPAY_KEY_ID,issuedAt:Date.now()},env.RAZORPAY_KEY_SECRET);
++    const body = {...await callback(),token:signed};
++    mockFetch.mockResolvedValueOnce(response(savedOrder)).mockResolvedValueOnce(response(captured));
++    expect(await (await paymentAction(req(body),context,'verify')).json()).toEqual({status:'paid',paymentId:payment.id});
++    expect(ledger.settle).toHaveBeenCalledWith(order.id,payment.id,'paid',0);
++    ledger.settle.mockClear();
++    mockFetch.mockResolvedValueOnce(response(savedOrder)).mockResolvedValueOnce(response({...captured,currency:'USD'}));
++    expect((await paymentAction(req(body),context,'verify')).status).toBe(403);
++    expect(ledger.settle).not.toHaveBeenCalled();
++  });
+   it("keeps payments disabled without explicit configuration", async () => {
+     expect(paymentsEnabled({})).toBe(false);
+     expect(paymentsEnabled({ ...env, RAZORPAY_ENABLED: "false" })).toBe(false);

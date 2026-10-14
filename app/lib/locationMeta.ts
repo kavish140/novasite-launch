@@ -14,7 +14,7 @@ export function buildLocationMeta({ locationName, keywords = [] }: LocationMetaO
 
   return buildMeta({
     title: `Website Designer in ${locationName}, Mumbai | 7-Day Delivery | SiteNova`,
-    description: `Looking for a website designer in ${locationName}? SiteNova builds fast, SEO-ready websites for businesses in ${locationName} — delivered in 7–14 days, from ₹10,000. Free audit included.`,
+    description: `Looking for a website designer in ${locationName}? SiteNova builds fast, SEO-ready websites for businesses in ${locationName} — delivered in 7–14 days, with pricing agreed upfront. Free audit included.`,
     canonicalPath: `/location/${slug}`,
     keywords,
   });
@@ -77,7 +77,7 @@ export function buildLocationJsonLd(locationName: string) {
           name: `How much does a website cost in ${locationName}?`,
           acceptedAnswer: {
             "@type": "Answer",
-            text: `SiteNova offers professional website design starting from ₹10,000 for businesses in ${locationName}. Final pricing depends on pages, features, and complexity.`,
+            text: `See SiteNova's current Starter and Business packages at https://sitenova.dev/pricing for businesses in ${locationName}. Final pricing depends on pages, features, and complexity.`,
           },
         },
         {

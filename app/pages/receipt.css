@@ -1,0 +1,6 @@
+@media print {
+  .receipt-page { background: white !important; color: #0f172a !important; padding: 0 !important; min-height: auto !important; }
+  .receipt-page header { color: #0f172a; }
+  .receipt-paper { border: 1px solid #e2e8f0; box-shadow: none !important; break-inside: avoid; }
+  .receipt-actions, .receipt-privacy { display: none !important; }
+}

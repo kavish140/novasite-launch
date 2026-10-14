@@ -532,7 +532,7 @@ export default function AdminDashboard() {
       />
     ),
     topics: <TopicsTab />,
-    settings: <SettingsTab />,
+    settings: <SettingsTab isPaymentAdmin={paymentHealth.isAdmin} />,
     activity_log: <ActivityLogTab />,
   };
 

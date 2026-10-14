@@ -17,7 +17,7 @@ export const faqs = [
   {
     question: "How much does it cost to build a website in Mumbai?",
     answer:
-      "At SiteNova, professional website design services start from ₹10,000 for a standard landing page. A multi-page business website typically costs between ₹15,000 and ₹35,000 depending on the number of pages, custom features, and complexity required. Custom web applications start from ₹30,000. All pricing at SiteNova is transparent and all-inclusive — there are no hidden platform fees, plugin subscription costs, or recurring page-builder charges. We also offer SEO and speed optimisation audits for existing websites starting from ₹8,000.",
+      "See our pricing page for current Starter and Business starting prices and advance amounts. Final pricing depends on the number of pages, custom features and complexity. Custom web applications and specialist services are quoted separately. We agree the scope and costs upfront; no hidden platform or page-builder charges.",
   },
   {
     question: "What technologies does SiteNova use to build websites?",
@@ -67,7 +67,7 @@ export const faqs = [
   {
     question: "Do I need a budget approved before contacting SiteNova?",
     answer:
-      "Not at all. You are welcome to contact SiteNova at any stage — even if you are still researching options. However, having a rough budget in mind helps us recommend the right package. Business websites at SiteNova start from ₹15,000 for standard multi-page sites. If you have a budget of ₹15,000–₹35,000, we can build a fully custom, SEO-optimised site with all the features your business needs. For larger or more complex projects, we provide a custom quote based on your exact requirements.",
+      "Not at all. Contact SiteNova at any stage, even if you are researching options. A rough budget helps us recommend the right package. Our pricing page shows the current Business starting price; the exact features and total are agreed in your proposal. Larger or more complex projects receive a custom quote.",
   },
   {
     question: "Does SiteNova offer ongoing website maintenance and support?",

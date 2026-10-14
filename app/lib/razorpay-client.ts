@@ -30,15 +30,18 @@ export async function paymentRequest<T>(action: "order" | "retry" | "status" | "
   if(action==="retry") {
     const input=body as {token:string;orderId:string};
     const key=`sitenova-payment-retry-${input.orderId}`;
-    let requestId=sessionStorage.getItem(key);
-    if(!requestId){requestId=crypto.randomUUID();sessionStorage.setItem(key,requestId);}
+    let requestId=readRecoveryValue(key);
+    if(!requestId){requestId=crypto.randomUUID();}
+    writeRecoveryValue(key,requestId);
     body={token:input.token,requestId};
   }
   if (action === "order") {
     const details = body as Record<string, unknown>;
     const storageKey = `sitenova-payment-request-${details.package}`;
-    let requestId = sessionStorage.getItem(storageKey);
-    if (!requestId) { requestId = crypto.randomUUID(); sessionStorage.setItem(storageKey,requestId); }
+    let requestId = readRecoveryValue(storageKey);
+    if (!requestId) requestId = crypto.randomUUID();
+    // Save before POST so a tab closing during the response cannot lose the UUID.
+    writeRecoveryValue(storageKey,requestId);
     body = { ...details, requestId };
   }
   const response = await fetch(`/api/payments/${action}`, {
@@ -51,10 +54,23 @@ export async function paymentRequest<T>(action: "order" | "retry" | "status" | "
 }
 export function restorePayment(packageId: string): PaymentSession | null {
   try {
-    const session = JSON.parse(sessionStorage.getItem(`sitenova-payment-${packageId}`) ?? "null");
-    return session?.package === packageId && typeof session.token === "string" && typeof session.orderId === "string" ? session : null;
+    const session = JSON.parse(readRecoveryValue(`sitenova-payment-${packageId}`) ?? "null");
+    return session?.package === packageId && typeof session.token === "string" && session.token.length<=4096 && typeof session.orderId === "string" && /^order_[A-Za-z0-9]+$/.test(session.orderId) ? {package:session.package,token:session.token,orderId:session.orderId} : null;
   } catch { return null; }
 }
 export function savePayment(session: PaymentSession) {
-  try { sessionStorage.setItem(`sitenova-payment-${session.package}`, JSON.stringify(session)); } catch { /* In-memory session still works. */ }
+  writeRecoveryValue(`sitenova-payment-${session.package}`,JSON.stringify({package:session.package,orderId:session.orderId,token:session.token}));
+}
+function readRecoveryValue(key:string):string|null{
+  try{const value=sessionStorage.getItem(key);if(value)return value;}catch{/* Fall back to durable recovery. */}
+  try{return localStorage.getItem(key);}catch{return null;}
+}
+function writeRecoveryValue(key:string,value:string){
+  try{localStorage.setItem(key,value);}catch{/* Do not discard the current session. */}
+  try{sessionStorage.setItem(key,value);}catch{/* In-memory checkout remains available. */}
+}
+// Owner-shared recovery capabilities use fragments, never query parameters.
+// Reading claims here gives routing information only; the server verifies HMAC/state.
+export function restoreSharedPayment(packageId:string):PaymentSession|null{
+  try{const token=new URLSearchParams(window.location.hash.slice(1)).get("resume");if(!token||token.length>4096)return null;const [payload,signature,...rest]=token.split(".");if(rest.length||!/^[a-f0-9]{64}$/.test(signature))return null;const claims=JSON.parse(atob(payload));if(claims.package!==packageId||!/^order_[A-Za-z0-9]+$/.test(claims.orderId))return null;return {token,orderId:claims.orderId,package:claims.package};}catch{return null;}
 }

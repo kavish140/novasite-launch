@@ -6,7 +6,7 @@ export function meta() {
     title:
       "Website Cost Calculator India 2026 | How Much Does a Website Cost in Mumbai?",
     description:
-      "Use our free website cost calculator to estimate how much a website costs in India in 2026. Prices from ₹10,000 for Mumbai small businesses. Instant estimate, no commitment.",
+      "Use our free website cost calculator to estimate how much a website costs in India in 2026. Current package starting prices for Mumbai small businesses. Instant estimate, no commitment.",
     canonicalPath: "/website-cost-calculator",
     keywords: [
       "website cost calculator India",
@@ -22,4 +22,3 @@ export function meta() {
     ],
   });
 }
-

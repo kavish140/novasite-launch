@@ -7,7 +7,12 @@ import {
   Scripts,
   ScrollRestoration,
   useLocation,
+  useLoaderData,
+  type LoaderFunctionArgs,
 } from "react-router";
+import {paymentConfiguration} from "@/lib/razorpay.server";
+import {PAYMENT_PACKAGES} from "../supabase/functions/_shared/catalog";
+import {PackagePricingContext,type PublicPricing} from "@/lib/package-pricing";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,9 +28,16 @@ const BookCallWidget = lazy(() => import("@/components/BookCallWidget"));
 const ExitIntentPopup = lazy(() => import("@/components/ExitIntentPopup"));
 const AnnouncementBanner = lazy(() => import("@/components/AnnouncementBanner"));
 
+export async function loader({request,context}:LoaderFunctionArgs){
+ const path=new URL(request.url).pathname;
+ if(path.startsWith("/admin")||path.startsWith("/api/")||["/pay","/receipt","/project"].includes(path))return {pricing:{packages:PAYMENT_PACKAGES,available:false}};
+ const config=await paymentConfiguration(context);return {pricing:{packages:config.packages,available:config.pricingAvailable,enabled:config.enabled}};
+}
+export function headers(){return {"Cache-Control":"no-store"};}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const pathname = useLocation().pathname;
-  const paymentPage = pathname === "/pay" || pathname === "/receipt" || pathname.startsWith("/admin");
+  const paymentPage = pathname === "/pay" || pathname === "/receipt" || pathname === "/project" || pathname.startsWith("/admin");
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -198,7 +210,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     "Kurla", "Dadar", "Andheri", "Lower Parel",
                     "Mahalakshmi", "Pedder Road",
                   ],
-                  priceRange: "Rs. 10,000+",
                   telephone: "+91-9326060621",
                   email: "kavishganatra5@gmail.com",
                   openingHours: "Mo-Sa 10:00-19:00",
@@ -229,7 +240,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     "Mahalakshmi", "Pedder Road",
                   ],
                   serviceType: "Website design and web development",
-                  priceRange: "Rs. 10,000+",
                   telephone: "+91-9326060621",
                   email: "kavishganatra5@gmail.com",
                 },
@@ -259,6 +269,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const {pricing}=useLoaderData<{pricing:PublicPricing}>();
   return (
     <ThemeProvider
       attribute="class"
@@ -278,7 +289,7 @@ export default function App() {
                 <AnnouncementBanner />
               </ClientOnly>
             </Suspense>
-            <BookingProvider><Outlet /></BookingProvider>
+            <PackagePricingContext.Provider value={pricing}><BookingProvider><Outlet /></BookingProvider></PackagePricingContext.Provider>
             <Suspense fallback={null}>
               <ClientOnly>
                 <ScrollProgress />

@@ -1,13 +1,13 @@
+import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
 
-hydrateRoot(
-  document,
-  <HydratedRouter />
-);
+startTransition(() => {
+  hydrateRoot(document, <HydratedRouter />);
+});
 
 // Sentry — delayed init (preserves existing pattern from main.tsx)
-if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && !window.location.pathname.startsWith("/admin")) {
+if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && window.location.pathname !== "/project" && !window.location.pathname.startsWith("/admin")) {
   setTimeout(() => {
     import("@sentry/react").then((Sentry) => {
       Sentry.init({

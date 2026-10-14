@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { Link } from "react-router";
 import { Video, Clock, MessageCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -8,6 +9,8 @@ import { WHATSAPP_URL, SITE_OWNER } from "@/lib/constants";
 import { trackEvent, trackWhatsAppClick } from "@/lib/analytics";
 
 export default function BookACall() {
+  const {starterPrice,businessPrice}=usePackagePricing();
+
   const settings = useBookingSettings();
   const available = bookingAvailable(settings);
   return (
@@ -25,8 +28,7 @@ export default function BookACall() {
             Let's discuss your business goals, website requirements, budget, and
             the next steps for your project.
           </p>
-          <p className="mt-4 font-semibold">
-            Landing pages from ₹10,000 · Business websites from ₹15,000
+          <p className="mt-4 font-semibold">Landing pages from {starterPrice} · Business websites from {businessPrice}
           </p>
           <div className="flex flex-wrap justify-center gap-5 mt-5 text-sm text-muted-foreground">
             <span className="inline-flex gap-2">

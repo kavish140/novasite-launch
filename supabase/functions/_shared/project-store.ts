@@ -1,0 +1,28 @@
+import {createClient} from "@supabase/supabase-js";
+import type {PaymentEnv} from "./razorpay.ts";
+export type Project={id:string;advance_request:string;share_id:string;link_enabled:boolean;title:string;stage:string;customer_update:string;total_amount:number|null;balance_enabled:boolean;updated_at:string};
+export type Balance={id:string;project_id:string;amount:number;key_id:string;order_id:string|null;payment_id:string|null;status:string;refunded_amount:number;created_at:string;paid_at:string|null;acknowledged_at?:string|null;review_required?:boolean;active?:boolean;retry_parent?:string|null};
+export class ProjectStoreError extends Error{constructor(message:string,public status:number){super(message);}}
+const conflicts:Record<string,string>={project_already_exists:"This advance already has a project. Open that project to edit it",verified_advance_required:"A verified advance is required",total_below_advance:"The final total cannot be below the advance",balance_amount_locked:"The final total is locked because balance checkout has already started",balance_not_released:"SiteNova has not released this balance for payment",advance_needs_review:"The advance needs owner review",no_balance_due:"No remaining balance is due",balance_conflict:"Balance details need owner review",project_changed_reload:"Project approval, update or private link changed; reload before retrying",balance_not_authorized:"Balance checkout is no longer available; check status before retrying"};
+export function projectStore(env:PaymentEnv){
+ const db=createClient(env.SUPABASE_URL!,env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false,autoRefreshToken:false}});
+ function checked<T>(result:{data:T;error:unknown}){if(result.error){const message=(result.error as {message?:string}).message;if(message&&Object.prototype.hasOwnProperty.call(conflicts,message))throw new ProjectStoreError(conflicts[message],409);throw new ProjectStoreError("Project storage unavailable",503);}return result.data;}
+ return {
+  async project(id:string):Promise<Project|null>{return checked(await db.from("client_projects").select().eq("id",id).maybeSingle());},
+  async list(offset=0,search=""){let query=db.from("client_projects").select().order("updated_at",{ascending:false}).order("id");if(search)query=query.ilike("title",`%${search.replace(/[\\%_]/g,"\\$&")}%`);return checked(await query.range(offset,offset+25)) as Project[];},
+  async balance(project:string):Promise<Balance|null>{return checked(await db.from("project_balance_payments").select().eq("project_id",project).eq("active",true).maybeSingle());},
+  async balances(project:string):Promise<Balance[]>{return checked(await db.from("project_balance_payments").select().eq("project_id",project).order("created_at").limit(11));},
+  async byOrder(order:string):Promise<Balance|null>{return checked(await db.from("project_balance_payments").select().eq("order_id",order).maybeSingle());},
+  async byPayment(payment:string):Promise<Balance|null>{return checked(await db.from("project_balance_payments").select().eq("payment_id",payment).maybeSingle());},
+  async save(input:{requestId:string;title:string;stage:string;update:string;total:number|null;enabled:boolean;linkEnabled:boolean;rotate:boolean;projectId:string|null;version:string|null}):Promise<Project>{return checked(await db.rpc("save_client_project",{p_request:input.requestId,p_title:input.title,p_stage:input.stage,p_update:input.update,p_total:input.total,p_enabled:input.enabled,p_link:input.linkEnabled,p_rotate:input.rotate,p_existing:input.projectId,p_version:input.version}));},
+  async reserve(id:string,key:string,share:string,total:number|null,retry:string|null=null):Promise<{created:boolean;record:Balance}>{return checked(await db.rpc("reserve_project_balance",{p_project:id,p_key:key,p_share:share,p_total:total,p_retry:retry}));},
+  async authorize(id:string,share:string,key:string,balance:string){return checked(await db.rpc("authorize_project_balance",{p_project:id,p_share:share,p_key:key,p_balance:balance}));},
+  async attach(id:string,order:string){checked(await db.from("project_balance_payments").update({order_id:order,status:"pending"}).eq("id",id).is("order_id",null).select("id").single());},
+  async record(balance:Balance,state:string,payment:string|null,refunded:number,source:string,event:string|null=null,error:string|null=null){return checked(await db.rpc("record_project_balance",{p_order:balance.order_id,p_payment:payment,p_status:state,p_refunded:refunded,p_source:source,p_event:event,p_error:error}));},
+  async history(id:string){return checked(await db.from("project_payment_history").select("balance_id,order_id,source,old_state,new_state,error,created_at").eq("project_id",id).order("created_at",{ascending:false}).limit(30));},
+  async acknowledge(id:string,balance:string){checked(await db.from("project_balance_payments").update({acknowledged_at:new Date().toISOString()}).eq("project_id",id).eq("id",balance).in("status",["paid","refunded"]).select("id").single());},
+  async reviewCount(){const before=new Date(Date.now()-86400000).toISOString();const result=await db.from("project_balance_payments").select("id",{head:true,count:"exact"}).or(`review_required.eq.true,status.in.(reserved,needs_reconciliation,refunded),and(status.eq.pending,created_at.lt.${before}),and(status.eq.paid,acknowledged_at.is.null),and(active.eq.false,status.in.(paid,refunded))`);if(result.error)throw new Error("Project review count unavailable");return result.count??0;},
+  async due(checkpoint:string):Promise<Balance[]>{return checked(await db.rpc("due_project_balances",{p_checkpoint:checkpoint}));},
+  async checkpoint():Promise<string>{return checked(await db.rpc("project_reconciliation_clock"));},
+ };
+}

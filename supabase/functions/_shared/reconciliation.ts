@@ -3,6 +3,7 @@ import { paymentStore, type PaymentRecord } from "./payment-store.ts";
 import { fetchStoredPaymentStatus, paymentJson, type PaymentEnv } from "./razorpay.ts";
 import {syncUnattachedOrders} from "./investigation-sync.ts";
 import {recoverRecentPaid,syncProviderDisputes} from "./payment-recovery.ts";
+import {recoverProjectBalances,type ProjectEnv} from "./project-portal.ts";
 
 export async function reconcileOne(env: PaymentEnv, runId: string, record: PaymentRecord) {
   const store=paymentStore(env);
@@ -16,7 +17,7 @@ export async function reconcileOne(env: PaymentEnv, runId: string, record: Payme
     return {state:"needs_reconciliation",error:true};
   }
 }
-export async function handleReconciliation(request: Request, env: PaymentEnv) {
+export async function handleReconciliation(request: Request, env: ProjectEnv) {
   if(request.method!=="POST") return paymentJson({error:"Method not allowed"},405);
   const token=request.headers.get("x-payment-scheduler-token")??"";
   if(!/^[a-f0-9]{64}$/.test(token)) return paymentJson({error:"Unauthorized"},401);
@@ -44,6 +45,7 @@ export async function handleReconciliation(request: Request, env: PaymentEnv) {
     const recovered=await recoverRecentPaid(env,runId,deadline);checked+=recovered.checked;errors+=recovered.errors;
     await syncUnattachedOrders(env,deadline);
     await syncProviderDisputes(env,deadline);
+    if(env.PROJECT_PORTAL_ENABLED==="true"){const balances=await recoverProjectBalances(env,deadline);checked+=balances.checked;errors+=balances.errors;}
     await store.finishRun(runId,checked,errors,errors?"One or more orders need owner review.":null);
     return paymentJson({checked,errors});
   } catch {

@@ -18,7 +18,7 @@ const SERVICE_LINKS = [
   },
   {
     label: "Website Cost in Mumbai",
-    description: "Transparent pricing from ₹10,000. Get an instant quote tailored to your scope.",
+    description: "View current package pricing and get a quote tailored to your scope.",
     href: "/pricing",
     tag: "Pricing",
   },

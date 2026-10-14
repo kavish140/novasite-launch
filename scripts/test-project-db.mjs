@@ -1,0 +1,113 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const db=new PGlite();await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
+for(const file of ['20261010170200_razorpay_backend_payments.sql','20261011085842_payment_webhook_events.sql','20261013122054_private_project_portal.sql'])await db.exec(await readFile(`supabase/migrations/${file}`,'utf8'));
+const request='00000000-0000-4000-8000-000000000001';
+await db.query("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id) values($1,'h','d','starter',500000,'rzp_test_fake','{}','2026-10-10','order_advance')",[request]);
+for(const role of ['anon','authenticated']){
+ await db.exec(`set role ${role}`);
+ for(const table of ['client_projects','project_balance_payments','project_payment_history']){await assert.rejects(db.query(`select * from ${table}`),/permission denied/);await assert.rejects(db.query(`delete from ${table}`),/permission denied/);}
+ await assert.rejects(db.query("select save_client_project($1,'Client website','design','Hello',1000000,true,true,false)",[request]),/permission denied/);
+ await assert.rejects(db.query("select reserve_project_balance($1,'fake',$1,1000000)",[request]),/permission denied/);
+ await assert.rejects(db.query("select authorize_project_balance($1,$1,'fake')",[request]),/permission denied/);
+ await assert.rejects(db.query("select * from due_project_balances(now())"),/permission denied/);
+ await assert.rejects(db.query("select project_reconciliation_clock()"),/permission denied/);
+ await assert.rejects(db.query("select record_project_balance('order_fake','pay_fake','paid',0,'customer')"),/permission denied/);
+ await db.exec('reset role');
+}
+await db.exec('set role service_role');
+for(const table of ['client_projects','project_balance_payments','project_payment_history'])await assert.rejects(db.query(`delete from ${table}`),/permission denied/);
+assert.equal((await db.query("select count(*)::int as n from pg_indexes where indexname in ('project_recent','project_balance_project_recent','project_history_balance')")).rows[0].n,3);
+let existingId=null;
+const save=async(total=1000000,enabled=true,rotate=false)=>{const version=existingId?(await db.query('select updated_at from client_projects where id=$1',[existingId])).rows[0]?.updated_at:null;return db.query("select save_client_project($1,'Client website','design','Hello',$2,$3,true,$4,$5,$6) as p",[request,total,enabled,rotate,existingId,version]);};
+await assert.rejects(save(),/verified_advance_required/);
+await db.query("select record_package_payment('order_advance','pay_advance','paid',0)");
+await assert.rejects(save(100),/total_below_advance/);
+const project=(await save(1000000,false)).rows[0].p;
+existingId=project.id;
+await assert.rejects(db.query("select save_client_project($1,'Overwrite website','queued','',1000000,false,true,false)",[request]),/project_already_exists/);
+await assert.rejects(db.query("select save_client_project($1,'Stale website','queued','',1000000,false,true,false,$2,'2000-01-01')",[request,existingId]),/project_changed_reload/);
+assert.equal((await db.query('select stage from client_projects')).rows[0].stage,'design');
+let shareId=project.share_id;
+await assert.rejects(db.query('select reserve_project_balance($1,$2,$3,$4)',[project.id,'rzp_test_fake',shareId,1000000]),/balance_not_released/);
+await save();
+const reserve=()=>db.query('select reserve_project_balance($1,$2,$3,$4) as reserved',[project.id,'rzp_test_fake',shareId,1000000]);
+await save(1100000);await assert.rejects(reserve(),/project_changed_reload/);assert.equal((await db.query('select count(*)::int as n from project_balance_payments')).rows[0].n,0);await save();
+const first=(await reserve()).rows[0].reserved;assert.equal(first.created,true);assert.equal(first.record.amount,500000);
+const repeated=await Promise.all([reserve(),reserve()]);assert.equal(repeated.every(result=>result.rows[0].reserved.created===false),true);
+assert.equal((await db.query('select count(*)::int as n from project_balance_payments')).rows[0].n,1);
+await assert.rejects(save(1100000),/balance_amount_locked/);
+await save(1000000,true,true);shareId=(await db.query('select share_id from client_projects')).rows[0].share_id;assert.notEqual(shareId,project.share_id);
+await db.query("update project_balance_payments set order_id='order_balance',status='pending' where project_id=$1",[project.id]);
+await assert.rejects(db.query('select authorize_project_balance($1,$2,$3,(select id from project_balance_payments where project_id=$1 and active))',[project.id,project.share_id,'rzp_test_fake']),/project_changed_reload/);
+assert.equal((await db.query('select authorize_project_balance($1,$2,$3,(select id from project_balance_payments where project_id=$1 and active)) as allowed',[project.id,shareId,'rzp_test_fake'])).rows[0].allowed,true);
+await assert.rejects(db.query('select authorize_project_balance($1,null,$2)',[project.id,'rzp_test_fake']),/project_changed_reload/);
+await assert.rejects(db.query('select authorize_project_balance($1,$2,null)',[project.id,shareId]),/balance_not_authorized/);
+await save(1000000,false);await assert.rejects(db.query('select authorize_project_balance($1,$2,$3,(select id from project_balance_payments where project_id=$1 and active))',[project.id,shareId,'rzp_test_fake']),/project_changed_reload/);await save();
+await db.query("update project_balance_payments set created_at=now()-interval '1 hour' where project_id=$1",[project.id]);
+const checkpoint=(await db.query('select project_reconciliation_clock() as t')).rows[0].t;
+assert.equal((await db.query('select count(*)::int as n from due_project_balances($1)',[checkpoint])).rows[0].n,1);
+const complete="select record_project_balance('order_balance','pay_balance',$1,$2,'webhook',$3) as inserted";
+assert.equal((await db.query(complete,['paid',0,'evt_capture'])).rows[0].inserted,true);
+assert.equal((await db.query('select count(*)::int as n from due_project_balances($1)',[checkpoint])).rows[0].n,0);
+await assert.rejects(db.query('select authorize_project_balance($1,$2,$3,(select id from project_balance_payments where project_id=$1 and active))',[project.id,shareId,'rzp_test_fake']),/balance_not_authorized/);
+assert.equal((await db.query(complete,['paid',0,'evt_capture'])).rows[0].inserted,false);
+assert.equal((await db.query("select complete_payment_webhook('evt_capture','order_advance','pay_advance','refunded',100) as inserted")).rows[0].inserted,false);
+assert.equal((await db.query("select count(*)::int as n from project_payment_history")).rows[0].n,1);
+assert.equal((await db.query("select count(*)::int as n from project_balance_payments where status='paid' and acknowledged_at is null")).rows[0].n,1);
+await db.query("update project_balance_payments set acknowledged_at=now() where project_id=$1 and status in ('paid','refunded')",[project.id]);
+assert.equal((await db.query("select count(*)::int as n from project_balance_payments where status='paid' and acknowledged_at is null")).rows[0].n,0);
+assert.equal((await db.query('select status from project_balance_payments')).rows[0].status,'paid');
+await db.query("select record_project_balance('order_balance',null,'needs_reconciliation',0,'cron')");
+assert.equal((await db.query('select status from project_balance_payments')).rows[0].status,'paid');
+await assert.rejects(db.query("select record_project_balance('order_balance','pay_other','paid',0,'customer')"),/conflicting_payment/);
+await assert.rejects(db.query("select record_project_balance('order_balance','pay_balance','refunded',500001,'webhook','evt_invalid')"),/invalid_balance_state/);
+assert.equal((await db.query("select count(*)::int as n from payment_webhook_events where event_id='evt_invalid'")).rows[0].n,0);
+await db.query(complete,['refunded',100,'evt_refund']);await db.query(complete,['paid',0,'evt_stale']);
+assert.deepEqual((await db.query('select status,refunded_amount from project_balance_payments')).rows[0],{status:'refunded',refunded_amount:100});
+assert.equal((await db.query('select stage from client_projects')).rows[0].stage,'design');
+assert.equal((await db.query('select status,refunded_amount from payment_intents')).rows[0].status,'paid');
+await db.query("select record_package_payment('order_advance','pay_advance','refunded',100)");
+await assert.rejects(reserve(),/advance_needs_review/);
+assert.equal((await db.query("select count(*)::int as n from pg_proc where proname in ('save_client_project','reserve_project_balance','authorize_project_balance','due_project_balances','project_reconciliation_clock','record_project_balance') and prosecdef")).rows[0].n,0);
+// A processed full batch must not repeat ahead of the next batch, even if Edge clocks differ.
+await db.exec("insert into payment_intents(request_id,payload_hash,dedupe_hash,package,amount,key_id,customer,terms_version,order_id,status) select gen_random_uuid(),'hash','fair-'||n,'starter',500000,'rzp_test_fake','{}','2026-10-10','order_AdvanceFair'||n,'paid' from generate_series(1,51) n;");
+await db.exec("insert into client_projects(advance_request,title,total_amount,balance_enabled) select request_id,'Fair project',1000000,true from payment_intents where dedupe_hash like 'fair-%';");
+await db.exec("insert into project_balance_payments(project_id,amount,key_id,order_id,status,created_at) select p.id,500000,'rzp_test_fake',replace(a.order_id,'AdvanceFair','BalanceFair'),'pending',now()-interval '1 hour' from client_projects p join payment_intents a on a.request_id=p.advance_request where a.dedupe_hash like 'fair-%';");
+const batchClock=(await db.query('select project_reconciliation_clock()::text as t')).rows[0].t;
+const batch=(await db.query('select * from due_project_balances($1)',[batchClock])).rows;assert.equal(batch.length,50);
+for(const b of batch)await db.query("select record_project_balance($1,null,'pending',0,'cron')",[b.order_id]);
+const next=(await db.query('select * from due_project_balances($1)',[batchClock])).rows;assert.equal(next.length,2);assert.equal(next.some(b=>batch.some(previous=>previous.id===b.id)),false);
+
+// Fresh declined attempts may have exactly one successor; old rows stay traceable.
+const retryProject=(await db.query("select * from client_projects where title='Fair project' limit 1")).rows[0];
+const oldBalance=(await db.query("select * from project_balance_payments where project_id=$1",[retryProject.id])).rows[0];
+const retry=()=>db.query("select reserve_project_balance($1,'rzp_test_fake',$2,1000000,$3) as r",[retryProject.id,retryProject.share_id,oldBalance.id]);
+await assert.rejects(retry(),/balance_not_authorized/);
+await db.query("select record_project_balance($1,null,'failed',0,'customer')",[oldBalance.order_id]);
+await db.query("update project_balance_payments set last_checked_at=now()-interval '2 minutes' where id=$1",[oldBalance.id]);await assert.rejects(retry(),/balance_not_authorized/);
+await db.query("select record_project_balance($1,null,'failed',0,'customer')",[oldBalance.order_id]);
+const successor=(await retry()).rows[0].r;assert.equal(successor.created,true);assert.notEqual(successor.record.id,oldBalance.id);
+const repeats=await Promise.all([retry(),retry()]);assert.equal(repeats.every(result=>result.rows[0].r.created===false&&result.rows[0].r.record.id===successor.record.id),true);
+assert.equal((await db.query("select count(*)::int as n from project_balance_payments where project_id=$1 and active",[retryProject.id])).rows[0].n,1);
+assert.equal((await db.query("select count(*)::int as n from project_balance_payments where project_id=$1",[retryProject.id])).rows[0].n,2);
+await db.query("update project_balance_payments set order_id='order_retry',status='pending' where id=$1",[successor.record.id]);
+assert.equal((await db.query("select authorize_project_balance($1,$2,'rzp_test_fake',(select id from project_balance_payments where project_id=$1 and active)) as yes",[retryProject.id,retryProject.share_id])).rows[0].yes,true);
+await db.query("select record_project_balance($1,'pay_late','paid',0,'webhook','evt_late')",[oldBalance.order_id]);
+await assert.rejects(db.query("select authorize_project_balance($1,$2,'rzp_test_fake',(select id from project_balance_payments where project_id=$1 and active))",[retryProject.id,retryProject.share_id]),/balance_not_authorized/);
+await db.query("select record_project_balance($1,null,'failed',0,'cron')",[oldBalance.order_id]);assert.equal((await db.query("select status from project_balance_payments where id=$1",[oldBalance.id])).rows[0].status,'paid');
+
+// Exact identity fencing: a healthy successor cannot authorize a retired order's options.
+await db.query("update project_balance_payments set status='failed',payment_id=null where id=$1",[oldBalance.id]);
+await assert.rejects(db.query("select authorize_project_balance($1,$2,'rzp_test_fake',$3)",[retryProject.id,retryProject.share_id,oldBalance.id]),/balance_not_authorized/);
+assert.equal((await db.query("select authorize_project_balance($1,$2,'rzp_test_fake',$3) as yes",[retryProject.id,retryProject.share_id,successor.record.id])).rows[0].yes,true);
+assert.equal((await db.query("select order_id from project_payment_history where balance_id=$1 order by created_at desc limit 1",[oldBalance.id])).rows[0].order_id,oldBalance.order_id);
+// A provider failure on an acknowledged paid row must remain visible without downgrading settlement.
+await db.query("select record_project_balance('order_balance',null,'needs_reconciliation',0,'admin',null,'Provider check failed')");
+assert.deepEqual((await db.query("select status,review_required from project_balance_payments where order_id='order_balance'")).rows[0],{status:'refunded',review_required:true});
+await db.query("select record_project_balance('order_balance','pay_balance','refunded',100,'admin')");assert.equal((await db.query("select review_required from project_balance_payments where order_id='order_balance'")).rows[0].review_required,false);
+
+await db.query("insert into project_balance_payments(project_id,amount,key_id,status,active) select $1,500000,'rzp_test_fake','failed',false from generate_series(1,8)",[retryProject.id]);
+await db.query("select record_project_balance('order_retry',null,'failed',0,'customer')");assert.equal((await db.query("select review_required from project_balance_payments where order_id='order_retry'")).rows[0].review_required,true);
+await db.close();console.log('PASS: project/browser isolation, verified advances, exact paise balance, atomic one-order reservation, price lock, link rotation, shared event deduplication, monotonic capture/refunds, rollback, progress unchanged invoker-only RPCs, fresh-decline retry uniqueness, retained predecessors and late-capture fencing.');

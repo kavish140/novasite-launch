@@ -11,6 +11,7 @@ export default function PaymentAlerts({health,isAdmin,error,now,onOpen}:{health:
   <h2 className="flex items-center gap-2 text-lg font-semibold"><AlertTriangle className="h-5 w-5"/>Payments need attention</h2>
   <p className="mt-2 text-sm text-muted-foreground">These are review flags, not new payments. One order can have multiple flags.</p>
   <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
+   {!!health.projectReview&&<li>{health.projectReview} project balance(s) need review or paid-payment acknowledgement.</li>}
    {!!health.unacknowledgedPaid&&<li>{health.unacknowledgedPaid} paid order(s) awaiting acknowledgement.</li>}
    {!!health.investigations&&<li>{health.investigations} payment record(s) need investigation.</li>}
    {!!health.lostDisputes?.length&&<li>{health.lostDisputes.length} lost dispute(s) awaiting acknowledgement. Review the financial loss in Razorpay.</li>}

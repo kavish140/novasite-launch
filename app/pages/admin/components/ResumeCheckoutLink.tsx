@@ -1,0 +1,8 @@
+import {useState} from "react";
+import {Button} from "@/components/ui/button";
+import {adminPaymentRequest} from "@/lib/payment-admin-client";
+export default function ResumeCheckoutLink({requestId}:{requestId:string}){
+ const [url,setUrl]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState("");
+ async function recover(){setBusy(true);setError("");setUrl("");try{const result=await adminPaymentRequest<{url:string}>("resume-checkout",{requestId});const link=new URL(result.url);if(link.origin!=="https://sitenova.dev"||link.pathname!=="/pay"||!["starter","business"].includes(link.searchParams.get("package")??"")||!link.hash.startsWith("#resume="))throw new Error("Unsafe recovery link");setUrl(result.url);}catch{setError("Unable to issue a safe recovery link. Re-check with Razorpay; do not start another payment while its status is uncertain.");}finally{setBusy(false);}}
+ return <div className="space-y-2"><Button variant="outline" disabled={busy} onClick={()=>void recover()}>{busy?"Checking checkout…":"Get recovery link"}</Button>{error&&<p role="alert" className="text-sm text-destructive">{error}</p>}{url&&<div className="space-y-2 text-sm"><p>Private link for the original untouched checkout. Share only with this customer. It does not create a new order or extend the 24-hour checkout window.</p><a href={url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="text-primary underline">Open recovered checkout</a><label className="block">Private checkout recovery link<input readOnly value={url} onFocus={e=>e.currentTarget.select()} className="mt-1 w-full rounded border border-border bg-background p-2"/></label></div>}</div>;
+}

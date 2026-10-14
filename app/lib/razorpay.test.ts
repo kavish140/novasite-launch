@@ -2,12 +2,14 @@
 import { createHmac } from "node:crypto";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { PAYMENT_PACKAGES, createPaymentToken, paymentAction, paymentsEnabled, paymentWebhook } from "../../supabase/functions/_shared/razorpay";
+import {PaymentConflictError} from "../../supabase/functions/_shared/payment-conflict";
 
 const ledger = vi.hoisted(() => ({ reserve: vi.fn(), attach: vi.fn(), find: vi.fn(), settle: vi.fn(), hasEvent: vi.fn(), completeWebhook: vi.fn() }));
 vi.mock("../../supabase/functions/_shared/payment-store.ts", () => ({ paymentStore: () => ledger }));
+vi.mock("../../supabase/functions/_shared/package-pricing.ts",async()=>({pricingStore:()=>({current:async()=>({version:"00000000-0000-4000-8000-000000000000",packages:(await import("../../supabase/functions/_shared/catalog")).PAYMENT_PACKAGES})}),pricingAdmin:vi.fn()}));
 const env = { SUPABASE_URL: "https://example.supabase.co", SUPABASE_SERVICE_ROLE_KEY: "fake-service-role", RAZORPAY_WEBHOOK_SECRET: "fake-webhook-secret", RAZORPAY_ENABLED: "true", RAZORPAY_KEY_ID: "rzp_test_example", RAZORPAY_KEY_SECRET: "test-secret-never-real", PAYMENT_RATE_LIMITER: { limit: vi.fn(async () => ({ success: true })) } };
 const context = { env };
-const details = { requestId: "00000000-0000-4000-8000-000000000001", package: "starter", name: "Test Client", email: "test@example.com", phone: "9876543210", business: "Test Project", accepted: true };
+const details = { requestId: "00000000-0000-4000-8000-000000000001", package: "starter", name: "Test Client", email: "test@example.com", phone: "9876543210", business: "Test Project",requirements:"A landing page showing our services and contact form.",timeline:"Flexible", accepted: true };
 const order = { id: "order_123", amount: 500000, currency: "INR", status: "created", notes: { package: "starter" } };
 const payment = { id: "pay_123", order_id: order.id, amount: order.amount, currency: "INR", status: "captured", amount_refunded: 0 };
 const mockFetch = vi.fn();
@@ -22,7 +24,30 @@ beforeEach(() => {
  ledger.find.mockReset().mockResolvedValue({ order_id: order.id, amount: order.amount, package: "starter", key_id: env.RAZORPAY_KEY_ID, created_at:new Date().toISOString() }); vi.stubGlobal("fetch", mockFetch); mockFetch.mockReset(); env.PAYMENT_RATE_LIMITER.limit.mockResolvedValue({ success: true }); });
 afterEach(() => vi.unstubAllGlobals());
 
+it("returns a clear 409 for a duplicate checkout without creating another provider order",async()=>{
+ ledger.reserve.mockRejectedValueOnce(new PaymentConflictError("existing_booking"));const response=await paymentAction(req(details),context,"order");expect(response.status).toBe(409);expect(await response.json()).toEqual({error:expect.stringContaining("original checkout tab"),code:"checkout_conflict"});expect(mockFetch).not.toHaveBeenCalled();expect(ledger.attach).not.toHaveBeenCalled();
+});
+it("recovers an abandoned checkout in another tab using its original order and fresh checkout checks",async()=>{
+ const earlier={request_id:"00000000-0000-4000-8000-000000000002",order_id:order.id,amount:order.amount,key_id:env.RAZORPAY_KEY_ID,created_at:new Date().toISOString()};ledger.reserve.mockResolvedValueOnce({created:false,record:earlier});
+ const resumed=await paymentAction(req(details),context,"order");const session=await resumed.json();expect(session.orderId).toBe(order.id);expect(mockFetch).not.toHaveBeenCalled();
+ mockFetch.mockResolvedValueOnce(response(order)).mockResolvedValueOnce(response({items:[]}));const checked=await paymentAction(req({token:session.token}),context,"checkout");expect((await checked.json()).checkout.orderId).toBe(order.id);expect(mockFetch.mock.calls.every(([,options])=>options.method==="GET")).toBe(true);expect(ledger.attach).not.toHaveBeenCalled();
+});
+
 describe("Razorpay package advances", () => {
+  it.each([['starter',500000],['business',750000]] as const)("verifies the %s immutable paise amount and rejects wrong currency", async (selected, amount) => {
+    const savedOrder = {...order, amount, notes:{package:selected}};
+    const captured = {...payment, amount};
+    ledger.find.mockResolvedValue({order_id:order.id,amount,package:selected,key_id:env.RAZORPAY_KEY_ID,created_at:new Date().toISOString()});
+    const signed = await createPaymentToken({orderId:order.id,amount,package:selected,keyId:env.RAZORPAY_KEY_ID,issuedAt:Date.now()},env.RAZORPAY_KEY_SECRET);
+    const body = {...await callback(),token:signed};
+    mockFetch.mockResolvedValueOnce(response(savedOrder)).mockResolvedValueOnce(response(captured));
+    expect(await (await paymentAction(req(body),context,'verify')).json()).toEqual({status:'paid',paymentId:payment.id});
+    expect(ledger.settle).toHaveBeenCalledWith(order.id,payment.id,'paid',0);
+    ledger.settle.mockClear();
+    mockFetch.mockResolvedValueOnce(response(savedOrder)).mockResolvedValueOnce(response({...captured,currency:'USD'}));
+    expect((await paymentAction(req(body),context,'verify')).status).toBe(403);
+    expect(ledger.settle).not.toHaveBeenCalled();
+  });
   it("keeps payments disabled without explicit configuration", async () => {
     expect(paymentsEnabled({})).toBe(false);
     expect(paymentsEnabled({ ...env, RAZORPAY_ENABLED: "false" })).toBe(false);
@@ -37,7 +62,7 @@ describe("Razorpay package advances", () => {
     expect(data).not.toHaveProperty("amount"); expect(data).not.toHaveProperty("keyId");
     expect(data).not.toHaveProperty("RAZORPAY_KEY_SECRET");
     const sent = JSON.parse(mockFetch.mock.calls[0][1].body);
-    expect(sent.amount).toBe(PAYMENT_PACKAGES.starter.advance); expect(sent.partial_payment).toBe(false); expect(sent.notes.business).toBe(details.business); expect(sent.notes.terms_version).toBe("2026-10-10");
+    expect(sent.amount).toBe(PAYMENT_PACKAGES.starter.advance); expect(sent.partial_payment).toBe(false); expect(sent.notes.business).toBe(details.business); expect(sent.notes.terms_version).toBe("2026-10-14");
   });
   it("uses the Business advance of 750000 paise", async () => {
     mockFetch.mockResolvedValueOnce(response({ ...order, amount: 750000, notes: { package: "business" } }));

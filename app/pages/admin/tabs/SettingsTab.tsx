@@ -1,4 +1,5 @@
 import BookingSettings from "../components/BookingSettings";
+import PackagePricing from "../components/PackagePricing";
 /**
  * SettingsTab — Admin settings page.
  * Sections:
@@ -48,7 +49,7 @@ const PRESETS = [
   { name: "Light Frost", bg: "#f8fafc", text: "#0f172a" },
 ];
 
-export default function SettingsTab() {
+export default function SettingsTab({isPaymentAdmin=false}:{isPaymentAdmin?:boolean}) {
   const { toast } = useToast();
   const [banner, setBanner] = useState<BannerSettings>(DEFAULT_BANNER);
   const [bannerLoading, setBannerLoading] = useState(true);
@@ -177,6 +178,7 @@ export default function SettingsTab() {
     >
       {/* ── Announcement Banner ──────────────────────────────────────────── */}
       <BookingSettings />
+      {isPaymentAdmin&&<PackagePricing />}
       <section className="bg-card/40 border border-border/40 rounded-xl p-6 space-y-6">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">

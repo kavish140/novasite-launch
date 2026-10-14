@@ -1,3 +1,5 @@
+import {usePackagePricing} from "@/lib/package-pricing";
+import PackageAdvanceOptions from "@/components/PackageAdvanceOptions";
 import { useEffect, Suspense } from "react";
 import { useLocation, Link } from "react-router";
 import Navbar from "@/components/Navbar";
@@ -33,6 +35,8 @@ interface IndexProps {
 }
 
 const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: IndexProps) => {
+  const {starterPrice,businessPrice}=usePackagePricing();
+
   const location = useLocation();
 
   const jsonLd = [
@@ -62,8 +66,8 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
   return (
     <PageTransition>
       <SEO 
-        title={seoTitle || "Website Designer in Mulund, Mumbai | From ₹10,000 | SiteNova"}
-        description={seoDescription || "Is your website losing you customers? SiteNova builds fast, SEO-ready websites for businesses in Mulund, Bhandup & Mumbai — mobile-first, delivered in 7–14 days. From ₹10,000."}
+        title={seoTitle || `Website Designer in Mulund, Mumbai | From ${starterPrice} | SiteNova`}
+        description={seoDescription || `Is your website losing you customers? SiteNova builds fast, SEO-ready websites for businesses in Mulund, Bhandup & Mumbai — mobile-first, delivered in 7–14 days. From ${starterPrice}.`}
         canonicalUrl={seoCanonicalPath || "/"}
         keywords={seoKeywords || [
           "website designer in Mulund",
@@ -95,29 +99,18 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
           <ResourcesSection />
           <section aria-labelledby="pricing-title" className="pb-20 sm:pb-24">
             <div className="mx-auto max-w-7xl px-6">
-              <div className="grid gap-6 rounded-3xl border border-primary/20 bg-primary/5 p-8 shadow-sm md:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+              <div className="grid gap-6 rounded-3xl border border-primary/20 bg-primary/5 p-4 shadow-sm sm:p-8 md:p-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
                     Starting price
                   </p>
                   <h2 id="pricing-title" className="mt-3 font-heading text-3xl font-bold tracking-tight md:text-4xl">
-                    Websites from <span className="gradient-text">₹10,000 onwards</span>
+                    Websites from <span className="gradient-text">{starterPrice} onwards</span>
                   </h2>
-                  <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-                    A simple, professional website is a great way to get started without overspending. Whether you need a landing page (from ₹10,000), a business website (from ₹15,000), or a fully custom build, I'll quote based on your exact scope.
+                  <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">A simple, professional website is a great way to get started without overspending. Whether you need a landing page (from {starterPrice}), a business website (from {businessPrice}), or a fully custom build, I'll quote based on your exact scope.
                   </p>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {[
-                    "Starter websites",
-                    "Business websites",
-                    "Custom quotes",
-                  ].map((item) => (
-                    <div key={item} className="rounded-2xl border border-border/60 bg-background/80 px-4 py-4 text-center text-sm font-medium text-foreground shadow-sm">
-                      {item}
-                    </div>
-                  ))}
-                </div>
+                <PackageAdvanceOptions />
               </div>
             </div>
           </section>
@@ -241,7 +234,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                     What We Build
                   </h3>
                   <ul className="space-y-1 text-sm">
-                    <li><strong className="text-foreground">Business Websites</strong> — Custom multi-page sites from ₹15,000, optimised for local SEO in Mumbai</li>
+                    <li><strong className="text-foreground">Business Websites</strong> — Custom multi-page sites from {businessPrice}, optimised for local SEO in Mumbai</li>
                     <li><strong className="text-foreground">E-Commerce Stores</strong> — Scalable stores with Razorpay and Stripe integration</li>
                     <li><strong className="text-foreground">Web Applications</strong> — Dashboards, booking systems, and API integrations from ₹30,000</li>
                     <li><strong className="text-foreground">Doctor Websites</strong> — Clinic sites with appointment booking and patient SEO</li>

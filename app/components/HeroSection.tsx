@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import BookingCTA from "./BookingCTA";
 import { m as motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, ShieldCheck, Layers } from "lucide-react";
@@ -9,6 +10,8 @@ import BlurImage from "./BlurImage";
 
 
 const HeroSection = () => {
+  const {starterPrice,businessPrice}=usePackagePricing();
+
   const sectionRef = useRef<HTMLElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -58,7 +61,7 @@ const HeroSection = () => {
             Work directly with Kavish to plan, build, and launch a fast, mobile-friendly website that makes it easy for customers to contact you.
           </p>
 
-          <p className="font-semibold mb-6">Landing pages from ₹10,000 · Business websites from ₹15,000</p>
+          <p className="font-semibold mb-6">Landing pages from {starterPrice} · Business websites from {businessPrice}</p>
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
             <Link

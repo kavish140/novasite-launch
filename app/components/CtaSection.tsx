@@ -1,9 +1,11 @@
 import { m as motion } from "framer-motion";
+import {usePackagePricing} from "@/lib/package-pricing";
 import { Phone, Mail, MessageCircle, ShieldCheck, ArrowRight } from "lucide-react";
 import { Link } from "react-router";
 import { PHONE_NUMBER, PHONE_TEL_LINK, EMAIL_COMPOSE_LINK, WHATSAPP_URL } from "@/lib/constants";
 
 const CtaSection = () => {
+  const {starterPrice,available}=usePackagePricing();
   return (
     <section id="cta" className="section-padding relative overflow-hidden">
       {/* Glow */}
@@ -17,7 +19,7 @@ const CtaSection = () => {
         className="relative mx-auto max-w-3xl text-center"
       >
         <p className="mx-auto mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-          Projects starting from Rs. 10,000
+          {available?`Projects starting from ${starterPrice}`:"Request your project quote"}
         </p>
         <h2 id="cta-title" className="font-heading text-3xl md:text-5xl font-bold mb-6">
           Ready to build something{" "}

@@ -28,7 +28,7 @@ export function bookingAvailable(settings: BookingSettings): boolean {
 }
 
 export function suppressPromotions(path: string): boolean {
-  return /^\/(?:admin(?:\/|$)|lp(?:\/|$)|pay\/?$|receipt\/?$|quote\/?$|free-audit\/?$|ads-contact\/?$|contact-us\/?$|book-a-call\/?$|thank-you\/?$)/.test(
+  return /^\/(?:admin(?:\/|$)|lp(?:\/|$)|pay\/?$|receipt\/?$|project\/?$|quote\/?$|free-audit\/?$|ads-contact\/?$|contact-us\/?$|book-a-call\/?$|thank-you\/?$)/.test(
     path,
   );
 }

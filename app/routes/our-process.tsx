@@ -5,7 +5,7 @@ export function meta() {
   return buildMeta({
     title: "Our Web Design Process — How SiteNova Builds Websites | SiteNova",
     description:
-      "SiteNova's 4-step website design and development process: Discovery, UI/UX Design, React Development with GEO/SEO setup, and Launch. Websites delivered in 7–14 days from ₹10,000.",
+      "SiteNova's 4-step website design and development process: Discovery, UI/UX Design, React Development with GEO/SEO setup, and Launch. Websites delivered in 7–14 days with pricing agreed upfront.",
     canonicalPath: "/our-process",
     keywords: [
       "how SiteNova builds websites",

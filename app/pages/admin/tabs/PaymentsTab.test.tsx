@@ -6,6 +6,7 @@ vi.mock('@/lib/payment-admin-client',()=>({adminPaymentRequest:vi.fn()}));
 // New sections have dedicated tests; retain the original queue scenarios unchanged.
 vi.mock('../components/PaidOrders',()=>({default:()=>null}));
 vi.mock('../components/PaymentInvestigations',()=>({default:()=>null}));
+vi.mock('../components/ClientProjects',()=>({default:()=>null}));
 const order={request_id:'request',order_id:'order_1',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-10T10:00:00Z',last_checked_at:null};
 beforeEach(()=>{vi.resetAllMocks();vi.mocked(adminPaymentRequest).mockResolvedValue({orders:[order],runs:[],alerts:[],nextOffset:null});});
 afterEach(cleanup);

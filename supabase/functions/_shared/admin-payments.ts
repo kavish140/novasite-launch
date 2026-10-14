@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {paymentJson,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts";
+import {paymentJson,fetchStoredPaymentStatus,createPaymentToken,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts";
 import {paymentStore} from "./payment-store.ts";
 import {reconcileOne} from "./reconciliation.ts";
 import {operationsStore} from "./payment-operations.ts";
@@ -8,7 +8,7 @@ import {receiptToken} from "./payment-receipt.ts";
 // Called only after the gateway verifies Auth identity AND site_admins membership.
 export async function adminPayments(request: Request, env: PaymentEnv, action: string, admin: VerifiedTestAdmin) {
   if(!admin?.id) return paymentJson({error:"Admin sign-in required"},401);
-  if(!["queue","history","recheck","paid","acknowledge","investigations","order-receipt"].includes(action)) return paymentJson({error:"Not found"},404);
+  if(!["queue","history","recheck","paid","acknowledge","investigations","order-receipt","resume-checkout"].includes(action)) return paymentJson({error:"Not found"},404);
   let run:string|undefined;
   const store=paymentStore(env);
   try {
@@ -32,6 +32,14 @@ export async function adminPayments(request: Request, env: PaymentEnv, action: s
     const input=z.object({requestId:z.string().uuid(),...(action==="history"?{offset}:{})}).strict().parse(body);
     const record=await store.byRequest(input.requestId);
     if(!record) return paymentJson({error:"Order not found"},404);
+    if(action==="resume-checkout"){
+      const age=Date.now()-Date.parse(record.created_at);
+      if(!["starter","business"].includes(record.package)||!record.order_id||record.status!=="pending"||record.retry_reserved_at||!Number.isFinite(age)||age<0||age>=86400000)return paymentJson({error:"This checkout cannot safely reopen. Re-check with Razorpay and review its history."},409);
+      // GET only. Never mint a link for an attempted/uncertain/paid/refunded order.
+      if((await fetchStoredPaymentStatus(env,record)).status!=="unattempted")return paymentJson({error:"Razorpay does not confirm an untouched checkout. Re-check its status before paying again."},409);
+      const token=await createPaymentToken({orderId:record.order_id,package:record.package as "starter"|"business",amount:record.amount,keyId:record.key_id,issuedAt:Date.parse(record.created_at)},env.RAZORPAY_KEY_SECRET!);
+      return paymentJson({url:`https://sitenova.dev/pay?package=${record.package}#resume=${encodeURIComponent(token)}`});
+    }
     if(action==="order-receipt"){
       if(record.package!=="test"||record.amount!==100)return paymentJson({error:"Not a ₹1 test payment"},400);
       if(!["paid","refunded"].includes(record.status??""))return paymentJson({error:"Payment is not yet confirmed"},409);

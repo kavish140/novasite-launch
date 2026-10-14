@@ -56,7 +56,7 @@ const values = [
     icon: Award,
     title: "Transparent Pricing",
     description:
-      "No hidden fees, no surprise plugin costs. Our pricing starts from ₹10,000 and every scope is quoted clearly before a single line of code is written.",
+      "No hidden fees, no surprise plugin costs. Check our pricing page for current packages; every scope is quoted clearly before a single line of code is written.",
   },
   {
     icon: Users,

@@ -1,19 +1,16 @@
 import BookingCTA from "@/components/BookingCTA";
-import { useEffect } from "react";
 import { m as motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { Link, useLoaderData } from "react-router";
 import { formatINR, type PackageCatalog, type PaymentPackage } from "@/lib/payments";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 
 const pricingTiers = [
   {
     name: "Starter",
-    price: "₹10,000",
     priceLabel: "onwards",
     description: "Perfect for single-page landing pages and simple portfolios.",
     features: [
@@ -29,7 +26,6 @@ const pricingTiers = [
   },
   {
     name: "Business",
-    price: "₹15,000",
     priceLabel: "onwards",
     description: "Ideal for local businesses needing a multi-page presence.",
     features: [
@@ -64,26 +60,15 @@ const pricingTiers = [
 ];
 
 const Pricing = () => {
-  const { paymentsEnabled, packages } = useLoaderData<{ paymentsEnabled: boolean; packages: PackageCatalog }>();
-  useEffect(() => {
-    // any jsonLd can be added here
-  }, []);
+  const { paymentsEnabled, packages,pricingAvailable=true } = useLoaderData<{ paymentsEnabled: boolean; packages: PackageCatalog;pricingAvailable?:boolean }>();
 
   return (
     <PageTransition>
-      <SEO 
-        title="Website Design Pricing in Mumbai | SiteNova — Plans Starting ₹10,000 Onwards"
-        description="Transparent website design pricing in Mumbai. SiteNova plans start from ₹10,000 onwards for landing pages, ₹15,000 onwards for business sites, and custom quotes for e-commerce (from ₹18,000) and web apps."
-        canonicalUrl="/pricing"
-        keywords={["website pricing Mumbai", "web design cost Mumbai", "affordable web design Mumbai", "website package India", "web design 10000 onwards"]}
-
-      />
       <JsonLd data={{
           "@context": "https://schema.org",
           "@type": "ProfessionalService",
           "name": "SiteNova",
           "url": "https://sitenova.dev/pricing",
-          "priceRange": "₹10,000+",
           "hasOfferCatalog": {
             "@type": "OfferCatalog",
             "name": "Website Design Packages",
@@ -92,17 +77,17 @@ const Pricing = () => {
                 "@type": "Offer",
                 "name": "Starter Website",
                 "description": "Single-page landing page or portfolio",
-                "price": "10000",
+                ...(pricingAvailable?{"price":String(packages.starter.startingPrice/100)}:{}),
                 "priceCurrency": "INR",
-                "priceSpecification": { "@type": "PriceSpecification", "minPrice": "10000", "priceCurrency": "INR" }
+                ...(pricingAvailable?{"priceSpecification": { "@type": "PriceSpecification", "minPrice": String(packages.starter.startingPrice/100), "priceCurrency": "INR" }}:{})
               },
               {
                 "@type": "Offer",
                 "name": "Business Website",
                 "description": "Multi-page business website with SEO and CMS",
-                "price": "15000",
+                ...(pricingAvailable?{"price":String(packages.business.startingPrice/100)}:{}),
                 "priceCurrency": "INR",
-                "priceSpecification": { "@type": "PriceSpecification", "minPrice": "15000", "priceCurrency": "INR" }
+                ...(pricingAvailable?{"priceSpecification": { "@type": "PriceSpecification", "minPrice": String(packages.business.startingPrice/100), "priceCurrency": "INR" }}:{})
               }
             ]
           }
@@ -156,8 +141,8 @@ const Pricing = () => {
                 
                 <div className="mb-8 pb-8 border-b border-border/50">
                   <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-4xl font-bold font-heading">{tier.price}</span>
-                    {tier.priceLabel && (
+                    <span className="text-4xl font-bold font-heading">{tier.name==="Premium"?tier.price:pricingAvailable?formatINR(packages[tier.name.toLowerCase() as PaymentPackage].startingPrice):"Request a quote"}</span>
+                    {tier.priceLabel && pricingAvailable && (
                       <span className="text-base font-semibold text-primary">{tier.priceLabel}</span>
                     )}
                   </div>

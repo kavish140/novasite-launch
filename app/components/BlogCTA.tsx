@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import {usePackagePricing} from "@/lib/package-pricing";
 import { ArrowRight, Zap, Shield, Clock } from "lucide-react";
 
 interface BlogCTAProps {
@@ -6,6 +7,7 @@ interface BlogCTAProps {
 }
 
 export default function BlogCTA({ variant = "end" }: BlogCTAProps) {
+  const {starterPrice,available}=usePackagePricing();
   const utmLink = "/free-audit?utm_source=blog&utm_medium=inline_cta&utm_campaign=blog_conversion";
 
   if (variant === "mid") {
@@ -51,7 +53,7 @@ export default function BlogCTA({ variant = "end" }: BlogCTAProps) {
           Ready to get a fast, SEO-ready website for your business?
         </h2>
         <p className="mt-3 text-muted-foreground leading-relaxed">
-          SiteNova builds high-performance, mobile-first websites for businesses in Mulund, Mumbai, and across Maharashtra — delivered in 7–14 days, from ₹10,000.
+          SiteNova builds high-performance, mobile-first websites for businesses in Mulund, Mumbai, and across Maharashtra — delivered in 7–14 days{available?`, from ${starterPrice}`:" with a quote based on your scope"}.
         </p>
 
         {/* Trust signals */}

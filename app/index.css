@@ -110,6 +110,14 @@
     @apply bg-primary/30 text-foreground;
   }
 
+  /* Opaque selection colours stay readable on the portal's white cards and dark warnings. */
+  .project-portal::selection,
+  .project-portal ::selection {
+    background-color: #1d4ed8;
+    color: #ffffff;
+    text-shadow: none;
+  }
+
   html {
   }
 

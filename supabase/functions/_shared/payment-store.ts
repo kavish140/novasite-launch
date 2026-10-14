@@ -1,13 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
+import {PaymentConflictError} from "./payment-conflict.ts";
 import {operationsStore} from "./payment-operations.ts";
 import {openDisputes,lostDisputes,type Dispute,type DisputeEvent,type PaymentHealth} from "./payment-health.ts";
+import {projectStore} from "./project-store.ts";
 type ServerEnv = { SUPABASE_URL: string; SUPABASE_SERVICE_ROLE_KEY: string };
 function serviceDb(env: ServerEnv) {
  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Database unavailable");
  return createClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 }
 
-export type PaymentRecord = { request_id: string; payload_hash: string; order_id: string | null; package: string; amount: number; key_id: string; created_at: string; status?: string; reconciliation_state?: string; retry_parent?: string | null; retry_reserved_at?: string | null; customer?: Record<string, unknown> & { admin_id?: string } };
+export type PaymentRecord = { request_id: string; payload_hash: string; order_id: string | null; package: string; amount: number; key_id: string; created_at: string;terms_version?:string; status?: string; reconciliation_state?: string; retry_parent?: string | null; retry_reserved_at?: string | null; customer?: Record<string, unknown> & { admin_id?: string } };
 export function paymentStore(env: Partial<ServerEnv>) {
   const db = serviceDb(env as ServerEnv);
   return {
@@ -29,7 +31,8 @@ export function paymentStore(env: Partial<ServerEnv>) {
         events.push(...page.data as DisputeEvent[]);
         if(page.data.length<1000)break;
       }
-      return {observedAt,lostDisputes:lostDisputes(events,await operationsStore(env).disputeAcknowledgements()),investigations:await operationsStore(env).investigationCount(),unacknowledgedPaid:await operationsStore(env).unacknowledged(),latestRunFailed:latest.data?.[0]?.state==="failed",lastCompletedAt:completed.data?.[0]?.finished_at??null,lastSuccessfulAt:successful.data?.[0]?.finished_at??null,needsReconciliation:needs.count??0,overdue:overdue.count??0,refunded:refunded.count??0,disputes:openDisputes([...events,...await operationsStore(env).disputeSnapshots()])};
+      const projectHealth=(env as Partial<ServerEnv>&{PROJECT_PORTAL_ENABLED?:string}).PROJECT_PORTAL_ENABLED==="true"?{projectReview:await projectStore(env).reviewCount()}:{};
+      return {...projectHealth,observedAt,lostDisputes:lostDisputes(events,await operationsStore(env).disputeAcknowledgements()),investigations:await operationsStore(env).investigationCount(),unacknowledgedPaid:await operationsStore(env).unacknowledged(),latestRunFailed:latest.data?.[0]?.state==="failed",lastCompletedAt:completed.data?.[0]?.finished_at??null,lastSuccessfulAt:successful.data?.[0]?.finished_at??null,needsReconciliation:needs.count??0,overdue:overdue.count??0,refunded:refunded.count??0,disputes:openDisputes([...events,...await operationsStore(env).disputeSnapshots()])};
     },
     async recordDispute(eventId:string,eventType:string,dispute:Dispute){
       const result=await db.rpc("record_payment_dispute_event",{p_event:eventId,p_type:eventType,p_order:dispute.orderId,p_dispute:dispute});
@@ -113,8 +116,12 @@ export function paymentStore(env: Partial<ServerEnv>) {
       const inserted = await db.from("payment_intents").insert(record).select().single();
       if (!inserted.error) return { created: true, record: inserted.data };
       if (inserted.error.code !== "23505") throw new Error("Payment storage unavailable");
+      // The opaque request UUID, not predictable contact details, proves possession.
+      // The browser retains it across tab closure. Exact payload matching remains.
       const existing = await db.from("payment_intents").select().eq("request_id", record.request_id).maybeSingle();
-      if (existing.error || !existing.data || existing.data.payload_hash !== record.payload_hash) throw new Error("Payment request conflict. Contact SiteNova before retrying.");
+      if (existing.error) throw new Error("Payment storage unavailable");
+      if (!existing.data) throw new PaymentConflictError("existing_booking");
+      if (existing.data.payload_hash !== record.payload_hash) throw new PaymentConflictError("changed_request");
       return { created: false, record: existing.data };
     },
     async attach(requestId: string, orderId: string) {

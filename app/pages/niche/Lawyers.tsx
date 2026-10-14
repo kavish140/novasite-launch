@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { m as motion } from "framer-motion";
@@ -106,7 +107,7 @@ const problemPoints = [
   },
 ];
 
-const faqs = [
+const getfaqs = (starterPrice:string)=>[
   {
     question: "Why does a lawyer need a professional website?",
     answer:
@@ -115,7 +116,7 @@ const faqs = [
   {
     question: "How much does a law firm website cost in Mumbai?",
     answer:
-      "Our law firm websites start from ₹10,000 for a fully designed, mobile-responsive, SEO-optimized website. This includes practice area pages, contact forms, WhatsApp integration, Google Maps, and a professional design that reflects the authority of your practice. We offer transparent pricing with no hidden fees.",
+      `Our law firm websites start from ${starterPrice} for a fully designed, mobile-responsive, SEO-optimized website. This includes practice area pages, contact forms, WhatsApp integration, Google Maps, and a professional design that reflects the authority of your practice. We offer transparent pricing with no hidden fees.`,
   },
   {
     question: "Can I update my website content myself?",
@@ -135,6 +136,9 @@ const faqs = [
 ];
 
 export default function Lawyers() {
+  const {starterPrice}=usePackagePricing();
+  const faqs=getfaqs(starterPrice);
+
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -286,8 +290,7 @@ export default function Lawyers() {
                 Delivered in 5–7 days
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-blue-400" />
-                Starting from ₹10,000
+                <CheckCircle2 className="h-3.5 w-3.5 text-blue-400" />Starting from {starterPrice}
               </span>
             </motion.div>
           </div>
@@ -470,8 +473,7 @@ export default function Lawyers() {
               <span className="text-sm text-muted-foreground">
                 Law firm websites starting from{" "}
               </span>
-              <span className="font-heading text-2xl font-bold text-foreground">
-                ₹10,000
+              <span className="font-heading text-2xl font-bold text-foreground">{starterPrice}
               </span>
             </div>
 

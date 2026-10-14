@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { m as motion } from "framer-motion";
@@ -109,6 +110,8 @@ const problemPoints = [
 ];
 
 export default function Doctors() {
+  const {starterPrice,businessPrice}=usePackagePricing();
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -170,7 +173,7 @@ export default function Doctors() {
                 "name": "How much does a doctor website cost in Mumbai?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "SiteNova builds clinic and doctor websites starting from ₹10,000 for a landing page and ₹15,000 onwards for multi-page sites with appointment booking, Google Maps integration, and patient testimonial sections."
+                  "text": `SiteNova builds clinic and doctor websites starting from ${starterPrice} for a landing page and ${businessPrice} onwards for multi-page sites with appointment booking, Google Maps integration, and patient testimonial sections.`
                 }
               },
               {
@@ -280,8 +283,7 @@ export default function Doctors() {
                 Delivered in 5–7 days
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                Starting from ₹10,000
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />Starting from {starterPrice}
               </span>
             </motion.div>
           </div>
@@ -528,8 +530,7 @@ export default function Doctors() {
               <span className="text-sm text-muted-foreground">
                 Clinic websites starting from{" "}
               </span>
-              <span className="font-heading text-2xl font-bold text-foreground">
-                ₹10,000
+              <span className="font-heading text-2xl font-bold text-foreground">{starterPrice}
               </span>
             </div>
 

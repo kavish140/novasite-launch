@@ -15,7 +15,7 @@ const TermsAndConditions = () => {
               Terms & Conditions
             </h1>
             <div className="prose prose-invert max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-primary">
-              <p>Last updated: 10 October 2026</p>
+              <p>Last updated: 14 October 2026</p>
               
               <h2>1. Agreement to Terms</h2>
               <p>
@@ -33,7 +33,7 @@ const TermsAndConditions = () => {
               </p>
 
               <h3>Online package advances</h3>
-              <p>When online checkout is enabled, Starter and Business packages accept advances of ₹5,000 and ₹7,500 respectively, equal to 50% of their advertised starting prices. The advance is credited toward the final agreed project price; it is not payment for the entire project. The final scope, any additional costs and remaining payments are agreed in your proposal. Premium and custom projects require a separate quote.</p>
+              <p>When online checkout is enabled, Starter and Business packages accept the advance amount displayed for your package at checkout. Package starting prices and advances may change for new bookings; existing orders retain their original amounts. The advance is credited toward the final agreed project price; it is not payment for the entire project. The final scope, any additional costs and remaining payments are agreed in your proposal. Premium and custom projects require a separate quote.</p>
               <p>Online payments are processed by Razorpay. A payment is confirmed when it is captured and verified, rather than solely when checkout closes. If your account is debited but confirmation is pending, contact us with your payment reference before making another payment. Cancellation and refund requests follow our <Link to="/refund-policy">Refund &amp; Cancellation Policy</Link>. Delivery follows our <Link to="/delivery-policy">Digital Delivery Policy</Link>.</p>
 
               <h2>4. Intellectual Property Rights</h2>

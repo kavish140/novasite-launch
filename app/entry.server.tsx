@@ -21,27 +21,8 @@ export default async function handleRequest(
 
   responseHeaders.set("Content-Type", "text/html");
 
-  const stream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(new TextEncoder().encode("<!DOCTYPE html>\n"));
-      const reader = body.getReader();
-      return pump();
-      function pump(): Promise<void> | void {
-        return reader.read().then(({ done, value }) => {
-          if (done) {
-            controller.close();
-            return;
-          }
-          controller.enqueue(value);
-          return pump();
-        }).catch((err) => {
-          controller.error(err);
-        });
-      }
-    },
-  });
-
-  return new Response(stream, {
+  // React emits the document doctype; preserve its stream and backpressure unchanged.
+  return new Response(body, {
     status: responseStatusCode,
     headers: responseHeaders,
   });

@@ -1,0 +1,2096 @@
+diff --git a/app/components/QuoteForm.tsx b/app/components/QuoteForm.tsx
+index d7e4c82..cb2c6c5 100644
+--- a/app/components/QuoteForm.tsx
++++ b/app/components/QuoteForm.tsx
+@@ -32,7 +32,7 @@ export default function QuoteForm({
+   const navigate = useNavigate();
+   const [step, setStep] = useState(1);
+   const [error, setError] = useState("");
+-  const submission = useRef<{ body: string; id: string }>();
++  const submission = useRef<{ body: string; id: string } | undefined>(undefined);
+   const {
+     register,
+     handleSubmit,
+diff --git a/app/entry.client.tsx b/app/entry.client.tsx
+index 4878620..1d03358 100644
+--- a/app/entry.client.tsx
++++ b/app/entry.client.tsx
+@@ -1,13 +1,13 @@
++import { startTransition } from "react";
+ import { hydrateRoot } from "react-dom/client";
+ import { HydratedRouter } from "react-router/dom";
+ 
+-hydrateRoot(
+-  document,
+-  <HydratedRouter />
+-);
++startTransition(() => {
++  hydrateRoot(document, <HydratedRouter />);
++});
+ 
+ // Sentry — delayed init (preserves existing pattern from main.tsx)
+-if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && !window.location.pathname.startsWith("/admin")) {
++if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && window.location.pathname !== "/project" && !window.location.pathname.startsWith("/admin")) {
+   setTimeout(() => {
+     import("@sentry/react").then((Sentry) => {
+       Sentry.init({
+diff --git a/app/entry.server.tsx b/app/entry.server.tsx
+index 949450c..dade817 100644
+--- a/app/entry.server.tsx
++++ b/app/entry.server.tsx
+@@ -21,27 +21,8 @@ export default async function handleRequest(
+ 
+   responseHeaders.set("Content-Type", "text/html");
+ 
+-  const stream = new ReadableStream({
+-    start(controller) {
+-      controller.enqueue(new TextEncoder().encode("<!DOCTYPE html>\n"));
+-      const reader = body.getReader();
+-      return pump();
+-      function pump(): Promise<void> | void {
+-        return reader.read().then(({ done, value }) => {
+-          if (done) {
+-            controller.close();
+-            return;
+-          }
+-          controller.enqueue(value);
+-          return pump();
+-        }).catch((err) => {
+-          controller.error(err);
+-        });
+-      }
+-    },
+-  });
+-
+-  return new Response(stream, {
++  // React emits the document doctype; preserve its stream and backpressure unchanged.
++  return new Response(body, {
+     status: responseStatusCode,
+     headers: responseHeaders,
+   });
+diff --git a/app/root.tsx b/app/root.tsx
+index 05d39f9..a887576 100644
+--- a/app/root.tsx
++++ b/app/root.tsx
+@@ -25,7 +25,7 @@ const AnnouncementBanner = lazy(() => import("@/components/AnnouncementBanner"))
+ 
+ export function Layout({ children }: { children: React.ReactNode }) {
+   const pathname = useLocation().pathname;
+-  const paymentPage = pathname === "/pay" || pathname === "/receipt" || pathname.startsWith("/admin");
++  const paymentPage = pathname === "/pay" || pathname === "/receipt" || pathname === "/project" || pathname.startsWith("/admin");
+   return (
+     <html lang="en" suppressHydrationWarning>
+       <head>
+diff --git a/package-lock.json b/package-lock.json
+index 84e4c3f..d515168 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -59,10 +59,10 @@
+         "framer-motion": "^12.34.3",
+         "input-otp": "^1.4.2",
+         "lucide-react": "^0.462.0",
+-        "next-themes": "^0.3.0",
+-        "react": "^18.3.1",
++        "next-themes": "0.4.6",
++        "react": "19.3.0",
+         "react-day-picker": "^8.10.1",
+-        "react-dom": "^18.3.1",
++        "react-dom": "19.3.0",
+         "react-hook-form": "^7.61.1",
+         "react-resizable-panels": "^2.1.9",
+         "react-router": "^7.6.3",
+@@ -71,7 +71,7 @@
+         "sonner": "^1.7.4",
+         "tailwind-merge": "^2.6.0",
+         "tailwindcss-animate": "^1.0.7",
+-        "vaul": "^0.9.9",
++        "vaul": "1.1.2",
+         "zod": "^3.25.76"
+       },
+       "devDependencies": {
+@@ -84,8 +84,8 @@
+         "@testing-library/jest-dom": "^6.6.0",
+         "@testing-library/react": "^16.0.0",
+         "@types/node": "^22.16.5",
+-        "@types/react": "^18.3.23",
+-        "@types/react-dom": "^18.3.7",
++        "@types/react": "19.3.0",
++        "@types/react-dom": "19.3.0",
+         "@types/sanitize-html": "^2.13.0",
+         "autoprefixer": "^10.4.21",
+         "eslint": "^9.32.0",
+@@ -2345,17 +2345,20 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-alert-dialog": {
+-      "version": "1.1.23",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-alert-dialog/-/react-alert-dialog-1.1.23.tgz",
+-      "integrity": "sha512-VAYOiQRqj3GPpYJE0I9J+X8Ip05cyVlNdKOFeiGS2Ou1HHGfpl0BxOyZm6nmVDyU+W+NF3/XLzmjHmVGydhwgA==",
++    "node_modules/@radix-ui/react-accordion/node_modules/@radix-ui/react-collapsible": {
++      "version": "1.1.20",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-collapsible/-/react-collapsible-1.1.20.tgz",
++      "integrity": "sha512-mcGesGplBnzN2sbvJETzpCNfSMyPnb29q1GRLU+Ib7bJrpIG2ywmRoh2V5VbA2uNvKikKUlVbAPks7JDjz4A8Q==",
+       "license": "MIT",
+       "dependencies": {
+         "@radix-ui/primitive": "1.1.7",
+         "@radix-ui/react-compose-refs": "1.1.5",
+         "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-dialog": "1.1.23",
+-        "@radix-ui/react-primitive": "2.1.10"
++        "@radix-ui/react-id": "1.1.4",
++        "@radix-ui/react-presence": "1.1.10",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-controllable-state": "1.2.6",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2372,12 +2375,16 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-arrow": {
+-      "version": "1.1.15",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-arrow/-/react-arrow-1.1.15.tgz",
+-      "integrity": "sha512-v4zggRcjadnI+ClKDuijlQEW4tw3NoaeHc/PwpKnLoLLKNUG4InLegkstooLcRIUWCs+8L22dGURCVuFfOKfnA==",
++    "node_modules/@radix-ui/react-alert-dialog": {
++      "version": "1.1.23",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-alert-dialog/-/react-alert-dialog-1.1.23.tgz",
++      "integrity": "sha512-VAYOiQRqj3GPpYJE0I9J+X8Ip05cyVlNdKOFeiGS2Ou1HHGfpl0BxOyZm6nmVDyU+W+NF3/XLzmjHmVGydhwgA==",
+       "license": "MIT",
+       "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-dialog": "1.1.23",
+         "@radix-ui/react-primitive": "2.1.10"
+       },
+       "peerDependencies": {
+@@ -2395,13 +2402,27 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-aspect-ratio": {
+-      "version": "1.1.15",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-aspect-ratio/-/react-aspect-ratio-1.1.15.tgz",
+-      "integrity": "sha512-fy+dyVR+90nelK8rqIznFlxzx7uPcGbhxH8Nfr2bHb4UfSe+e3hklOC0luK0hDwVwnRX7xTRySpsrQVeW+/oNQ==",
++    "node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-dialog": {
++      "version": "1.1.23",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dialog/-/react-dialog-1.1.23.tgz",
++      "integrity": "sha512-Ksw4WeROkO4rC9k/onilX/Ao2Cr1ku1unMNH+XSCcP4jSXYu7HDsg9n4ojMjVb22XpYjAQ9qfrFlVbru1vXDUA==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/react-primitive": "2.1.10"
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-dismissable-layer": "1.1.19",
++        "@radix-ui/react-focus-guards": "1.1.6",
++        "@radix-ui/react-focus-scope": "1.1.16",
++        "@radix-ui/react-id": "1.1.4",
++        "@radix-ui/react-portal": "1.1.17",
++        "@radix-ui/react-presence": "1.1.10",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-slot": "1.3.3",
++        "@radix-ui/react-use-controllable-state": "1.2.6",
++        "@radix-ui/react-use-layout-effect": "1.1.4",
++        "aria-hidden": "^1.2.4",
++        "react-remove-scroll": "^2.7.2"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2418,18 +2439,17 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-avatar": {
+-      "version": "1.2.6",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-avatar/-/react-avatar-1.2.6.tgz",
+-      "integrity": "sha512-4ULOTJ/mqy2hT9GlWa/MFHxHSvH3nJzHnZM1waNsc5Bonv7i70aNenghXmD97S6OJ81ekXONGGt4nT1r0PfEdA==",
++    "node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.19",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
+       "license": "MIT",
+       "dependencies": {
+         "@radix-ui/primitive": "1.1.7",
+-        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-compose-refs": "1.1.5",
+         "@radix-ui/react-primitive": "2.1.10",
+         "@radix-ui/react-use-callback-ref": "1.1.4",
+-        "@radix-ui/react-use-is-hydrated": "0.1.3",
+-        "@radix-ui/react-use-layout-effect": "1.1.4"
++        "@radix-ui/react-use-effect-event": "0.0.5"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2446,19 +2466,15 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-checkbox": {
+-      "version": "1.3.11",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-checkbox/-/react-checkbox-1.3.11.tgz",
+-      "integrity": "sha512-Gnptr9pDDQxD3hgq2dtPbtrp/c2qH1mBwIzw3X/ivrMb2e1t0jMTi606fVEqFPaQR1ggXIVQWKj3P2WW9v7zGQ==",
++    "node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-focus-scope": {
++      "version": "1.1.16",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.1.16.tgz",
++      "integrity": "sha512-wmRZ2WWLvmt6KHy2rNPOdPUjwq5xOHY02+m+udwJTn0aNIox/rkskAvJTyTLGhPK6KgrUjlJUJpgmx/+wFiFIQ==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/primitive": "1.1.7",
+         "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-presence": "1.1.10",
+         "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-controllable-state": "1.2.6",
+-        "@radix-ui/react-use-size": "1.1.4"
++        "@radix-ui/react-use-callback-ref": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2475,19 +2491,13 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-collapsible": {
+-      "version": "1.1.20",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-collapsible/-/react-collapsible-1.1.20.tgz",
+-      "integrity": "sha512-mcGesGplBnzN2sbvJETzpCNfSMyPnb29q1GRLU+Ib7bJrpIG2ywmRoh2V5VbA2uNvKikKUlVbAPks7JDjz4A8Q==",
++    "node_modules/@radix-ui/react-alert-dialog/node_modules/@radix-ui/react-portal": {
++      "version": "1.1.17",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
++      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/primitive": "1.1.7",
+-        "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-id": "1.1.4",
+-        "@radix-ui/react-presence": "1.1.10",
+         "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-controllable-state": "1.2.6",
+         "@radix-ui/react-use-layout-effect": "1.1.4"
+       },
+       "peerDependencies": {
+@@ -2505,16 +2515,13 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-collection": {
++    "node_modules/@radix-ui/react-arrow": {
+       "version": "1.1.15",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-collection/-/react-collection-1.1.15.tgz",
+-      "integrity": "sha512-9W+B9NPF0NaaPh/1NJd3+KqsnlLqU9H7T2rvww+fp+T/evVXdNAyYcnfRQZFOjkR1ajQp3yORlqnI8soawLvNA==",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-arrow/-/react-arrow-1.1.15.tgz",
++      "integrity": "sha512-v4zggRcjadnI+ClKDuijlQEW4tw3NoaeHc/PwpKnLoLLKNUG4InLegkstooLcRIUWCs+8L22dGURCVuFfOKfnA==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-slot": "1.3.3"
++        "@radix-ui/react-primitive": "2.1.10"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2531,47 +2538,70 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-compose-refs": {
+-      "version": "1.1.5",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.5.tgz",
+-      "integrity": "sha512-+48PbAAbq3didjJxa+OaWY2ZwgAKsNiRGyeHKszblZMQ+kcpd9pAaT11cMkGEie0vsOi3QdeTE6d5Fe3Gn61kA==",
++    "node_modules/@radix-ui/react-aspect-ratio": {
++      "version": "1.1.15",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-aspect-ratio/-/react-aspect-ratio-1.1.15.tgz",
++      "integrity": "sha512-fy+dyVR+90nelK8rqIznFlxzx7uPcGbhxH8Nfr2bHb4UfSe+e3hklOC0luK0hDwVwnRX7xTRySpsrQVeW+/oNQ==",
+       "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.1.10"
++      },
+       "peerDependencies": {
+         "@types/react": "*",
+-        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+       },
+       "peerDependenciesMeta": {
+         "@types/react": {
+           "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-context": {
+-      "version": "1.2.2",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-context/-/react-context-1.2.2.tgz",
+-      "integrity": "sha512-RHCUGwKHDr0hDGg4X7ma4JG4/+12qxw8rkh5QKdDldlCvtja6nUx1Ef/8HVrJze81lEsgLQlqjzjGNHantgnQA==",
++    "node_modules/@radix-ui/react-avatar": {
++      "version": "1.2.6",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-avatar/-/react-avatar-1.2.6.tgz",
++      "integrity": "sha512-4ULOTJ/mqy2hT9GlWa/MFHxHSvH3nJzHnZM1waNsc5Bonv7i70aNenghXmD97S6OJ81ekXONGGt4nT1r0PfEdA==",
+       "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-is-hydrated": "0.1.3",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
+       "peerDependencies": {
+         "@types/react": "*",
+-        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+       },
+       "peerDependenciesMeta": {
+         "@types/react": {
+           "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-context-menu": {
+-      "version": "2.3.7",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-context-menu/-/react-context-menu-2.3.7.tgz",
+-      "integrity": "sha512-CtXP35dxaB5T3zXSd+E3uHe/QpXcpYnZmxp6OaIbfthtfW4wyb77M23BG+bwIJDtsMwEP/YssdsmNyZu7jhWew==",
++    "node_modules/@radix-ui/react-checkbox": {
++      "version": "1.3.11",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-checkbox/-/react-checkbox-1.3.11.tgz",
++      "integrity": "sha512-Gnptr9pDDQxD3hgq2dtPbtrp/c2qH1mBwIzw3X/ivrMb2e1t0jMTi606fVEqFPaQR1ggXIVQWKj3P2WW9v7zGQ==",
+       "license": "MIT",
+       "dependencies": {
+         "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
+         "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-menu": "2.1.24",
++        "@radix-ui/react-presence": "1.1.10",
+         "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-controllable-state": "1.2.6"
++        "@radix-ui/react-use-controllable-state": "1.2.6",
++        "@radix-ui/react-use-size": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2588,27 +2618,20 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-dialog": {
+-      "version": "1.1.23",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-dialog/-/react-dialog-1.1.23.tgz",
+-      "integrity": "sha512-Ksw4WeROkO4rC9k/onilX/Ao2Cr1ku1unMNH+XSCcP4jSXYu7HDsg9n4ojMjVb22XpYjAQ9qfrFlVbru1vXDUA==",
++    "node_modules/@radix-ui/react-collapsible": {
++      "version": "1.2.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-collapsible/-/react-collapsible-1.2.1.tgz",
++      "integrity": "sha512-fSzLb/qy1wuZSxQBcxpW0hNXYHDMWiIXDGyJGdA4+FSLknOWZsNRrTCUavxb4PI8b8lvHo/CysO6NVi5zLpo5g==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/primitive": "1.2.0",
+         "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-dismissable-layer": "1.1.19",
+-        "@radix-ui/react-focus-guards": "1.1.6",
+-        "@radix-ui/react-focus-scope": "1.1.16",
++        "@radix-ui/react-context": "1.3.0",
+         "@radix-ui/react-id": "1.1.4",
+-        "@radix-ui/react-portal": "1.1.17",
+-        "@radix-ui/react-presence": "1.1.10",
+-        "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-slot": "1.3.3",
+-        "@radix-ui/react-use-controllable-state": "1.2.6",
+-        "@radix-ui/react-use-layout-effect": "1.1.4",
+-        "aria-hidden": "^1.2.4",
+-        "react-remove-scroll": "^2.7.2"
++        "@radix-ui/react-presence": "1.1.11",
++        "@radix-ui/react-primitive": "2.2.0",
++        "@radix-ui/react-use-controllable-state": "1.3.0",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2625,10 +2648,16 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-direction": {
+-      "version": "1.1.4",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-direction/-/react-direction-1.1.4.tgz",
+-      "integrity": "sha512-5pzg4FGQNpExhnhT2zlrP1wZFaYCd1K0nYWoFAdcYoYK868IEigqMX3B3f8yIoRlAhAeDWciLI6ZdCKHF9P4Vg==",
++    "node_modules/@radix-ui/react-collapsible/node_modules/@radix-ui/primitive": {
++      "version": "1.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.2.0.tgz",
++      "integrity": "sha512-KABY+VMIRPJL+Vyzv/335FEhXXD/xDv8BMb1kl48/aXJZMH0LtHCTx5ga5RnxaEP3nZHtmTLf1P9vanmFX46bw==",
++      "license": "MIT"
++    },
++    "node_modules/@radix-ui/react-collapsible/node_modules/@radix-ui/react-context": {
++      "version": "1.3.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-context/-/react-context-1.3.0.tgz",
++      "integrity": "sha512-v5AYEocMISkbJ+1fTXzZpiFv7NRr3D2WiYbLIKf+FkmJ8VkP6d503eV2n34MFussHXY1pcoq3yfJiQH77dc4Mg==",
+       "license": "MIT",
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2640,17 +2669,13 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-dismissable-layer": {
+-      "version": "1.1.19",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
+-      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
++    "node_modules/@radix-ui/react-collapsible/node_modules/@radix-ui/react-presence": {
++      "version": "1.1.11",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.1.11.tgz",
++      "integrity": "sha512-Z7/atlkab36Z8hm+V8zYc79r0W+tiOB1o0tun1By94JyadkekLQmtEAnBSP9XKXBNQsStoStS4+gX10JpS5akA==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/primitive": "1.1.7",
+-        "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-callback-ref": "1.1.4",
+-        "@radix-ui/react-use-effect-event": "0.0.5"
++        "@radix-ui/react-use-layout-effect": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2667,19 +2692,13 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-dropdown-menu": {
+-      "version": "2.1.24",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-dropdown-menu/-/react-dropdown-menu-2.1.24.tgz",
+-      "integrity": "sha512-geq8l2rJkxvkXsT9RMgtUE3P8pITFpTsvYpbySi1IH4fZEABD/Gp85myayFgxk0ktljGMJnCbeFkyTusvSvv7g==",
++    "node_modules/@radix-ui/react-collapsible/node_modules/@radix-ui/react-primitive": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.2.0.tgz",
++      "integrity": "sha512-HCTSPMNqv55Qk0IX4geJbpyXazmqulcimwuyjxTkKi29v+QZbG2Zho9BnbBq4YS2PF+KlNb2CXoLz66uUmblkg==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/primitive": "1.1.7",
+-        "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-id": "1.1.4",
+-        "@radix-ui/react-menu": "2.1.24",
+-        "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-controllable-state": "1.2.6"
++        "@radix-ui/react-slot": "1.5.0"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2696,11 +2715,14 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-focus-guards": {
+-      "version": "1.1.6",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-guards/-/react-focus-guards-1.1.6.tgz",
+-      "integrity": "sha512-RNOJjfZMTyBM6xYmV3IVGXkPjIhcBAuv48POevAXwrGJhkWZ9p1rFoIS1JFooPuT193AZmRsCPhpoVJxx6OPoQ==",
++    "node_modules/@radix-ui/react-collapsible/node_modules/@radix-ui/react-slot": {
++      "version": "1.5.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.5.0.tgz",
++      "integrity": "sha512-tyYd9ddPXAysAbdbD9eYxgwpCSv6f3PncqVSNKQFSR5lcJVLz3cb/pANDoYrLiHBpXv7skortyUgGUWsYuPPFQ==",
+       "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5"
++      },
+       "peerDependencies": {
+         "@types/react": "*",
+         "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+@@ -2711,46 +2733,36 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-focus-scope": {
+-      "version": "1.1.16",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.1.16.tgz",
+-      "integrity": "sha512-wmRZ2WWLvmt6KHy2rNPOdPUjwq5xOHY02+m+udwJTn0aNIox/rkskAvJTyTLGhPK6KgrUjlJUJpgmx/+wFiFIQ==",
++    "node_modules/@radix-ui/react-collapsible/node_modules/@radix-ui/react-use-controllable-state": {
++      "version": "1.3.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.3.0.tgz",
++      "integrity": "sha512-TAcBI7bw2ljYCbv4+zuTSd6zICu8pRt6SDN2vJ/Z06K2MXh6I9WYFe/A9ovlFDtR5HVHGm5iDxDoABm/++dbKg==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-callback-ref": "1.1.4"
++        "@radix-ui/primitive": "1.2.0",
++        "@radix-ui/react-use-effect-event": "0.0.5",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+-        "@types/react-dom": "*",
+-        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
+-        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+       },
+       "peerDependenciesMeta": {
+         "@types/react": {
+           "optional": true
+-        },
+-        "@types/react-dom": {
+-          "optional": true
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-hover-card": {
+-      "version": "1.1.23",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-hover-card/-/react-hover-card-1.1.23.tgz",
+-      "integrity": "sha512-H8qONfZd3ltrU3+jHCIgITbWo6e1iTKvP9DHdrvYbX48ooRM5FjEDTn16AMwdfuOGkWdZEhpl3PLL/Wk/AnHDQ==",
++    "node_modules/@radix-ui/react-collection": {
++      "version": "1.1.15",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-collection/-/react-collection-1.1.15.tgz",
++      "integrity": "sha512-9W+B9NPF0NaaPh/1NJd3+KqsnlLqU9H7T2rvww+fp+T/evVXdNAyYcnfRQZFOjkR1ajQp3yORlqnI8soawLvNA==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/primitive": "1.1.7",
+         "@radix-ui/react-compose-refs": "1.1.5",
+         "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-dismissable-layer": "1.1.19",
+-        "@radix-ui/react-popper": "1.3.7",
+-        "@radix-ui/react-portal": "1.1.17",
+-        "@radix-ui/react-presence": "1.1.10",
+         "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-controllable-state": "1.2.6"
++        "@radix-ui/react-slot": "1.3.3"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2767,14 +2779,11 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-id": {
+-      "version": "1.1.4",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-id/-/react-id-1.1.4.tgz",
+-      "integrity": "sha512-TMQp2llA+RYn7JcjnrMnz7wN4pcVttPZnRZo52PLQsoLVKzNlVwUeHmfePgTgRluXFvlD3GD5g5MOVVTJCO0qA==",
++    "node_modules/@radix-ui/react-compose-refs": {
++      "version": "1.1.5",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.5.tgz",
++      "integrity": "sha512-+48PbAAbq3didjJxa+OaWY2ZwgAKsNiRGyeHKszblZMQ+kcpd9pAaT11cMkGEie0vsOi3QdeTE6d5Fe3Gn61kA==",
+       "license": "MIT",
+-      "dependencies": {
+-        "@radix-ui/react-use-layout-effect": "1.1.4"
+-      },
+       "peerDependencies": {
+         "@types/react": "*",
+         "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
+@@ -2785,8 +2794,542 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-label": {
+-      "version": "2.1.15",
++    "node_modules/@radix-ui/react-context": {
++      "version": "1.2.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-context/-/react-context-1.2.2.tgz",
++      "integrity": "sha512-RHCUGwKHDr0hDGg4X7ma4JG4/+12qxw8rkh5QKdDldlCvtja6nUx1Ef/8HVrJze81lEsgLQlqjzjGNHantgnQA==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-context-menu": {
++      "version": "2.3.7",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-context-menu/-/react-context-menu-2.3.7.tgz",
++      "integrity": "sha512-CtXP35dxaB5T3zXSd+E3uHe/QpXcpYnZmxp6OaIbfthtfW4wyb77M23BG+bwIJDtsMwEP/YssdsmNyZu7jhWew==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-menu": "2.1.24",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-controllable-state": "1.2.6"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dialog": {
++      "version": "1.3.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dialog/-/react-dialog-1.3.1.tgz",
++      "integrity": "sha512-+0E4qvVTwjAWra9sEhJ+9BTsvHE00zkUuNw1VGh7S+Gc13dfYk+S1PVQdchWDj+XYHhAai7Z7IpzXVDCGsDplg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.2.0",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.3.0",
++        "@radix-ui/react-dismissable-layer": "1.2.1",
++        "@radix-ui/react-focus-guards": "1.2.0",
++        "@radix-ui/react-focus-scope": "1.3.1",
++        "@radix-ui/react-id": "1.1.4",
++        "@radix-ui/react-portal": "1.2.0",
++        "@radix-ui/react-presence": "1.1.11",
++        "@radix-ui/react-primitive": "2.2.0",
++        "@radix-ui/react-slot": "1.5.0",
++        "@radix-ui/react-use-controllable-state": "1.3.0",
++        "@radix-ui/react-use-layout-effect": "1.1.4",
++        "aria-hidden": "^1.2.4",
++        "react-remove-scroll": "^2.7.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dialog/node_modules/@radix-ui/primitive": {
++      "version": "1.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.2.0.tgz",
++      "integrity": "sha512-KABY+VMIRPJL+Vyzv/335FEhXXD/xDv8BMb1kl48/aXJZMH0LtHCTx5ga5RnxaEP3nZHtmTLf1P9vanmFX46bw==",
++      "license": "MIT"
++    },
++    "node_modules/@radix-ui/react-dialog/node_modules/@radix-ui/react-context": {
++      "version": "1.3.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-context/-/react-context-1.3.0.tgz",
++      "integrity": "sha512-v5AYEocMISkbJ+1fTXzZpiFv7NRr3D2WiYbLIKf+FkmJ8VkP6d503eV2n34MFussHXY1pcoq3yfJiQH77dc4Mg==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dialog/node_modules/@radix-ui/react-focus-guards": {
++      "version": "1.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-guards/-/react-focus-guards-1.2.0.tgz",
++      "integrity": "sha512-MPm5R0iRGUDrDnPNxmLBkv+X7pN4XKzt+MbWJEuJQsH3NFH4omrbpXpucyYCCKTSt+na/ZxGhEWQrWTZ0285cA==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dialog/node_modules/@radix-ui/react-presence": {
++      "version": "1.1.11",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.1.11.tgz",
++      "integrity": "sha512-Z7/atlkab36Z8hm+V8zYc79r0W+tiOB1o0tun1By94JyadkekLQmtEAnBSP9XKXBNQsStoStS4+gX10JpS5akA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dialog/node_modules/@radix-ui/react-primitive": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.2.0.tgz",
++      "integrity": "sha512-HCTSPMNqv55Qk0IX4geJbpyXazmqulcimwuyjxTkKi29v+QZbG2Zho9BnbBq4YS2PF+KlNb2CXoLz66uUmblkg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-slot": "1.5.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dialog/node_modules/@radix-ui/react-slot": {
++      "version": "1.5.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.5.0.tgz",
++      "integrity": "sha512-tyYd9ddPXAysAbdbD9eYxgwpCSv6f3PncqVSNKQFSR5lcJVLz3cb/pANDoYrLiHBpXv7skortyUgGUWsYuPPFQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dialog/node_modules/@radix-ui/react-use-controllable-state": {
++      "version": "1.3.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.3.0.tgz",
++      "integrity": "sha512-TAcBI7bw2ljYCbv4+zuTSd6zICu8pRt6SDN2vJ/Z06K2MXh6I9WYFe/A9ovlFDtR5HVHGm5iDxDoABm/++dbKg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.2.0",
++        "@radix-ui/react-use-effect-event": "0.0.5",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-direction": {
++      "version": "1.1.4",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-direction/-/react-direction-1.1.4.tgz",
++      "integrity": "sha512-5pzg4FGQNpExhnhT2zlrP1wZFaYCd1K0nYWoFAdcYoYK868IEigqMX3B3f8yIoRlAhAeDWciLI6ZdCKHF9P4Vg==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.2.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.2.1.tgz",
++      "integrity": "sha512-KIfDcAsx+oVylFZ4xryVKusJUrLLhTQmfnJW4kwk4Km5myvhHCrj04hnWWUC166+xD4DHdH8tQGylwYX1h6+Pg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.2.0",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.2.0",
++        "@radix-ui/react-use-callback-ref": "1.1.5",
++        "@radix-ui/react-use-effect-event": "0.0.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dismissable-layer/node_modules/@radix-ui/primitive": {
++      "version": "1.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.2.0.tgz",
++      "integrity": "sha512-KABY+VMIRPJL+Vyzv/335FEhXXD/xDv8BMb1kl48/aXJZMH0LtHCTx5ga5RnxaEP3nZHtmTLf1P9vanmFX46bw==",
++      "license": "MIT"
++    },
++    "node_modules/@radix-ui/react-dismissable-layer/node_modules/@radix-ui/react-primitive": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.2.0.tgz",
++      "integrity": "sha512-HCTSPMNqv55Qk0IX4geJbpyXazmqulcimwuyjxTkKi29v+QZbG2Zho9BnbBq4YS2PF+KlNb2CXoLz66uUmblkg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-slot": "1.5.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dismissable-layer/node_modules/@radix-ui/react-slot": {
++      "version": "1.5.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.5.0.tgz",
++      "integrity": "sha512-tyYd9ddPXAysAbdbD9eYxgwpCSv6f3PncqVSNKQFSR5lcJVLz3cb/pANDoYrLiHBpXv7skortyUgGUWsYuPPFQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dismissable-layer/node_modules/@radix-ui/react-use-callback-ref": {
++      "version": "1.1.5",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.5.tgz",
++      "integrity": "sha512-Y5GBf4NKeADoXI1geiMlMuMoURT3k9MizzzKhGb/m55H94aGigZ01PIpkvsO6lML13BA6XYAXSJ6gza7vTn5nw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-dropdown-menu": {
++      "version": "2.1.24",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dropdown-menu/-/react-dropdown-menu-2.1.24.tgz",
++      "integrity": "sha512-geq8l2rJkxvkXsT9RMgtUE3P8pITFpTsvYpbySi1IH4fZEABD/Gp85myayFgxk0ktljGMJnCbeFkyTusvSvv7g==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-id": "1.1.4",
++        "@radix-ui/react-menu": "2.1.24",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-controllable-state": "1.2.6"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-focus-guards": {
++      "version": "1.1.6",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-guards/-/react-focus-guards-1.1.6.tgz",
++      "integrity": "sha512-RNOJjfZMTyBM6xYmV3IVGXkPjIhcBAuv48POevAXwrGJhkWZ9p1rFoIS1JFooPuT193AZmRsCPhpoVJxx6OPoQ==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-focus-scope": {
++      "version": "1.3.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.3.1.tgz",
++      "integrity": "sha512-ugeMhbXt4y5S2T1GnIqbWDKEN962PDwnX1fN0eKOOgf5f63Dh2mn8F1FUySlgW0iF6GiVsRF32DzuDIWTUyQJg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.2.0",
++        "@radix-ui/react-use-callback-ref": "1.1.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-focus-scope/node_modules/@radix-ui/react-primitive": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.2.0.tgz",
++      "integrity": "sha512-HCTSPMNqv55Qk0IX4geJbpyXazmqulcimwuyjxTkKi29v+QZbG2Zho9BnbBq4YS2PF+KlNb2CXoLz66uUmblkg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-slot": "1.5.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-focus-scope/node_modules/@radix-ui/react-slot": {
++      "version": "1.5.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.5.0.tgz",
++      "integrity": "sha512-tyYd9ddPXAysAbdbD9eYxgwpCSv6f3PncqVSNKQFSR5lcJVLz3cb/pANDoYrLiHBpXv7skortyUgGUWsYuPPFQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-focus-scope/node_modules/@radix-ui/react-use-callback-ref": {
++      "version": "1.1.5",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.5.tgz",
++      "integrity": "sha512-Y5GBf4NKeADoXI1geiMlMuMoURT3k9MizzzKhGb/m55H94aGigZ01PIpkvsO6lML13BA6XYAXSJ6gza7vTn5nw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-hover-card": {
++      "version": "1.1.23",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-hover-card/-/react-hover-card-1.1.23.tgz",
++      "integrity": "sha512-H8qONfZd3ltrU3+jHCIgITbWo6e1iTKvP9DHdrvYbX48ooRM5FjEDTn16AMwdfuOGkWdZEhpl3PLL/Wk/AnHDQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-dismissable-layer": "1.1.19",
++        "@radix-ui/react-popper": "1.3.7",
++        "@radix-ui/react-portal": "1.1.17",
++        "@radix-ui/react-presence": "1.1.10",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-controllable-state": "1.2.6"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-hover-card/node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.19",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-effect-event": "0.0.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-hover-card/node_modules/@radix-ui/react-portal": {
++      "version": "1.1.17",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
++      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-id": {
++      "version": "1.1.4",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-id/-/react-id-1.1.4.tgz",
++      "integrity": "sha512-TMQp2llA+RYn7JcjnrMnz7wN4pcVttPZnRZo52PLQsoLVKzNlVwUeHmfePgTgRluXFvlD3GD5g5MOVVTJCO0qA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-label": {
++      "version": "2.1.15",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-label/-/react-label-2.1.15.tgz",
+       "integrity": "sha512-o/rdYEwZTTo5tjknnPeyQFU45kUC4i/XyeDPP+HGyi6XqpOP6Zf5Ya5vh/Yfe9Id5JiuWnnAx2XqIeD3UYZt0g==",
+       "license": "MIT",
+@@ -2827,11 +3370,87 @@
+         "@radix-ui/react-portal": "1.1.17",
+         "@radix-ui/react-presence": "1.1.10",
+         "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-roving-focus": "1.1.19",
+-        "@radix-ui/react-slot": "1.3.3",
+-        "@radix-ui/react-use-callback-ref": "1.1.4",
+-        "aria-hidden": "^1.2.4",
+-        "react-remove-scroll": "^2.7.2"
++        "@radix-ui/react-roving-focus": "1.1.19",
++        "@radix-ui/react-slot": "1.3.3",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "aria-hidden": "^1.2.4",
++        "react-remove-scroll": "^2.7.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-menu/node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.19",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-effect-event": "0.0.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-menu/node_modules/@radix-ui/react-focus-scope": {
++      "version": "1.1.16",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.1.16.tgz",
++      "integrity": "sha512-wmRZ2WWLvmt6KHy2rNPOdPUjwq5xOHY02+m+udwJTn0aNIox/rkskAvJTyTLGhPK6KgrUjlJUJpgmx/+wFiFIQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-menu/node_modules/@radix-ui/react-portal": {
++      "version": "1.1.17",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
++      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -2916,6 +3535,33 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-navigation-menu/node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.19",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-effect-event": "0.0.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-popover": {
+       "version": "1.1.23",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-popover/-/react-popover-1.1.23.tgz",
+@@ -2953,6 +3599,82 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-popover/node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.19",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-effect-event": "0.0.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-popover/node_modules/@radix-ui/react-focus-scope": {
++      "version": "1.1.16",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.1.16.tgz",
++      "integrity": "sha512-wmRZ2WWLvmt6KHy2rNPOdPUjwq5xOHY02+m+udwJTn0aNIox/rkskAvJTyTLGhPK6KgrUjlJUJpgmx/+wFiFIQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-popover/node_modules/@radix-ui/react-portal": {
++      "version": "1.1.17",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
++      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-popper": {
+       "version": "1.3.7",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-popper/-/react-popper-1.3.7.tgz",
+@@ -2986,12 +3708,12 @@
+       }
+     },
+     "node_modules/@radix-ui/react-portal": {
+-      "version": "1.1.17",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
+-      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
++      "version": "1.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.2.0.tgz",
++      "integrity": "sha512-StX7xXnaRU41VvFtMm9zlhVGz8XF6GmWWTXftkQaY+tqVkbs/R9UmAp5mLzHHapk5hM9RMZQvO/3usyIP/g42g==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-primitive": "2.2.0",
+         "@radix-ui/react-use-layout-effect": "1.1.4"
+       },
+       "peerDependencies": {
+@@ -3009,6 +3731,47 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-portal/node_modules/@radix-ui/react-primitive": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.2.0.tgz",
++      "integrity": "sha512-HCTSPMNqv55Qk0IX4geJbpyXazmqulcimwuyjxTkKi29v+QZbG2Zho9BnbBq4YS2PF+KlNb2CXoLz66uUmblkg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-slot": "1.5.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-portal/node_modules/@radix-ui/react-slot": {
++      "version": "1.5.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.5.0.tgz",
++      "integrity": "sha512-tyYd9ddPXAysAbdbD9eYxgwpCSv6f3PncqVSNKQFSR5lcJVLz3cb/pANDoYrLiHBpXv7skortyUgGUWsYuPPFQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-presence": {
+       "version": "1.1.10",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.1.10.tgz",
+@@ -3093,7 +3856,115 @@
+         "@radix-ui/react-primitive": "2.1.10",
+         "@radix-ui/react-roving-focus": "1.1.19",
+         "@radix-ui/react-use-controllable-state": "1.2.6",
+-        "@radix-ui/react-use-size": "1.1.4"
++        "@radix-ui/react-use-size": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-roving-focus": {
++      "version": "1.1.19",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-roving-focus/-/react-roving-focus-1.1.19.tgz",
++      "integrity": "sha512-V9jI6hDjT7l3jsCQD9bLNvDLM3tH/gdbOTp7Tefp3hbbgCGQoK7tUvrWiRlcoBHIZ809ElXwNQwVo0B98LuTXQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-collection": "1.1.15",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-direction": "1.1.4",
++        "@radix-ui/react-id": "1.1.4",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-controllable-state": "1.2.6",
++        "@radix-ui/react-use-is-hydrated": "0.1.3",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-scroll-area": {
++      "version": "1.2.18",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-scroll-area/-/react-scroll-area-1.2.18.tgz",
++      "integrity": "sha512-Zn5Cd171wxsO3Dfg8HaW6RifTb9CYTKQJHs/G4+LN1GfmJpaQMZQyQxMprVPHpaz7QY4l9BxK2JwQuzHsXC8nA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/number": "1.1.3",
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-direction": "1.1.4",
++        "@radix-ui/react-presence": "1.1.10",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-select": {
++      "version": "2.3.7",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-select/-/react-select-2.3.7.tgz",
++      "integrity": "sha512-WFGImkmbzcfxeIwq/+4HvRN0pizBwbwQUED4I13ezQsDdfl38ZntN6TmR8XaSzPBqoCToe8rF75j6NPNDSzhbg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/number": "1.1.3",
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-collection": "1.1.15",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-context": "1.2.2",
++        "@radix-ui/react-direction": "1.1.4",
++        "@radix-ui/react-dismissable-layer": "1.1.19",
++        "@radix-ui/react-focus-guards": "1.1.6",
++        "@radix-ui/react-focus-scope": "1.1.16",
++        "@radix-ui/react-id": "1.1.4",
++        "@radix-ui/react-popper": "1.3.7",
++        "@radix-ui/react-portal": "1.1.17",
++        "@radix-ui/react-presence": "1.1.10",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-slot": "1.3.3",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-controllable-state": "1.2.6",
++        "@radix-ui/react-use-layout-effect": "1.1.4",
++        "@radix-ui/react-use-previous": "1.1.4",
++        "@radix-ui/react-visually-hidden": "1.2.11",
++        "aria-hidden": "^1.2.4",
++        "react-remove-scroll": "^2.7.2"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -3110,23 +3981,17 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-roving-focus": {
++    "node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-dismissable-layer": {
+       "version": "1.1.19",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-roving-focus/-/react-roving-focus-1.1.19.tgz",
+-      "integrity": "sha512-V9jI6hDjT7l3jsCQD9bLNvDLM3tH/gdbOTp7Tefp3hbbgCGQoK7tUvrWiRlcoBHIZ809ElXwNQwVo0B98LuTXQ==",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
+       "license": "MIT",
+       "dependencies": {
+         "@radix-ui/primitive": "1.1.7",
+-        "@radix-ui/react-collection": "1.1.15",
+         "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-direction": "1.1.4",
+-        "@radix-ui/react-id": "1.1.4",
+         "@radix-ui/react-primitive": "2.1.10",
+         "@radix-ui/react-use-callback-ref": "1.1.4",
+-        "@radix-ui/react-use-controllable-state": "1.2.6",
+-        "@radix-ui/react-use-is-hydrated": "0.1.3",
+-        "@radix-ui/react-use-layout-effect": "1.1.4"
++        "@radix-ui/react-use-effect-event": "0.0.5"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -3143,21 +4008,15 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-scroll-area": {
+-      "version": "1.2.18",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-scroll-area/-/react-scroll-area-1.2.18.tgz",
+-      "integrity": "sha512-Zn5Cd171wxsO3Dfg8HaW6RifTb9CYTKQJHs/G4+LN1GfmJpaQMZQyQxMprVPHpaz7QY4l9BxK2JwQuzHsXC8nA==",
++    "node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-focus-scope": {
++      "version": "1.1.16",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.1.16.tgz",
++      "integrity": "sha512-wmRZ2WWLvmt6KHy2rNPOdPUjwq5xOHY02+m+udwJTn0aNIox/rkskAvJTyTLGhPK6KgrUjlJUJpgmx/+wFiFIQ==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/number": "1.1.3",
+-        "@radix-ui/primitive": "1.1.7",
+         "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-direction": "1.1.4",
+-        "@radix-ui/react-presence": "1.1.10",
+         "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-callback-ref": "1.1.4",
+-        "@radix-ui/react-use-layout-effect": "1.1.4"
++        "@radix-ui/react-use-callback-ref": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -3174,34 +4033,14 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-select": {
+-      "version": "2.3.7",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-select/-/react-select-2.3.7.tgz",
+-      "integrity": "sha512-WFGImkmbzcfxeIwq/+4HvRN0pizBwbwQUED4I13ezQsDdfl38ZntN6TmR8XaSzPBqoCToe8rF75j6NPNDSzhbg==",
++    "node_modules/@radix-ui/react-select/node_modules/@radix-ui/react-portal": {
++      "version": "1.1.17",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
++      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
+       "license": "MIT",
+       "dependencies": {
+-        "@radix-ui/number": "1.1.3",
+-        "@radix-ui/primitive": "1.1.7",
+-        "@radix-ui/react-collection": "1.1.15",
+-        "@radix-ui/react-compose-refs": "1.1.5",
+-        "@radix-ui/react-context": "1.2.2",
+-        "@radix-ui/react-direction": "1.1.4",
+-        "@radix-ui/react-dismissable-layer": "1.1.19",
+-        "@radix-ui/react-focus-guards": "1.1.6",
+-        "@radix-ui/react-focus-scope": "1.1.16",
+-        "@radix-ui/react-id": "1.1.4",
+-        "@radix-ui/react-popper": "1.3.7",
+-        "@radix-ui/react-portal": "1.1.17",
+-        "@radix-ui/react-presence": "1.1.10",
+         "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-slot": "1.3.3",
+-        "@radix-ui/react-use-callback-ref": "1.1.4",
+-        "@radix-ui/react-use-controllable-state": "1.2.6",
+-        "@radix-ui/react-use-layout-effect": "1.1.4",
+-        "@radix-ui/react-use-previous": "1.1.4",
+-        "@radix-ui/react-visually-hidden": "1.2.11",
+-        "aria-hidden": "^1.2.4",
+-        "react-remove-scroll": "^2.7.2"
++        "@radix-ui/react-use-layout-effect": "1.1.4"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -3384,15 +4223,66 @@
+         }
+       }
+     },
+-    "node_modules/@radix-ui/react-toggle": {
+-      "version": "1.1.18",
+-      "resolved": "https://registry.npmjs.org/@radix-ui/react-toggle/-/react-toggle-1.1.18.tgz",
+-      "integrity": "sha512-7lonPlKfSacd20GlOBx2ltuVKz9oqWYZz+oMQyOltw6t1y2nyftj2ZmwwUHYn49kqfDWcp8dNZm5NgV+5Z+mug==",
++    "node_modules/@radix-ui/react-toast/node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.19",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
+       "license": "MIT",
+       "dependencies": {
+         "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
+         "@radix-ui/react-primitive": "2.1.10",
+-        "@radix-ui/react-use-controllable-state": "1.2.6"
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-effect-event": "0.0.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-toast/node_modules/@radix-ui/react-portal": {
++      "version": "1.1.17",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
++      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-toggle": {
++      "version": "1.2.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-toggle/-/react-toggle-1.2.1.tgz",
++      "integrity": "sha512-+3MUq+WyiBplXYqQ0EIYlq8R4sLQ0T5NbOK7DMdDLCKO93pe2uE0DUJTWWfTBprpJJXxfoF3eMW0xpakVZrYsg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.2.0",
++        "@radix-ui/react-primitive": "2.2.0",
++        "@radix-ui/react-use-controllable-state": "1.3.0"
+       },
+       "peerDependencies": {
+         "@types/react": "*",
+@@ -3438,6 +4328,98 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-toggle-group/node_modules/@radix-ui/react-toggle": {
++      "version": "1.1.18",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-toggle/-/react-toggle-1.1.18.tgz",
++      "integrity": "sha512-7lonPlKfSacd20GlOBx2ltuVKz9oqWYZz+oMQyOltw6t1y2nyftj2ZmwwUHYn49kqfDWcp8dNZm5NgV+5Z+mug==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-controllable-state": "1.2.6"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-toggle/node_modules/@radix-ui/primitive": {
++      "version": "1.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.2.0.tgz",
++      "integrity": "sha512-KABY+VMIRPJL+Vyzv/335FEhXXD/xDv8BMb1kl48/aXJZMH0LtHCTx5ga5RnxaEP3nZHtmTLf1P9vanmFX46bw==",
++      "license": "MIT"
++    },
++    "node_modules/@radix-ui/react-toggle/node_modules/@radix-ui/react-primitive": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.2.0.tgz",
++      "integrity": "sha512-HCTSPMNqv55Qk0IX4geJbpyXazmqulcimwuyjxTkKi29v+QZbG2Zho9BnbBq4YS2PF+KlNb2CXoLz66uUmblkg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-slot": "1.5.0"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-toggle/node_modules/@radix-ui/react-slot": {
++      "version": "1.5.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.5.0.tgz",
++      "integrity": "sha512-tyYd9ddPXAysAbdbD9eYxgwpCSv6f3PncqVSNKQFSR5lcJVLz3cb/pANDoYrLiHBpXv7skortyUgGUWsYuPPFQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-toggle/node_modules/@radix-ui/react-use-controllable-state": {
++      "version": "1.3.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.3.0.tgz",
++      "integrity": "sha512-TAcBI7bw2ljYCbv4+zuTSd6zICu8pRt6SDN2vJ/Z06K2MXh6I9WYFe/A9ovlFDtR5HVHGm5iDxDoABm/++dbKg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.2.0",
++        "@radix-ui/react-use-effect-event": "0.0.5",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-tooltip": {
+       "version": "1.2.16",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-tooltip/-/react-tooltip-1.2.16.tgz",
+@@ -3473,6 +4455,57 @@
+         }
+       }
+     },
++    "node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.19",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.19.tgz",
++      "integrity": "sha512-8g4pfOL9HoKKLWGiypT+dphVqjFfmcXO5GBnhsG6zI+lxAx/8feQpr+1LSN8Re3hiZ+XkLNS4O9ztK11/LzQ6w==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-callback-ref": "1.1.4",
++        "@radix-ui/react-use-effect-event": "0.0.5"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-tooltip/node_modules/@radix-ui/react-portal": {
++      "version": "1.1.17",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz",
++      "integrity": "sha512-vKQLcWypUnwZVvfV7UkGahH2g6ySe8M8R+zYBwPrv5byZ9QAW6cQVvNKo7GgmD+p8aYb6D9JBuvy8/WhOno2wQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.1.10",
++        "@radix-ui/react-use-layout-effect": "1.1.4"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@radix-ui/react-use-callback-ref": {
+       "version": "1.1.4",
+       "resolved": "https://registry.npmjs.org/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.4.tgz",
+@@ -5096,29 +6129,22 @@
+         "undici-types": "~6.21.0"
+       }
+     },
+-    "node_modules/@types/prop-types": {
+-      "version": "15.7.15",
+-      "resolved": "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.15.tgz",
+-      "integrity": "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==",
+-      "license": "MIT"
+-    },
+     "node_modules/@types/react": {
+-      "version": "18.3.31",
+-      "resolved": "https://registry.npmjs.org/@types/react/-/react-18.3.31.tgz",
+-      "integrity": "sha512-vfEqpXTvwT91yhmwdfouStN2hSKwTvyRs8qpLfADyrq/kxDw0hZM7Wk9Ug1FELj8hIby+S/+kQCSRFF32nv2Qw==",
++      "version": "19.3.0",
++      "resolved": "https://registry.npmjs.org/@types/react/-/react-19.3.0.tgz",
++      "integrity": "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==",
+       "license": "MIT",
+       "dependencies": {
+-        "@types/prop-types": "*",
+         "csstype": "^3.2.2"
+       }
+     },
+     "node_modules/@types/react-dom": {
+-      "version": "18.3.7",
+-      "resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.3.7.tgz",
+-      "integrity": "sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ==",
++      "version": "19.3.0",
++      "resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.3.0.tgz",
++      "integrity": "sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==",
+       "license": "MIT",
+       "peerDependencies": {
+-        "@types/react": "^18.0.0"
++        "@types/react": "^19.3.0"
+       }
+     },
+     "node_modules/@types/sanitize-html": {
+@@ -8729,13 +9755,13 @@
+       "license": "MIT"
+     },
+     "node_modules/next-themes": {
+-      "version": "0.3.0",
+-      "resolved": "https://registry.npmjs.org/next-themes/-/next-themes-0.3.0.tgz",
+-      "integrity": "sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==",
++      "version": "0.4.6",
++      "resolved": "https://registry.npmjs.org/next-themes/-/next-themes-0.4.6.tgz",
++      "integrity": "sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==",
+       "license": "MIT",
+       "peerDependencies": {
+-        "react": "^16.8 || ^17 || ^18",
+-        "react-dom": "^16.8 || ^17 || ^18"
++        "react": "^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc"
+       }
+     },
+     "node_modules/node-releases": {
+@@ -9479,13 +10505,10 @@
+       "license": "MIT"
+     },
+     "node_modules/react": {
+-      "version": "18.3.1",
+-      "resolved": "https://registry.npmjs.org/react/-/react-18.3.1.tgz",
+-      "integrity": "sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==",
++      "version": "19.3.0",
++      "resolved": "https://registry.npmjs.org/react/-/react-19.3.0.tgz",
++      "integrity": "sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==",
+       "license": "MIT",
+-      "dependencies": {
+-        "loose-envify": "^1.1.0"
+-      },
+       "engines": {
+         "node": ">=0.10.0"
+       }
+@@ -9505,16 +10528,15 @@
+       }
+     },
+     "node_modules/react-dom": {
+-      "version": "18.3.1",
+-      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz",
+-      "integrity": "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==",
++      "version": "19.3.0",
++      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-19.3.0.tgz",
++      "integrity": "sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==",
+       "license": "MIT",
+       "dependencies": {
+-        "loose-envify": "^1.1.0",
+-        "scheduler": "^0.23.2"
++        "scheduler": "^0.28.0"
+       },
+       "peerDependencies": {
+-        "react": "^18.3.1"
++        "react": "^19.3.0"
+       }
+     },
+     "node_modules/react-hook-form": {
+@@ -10032,13 +11054,10 @@
+       }
+     },
+     "node_modules/scheduler": {
+-      "version": "0.23.2",
+-      "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.23.2.tgz",
+-      "integrity": "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "loose-envify": "^1.1.0"
+-      }
++      "version": "0.28.0",
++      "resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.28.0.tgz",
++      "integrity": "sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==",
++      "license": "MIT"
+     },
+     "node_modules/semver": {
+       "version": "7.8.5",
+@@ -10833,16 +11852,16 @@
+       }
+     },
+     "node_modules/vaul": {
+-      "version": "0.9.9",
+-      "resolved": "https://registry.npmjs.org/vaul/-/vaul-0.9.9.tgz",
+-      "integrity": "sha512-7afKg48srluhZwIkaU+lgGtFCUsYBSGOl8vcc8N/M3YQlZFlynHD15AE+pwrYdc826o7nrIND4lL9Y6b9WWZZQ==",
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/vaul/-/vaul-1.1.2.tgz",
++      "integrity": "sha512-ZFkClGpWyI2WUQjdLJ/BaGuV6AVQiJ3uELGk3OYtP+B6yCO7Cmn9vPFXVJkRaGkOJu3m8bQMgtyzNHixULceQA==",
+       "license": "MIT",
+       "dependencies": {
+         "@radix-ui/react-dialog": "^1.1.1"
+       },
+       "peerDependencies": {
+-        "react": "^16.8 || ^17.0 || ^18.0",
+-        "react-dom": "^16.8 || ^17.0 || ^18.0"
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+       }
+     },
+     "node_modules/victory-vendor": {
+diff --git a/package.json b/package.json
+index e987537..86887b3 100644
+--- a/package.json
++++ b/package.json
+@@ -65,10 +65,10 @@
+     "framer-motion": "^12.34.3",
+     "input-otp": "^1.4.2",
+     "lucide-react": "^0.462.0",
+-    "next-themes": "^0.3.0",
+-    "react": "^18.3.1",
++    "next-themes": "0.4.6",
++    "react": "19.3.0",
+     "react-day-picker": "^8.10.1",
+-    "react-dom": "^18.3.1",
++    "react-dom": "19.3.0",
+     "react-hook-form": "^7.61.1",
+     "react-resizable-panels": "^2.1.9",
+     "react-router": "^7.6.3",
+@@ -77,7 +77,7 @@
+     "sonner": "^1.7.4",
+     "tailwind-merge": "^2.6.0",
+     "tailwindcss-animate": "^1.0.7",
+-    "vaul": "^0.9.9",
++    "vaul": "1.1.2",
+     "zod": "^3.25.76"
+   },
+   "devDependencies": {
+@@ -90,8 +90,8 @@
+     "@testing-library/jest-dom": "^6.6.0",
+     "@testing-library/react": "^16.0.0",
+     "@types/node": "^22.16.5",
+-    "@types/react": "^18.3.23",
+-    "@types/react-dom": "^18.3.7",
++    "@types/react": "19.3.0",
++    "@types/react-dom": "19.3.0",
+     "@types/sanitize-html": "^2.13.0",
+     "autoprefixer": "^10.4.21",
+     "eslint": "^9.32.0",
+diff --git a/wrangler.jsonc b/wrangler.jsonc
+index f52ba31..791ad15 100644
+--- a/wrangler.jsonc
++++ b/wrangler.jsonc
+@@ -6,6 +6,9 @@
+     "nodejs_compat"
+   ],
+   "main": "./workers/app.ts",
++  // next-themes serializes its startup function into HTML. Name-preservation
++  // helpers would reference server-only __name from that browser script.
++  "keep_names": false,
+   "assets": {
+     "directory": "./dist/client",
+     "run_worker_first": [
+diff --git a/app/lib/root-hydration.test.tsx b/app/lib/root-hydration.test.tsx
+new file mode 100644
+index 0000000..d36eb54
+--- /dev/null
++++ b/app/lib/root-hydration.test.tsx
+@@ -0,0 +1,53 @@
++import {afterEach,it,expect,vi} from "vitest";
++import React, {startTransition} from "react";
++import {act} from "@testing-library/react";
++vi.mock("react-dom/server",async()=>{const moduleName="react-dom/server.browser";return await import(moduleName) as typeof import("react-dom/server");});
++import {renderToString} from "react-dom/server";
++import {hydrateRoot,type Root} from "react-dom/client";
++vi.mock("react-router",()=>({useLocation:()=>({pathname:"/project"}),Meta:()=> <title>Hydration regression</title>,Links:()=>null,Outlet:()=>null,Scripts:()=>null,ScrollRestoration:()=>null,ServerRouter:()=> <html><head><title>Server stream</title></head><body><main>Streaming response</main></body></html>}));
++vi.mock("@/components/BookingProvider",()=>({BookingProvider:({children}:{children:React.ReactNode})=>children}));
++import {Layout} from "../root";
++import handleRequest from "../entry.server";
++import type {EntryContext} from "react-router";
++let root:Root|undefined;
++afterEach(async()=>{if(root)await act(async()=>root?.unmount());root=undefined;});
++it("hydrates the browser-parsed document shell without replacing server markup",async()=>{
++ const page=<Layout><main>Hydration content</main></Layout>;
++ const html=renderToString(page);document.open();document.write("<!DOCTYPE html>"+html);document.close();
++ const errors:{message:string;stack:string|null|undefined}[]=[];
++ await act(async()=>{root=hydrateRoot(document,page,{onRecoverableError:(error,info)=>errors.push({message:String(error),stack:info.componentStack})});});
++ expect(errors).toEqual([]);expect(document.querySelector("main")?.textContent).toBe("Hydration content");
++});
++
++it("streams React's full document with exactly one doctype and preserves response headers",async()=>{
++ const response=await handleRequest(new Request("http://localhost/project"),200,new Headers({"X-Test":"retained"}),{} as EntryContext);
++ const html=await response.text();expect((html.match(/<!doctype html>/gi)||[]).length).toBe(1);expect(html).toContain("Streaming response");expect(response.headers.get("Content-Type")).toBe("text/html");expect(response.headers.get("X-Test")).toBe("retained");expect(response.status).toBe(200);
++});
++
++it("preserves externally injected document UI while hydrating the server shell without errors",async()=>{
++ const page=<Layout><main>Hydration content</main></Layout>;document.open();document.write("<!DOCTYPE html>"+renderToString(page));document.close();
++ const overlay=document.createElement("div"),button=document.createElement("button"),clicked=vi.fn();overlay.id="external-browser-overlay";overlay.style.position="fixed";button.textContent="Extension action";button.addEventListener("click",clicked);overlay.appendChild(button);document.documentElement.appendChild(overlay);
++ const errors:unknown[]=[];await act(async()=>{root=hydrateRoot(document,page,{onRecoverableError:error=>errors.push(error)});});
++ expect(errors).toEqual([]);expect(document.getElementById(overlay.id)).toBe(overlay);button.click();expect(clicked).toHaveBeenCalledOnce();expect(document.querySelector("main")?.textContent).toBe("Hydration content");
++});
++
++it("preserves an extension injected while streamed Router startup is suspended",async()=>{
++ const page=<Layout><main>Late overlay</main></Layout>;document.open();document.write("<!DOCTYPE html>"+renderToString(page));document.close();
++ const overlay=document.createElement("div");overlay.id="late-extension-overlay";const errors:unknown[]=[];
++ let ready=false;let resolve!:()=>void;const bootstrap=new Promise<void>(done=>{resolve=done;});
++ function DeferredRouter(){if(!ready)throw bootstrap;return page;}
++
++   await act(async()=>{startTransition(()=>{root=hydrateRoot(document,<DeferredRouter />,{onRecoverableError:error=>errors.push(error)});});});
++  document.documentElement.appendChild(overlay);
++  await act(async()=>{ready=true;resolve();await bootstrap;});
++  expect(errors).toEqual([]);expect(document.querySelector("main")?.textContent).toBe("Late overlay");expect(document.getElementById(overlay.id)).toBe(overlay);expect(overlay.parentElement).toBe(document.documentElement);
++  await act(async()=>{root?.render(<DeferredRouter />);});
++  expect(overlay.parentElement).toBe(document.documentElement);expect(errors).toEqual([]);
++});
++
++it("still reports genuine application markup mismatches instead of suppressing errors",async()=>{
++ const page=<Layout><main>Expected content</main></Layout>;document.open();document.write("<!DOCTYPE html>"+renderToString(page));document.close();
++ document.querySelector("main")!.textContent="Wrong server content";
++ const errors:unknown[]=[];await act(async()=>{root=hydrateRoot(document,page,{onRecoverableError:error=>errors.push(error)});});
++ expect(errors.length).toBeGreaterThan(0);expect(document.querySelector("main")?.textContent).toBe("Expected content");
++});

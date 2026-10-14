@@ -49,7 +49,6 @@ export const buildLocalBusinessJsonLd = () => ({
         name,
       })),
       serviceType: "Website design and web development",
-      priceRange: "Rs. 10,000+",
     },
   ],
 });
@@ -145,7 +144,6 @@ export const buildOrganizationJsonLd = () => ({
     "@type": "QuantitativeValue",
     value: 1,
   },
-  priceRange: "₹10,000 – ₹50,000+",
   currenciesAccepted: "INR",
   paymentAccepted: "Cash, Bank Transfer, Razorpay",
   openingHours: "Mo-Sa 10:00-19:00",
@@ -232,11 +230,6 @@ export const buildHowToJsonLd = () => ({
   description:
     "SiteNova's proven 4-step process to design and launch a high-performance, SEO-ready website for businesses in Mumbai.",
   totalTime: "P14D",
-  estimatedCost: {
-    "@type": "MonetaryAmount",
-    currency: "INR",
-    value: "10000",
-  },
   step: [
     {
       "@type": "HowToStep",
@@ -286,5 +279,4 @@ export const buildSpeakableJsonLd = (cssSelectors?: string[]) => ({
  * Contact.tsx, Quote.tsx, and ThankYou.tsx still call this in useEffect.
  * Route-level meta() exports now handle all SEO. This does nothing.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const setPageSeo = (_config: Record<string, unknown>) => {};

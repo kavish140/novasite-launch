@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { m as motion } from "framer-motion";
@@ -89,6 +90,8 @@ const problemPoints = [
 ];
 
 export default function Finance() {
+  const {starterPrice,businessPrice}=usePackagePricing();
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -150,7 +153,7 @@ export default function Finance() {
                 "name": "How much does a finance professional website cost?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "SiteNova builds websites for CAs, insurance agents, and financial advisors starting from ₹10,000 for a landing page and ₹15,000 onwards for multi-page sites with service pages, lead capture forms, and blog functionality."
+                  "text": `SiteNova builds websites for CAs, insurance agents, and financial advisors starting from ${starterPrice} for a landing page and ${businessPrice} onwards for multi-page sites with service pages, lead capture forms, and blog functionality.`
                 }
               },
               {
@@ -484,8 +487,7 @@ export default function Finance() {
           className="relative mx-auto max-w-3xl text-center"
         >
           {/* Price badge */}
-          <p className="mx-auto mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            Professional websites starting from ₹10,000
+          <p className="mx-auto mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">Professional websites starting from {starterPrice}
           </p>
 
           <h2 className="font-heading text-3xl md:text-5xl font-bold mb-6">

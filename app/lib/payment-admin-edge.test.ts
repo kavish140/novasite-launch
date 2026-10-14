@@ -2,6 +2,7 @@
 import { describe,it,expect,vi,beforeEach } from "vitest";
 const mocks=vi.hoisted(()=>({getUser:vi.fn(),owner:vi.fn(),payment:vi.fn(),queue:vi.fn()}));
 vi.mock("../../supabase/functions/_shared/admin-payments.ts",()=>({adminPayments:mocks.queue}));
+vi.mock("../../supabase/functions/_shared/package-pricing.ts",()=>({pricingAdmin:mocks.queue,pricingStore:vi.fn()}));
 vi.mock("@supabase/supabase-js",()=>({createClient:()=>({auth:{getUser:mocks.getUser},from:()=>({select:()=>({eq:()=>({maybeSingle:mocks.owner})})})})}));
 vi.mock("../../supabase/functions/_shared/razorpay.ts",async original=>({...await original<typeof import("../../supabase/functions/_shared/razorpay")>(),paymentAction:mocks.payment}));
 import { handlePaymentEdge } from "../../supabase/functions/_shared/edge-handler";
@@ -14,7 +15,7 @@ describe("admin test payment authorization",()=>{
   const summary=new Request(original.url.replace("admin-test/order","admin-queue/queue"),{method:"POST",headers:original.headers,body:JSON.stringify({summaryOnly:true})});
   expect((await handlePaymentEdge(summary,env)).status).toBe(403);expect(mocks.queue).not.toHaveBeenCalled();
  });
- it.each(["queue","history","recheck","paid","acknowledge","investigations","order-receipt"])("denies non-admins access to payment %s",async action=>{
+ it.each(["queue","history","recheck","paid","acknowledge","investigations","order-receipt","resume-checkout","pricing","pricing-save"])("denies non-admins access to payment %s",async action=>{
   const queueReq=(token?:string)=>{const original=req(token);return new Request(original.url.replace("admin-test/order",`admin-queue/${action}`),original);};
   expect((await handlePaymentEdge(queueReq(),env)).status).toBe(401);
   mocks.getUser.mockResolvedValueOnce({data:{user:null},error:{message:"forged"}});

@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
@@ -13,9 +14,9 @@ const formSchema = quoteSchema.omit({
   attribution: true,
 });
 type FormValues = z.input<typeof formSchema>;
-const choices = [
-  ["Landing Page", "From ₹10,000"],
-  ["Business Website", "From ₹15,000"],
+const getchoices = (starterPrice:string,businessPrice:string)=>[
+  ["Landing Page", `From ${starterPrice}`],
+  ["Business Website", `From ${businessPrice}`],
   ["E-commerce Store", "From ₹18,000"],
   ["Custom Web App", "From ₹30,000"],
   ["Website Redesign", "Quoted after review"],
@@ -28,11 +29,14 @@ export default function QuoteForm({
 }: {
   source?: "website" | "paid_ad";
 }) {
+  const {starterPrice,businessPrice}=usePackagePricing();
+  const choices=getchoices(starterPrice,businessPrice);
+
   const location = useLocation();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
-  const submission = useRef<{ body: string; id: string }>();
+  const submission = useRef<{ body: string; id: string } | undefined>(undefined);
   const {
     register,
     handleSubmit,
@@ -71,7 +75,7 @@ export default function QuoteForm({
       "Web App": "Custom Web App",
     };
     const type = aliases[state.projectType || ""] || state.projectType;
-    if (choices.some(([id]) => id === type)) {
+    if (quoteSchema.shape.projectType.safeParse(type).success) {
       setValue("projectType", type as FormValues["projectType"]);
       setStep(2);
     }

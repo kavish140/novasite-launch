@@ -6,6 +6,9 @@
     "nodejs_compat"
   ],
   "main": "./workers/app.ts",
+  // next-themes serializes its startup function into HTML. Name-preservation
+  // helpers would reference server-only __name from that browser script.
+  "keep_names": false,
   "assets": {
     "directory": "./dist/client",
     "run_worker_first": [

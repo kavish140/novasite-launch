@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { m as motion } from "framer-motion";
 import { Link } from "react-router";
 import Navbar from "@/components/Navbar";
@@ -113,13 +114,15 @@ const faqs = [
 ];
 
 const OurProcess = () => {
+  const {starterPrice}=usePackagePricing();
+
   const jsonLd = buildHowToJsonLd();
 
   return (
     <PageTransition>
       <SEO
         title="Our Web Design Process — How SiteNova Builds Websites | SiteNova"
-        description="SiteNova's 4-step website design and development process: Discovery, UI/UX Design, React Development with GEO/SEO setup, and Launch. Websites delivered in 7–14 days from ₹10,000."
+        description={`SiteNova's 4-step website design and development process: Discovery, UI/UX Design, React Development with GEO/SEO setup, and Launch. Websites delivered in 7–14 days from ${starterPrice}.`}
         canonicalUrl="/our-process"
         keywords={[
           "how SiteNova builds websites",
@@ -173,7 +176,7 @@ const OurProcess = () => {
               >
                 {[
                   { icon: Clock, text: "7–14 day delivery" },
-                  { icon: Banknote, text: "From ₹10,000" },
+                  { icon: Banknote, text: `From ${starterPrice}` },
                   { icon: CheckCircle2, text: "Performance reviewed" },
                 ].map(({ icon: Icon, text }) => (
                   <span key={text} className="flex items-center gap-2">

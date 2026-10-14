@@ -1,0 +1,109 @@
+diff --git a/test-results/checkout-conflict/source/_shared/payment-store.ts b/test-results/checkout-conflict/hotfix/_shared/payment-store.ts
+index c0d63c6..e4fffb2 100644
+--- a/test-results/checkout-conflict/source/_shared/payment-store.ts
++++ b/test-results/checkout-conflict/hotfix/_shared/payment-store.ts
+@@ -1,4 +1,5 @@
+ import { createClient } from "@supabase/supabase-js";
++import {PaymentConflictError} from "./payment-conflict.ts";
+ import {operationsStore} from "./payment-operations.ts";
+ import {openDisputes,lostDisputes,type Dispute,type DisputeEvent,type PaymentHealth} from "./payment-health.ts";
+ import {projectStore} from "./project-store.ts";
+@@ -115,8 +116,12 @@ export function paymentStore(env: Partial<ServerEnv>) {
+       const inserted = await db.from("payment_intents").insert(record).select().single();
+       if (!inserted.error) return { created: true, record: inserted.data };
+       if (inserted.error.code !== "23505") throw new Error("Payment storage unavailable");
++      // The opaque request UUID, not predictable contact details, proves possession.
++      // The browser retains it across tab closure. Exact payload matching remains.
+       const existing = await db.from("payment_intents").select().eq("request_id", record.request_id).maybeSingle();
+-      if (existing.error || !existing.data || existing.data.payload_hash !== record.payload_hash) throw new Error("Payment request conflict. Contact SiteNova before retrying.");
++      if (existing.error) throw new Error("Payment storage unavailable");
++      if (!existing.data) throw new PaymentConflictError("existing_booking");
++      if (existing.data.payload_hash !== record.payload_hash) throw new PaymentConflictError("changed_request");
+       return { created: false, record: existing.data };
+     },
+     async attach(requestId: string, orderId: string) {
+diff --git a/test-results/checkout-conflict/source/_shared/razorpay.ts b/test-results/checkout-conflict/hotfix/_shared/razorpay.ts
+index ff57a70..ec0d93d 100644
+--- a/test-results/checkout-conflict/source/_shared/razorpay.ts
++++ b/test-results/checkout-conflict/hotfix/_shared/razorpay.ts
+@@ -1,4 +1,5 @@
+ import { z } from "zod";
++import {PaymentConflictError} from "./payment-conflict.ts";
+ import { paymentStore, type PaymentRecord } from "./payment-store.ts";
+ import { paymentDetailsSchema, type PaymentStatus } from "./payments.ts";
+ import {operationsStore} from "./payment-operations.ts";
+@@ -200,6 +201,7 @@ export async function paymentAction(request: Request, context: unknown, action:
+     }
+     return paymentJson({ status: "pending" });
+   } catch (error) {
++    if (error instanceof PaymentConflictError) return paymentJson({error:error.message,code:"checkout_conflict"},409);
+     if (error instanceof PaymentError) return paymentJson({ error: error.message }, error.status);
+     if (error instanceof SyntaxError || error instanceof z.ZodError) return paymentJson({ error: "Invalid payment request. Check your details and try again." }, 400);
+     return paymentJson({ error: "Unable to confirm payment right now. Check payment status before trying again." }, 503);
+diff --git a/test-results/checkout-conflict/source/_shared/admin-payments.ts b/test-results/checkout-conflict/hotfix/_shared/admin-payments.ts
+index ac24d8c..a0b889b 100644
+--- a/test-results/checkout-conflict/source/_shared/admin-payments.ts
++++ b/test-results/checkout-conflict/hotfix/_shared/admin-payments.ts
+@@ -1,5 +1,5 @@
+ import {z} from "zod";
+-import {paymentJson,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts";
++import {paymentJson,fetchStoredPaymentStatus,createPaymentToken,type PaymentEnv,type VerifiedTestAdmin} from "./razorpay.ts";
+ import {paymentStore} from "./payment-store.ts";
+ import {reconcileOne} from "./reconciliation.ts";
+ import {operationsStore} from "./payment-operations.ts";
+@@ -8,7 +8,7 @@ import {receiptToken} from "./payment-receipt.ts";
+ // Called only after the gateway verifies Auth identity AND site_admins membership.
+ export async function adminPayments(request: Request, env: PaymentEnv, action: string, admin: VerifiedTestAdmin) {
+   if(!admin?.id) return paymentJson({error:"Admin sign-in required"},401);
+-  if(!["queue","history","recheck","paid","acknowledge","investigations","order-receipt"].includes(action)) return paymentJson({error:"Not found"},404);
++  if(!["queue","history","recheck","paid","acknowledge","investigations","order-receipt","resume-checkout"].includes(action)) return paymentJson({error:"Not found"},404);
+   let run:string|undefined;
+   const store=paymentStore(env);
+   try {
+@@ -32,6 +32,14 @@ export async function adminPayments(request: Request, env: PaymentEnv, action: s
+     const input=z.object({requestId:z.string().uuid(),...(action==="history"?{offset}:{})}).strict().parse(body);
+     const record=await store.byRequest(input.requestId);
+     if(!record) return paymentJson({error:"Order not found"},404);
++    if(action==="resume-checkout"){
++      const age=Date.now()-Date.parse(record.created_at);
++      if(!["starter","business"].includes(record.package)||!record.order_id||record.status!=="pending"||record.retry_reserved_at||!Number.isFinite(age)||age<0||age>=86400000)return paymentJson({error:"This checkout cannot safely reopen. Re-check with Razorpay and review its history."},409);
++      // GET only. Never mint a link for an attempted/uncertain/paid/refunded order.
++      if((await fetchStoredPaymentStatus(env,record)).status!=="unattempted")return paymentJson({error:"Razorpay does not confirm an untouched checkout. Re-check its status before paying again."},409);
++      const token=await createPaymentToken({orderId:record.order_id,package:record.package as "starter"|"business",amount:record.amount,keyId:record.key_id,issuedAt:Date.parse(record.created_at)},env.RAZORPAY_KEY_SECRET!);
++      return paymentJson({url:`https://sitenova.dev/pay?package=${record.package}#resume=${encodeURIComponent(token)}`});
++    }
+     if(action==="order-receipt"){
+       if(record.package!=="test"||record.amount!==100)return paymentJson({error:"Not a ₹1 test payment"},400);
+       if(!["paid","refunded"].includes(record.status??""))return paymentJson({error:"Payment is not yet confirmed"},409);
+@@ -50,4 +58,3 @@ export async function adminPayments(request: Request, env: PaymentEnv, action: s
+     return paymentJson({error:"Unable to check payments. Try again later."},503);
+   }
+ }
+-
+diff --git a/test-results/checkout-conflict/source/_shared/edge-handler.ts b/test-results/checkout-conflict/hotfix/_shared/edge-handler.ts
+index c51964e..9775001 100644
+--- a/test-results/checkout-conflict/source/_shared/edge-handler.ts
++++ b/test-results/checkout-conflict/hotfix/_shared/edge-handler.ts
+@@ -33,7 +33,7 @@ export async function handlePaymentEdge(request: Request, env: EdgeEnv) {
+   const projectActions=["projects","project-save","project-link","project-recheck","project-acknowledge"];
+   const backend = configured(env);
+   if (action === "config" && !adminQueue) return paymentJson({enabled:paymentsEnabled(backend),testMode:env.RAZORPAY_KEY_ID?.startsWith("rzp_test_") ?? false,packages:PAYMENT_PACKAGES});
+-  if (!(projectChannel?["view","refresh","checkout","verify"]:adminQueue?["queue","history","recheck","paid","acknowledge","investigations","order-receipt",...projectActions]:["order","retry","verify","status","checkout","receipt","receipt-link"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
++  if (!(projectChannel?["view","refresh","checkout","verify"]:adminQueue?["queue","history","recheck","paid","acknowledge","investigations","order-receipt","resume-checkout",...projectActions]:["order","retry","verify","status","checkout","receipt","receipt-link"]).includes(action ?? "")) return paymentJson({error:"Not found"},404);
+   const origin = request.headers.get("x-payment-origin") ?? "";
+   if (!/^https:\/\/sitenova\.dev$|^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return paymentJson({error:"Invalid origin"},403);
+   const headers = new Headers({origin,"cf-connecting-ip":request.headers.get("x-payment-client-ip") ?? "local"});
+diff --git a/test-results/checkout-conflict/empty b/test-results/checkout-conflict/hotfix/_shared/payment-conflict.ts
+index e69de29..5167919 100644
+--- a/test-results/checkout-conflict/empty
++++ b/test-results/checkout-conflict/hotfix/_shared/payment-conflict.ts
+@@ -0,0 +1,9 @@
++// A rejected reservation is a conflict, not evidence of a provider outage.
++// Never disclose the earlier booking, issue its token, or bypass deduplication.
++export class PaymentConflictError extends Error {
++  constructor(reason: "existing_booking" | "changed_request") {
++    super(reason === "existing_booking"
++      ? "A checkout already exists for these contact and project details. Return to the original checkout tab to check its status, or contact SiteNova before paying again."
++      : "The details differ from your saved checkout. Return to the original checkout tab to check its status, or contact SiteNova before paying again.");
++  }
++}

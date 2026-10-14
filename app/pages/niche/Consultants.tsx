@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { m as motion } from "framer-motion";
@@ -105,7 +106,7 @@ const problemPoints = [
   },
 ];
 
-const faqs = [
+const getfaqs = (starterPrice:string)=>[
   {
     question: "Why does a consultant need a professional website?",
     answer:
@@ -114,7 +115,7 @@ const faqs = [
   {
     question: "How much does a consulting website cost?",
     answer:
-      "Our consulting websites start from ₹10,000. This includes a fully custom design, mobile optimization, SEO setup, contact forms, and WhatsApp integration. The exact cost depends on the number of pages and specific features you need — we'll give you a transparent quote after understanding your requirements.",
+      `Our consulting websites start from ${starterPrice}. This includes a fully custom design, mobile optimization, SEO setup, contact forms, and WhatsApp integration. The exact cost depends on the number of pages and specific features you need — we'll give you a transparent quote after understanding your requirements.`,
   },
   {
     question: "Can I add a blog to my consulting website?",
@@ -134,6 +135,9 @@ const faqs = [
 ];
 
 export default function Consultants() {
+  const {starterPrice}=usePackagePricing();
+  const faqs=getfaqs(starterPrice);
+
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -281,8 +285,7 @@ export default function Consultants() {
                 Delivered in 5–7 days
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-violet-400" />
-                Starting from ₹10,000
+                <CheckCircle2 className="h-3.5 w-3.5 text-violet-400" />Starting from {starterPrice}
               </span>
             </motion.div>
           </div>
@@ -483,8 +486,7 @@ export default function Consultants() {
               <span className="text-sm text-muted-foreground">
                 Consulting websites starting from{" "}
               </span>
-              <span className="font-heading text-2xl font-bold text-foreground">
-                ₹10,000
+              <span className="font-heading text-2xl font-bold text-foreground">{starterPrice}
               </span>
             </div>
 

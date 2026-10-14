@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { useState, useMemo } from "react";
 import { Link } from "react-router";
 import { m as motion } from "framer-motion";
@@ -22,7 +23,7 @@ import PageTransition from "@/components/PageTransition";
 // ─── Pricing config ────────────────────────────────────────────────────────────
 const PAGE_TIERS = [
   { id: "landing", label: "Landing Page", desc: "1 page · Great for campaigns or simple presence", base: 10000 },
-  { id: "business", label: "Business Website", desc: "5–8 pages · Home, About, Services, Contact", base: 18000 },
+  { id: "business", label: "Business Website", desc: "Up to 5 pages · Home, About, Services, Contact", base: 15000 },
   { id: "large", label: "Large Website", desc: "10+ pages · Multiple services, blog, team", base: 28000 },
   { id: "ecom", label: "E-Commerce Store", desc: "Product catalogue + Razorpay / Stripe checkout", base: 41000 },
   { id: "webapp", label: "Web Application", desc: "Custom dashboard, booking system, SaaS MVP", base: 50000 },
@@ -43,14 +44,14 @@ const TIMELINE = [
   { id: "relaxed", label: "Flexible (3–4 weeks)", multiplier: 0.95, badge: "−5%" },
 ];
 
-const FAQS = [
+const getFAQS = (starterPrice:string,businessPrice:string)=>[
   {
     q: "How much does a website cost in Mumbai?",
-    a: "A basic single-page website in Mumbai starts from ₹10,000. A multi-page business website typically costs ₹15,000–₹30,000. E-commerce and web applications range from ₹41,000 upwards depending on features. SiteNova provides transparent, fixed-price quotes.",
+    a: `A basic single-page website in Mumbai starts from ${starterPrice}. Business websites start from ${businessPrice}; the agreed scope sets the final price. E-commerce and web applications are quoted separately. SiteNova provides transparent, fixed-price quotes.`,
   },
   {
     q: "How much does a website cost in India in 2026?",
-    a: "In 2026, a professional website in India costs anywhere from ₹8,000 for a simple landing page to ₹1,00,000+ for a complex web application. SiteNova's pricing starts at ₹10,000 for Mumbai small businesses.",
+    a: `In 2026, a professional website in India costs anywhere from ₹8,000 for a simple landing page to ₹1,00,000+ for a complex web application. SiteNova's pricing starts at ${starterPrice} for Mumbai small businesses.`,
   },
   {
     q: "What is included in the website price?",
@@ -71,12 +72,16 @@ const FAQS = [
 ];
 
 export default function WebsiteCostCalculator() {
+  const {starterPrice,businessPrice,packages,available}=usePackagePricing();
+  const FAQS=getFAQS(starterPrice,businessPrice);
+  const pageTiers=PAGE_TIERS.map(t=>({...t,base:t.id==="landing"?packages.starter.startingPrice/100:t.id==="business"?packages.business.startingPrice/100:t.id==="large"?packages.business.startingPrice/100+13000:t.base}));
+
   const [selectedTier, setSelectedTier] = useState(PAGE_TIERS[1].id);
   const [selectedAddOns, setSelectedAddOns] = useState<Set<string>>(new Set());
   const [selectedTimeline, setSelectedTimeline] = useState("standard");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const tier = PAGE_TIERS.find((t) => t.id === selectedTier)!;
+  const tier = pageTiers.find((t) => t.id === selectedTier)!;
   const timeline = TIMELINE.find((t) => t.id === selectedTimeline)!;
 
   const { baseTotal, addOnTotal, grandTotal, grandMin, grandMax } = useMemo(() => {
@@ -98,7 +103,8 @@ export default function WebsiteCostCalculator() {
   const toggleAddOn = (id: string) => {
     setSelectedAddOns((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -118,7 +124,7 @@ export default function WebsiteCostCalculator() {
     <PageTransition>
       <SEO
         title="Website Cost Calculator India 2026 | How Much Does a Website Cost in Mumbai?"
-        description="Use our free website cost calculator to estimate how much a website costs in India in 2026. Prices from ₹10,000 for Mumbai small businesses. Instant estimate, no commitment."
+        description={`Use our free website cost calculator to estimate how much a website costs in India in 2026. Prices from ${starterPrice} for Mumbai small businesses. Instant estimate, no commitment.`}
         canonicalUrl="/website-cost-calculator"
         keywords={[
           "website cost calculator India",
@@ -219,7 +225,7 @@ export default function WebsiteCostCalculator() {
                   <h2 className="text-lg font-bold text-foreground mb-1">Step 1 — Choose your website type</h2>
                   <p className="text-sm text-muted-foreground mb-5">What kind of website do you need?</p>
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                    {PAGE_TIERS.map((t) => (
+                    {pageTiers.map((t) => (
                       <button
                         key={t.id}
                         id={`tier-${t.id}`}
@@ -237,7 +243,7 @@ export default function WebsiteCostCalculator() {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground leading-relaxed">{t.desc}</p>
-                        <p className="mt-2 text-xs font-semibold text-primary">From {formatINR(t.base)}</p>
+                        <p className="mt-2 text-xs font-semibold text-primary">{available?`From ${formatINR(t.base)}`:"Current package pricing unavailable"}</p>
                       </button>
                     ))}
                   </div>
@@ -320,12 +326,12 @@ export default function WebsiteCostCalculator() {
                   <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">Your Estimate</p>
                   <div className="mt-2">
                     <p className="text-4xl font-extrabold tracking-tight text-foreground">
-                      {formatINR(grandMin)} – {formatINR(grandMax)}
+                      {available?`${formatINR(grandMin)} – ${formatINR(grandMax)}`:"Request a current quote"}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">Estimated range · Final quote may vary</p>
                   </div>
 
-                  <div className="mt-6 space-y-2 text-sm">
+                  {available&&<div className="mt-6 space-y-2 text-sm">
                     <div className="flex justify-between text-muted-foreground">
                       <span>{tier.label}</span>
                       <span className="font-medium text-foreground">{formatINR(baseTotal)}</span>
@@ -351,12 +357,12 @@ export default function WebsiteCostCalculator() {
                       <span>Total estimate</span>
                       <span>{formatINR(grandTotal)}</span>
                     </div>
-                  </div>
+                  </div>}
 
                   <div className="mt-6 space-y-3">
                     <Link
                       to="/quote"
-                      state={quoteState}
+                      state={available?quoteState:{projectType:tier.label}}
                       className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
                     >
                       Get Exact Quote <ArrowRight className="h-4 w-4" />

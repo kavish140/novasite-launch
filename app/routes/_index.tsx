@@ -1,4 +1,5 @@
 import { buildMeta } from "@/lib/meta";
+import {pricesFromMatches} from "@/lib/package-pricing-meta";
 import dashboardPreview from "@/assets/Drdiptiganatra.webp";
 export { default } from "@/pages/Index";
 
@@ -16,11 +17,12 @@ export function links() {
 }
 
 
-export function meta() {
+export function meta({matches=[]}:{matches?:{id:string;data?:unknown}[]}={}) {
+  const prices=pricesFromMatches(matches);
   return buildMeta({
-    title: "Website Designer in Mumbai | From ₹10,000 | SiteNova",
+    title: `Website Designer in Mumbai${prices.starter?` | From ${prices.starter}`:""} | SiteNova`,
     description:
-      "SiteNova builds fast, SEO-ready websites for Mumbai businesses — mobile-first, delivered in 7–14 days, from ₹10,000. Serving Mulund, Bhandup, Thane, Bandra & all of Mumbai.",
+      `SiteNova builds fast, SEO-ready websites for Mumbai businesses — mobile-first, delivered in 7–14 days${prices.starter?`, from ${prices.starter}`:""}. Serving Mulund, Bhandup, Thane, Bandra & all of Mumbai.`,
     canonicalPath: "/",
     keywords: [
       "website designer in Mumbai",

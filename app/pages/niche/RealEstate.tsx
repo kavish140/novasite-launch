@@ -1,3 +1,4 @@
+import {usePackagePricing} from "@/lib/package-pricing";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { m as motion } from "framer-motion";
@@ -98,6 +99,8 @@ const problemPoints = [
   },
 ];
 export default function RealEstate() {
+  const {starterPrice,businessPrice}=usePackagePricing();
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -159,7 +162,7 @@ export default function RealEstate() {
                 "name": "How much does a real estate website cost in Mumbai?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "SiteNova builds real estate websites starting from ₹10,000 for a landing page and ₹15,000 onwards for property listing sites with enquiry forms, WhatsApp integration, and photo galleries."
+                  "text": `SiteNova builds real estate websites starting from ${starterPrice} for a landing page and ${businessPrice} onwards for property listing sites with enquiry forms, WhatsApp integration, and photo galleries.`
                 }
               },
               {
@@ -345,14 +348,12 @@ export default function RealEstate() {
 
             {/* Offer card */}
             <div className="mt-8 rounded-2xl border border-amber-500/15 bg-amber-500/5 p-6 md:p-8 max-w-lg mx-auto">
-              <div className="font-heading text-4xl font-extrabold text-foreground">
-                ₹10,000
+              <div className="font-heading text-4xl font-extrabold text-foreground">{starterPrice}
                 <span className="text-lg font-normal text-muted-foreground ml-1">
                   onwards
                 </span>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                Your property website starting from ₹10,000 — includes property
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">Your property website starting from {starterPrice} — includes property
                 listings, lead forms, and SEO setup. Limited introductory pricing.
               </p>
               <ul className="mt-4 space-y-2 text-left max-w-xs mx-auto">

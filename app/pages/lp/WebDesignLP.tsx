@@ -1,3 +1,5 @@
+import {usePackagePricing} from "@/lib/package-pricing";
+import PackageAdvanceOptions from "@/components/PackageAdvanceOptions";
 import QuoteForm from "@/components/QuoteForm";
 import BookingCTA from "@/components/BookingCTA";
 import PortfolioSection from "@/components/PortfolioSection";
@@ -338,6 +340,8 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function WebDesignLP() {
+  const {starterPrice,businessPrice}=usePackagePricing();
+
   // Track page view for analytics — fires once on mount, client-side only
   useEffect(() => {
     supabase
@@ -402,7 +406,7 @@ export default function WebDesignLP() {
             </div>
 
             <div className="pt-4 border-t border-border/30 space-y-4">
-              <p className="font-semibold">Landing pages from ₹10,000 · Business websites from ₹15,000</p>
+              <p className="font-semibold">Landing pages from {starterPrice} · Business websites from {businessPrice}</p>
               <BookingCTA source="paid-landing-hero" />
             </div>
           </motion.div>
@@ -419,6 +423,7 @@ export default function WebDesignLP() {
 
       <PortfolioSection mode="customers" />
       <TestimonialsSection />
+      <section aria-labelledby="lp-package-payments" className="py-14 sm:py-20"><div className="mx-auto max-w-5xl px-6"><p className="text-xs font-semibold uppercase tracking-widest text-primary">Your next step</p><h2 id="lp-package-payments" className="mt-3 font-heading text-3xl font-bold">Ready to start with a package?</h2><p className="mt-3 mb-7 max-w-2xl text-sm text-muted-foreground">Choose Starter or Business and share your requirements before paying the advance. The final scope, total and delivery schedule are agreed with SiteNova. Custom projects can use the quote form above.</p><PackageAdvanceOptions /></div></section>
       {/* SOCIAL PROOF STRIP */}
       <section className="border-y border-border/30 bg-secondary/10 py-8">
         <div className="mx-auto max-w-5xl px-6 text-center">

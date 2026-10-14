@@ -18,10 +18,10 @@ export function openDisputes(events:DisputeEvent[]):Dispute[]{
  }
  return [...latest.values()].map(row=>row.dispute).filter(dispute=>!closed.has(dispute.status)).sort((a,b)=>(a.responseDueAt??"9999").localeCompare(b.responseDueAt??"9999"));
 }
-export type PaymentHealth = {lostDisputes?:LostDispute[];investigations?:number;unacknowledgedPaid?:number;observedAt:string;latestRunFailed:boolean;lastCompletedAt:string|null;lastSuccessfulAt:string|null;needsReconciliation:number;overdue:number;refunded:number;disputes:Dispute[]};
+export type PaymentHealth = {projectReview?:number;lostDisputes?:LostDispute[];investigations?:number;unacknowledgedPaid?:number;observedAt:string;latestRunFailed:boolean;lastCompletedAt:string|null;lastSuccessfulAt:string|null;needsReconciliation:number;overdue:number;refunded:number;disputes:Dispute[]};
 export function staleCron(health:PaymentHealth,now=Date.now()){
  return !health.lastCompletedAt || now-Date.parse(health.lastCompletedAt)>30*60000;
 }
 export function paymentAlertCount(health:PaymentHealth,now=Date.now()){
- return (health.lostDisputes?.length??0)+(health.investigations??0)+(health.unacknowledgedPaid??0)+Number(health.latestRunFailed)+Number(staleCron(health,now))+health.needsReconciliation+health.overdue+health.refunded+health.disputes.length;
+ return (health.projectReview??0)+(health.lostDisputes?.length??0)+(health.investigations??0)+(health.unacknowledgedPaid??0)+Number(health.latestRunFailed)+Number(staleCron(health,now))+health.needsReconciliation+health.overdue+health.refunded+health.disputes.length;
 }
