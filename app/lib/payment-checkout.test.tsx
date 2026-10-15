@@ -5,6 +5,8 @@ import Pay from "@/pages/Pay";
 import { paymentRequest, restorePayment, restoreSharedPayment, savePayment, loadRazorpay } from "./razorpay-client";
 import type { PaymentSession } from "./payments";
 import { PAYMENT_PACKAGES } from "./razorpay.server";
+import {preparePaymentConfirmation} from "./payment-confirmation-client";
+vi.mock("./payment-confirmation-client",()=>({preparePaymentConfirmation:vi.fn().mockResolvedValue(undefined)}));
 const {navigate}=vi.hoisted(()=>({navigate:vi.fn()}));
 vi.mock("react-router",async original=>({...await original<typeof import("react-router")>(),useNavigate:()=>navigate}));
 
@@ -33,6 +35,12 @@ beforeEach(() => {
 afterEach(() => { cleanup(); delete window.Razorpay; });
 
 describe("package checkout", () => {
+  it("stays on the verified payment screen if server confirmation access cannot be prepared",async()=>{
+    vi.mocked(preparePaymentConfirmation).mockRejectedValueOnce(new Error("offline"));
+    vi.mocked(restorePayment).mockReturnValue(session);vi.mocked(paymentRequest).mockResolvedValue({status:"paid",paymentId:"pay_saved"});show();
+    await screen.findByText("Your payment was verified, but the confirmation page could not be opened. Check payment status; do not pay again.");
+    expect(navigate).not.toHaveBeenCalled();expect(paymentRequest).toHaveBeenCalledExactlyOnceWith("status",{token:session.token});
+  });
   it.each([['starter','₹5,000.00'],['business','₹7,500.00']])("shows the enabled %s advance and refuses incomplete details", async (selected, amount) => {
     show(true, selected);
     const button = await screen.findByRole('button', {name:`Pay ${amount} advance`});
@@ -70,7 +78,8 @@ describe("package checkout", () => {
     expect(await screen.findByText("Test payment verified")).toBeTruthy();
     expect(savePayment).toHaveBeenCalledWith(session);
     expect(paymentRequest).toHaveBeenNthCalledWith(3, "verify", expect.objectContaining({ token: session.token, razorpay_payment_id: "pay_example" }));
-    expect(navigate).toHaveBeenCalledWith(`/payment-thank-you?package=starter#resume=${encodeURIComponent(session.token)}`,{replace:true});
+    await waitFor(()=>expect(navigate).toHaveBeenCalledWith(`/payment-thank-you?package=starter#resume=${encodeURIComponent(session.token)}`,{replace:true}));
+    expect(preparePaymentConfirmation).toHaveBeenCalledWith({kind:"advance",package:"starter",token:session.token});
     expect(screen.queryByRole("button", { name: /Continue checkout/ })).toBeNull();
   });
   it("reopens the same recovered order after the checkout tab was closed without paying",async()=>{
@@ -88,7 +97,7 @@ describe("package checkout", () => {
     vi.mocked(paymentRequest).mockResolvedValueOnce({ status: "paid", paymentId: "pay_recovered" });
     show(); expect(await screen.findByText("Test payment verified")).toBeTruthy();
     expect(paymentRequest).toHaveBeenCalledTimes(1); expect(paymentRequest).toHaveBeenCalledWith("status", { token: session.token });
-    expect(navigate).toHaveBeenCalledWith(expect.stringContaining("/payment-thank-you?package=starter#resume="),{replace:true});
+    await waitFor(()=>expect(navigate).toHaveBeenCalledWith(expect.stringContaining("/payment-thank-you?package=starter#resume="),{replace:true}));
   });
   it("checks an owner-shared original checkout link before offering continuation",async()=>{
     window.history.replaceState(null,"","/pay?package=starter#resume=fixture&section=checkout");

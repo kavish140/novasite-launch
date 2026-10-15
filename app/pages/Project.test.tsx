@@ -3,6 +3,8 @@ import {render,screen,fireEvent,cleanup,waitFor,act} from "@testing-library/reac
 import Project from "./Project";
 import {projectRequest} from "@/lib/project-client";
 import {loadRazorpay} from "@/lib/razorpay-client";
+import {preparePaymentConfirmation} from "@/lib/payment-confirmation-client";
+vi.mock("@/lib/payment-confirmation-client",()=>({preparePaymentConfirmation:vi.fn().mockResolvedValue(undefined)}));
 const {navigate}=vi.hoisted(()=>({navigate:vi.fn()}));
 vi.mock("react-router",async original=>({...await original<typeof import("react-router")>(),useNavigate:()=>navigate}));
 vi.mock("@/lib/project-client",async original=>({...await original<typeof import("@/lib/project-client")>(),projectRequest:vi.fn()}));
@@ -18,7 +20,8 @@ it("opens a single backend-priced checkout and confirms only after server verifi
  render(<Project/>);const pay=await screen.findByRole("button",{name:"Pay remaining balance"});fireEvent.click(pay);fireEvent.click(pay);
  expect(await screen.findByText("Balance payment confirmed.")).toBeTruthy();expect(opened).toHaveBeenCalledTimes(1);expect(opened.mock.calls[0][0]).toMatchObject({amount:500000,retry:{enabled:false}});
  expect(projectRequest).toHaveBeenCalledWith("checkout","private-token",{});expect(projectRequest).toHaveBeenCalledWith("verify","private-token",expect.objectContaining({razorpay_payment_id:"pay_balance"}));
- expect(navigate).toHaveBeenCalledWith("/payment-thank-you?kind=balance#private-token",{replace:true});
+ await waitFor(()=>expect(navigate).toHaveBeenCalledWith("/payment-thank-you?kind=balance#private-token",{replace:true}));
+ expect(preparePaymentConfirmation).toHaveBeenCalledWith({kind:"balance",token:"private-token"});
 });
 it("retains recovery and blocks payment after an uncertain provider check",async()=>{
  vi.mocked(projectRequest).mockResolvedValueOnce({...summary,canPay:true}).mockRejectedValueOnce(new Error("Provider unavailable"));render(<Project/>);await screen.findByText("Client website");fireEvent.click(screen.getByRole("button",{name:"Check payment status"}));await waitFor(()=>expect(screen.getByRole("alert").textContent).toContain("Provider unavailable"));expect(screen.queryByRole("button",{name:"Pay remaining balance"})).toBeNull();

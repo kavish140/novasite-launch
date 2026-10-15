@@ -169,6 +169,7 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `api.payments.checkout.ts` | `/api/payments/checkout` | Server-authorized checkout options |
 | `api.payments.webhook.ts` | `/api/payments/webhook` | Signed backend settlement reconciliation |
 | `api.payments.status.ts` | `/api/payments/status` | Signed-session payment status and refresh recovery |
+| `api.payments.confirmation.ts` | `/api/payments/confirmation` | Same-origin POST-only, backend-verified private access grant for the thank-you page (local preparation, 2026-10-15) |
 | `api.payments.retry.ts` | `/api/payments/retry` | Fresh provider-confirmed failure/expiry retry; public activation required |
 | `api.admin.payments.$action.ts` | `/api/admin/payments/:action` | Fresh admin-authenticated test checkout, payment queue/history and provider re-checks |
 | `api.admin.payments.$action.ts` | `/api/admin/payments/:action` | Authenticated admin-only ₹1 Test checkout, verification and recovery |
@@ -250,6 +251,9 @@ This injects `<title>`, meta tags, Open Graph, Twitter Card, canonical link, rob
 | Not Found | `pages/NotFound.tsx` | 404 page |
 
 ### Specialized payment confirmation — DEPLOYED (2026-10-15)
+
+- Additional server access gate prepared locally on 2026-10-15: same-origin POST `/api/payments/confirmation` grants a 30-minute HttpOnly, SameSite=Strict cookie (Secure on HTTPS) only after existing backend status/project reads confirm paid, with advance package binding and fully settled, non-review balance checks. The page loader independently rechecks that signed capability on every entry/refresh before serving the page; missing/forged/mismatched/pending/refunded/unavailable access redirects to checkout/project recovery (or pricing without a valid package). No success-query or browser-state bypass. This supersedes the earlier behavior where direct visits could render a non-success status/error screen at the thank-you URL, once released.
+- Paid advance/recovered-payment and balance callbacks now prepare server access before navigating, preserve original signed fragments and stale-callback generation guards, and remain on recovery if access preparation fails. Existing component verification remains as another check. No automatic charge, checkout, capture or refund, new Supabase schema, price edit, credential or activation change.
 
 - Owner approved deployment and source push after checks. Website Worker `10c28fd0-e456-4408-862b-ffbb5282fb27` adds this page, preserving all existing runtime settings with `--keep-vars`. No backend deployment/schema/secret/activation change or financial action. Live route returns 200 with private headers, no tracking and no unverified SSR success; payment redirect/paid behavior is browser-verified with local mocks, not a new real charge. Earlier local-preparation wording below records the implementation checks.
 
@@ -1019,6 +1023,11 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-15] Require verified payment before serving thank-you page (local preparation)
+- Add a server-enforced confirmation access grant and fresh status recheck before returning the final payment page. Direct URLs/forged paid flags no longer render that page. Cookie state never establishes payment on its own: existing backend verification remains authoritative. Update advance/balance navigation to obtain access first; retain recovery and stale-callback safeguards. No deployment or financial transaction.
+- Validation: 11 new access tests plus one new navigation-failure regression; all 362 cases pass across full-suite runs and isolated retries. Two unrelated tests timed out during concurrent build/test load in separate full runs and passed on isolated retry; no claim of a clean single full-suite run. Final production client/SSR build and scoped lint pass; application typecheck retains the same 61 baseline diagnostics with no changed-file diagnostics. Output cleanup was temporarily disabled for the Windows-locked `dist/client`; both build configs are restored. An initial alternate-output build was incompatible with Cloudflare's fixed client output, and a build during route edits failed; the final stable-source build passed.
+- Actual loopback built Worker: direct/missing-package, forged `paid=true` and ungranted balance visits return HTTP 302 to pricing/checkout/project, `no-store`, and no thank-you/GTM HTML; confirmation API GET returns 405. Paid/refund/network and callback paths use mocked provider/backend responses in automated tests; no real order/payment was initiated. Source changes continue the owner's approved GitHub push workflow; live deployment/paid-cookie browser round trip remain unverified.
 
 ### [2026-10-15] Temporary ₹500 Starter advance for owner tag testing
 - Owner approved changing only the real Starter checkout advance from ₹5,000 to ₹500 and pushing the record to GitHub. Existing versioned pricing RPC applied the live change; Starter starting price and all Business prices remain unchanged. Separate database and live public HTML reads verify the result and GTM presence. Existing orders preserve original amounts; no financial transaction or application deployment performed. Restoration details and the lack of automatic expiry are recorded in §11.

@@ -10,6 +10,7 @@ import { SITE_NAME, EMAIL, PHONE_TEL_LINK, PHONE_NUMBER } from "@/lib/constants"
 import { formatINR, type PackageCatalog, type CheckoutAuthorization, type PaymentDetails, type PaymentPackage, type PaymentSession, type PaymentStatus } from "@/lib/payments";
 import { loadRazorpay, paymentRequest, restorePayment, restoreSharedPayment, savePayment } from "@/lib/razorpay-client";
 import {paymentBookingSchema,PAYMENT_TIMELINES} from "@/lib/payments";
+import {preparePaymentConfirmation} from "@/lib/payment-confirmation-client";
 
 export default function Pay() {
   const navigate=useNavigate();
@@ -26,7 +27,9 @@ export default function Pay() {
   const form = useForm<PaymentDetails>({ resolver: zodResolver(paymentBookingSchema), defaultValues: { package: packageId ?? "starter", name: "", email: "", phone: "", business: "",requirements:"",timeline:"Flexible",website_url:"" } });
 
   useEffect(()=>{
-    if(status?.status==="paid"&&session)navigate(`/payment-thank-you?package=${session.package}#resume=${encodeURIComponent(session.token)}`,{replace:true});
+    let active=true;
+    if(status?.status==="paid"&&session)void preparePaymentConfirmation({kind:"advance",package:session.package,token:session.token}).then(()=>{if(active)navigate(`/payment-thank-you?package=${session.package}#resume=${encodeURIComponent(session.token)}`,{replace:true});}).catch(()=>{if(active)setError("Your payment was verified, but the confirmation page could not be opened. Check payment status; do not pay again.");});
+    return()=>{active=false;};
   },[status?.status,session,navigate]);
 
   useEffect(() => {
