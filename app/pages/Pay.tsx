@@ -1,6 +1,6 @@
 import PaymentReceiptLink from "@/components/PaymentReceiptLink";
 import { useEffect, useState } from "react";
-import { Link, useLoaderData, useSearchParams } from "react-router";
+import { Link, useLoaderData, useSearchParams,useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, LockKeyhole, Loader2, ArrowLeft, CreditCard } from "lucide-react";
@@ -12,6 +12,7 @@ import { loadRazorpay, paymentRequest, restorePayment, restoreSharedPayment, sav
 import {paymentBookingSchema,PAYMENT_TIMELINES} from "@/lib/payments";
 
 export default function Pay() {
+  const navigate=useNavigate();
   const { enabled, testMode, packages,pricingVersion,pricingAvailable=true } = useLoaderData<{ enabled: boolean; testMode: boolean; packages: PackageCatalog;pricingVersion?:string|null;pricingAvailable?:boolean }>();
   const [params] = useSearchParams();
   const selected = params.get("package");
@@ -23,6 +24,10 @@ export default function Pay() {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const form = useForm<PaymentDetails>({ resolver: zodResolver(paymentBookingSchema), defaultValues: { package: packageId ?? "starter", name: "", email: "", phone: "", business: "",requirements:"",timeline:"Flexible",website_url:"" } });
+
+  useEffect(()=>{
+    if(status?.status==="paid"&&session)navigate(`/payment-thank-you?package=${session.package}#resume=${encodeURIComponent(session.token)}`,{replace:true});
+  },[status?.status,session,navigate]);
 
   useEffect(() => {
     if (!packageId || !enabled) return;

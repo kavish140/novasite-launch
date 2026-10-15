@@ -5,6 +5,8 @@ import Pay from "@/pages/Pay";
 import { paymentRequest, restorePayment, restoreSharedPayment, savePayment, loadRazorpay } from "./razorpay-client";
 import type { PaymentSession } from "./payments";
 import { PAYMENT_PACKAGES } from "./razorpay.server";
+const {navigate}=vi.hoisted(()=>({navigate:vi.fn()}));
+vi.mock("react-router",async original=>({...await original<typeof import("react-router")>(),useNavigate:()=>navigate}));
 
 vi.mock("./razorpay-client", () => ({ paymentRequest: vi.fn(), restorePayment: vi.fn(), restoreSharedPayment:vi.fn(), savePayment: vi.fn(), loadRazorpay: vi.fn() }));
 const session: PaymentSession = { token: "signed-test-token", orderId: "order_example", package: "starter" };
@@ -68,6 +70,7 @@ describe("package checkout", () => {
     expect(await screen.findByText("Test payment verified")).toBeTruthy();
     expect(savePayment).toHaveBeenCalledWith(session);
     expect(paymentRequest).toHaveBeenNthCalledWith(3, "verify", expect.objectContaining({ token: session.token, razorpay_payment_id: "pay_example" }));
+    expect(navigate).toHaveBeenCalledWith(`/payment-thank-you?package=starter#resume=${encodeURIComponent(session.token)}`,{replace:true});
     expect(screen.queryByRole("button", { name: /Continue checkout/ })).toBeNull();
   });
   it("reopens the same recovered order after the checkout tab was closed without paying",async()=>{
@@ -85,6 +88,7 @@ describe("package checkout", () => {
     vi.mocked(paymentRequest).mockResolvedValueOnce({ status: "paid", paymentId: "pay_recovered" });
     show(); expect(await screen.findByText("Test payment verified")).toBeTruthy();
     expect(paymentRequest).toHaveBeenCalledTimes(1); expect(paymentRequest).toHaveBeenCalledWith("status", { token: session.token });
+    expect(navigate).toHaveBeenCalledWith(expect.stringContaining("/payment-thank-you?package=starter#resume="),{replace:true});
   });
   it("checks an owner-shared original checkout link before offering continuation",async()=>{
     window.history.replaceState(null,"","/pay?package=starter#resume=fixture&section=checkout");
@@ -120,5 +124,6 @@ describe("package checkout", () => {
     expect(screen.queryByText("Test payment verified")).toBeNull();
     expect(screen.getByRole("button", { name: "Check payment status" })).toBeTruthy();
     expect(paymentRequest).toHaveBeenCalledTimes(3);
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

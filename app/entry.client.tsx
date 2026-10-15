@@ -7,7 +7,7 @@ startTransition(() => {
 });
 
 // Sentry — delayed init (preserves existing pattern from main.tsx)
-if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && window.location.pathname !== "/project" && !window.location.pathname.startsWith("/admin")) {
+if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && window.location.pathname !== "/project" && window.location.pathname !== "/payment-thank-you" && !window.location.pathname.startsWith("/admin")) {
   setTimeout(() => {
     import("@sentry/react").then((Sentry) => {
       Sentry.init({

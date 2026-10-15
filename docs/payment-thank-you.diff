@@ -1,0 +1,298 @@
+diff --git a/test-results/payment-thank-you/empty b/app/pages/PaymentThankYou.tsx
+index e69de29..c559c57 100644
+--- a/test-results/payment-thank-you/empty
++++ b/app/pages/PaymentThankYou.tsx
+@@ -0,0 +1,66 @@
++import {useEffect,useState} from "react";
++import {Link,useLoaderData,useSearchParams} from "react-router";
++import {ArrowRight,CheckCircle2,Loader2,LockKeyhole,MessageCircle,RefreshCw,Zap} from "lucide-react";
++import PaymentReceiptLink from "@/components/PaymentReceiptLink";
++import {EMAIL,SITE_NAME,buildWhatsAppUrl} from "@/lib/constants";
++import {formatINR,type PaymentSession,type PaymentStatus} from "@/lib/payments";
++import {paymentRequest,restorePayment,restoreSharedPayment,savePayment} from "@/lib/razorpay-client";
++import {projectRequest,type ProjectSummary} from "@/lib/project-client";
++
++type Confirmation={state:"paid"|"pending"|"refunded";session?:PaymentSession;projectToken?:string;paymentId?:string;amount?:number};
++export default function PaymentThankYou(){
++ const {testMode=false}=useLoaderData<{testMode?:boolean}>();
++ const [params]=useSearchParams();
++ const kind=params.get("kind"),selected=params.get("package");
++ const packageId=selected==="starter"||selected==="business"?selected:null;
++ const [confirmation,setConfirmation]=useState<Confirmation|null>(null),[busy,setBusy]=useState(true),[error,setError]=useState(""),[revision,setRevision]=useState(0);
++ useEffect(()=>{
++  let active=true;setConfirmation(null);setBusy(true);setError("");
++  async function check(){
++   try{
++    let result:Confirmation;
++    if(kind==="balance"){
++     const token=decodeURIComponent(window.location.hash.slice(1));
++     if(!token||token.length>4096)throw new Error("Open the complete private project link shared by SiteNova.");
++     const summary=await projectRequest<ProjectSummary>("view",token);
++     const paid=summary.balanceStatus==="paid"&&summary.remaining===0&&summary.balancePaid>0&&!summary.needsReview;
++     result={state:paid?"paid":summary.balanceStatus==="refunded"?"refunded":"pending",projectToken:token,...(paid?{amount:summary.balancePaid}:{})};
++    }else{
++     if(kind!==null||!packageId)throw new Error("Open your original payment link to check your payment.");
++     const session=restoreSharedPayment(packageId)??restorePayment(packageId);
++     if(!session)throw new Error("Open your original payment link in the browser you used to pay, or contact SiteNova for help.");
++     savePayment(session);
++     const status=await paymentRequest<PaymentStatus>("status",{token:session.token});
++     result={state:status.status,session,paymentId:status.paymentId};
++    }
++    if(active)setConfirmation(result);
++   }catch{if(active)setError("We couldn't confirm your payment here. Open your original payment or project link, or contact SiteNova. If you were debited, do not pay again while the status is uncertain.");}
++   finally{if(active)setBusy(false);}
++  }
++  void check();return()=>{active=false;};
++ },[kind,packageId,revision]);
++ const paid=confirmation?.state==="paid";
++ const projectUrl=confirmation?.projectToken?`/project#${encodeURIComponent(confirmation.projectToken)}`:null;
++ const service=kind==="balance"?"Remaining project balance":packageId==="business"?"Business website advance":"Starter website advance";
++ return <main className="min-h-screen bg-[#0c1221] px-4 py-9 text-slate-100 sm:px-6 sm:py-14"><div className="mx-auto max-w-2xl">
++  <header className="mb-8 flex items-center justify-between gap-4"><Link reloadDocument to="/" className="flex items-center gap-3 font-heading text-xl font-bold"><span className="rounded-xl bg-gradient-to-br from-blue-500 to-teal-400 p-2.5"><Zap className="h-5 w-5" aria-hidden="true"/></span>{SITE_NAME}</Link><span className="flex items-center gap-2 text-xs text-slate-400"><LockKeyhole className="h-4 w-4" aria-hidden="true"/>Private confirmation</span></header>
++  <section className="overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl" aria-labelledby="payment-confirmation-title" aria-busy={busy}>
++   <div className="h-1.5 bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-400"/>
++   <div className="p-6 sm:p-10" aria-live="polite">
++    {busy?<div role="status" className="py-12 text-center"><Loader2 className="mx-auto mb-5 h-9 w-9 animate-spin text-blue-600 motion-reduce:animate-none" aria-hidden="true"/><h1 id="payment-confirmation-title" className="font-heading text-2xl font-bold">Checking your payment…</h1><p className="mt-3 text-sm text-slate-500">Please wait while we confirm the saved payment status.</p></div>:paid?<>
++     <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600"><CheckCircle2 className="h-9 w-9" aria-hidden="true"/></div>
++     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">{testMode?"Test payment verified":"Payment confirmed"}</p>
++     <h1 id="payment-confirmation-title" className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">{testMode?"Your test payment is confirmed.":kind==="balance"?"Thank you. Your balance is paid.":"Thank you for choosing SiteNova."}</h1>
++     <p className="mt-4 text-sm leading-7 text-slate-600">{testMode?"This is a simulated payment and does not confirm a paid project.":kind==="balance"?"Your remaining payment is confirmed in our records. Follow your private project page for delivery and launch updates.":"Your website advance is confirmed in our records. We’ll review your project brief and confirm the scope, agreed total and schedule with you."}</p>
++     <dl className="mt-7 space-y-3 rounded-2xl bg-slate-50 p-5 text-sm"><div className="flex flex-wrap justify-between gap-2"><dt className="text-slate-500">Payment for</dt><dd className="font-semibold">{service}</dd></div><div className="flex flex-wrap justify-between gap-2"><dt className="text-slate-500">Status</dt><dd className="font-semibold text-emerald-700">Verified paid</dd></div>{confirmation?.amount!==undefined&&<div className="flex flex-wrap justify-between gap-2"><dt className="text-slate-500">Recorded balance payment</dt><dd className="font-semibold">{formatINR(confirmation.amount)}</dd></div>}{confirmation?.paymentId&&<div><dt className="text-slate-500">Payment reference</dt><dd className="mt-1 break-all font-medium">{confirmation.paymentId}</dd></div>}</dl>
++     <div className="mt-8"><h2 className="font-heading text-lg font-bold">What happens next?</h2><ol className="mt-4 space-y-4 text-sm leading-6 text-slate-600"><li><strong className="text-slate-900">1. Keep your payment record.</strong> {kind==="balance"?"Your project page includes your recorded payment breakdown.":"Save the receipt link below for your records and access from another device."}</li><li><strong className="text-slate-900">2. Confirm the next step with us.</strong> {kind==="balance"?"Delivery and launch follow your agreed proposal.":"We’ll discuss your requirements and confirm the project plan with you."}</li><li><strong className="text-slate-900">3. Follow your project.</strong> {kind==="balance"?"Use your existing private project link for progress updates.":"SiteNova will share your private project link when your project is set up."}</li></ol></div>
++     {confirmation?.session&&<div className="mt-7 border-t border-slate-200 pt-5"><h2 className="font-semibold">Your payment receipt</h2><PaymentReceiptLink token={confirmation.session.token}/></div>}
++     {projectUrl&&<Link reloadDocument to={projectUrl} referrerPolicy="no-referrer" className="mt-7 flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700">View project status<ArrowRight className="h-4 w-4" aria-hidden="true"/></Link>}
++    </>:<div role="alert"><h1 id="payment-confirmation-title" className="font-heading text-2xl font-bold">{confirmation?.state==="refunded"?"A refund has been recorded":confirmation?.state==="pending"?"Your payment is still being checked":"Payment confirmation unavailable"}</h1><p className="mt-4 text-sm leading-7 text-slate-600">{error|| (confirmation?.state==="refunded"?"Contact SiteNova for the refund amount and project details. This page does not confirm an active paid booking.":"We cannot show payment success yet. If your account was debited, do not start another payment. Check again or contact SiteNova.")}</p>{projectUrl&&<Link reloadDocument to={projectUrl} referrerPolicy="no-referrer" className="mt-4 inline-block text-sm font-semibold text-blue-700 underline">Return to your project</Link>}</div>}
++    {!busy&&<button onClick={()=>setRevision(value=>value+1)} className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"><RefreshCw className="h-4 w-4" aria-hidden="true"/>Check payment status</button>}
++   </div>
++  </section>
++  <div className="mt-6 flex flex-wrap gap-3"><a href={buildWhatsAppUrl("Hi, I’d like to confirm the next steps for my SiteNova website project.")} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100"><MessageCircle className="h-4 w-4" aria-hidden="true"/>Contact on WhatsApp</a><a href={`mailto:${EMAIL}`} className="flex flex-1 items-center justify-center rounded-xl border border-slate-700 px-5 py-3 text-sm font-medium text-slate-200 hover:bg-slate-800">Email SiteNova</a></div>
++  <p className="mt-6 text-center text-xs leading-6 text-slate-400">Keep your payment and project links private. Payment confirmation does not change your agreed project scope or delivery schedule.</p>
++ </div></main>;
++}
+diff --git a/test-results/payment-thank-you/empty b/app/pages/PaymentThankYou.test.tsx
+index e69de29..b60984a 100644
+--- a/test-results/payment-thank-you/empty
++++ b/app/pages/PaymentThankYou.test.tsx
+@@ -0,0 +1,52 @@
++import {afterEach,beforeEach,expect,it,vi} from "vitest";
++import {cleanup,fireEvent,render,screen,waitFor,act} from "@testing-library/react";
++import {createMemoryRouter,RouterProvider} from "react-router";
++import PaymentThankYou from "./PaymentThankYou";
++import {paymentRequest,restorePayment,restoreSharedPayment,savePayment} from "@/lib/razorpay-client";
++import {projectRequest} from "@/lib/project-client";
++import {headers,meta} from "@/routes/payment-thank-you";
++import {suppressPromotions} from "@/lib/booking";
++vi.mock("@/lib/razorpay-client",()=>({paymentRequest:vi.fn(),restorePayment:vi.fn(),restoreSharedPayment:vi.fn(),savePayment:vi.fn()}));
++vi.mock("@/lib/project-client",()=>({projectRequest:vi.fn()}));
++vi.mock("@/components/PaymentReceiptLink",()=>({default:({token}:{token:string})=><a href="/receipt#fixture" data-token={token}>Save payment receipt</a>}));
++const session={package:"starter" as const,orderId:"order_original",token:"signed-private-session"};
++const balance={title:"Private customer name",stage:"review",update:"Private project brief",updatedAt:"2026-10-15T09:00:00Z",total:1000000,advancePaid:500000,balancePaid:500000,remaining:0,balanceStatus:"paid",needsReview:false,canPay:false};
++function show(path="/payment-thank-you?package=starter",testMode=false){return render(<RouterProvider router={createMemoryRouter([{path:"/payment-thank-you",element:<PaymentThankYou/>,loader:()=>({testMode})}],{initialEntries:[path],hydrationData:{loaderData:{"0":{testMode}}}})}/>);}
++beforeEach(()=>{vi.clearAllMocks();window.history.replaceState(null,"","/payment-thank-you");vi.mocked(restoreSharedPayment).mockReturnValue(null);vi.mocked(restorePayment).mockReturnValue(session);vi.mocked(paymentRequest).mockResolvedValue({status:"paid",paymentId:"pay_confirmed"});vi.mocked(projectRequest).mockResolvedValue(balance);});
++afterEach(()=>{cleanup();window.history.replaceState(null,"","/");});
++
++it("waits for fresh backend paid confirmation, then shows the specialized advance page and receipt",async()=>{
++ let finish!:(value:{status:"paid";paymentId:string})=>void;vi.mocked(paymentRequest).mockReturnValue(new Promise(resolve=>{finish=resolve;}));show();
++ expect(screen.getByRole("heading",{name:"Checking your payment…"})).toBeTruthy();expect(screen.queryByText("Thank you for choosing SiteNova.")).toBeNull();
++ await act(async()=>finish({status:"paid",paymentId:"pay_confirmed"}));expect(await screen.findByRole("heading",{name:"Thank you for choosing SiteNova."})).toBeTruthy();expect(screen.getByText("pay_confirmed")).toBeTruthy();expect(screen.getByText("Starter website advance")).toBeTruthy();expect(screen.getByRole("link",{name:"Save payment receipt"}).getAttribute("data-token")).toBe(session.token);
++ expect(paymentRequest).toHaveBeenCalledExactlyOnceWith("status",{token:session.token});expect(screen.queryByRole("button",{name:/Pay.*advance/})).toBeNull();
++});
++it("rechecks on refresh without creating another order or trusting a success query",async()=>{
++ show("/payment-thank-you?package=starter&paid=true");await screen.findByText("Verified paid");cleanup();show();await screen.findByText("Verified paid");expect(paymentRequest).toHaveBeenCalledTimes(2);expect(vi.mocked(paymentRequest).mock.calls.every(([action])=>action==="status")).toBe(true);
++});
++it("restores an owner-shared signed session and keeps the original package",async()=>{
++ vi.mocked(restorePayment).mockReturnValue(null);vi.mocked(restoreSharedPayment).mockReturnValue({...session,package:"business"});show("/payment-thank-you?package=business");await screen.findByText("Verified paid");expect(screen.getByText("Business website advance")).toBeTruthy();expect(savePayment).toHaveBeenCalledWith({...session,package:"business"});
++});
++it.each(["/payment-thank-you","/payment-thank-you?package=custom&paid=true","/payment-thank-you?package=starter&kind=unknown"])("never shows success for an incomplete/forged route %s",async path=>{
++ show(path);await screen.findByRole("alert");expect(screen.queryByText("Verified paid")).toBeNull();expect(paymentRequest).not.toHaveBeenCalled();expect(projectRequest).not.toHaveBeenCalled();
++});
++it("does not fetch or show success without the private session",async()=>{vi.mocked(restorePayment).mockReturnValue(null);show();await screen.findByRole("alert");expect(paymentRequest).not.toHaveBeenCalled();expect(screen.queryByRole("link",{name:"Save payment receipt"})).toBeNull();});
++it("keeps pending payments out of success and can recover on an explicit recheck",async()=>{
++ vi.mocked(paymentRequest).mockResolvedValueOnce({status:"pending"}).mockResolvedValueOnce({status:"paid",paymentId:"pay_late"});show();await screen.findByText("Your payment is still being checked");expect(screen.queryByText("Verified paid")).toBeNull();expect(screen.queryByRole("link",{name:"Save payment receipt"})).toBeNull();fireEvent.click(screen.getByRole("button",{name:"Check payment status"}));await screen.findByText("Verified paid");expect(screen.getByText("pay_late")).toBeTruthy();
++});
++it("shows refund state instead of a paid thank-you",async()=>{vi.mocked(paymentRequest).mockResolvedValue({status:"refunded",paymentId:"pay_original"});show();await screen.findByText("A refund has been recorded");expect(screen.queryByText("Verified paid")).toBeNull();expect(screen.queryByText("Thank you for choosing SiteNova.")).toBeNull();});
++it("clears a previous success if rechecking fails rather than leaving stale paid status",async()=>{
++ vi.mocked(paymentRequest).mockResolvedValueOnce({status:"paid"}).mockRejectedValueOnce(new Error("private provider detail"));show();await screen.findByText("Verified paid");fireEvent.click(screen.getByRole("button",{name:"Check payment status"}));await screen.findByText("Payment confirmation unavailable");expect(screen.queryByText("Verified paid")).toBeNull();expect(screen.queryByText("private provider detail")).toBeNull();
++});
++it("labels simulated confirmations without promising a real booking",async()=>{show(undefined,true);await screen.findByText("Test payment verified");expect(screen.getByText("This is a simulated payment and does not confirm a paid project.")).toBeTruthy();});
++it("confirms a saved balance payment and links back privately without exposing project details",async()=>{
++ window.location.hash="private-project-capability";show("/payment-thank-you?kind=balance");await screen.findByText("Thank you. Your balance is paid.");expect(screen.getByText("₹5,000.00")).toBeTruthy();expect(screen.getByRole("link",{name:"View project status"}).getAttribute("href")).toBe("/project#private-project-capability");expect(screen.queryByText(balance.title)).toBeNull();expect(screen.queryByText(balance.update)).toBeNull();expect(projectRequest).toHaveBeenCalledExactlyOnceWith("view","private-project-capability");expect(paymentRequest).not.toHaveBeenCalled();
++});
++it.each([{...balance,balanceStatus:"pending"},{...balance,needsReview:true},{...balance,balancePaid:0}])("does not infer paid balance just from a zero remaining amount",async summary=>{
++ window.location.hash="private-project-capability";vi.mocked(projectRequest).mockResolvedValue(summary);show("/payment-thank-you?kind=balance");await screen.findByText("Your payment is still being checked");expect(screen.queryByText("Verified paid")).toBeNull();
++});
++it("requires the complete private balance capability",async()=>{show("/payment-thank-you?kind=balance");await screen.findByRole("alert");expect(projectRequest).not.toHaveBeenCalled();});
++it("ignores a stale paid response after leaving the confirmation page",async()=>{
++ let finish!:(value:{status:"paid"})=>void;vi.mocked(paymentRequest).mockReturnValue(new Promise(resolve=>{finish=resolve;}));const view=show();view.unmount();await act(async()=>finish({status:"paid"}));expect(screen.queryByText("Verified paid")).toBeNull();
++});
++it("is private, uncacheable, noindex and excluded from promotional controls",()=>{expect(headers()).toEqual({"Cache-Control":"no-store","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow"});expect(meta()).toContainEqual({name:"robots",content:expect.stringContaining("noindex")});expect(suppressPromotions("/payment-thank-you")).toBe(true);expect(suppressPromotions("/payment-thank-you/")).toBe(true);});
+diff --git a/test-results/payment-thank-you/empty b/app/routes/payment-thank-you.tsx
+index e69de29..545cca1 100644
+--- a/test-results/payment-thank-you/empty
++++ b/app/routes/payment-thank-you.tsx
+@@ -0,0 +1,7 @@
++import type {LoaderFunctionArgs} from "react-router";
++import {buildMeta} from "@/lib/meta";
++import {paymentConfiguration,paymentJson} from "@/lib/razorpay.server";
++export {default} from "@/pages/PaymentThankYou";
++export async function loader({context}:LoaderFunctionArgs){const config=await paymentConfiguration(context);return paymentJson({testMode:config.testMode});}
++export function headers(){return {"Cache-Control":"no-store","Referrer-Policy":"no-referrer","X-Robots-Tag":"noindex, nofollow"};}
++export function meta(){return buildMeta({title:"Payment confirmation | SiteNova",description:"Check your SiteNova payment confirmation and next steps.",canonicalPath:"/payment-thank-you",noindex:true});}
+diff --git a/app/pages/Pay.tsx b/app/pages/Pay.tsx
+index ae1bfd1..3cfc182 100644
+--- a/app/pages/Pay.tsx
++++ b/app/pages/Pay.tsx
+@@ -1,6 +1,6 @@
+ import PaymentReceiptLink from "@/components/PaymentReceiptLink";
+ import { useEffect, useState } from "react";
+-import { Link, useLoaderData, useSearchParams } from "react-router";
++import { Link, useLoaderData, useSearchParams,useNavigate } from "react-router";
+ import { useForm } from "react-hook-form";
+ import { zodResolver } from "@hookform/resolvers/zod";
+ import { CheckCircle2, LockKeyhole, Loader2, ArrowLeft, CreditCard } from "lucide-react";
+@@ -12,6 +12,7 @@ import { loadRazorpay, paymentRequest, restorePayment, restoreSharedPayment, sav
+ import {paymentBookingSchema,PAYMENT_TIMELINES} from "@/lib/payments";
+ 
+ export default function Pay() {
++  const navigate=useNavigate();
+   const { enabled, testMode, packages,pricingVersion,pricingAvailable=true } = useLoaderData<{ enabled: boolean; testMode: boolean; packages: PackageCatalog;pricingVersion?:string|null;pricingAvailable?:boolean }>();
+   const [params] = useSearchParams();
+   const selected = params.get("package");
+@@ -24,6 +25,10 @@ export default function Pay() {
+   const [error, setError] = useState("");
+   const form = useForm<PaymentDetails>({ resolver: zodResolver(paymentBookingSchema), defaultValues: { package: packageId ?? "starter", name: "", email: "", phone: "", business: "",requirements:"",timeline:"Flexible",website_url:"" } });
+ 
++  useEffect(()=>{
++    if(status?.status==="paid"&&session)navigate(`/payment-thank-you?package=${session.package}#resume=${encodeURIComponent(session.token)}`,{replace:true});
++  },[status?.status,session,navigate]);
++
+   useEffect(() => {
+     if (!packageId || !enabled) return;
+     let cancelled = false;
+diff --git a/app/pages/Project.tsx b/app/pages/Project.tsx
+index 87b5eff..8aeb773 100644
+--- a/app/pages/Project.tsx
++++ b/app/pages/Project.tsx
+@@ -4,7 +4,9 @@ import {PROJECT_STAGES,projectRequest,type ProjectSummary} from "@/lib/project-c
+ import {formatINR} from "@/lib/payments";
+ import {loadRazorpay} from "@/lib/razorpay-client";
+ import {EMAIL,SITE_NAME} from "@/lib/constants";
++import {useNavigate} from "react-router";
+ export default function Project(){
++ const navigate=useNavigate();
+  const [summary,setSummary]=useState<ProjectSummary|null>(null),[error,setError]=useState(""),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
+  const token=useRef(""),opening=useRef(false),verifying=useRef(false),checking=useRef(false),mounted=useRef(false),revision=useRef(0),attempt=useRef(0);
+  const update=useCallback(async(action:"view"|"refresh"="view")=>{
+@@ -26,7 +28,7 @@ export default function Project(){
+   const requestedToken=token.current,generation=++attempt.current,belongs=()=>mounted.current&&token.current===requestedToken&&attempt.current===generation;
+   const release=()=>{if(attempt.current!==generation)return;opening.current=false;verifying.current=false;if(mounted.current)setBusy(false);};
+   try{await loadRazorpay();if(!belongs()){release();return;}const checkout=await projectRequest<{orderId:string;amount:number;keyId:string;testMode:boolean}>("checkout",requestedToken,summary.retryId?{retryId:summary.retryId}:{});if(!belongs()){release();return;}if(!window.Razorpay)throw new Error("Unable to load checkout");
+-   const modal=new window.Razorpay({key:checkout.keyId,order_id:checkout.orderId,amount:checkout.amount,currency:"INR",name:SITE_NAME,description:"Remaining project balance",retry:{enabled:false},theme:{color:"#2563eb"},modal:{ondismiss:()=>{if(attempt.current!==generation||verifying.current)return;release();if(belongs())setNotice("Checkout closed. Check payment status before trying again.");}},handler:async result=>{if(attempt.current===generation)verifying.current=true;try{const verified=await projectRequest<ProjectSummary>("verify",requestedToken,result);if(belongs()){revision.current++;setSummary(verified);setError("");setNotice(verified.remaining===0&&!verified.needsReview?"Balance payment confirmed.":"Payment is being checked. Contact SiteNova before paying again.");}}catch{if(belongs()){setError("We could not confirm payment. Check status before paying again.");setSummary(previous=>previous?{...previous,canPay:false}:previous);}}finally{release();}}});
++   const modal=new window.Razorpay({key:checkout.keyId,order_id:checkout.orderId,amount:checkout.amount,currency:"INR",name:SITE_NAME,description:"Remaining project balance",retry:{enabled:false},theme:{color:"#2563eb"},modal:{ondismiss:()=>{if(attempt.current!==generation||verifying.current)return;release();if(belongs())setNotice("Checkout closed. Check payment status before trying again.");}},handler:async result=>{if(attempt.current===generation)verifying.current=true;try{const verified=await projectRequest<ProjectSummary>("verify",requestedToken,result);if(belongs()){revision.current++;setSummary(verified);setError("");setNotice(verified.remaining===0&&!verified.needsReview?"Balance payment confirmed.":"Payment is being checked. Contact SiteNova before paying again.");if(verified.balanceStatus==="paid"&&verified.balancePaid>0&&verified.remaining===0&&!verified.needsReview)navigate(`/payment-thank-you?kind=balance#${encodeURIComponent(requestedToken)}`,{replace:true});}}catch{if(belongs()){setError("We could not confirm payment. Check status before paying again.");setSummary(previous=>previous?{...previous,canPay:false}:previous);}}finally{release();}}});
+    modal.on("payment.failed",()=>{if(attempt.current!==generation||verifying.current)return;release();if(belongs()){setNotice("Payment attempt reported a failure. Check status; do not pay again until confirmed.");setSummary(previous=>previous?{...previous,canPay:false}:previous);}});modal.open();
+   }catch(e){release();if(belongs()){setError(e instanceof Error?e.message:"Unable to open checkout");setSummary(previous=>previous?{...previous,canPay:false}:previous);}}
+  }
+diff --git a/app/pages/Project.test.tsx b/app/pages/Project.test.tsx
+index 5c2082a..5d549e0 100644
+--- a/app/pages/Project.test.tsx
++++ b/app/pages/Project.test.tsx
+@@ -3,6 +3,8 @@ import {render,screen,fireEvent,cleanup,waitFor,act} from "@testing-library/reac
+ import Project from "./Project";
+ import {projectRequest} from "@/lib/project-client";
+ import {loadRazorpay} from "@/lib/razorpay-client";
++const {navigate}=vi.hoisted(()=>({navigate:vi.fn()}));
++vi.mock("react-router",async original=>({...await original<typeof import("react-router")>(),useNavigate:()=>navigate}));
+ vi.mock("@/lib/project-client",async original=>({...await original<typeof import("@/lib/project-client")>(),projectRequest:vi.fn()}));
+ vi.mock("@/lib/razorpay-client",()=>({loadRazorpay:vi.fn()}));
+ const summary={title:"Client website",stage:"design",update:"Review your design",updatedAt:"2026-10-13T10:00:00Z",total:1000000,advancePaid:500000,balancePaid:0,remaining:500000,balanceStatus:"not_started",needsReview:false,canPay:false};
+@@ -16,6 +18,7 @@ it("opens a single backend-priced checkout and confirms only after server verifi
+  render(<Project/>);const pay=await screen.findByRole("button",{name:"Pay remaining balance"});fireEvent.click(pay);fireEvent.click(pay);
+  expect(await screen.findByText("Balance payment confirmed.")).toBeTruthy();expect(opened).toHaveBeenCalledTimes(1);expect(opened.mock.calls[0][0]).toMatchObject({amount:500000,retry:{enabled:false}});
+  expect(projectRequest).toHaveBeenCalledWith("checkout","private-token",{});expect(projectRequest).toHaveBeenCalledWith("verify","private-token",expect.objectContaining({razorpay_payment_id:"pay_balance"}));
++ expect(navigate).toHaveBeenCalledWith("/payment-thank-you?kind=balance#private-token",{replace:true});
+ });
+ it("retains recovery and blocks payment after an uncertain provider check",async()=>{
+  vi.mocked(projectRequest).mockResolvedValueOnce({...summary,canPay:true}).mockRejectedValueOnce(new Error("Provider unavailable"));render(<Project/>);await screen.findByText("Client website");fireEvent.click(screen.getByRole("button",{name:"Check payment status"}));await waitFor(()=>expect(screen.getByRole("alert").textContent).toContain("Provider unavailable"));expect(screen.queryByRole("button",{name:"Pay remaining balance"})).toBeNull();
+diff --git a/app/lib/payment-checkout.test.tsx b/app/lib/payment-checkout.test.tsx
+index b0858bc..f20158c 100644
+--- a/app/lib/payment-checkout.test.tsx
++++ b/app/lib/payment-checkout.test.tsx
+@@ -5,6 +5,8 @@ import Pay from "@/pages/Pay";
+ import { paymentRequest, restorePayment, restoreSharedPayment, savePayment, loadRazorpay } from "./razorpay-client";
+ import type { PaymentSession } from "./payments";
+ import { PAYMENT_PACKAGES } from "./razorpay.server";
++const {navigate}=vi.hoisted(()=>({navigate:vi.fn()}));
++vi.mock("react-router",async original=>({...await original<typeof import("react-router")>(),useNavigate:()=>navigate}));
+ 
+ vi.mock("./razorpay-client", () => ({ paymentRequest: vi.fn(), restorePayment: vi.fn(), restoreSharedPayment:vi.fn(), savePayment: vi.fn(), loadRazorpay: vi.fn() }));
+ const session: PaymentSession = { token: "signed-test-token", orderId: "order_example", package: "starter" };
+@@ -68,6 +70,7 @@ describe("package checkout", () => {
+     expect(await screen.findByText("Test payment verified")).toBeTruthy();
+     expect(savePayment).toHaveBeenCalledWith(session);
+     expect(paymentRequest).toHaveBeenNthCalledWith(3, "verify", expect.objectContaining({ token: session.token, razorpay_payment_id: "pay_example" }));
++    expect(navigate).toHaveBeenCalledWith(`/payment-thank-you?package=starter#resume=${encodeURIComponent(session.token)}`,{replace:true});
+     expect(screen.queryByRole("button", { name: /Continue checkout/ })).toBeNull();
+   });
+   it("reopens the same recovered order after the checkout tab was closed without paying",async()=>{
+@@ -85,6 +88,7 @@ describe("package checkout", () => {
+     vi.mocked(paymentRequest).mockResolvedValueOnce({ status: "paid", paymentId: "pay_recovered" });
+     show(); expect(await screen.findByText("Test payment verified")).toBeTruthy();
+     expect(paymentRequest).toHaveBeenCalledTimes(1); expect(paymentRequest).toHaveBeenCalledWith("status", { token: session.token });
++    expect(navigate).toHaveBeenCalledWith(expect.stringContaining("/payment-thank-you?package=starter#resume="),{replace:true});
+   });
+   it("checks an owner-shared original checkout link before offering continuation",async()=>{
+     window.history.replaceState(null,"","/pay?package=starter#resume=fixture&section=checkout");
+@@ -120,5 +124,6 @@ describe("package checkout", () => {
+     expect(screen.queryByText("Test payment verified")).toBeNull();
+     expect(screen.getByRole("button", { name: "Check payment status" })).toBeTruthy();
+     expect(paymentRequest).toHaveBeenCalledTimes(3);
++    expect(navigate).not.toHaveBeenCalled();
+   });
+ });
+diff --git a/app/root.tsx b/app/root.tsx
+index 15886e2..009242d 100644
+--- a/app/root.tsx
++++ b/app/root.tsx
+@@ -30,14 +30,14 @@ const AnnouncementBanner = lazy(() => import("@/components/AnnouncementBanner"))
+ 
+ export async function loader({request,context}:LoaderFunctionArgs){
+  const path=new URL(request.url).pathname;
+- if(path.startsWith("/admin")||path.startsWith("/api/")||["/pay","/receipt","/project"].includes(path))return {pricing:{packages:PAYMENT_PACKAGES,available:false}};
++ if(path.startsWith("/admin")||path.startsWith("/api/")||["/pay","/receipt","/project","/payment-thank-you"].includes(path))return {pricing:{packages:PAYMENT_PACKAGES,available:false}};
+  const config=await paymentConfiguration(context);return {pricing:{packages:config.packages,available:config.pricingAvailable,enabled:config.enabled}};
+ }
+ export function headers(){return {"Cache-Control":"no-store"};}
+ 
+ export function Layout({ children }: { children: React.ReactNode }) {
+   const pathname = useLocation().pathname;
+-  const paymentPage = pathname === "/pay" || pathname === "/receipt" || pathname === "/project" || pathname.startsWith("/admin");
++  const paymentPage = pathname === "/pay" || pathname === "/receipt" || pathname === "/project" || pathname === "/payment-thank-you" || pathname.startsWith("/admin");
+   return (
+     <html lang="en" suppressHydrationWarning>
+       <head>
+diff --git a/app/entry.client.tsx b/app/entry.client.tsx
+index 1d03358..ef5a9d4 100644
+--- a/app/entry.client.tsx
++++ b/app/entry.client.tsx
+@@ -7,7 +7,7 @@ startTransition(() => {
+ });
+ 
+ // Sentry — delayed init (preserves existing pattern from main.tsx)
+-if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && window.location.pathname !== "/project" && !window.location.pathname.startsWith("/admin")) {
++if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN && window.location.pathname !== "/pay" && window.location.pathname !== "/receipt" && window.location.pathname !== "/project" && window.location.pathname !== "/payment-thank-you" && !window.location.pathname.startsWith("/admin")) {
+   setTimeout(() => {
+     import("@sentry/react").then((Sentry) => {
+       Sentry.init({
+diff --git a/app/lib/booking.ts b/app/lib/booking.ts
+index 958254b..84c8af2 100644
+--- a/app/lib/booking.ts
++++ b/app/lib/booking.ts
+@@ -28,7 +28,7 @@ export function bookingAvailable(settings: BookingSettings): boolean {
+ }
+ 
+ export function suppressPromotions(path: string): boolean {
+-  return /^\/(?:admin(?:\/|$)|lp(?:\/|$)|pay\/?$|receipt\/?$|project\/?$|quote\/?$|free-audit\/?$|ads-contact\/?$|contact-us\/?$|book-a-call\/?$|thank-you\/?$)/.test(
++  return /^\/(?:admin(?:\/|$)|lp(?:\/|$)|pay\/?$|receipt\/?$|project\/?$|payment-thank-you\/?$|quote\/?$|free-audit\/?$|ads-contact\/?$|contact-us\/?$|book-a-call\/?$|thank-you\/?$)/.test(
+     path,
+   );
+ }

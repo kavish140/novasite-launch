@@ -161,6 +161,7 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `our-process.tsx` | `/our-process` | `pages/OurProcess.tsx` |
 | `pricing.tsx` | `/pricing` | `pages/Pricing.tsx` |
 | `pay.tsx` | `/pay` | `pages/Pay.tsx` — noindex package advance checkout |
+| `payment-thank-you.tsx` | `/payment-thank-you` | `pages/PaymentThankYou.tsx` — private, verified-only advance/balance confirmation and next steps (deployed 2026-10-15) |
 | `project.tsx` | `/project` | `pages/Project.tsx` — owner-shared private project/progress/balance page (deployed 2026-10-14) |
 | `api.project.$action.ts` | `/api/project/:action` | Signed-capability project reads and isolated balance checkout/recovery (deployed 2026-10-14) |
 | `api.payments.order.ts` | `/api/payments/order` | Server-priced Razorpay order creation |
@@ -247,6 +248,15 @@ This injects `<title>`, meta tags, Open Graph, Twitter Card, canonical link, rob
 | Website Cost Calculator | `pages/WebsiteCostCalculator.tsx` | Interactive calculator with dynamic pricing |
 | Why Us | `pages/WhyUs.tsx` | Differentiators, trust signals |
 | Not Found | `pages/NotFound.tsx` | 404 page |
+
+### Specialized payment confirmation — DEPLOYED (2026-10-15)
+
+- Owner approved deployment and source push after checks. Website Worker `10c28fd0-e456-4408-862b-ffbb5282fb27` adds this page, preserving all existing runtime settings with `--keep-vars`. No backend deployment/schema/secret/activation change or financial action. Live route returns 200 with private headers, no tracking and no unverified SSR success; payment redirect/paid behavior is browser-verified with local mocks, not a new real charge. Earlier local-preparation wording below records the implementation checks.
+
+- Previously public payments displayed inline success on `/pay`. Verified-paid advances now navigate with replacement to `/payment-thank-you?package=starter|business#resume=<signed-session>`. The new page independently checks the existing signed status endpoint on entry/refresh and offers the existing durable receipt link, reference, next steps and optional WhatsApp/email contact. It never trusts a success query or navigation state and never creates an order or a payment. The opaque session remains in a fragment/private storage, never a query parameter. No customer contact or project brief is displayed.
+- Verified remaining-balance callbacks navigate only when the backend reports `balanceStatus=paid`, positive recorded balance, zero remaining and no review flag. Their `kind=balance` confirmation uses the existing private project capability/view and links back to the project summary. No new balance receipt endpoint is invented. Old-project/stale callbacks retain their existing generation checks; admin ₹1 test checkout stays in admin.
+- Pending/refunded/missing-link/network-failure states cannot display the thank-you success. Manual read-only status recheck clears stale success and can recover after a delay. Test Mode is explicitly labelled. No conversion is fired on page mount. Root/entry/promotion guards exclude this private page from analytics/replay/promotions; route is noindex/no-store/no-referrer and excluded from the static sitemap paths.
+- 350 tests across 49 files pass (all previous 332 retained, 18 new confirmation cases), as do production build and scoped lint. Same 61 baseline type errors; zero added. Actual isolated browser tests confirm the payment redirect, receipt preparation, refresh, pending/refund/offline states, with provider/network responses mocked and no real financial request. Preview is ignored `test-results/payment-thank-you/` on port 8793. Live behavior is unverified until approved release. No Supabase source/schema/secrets, price/activation flags, deployment or Git push changed in this pass.
 
 ### Pricing and recovery release — DEPLOYED (2026-10-14)
 
@@ -1003,6 +1013,14 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-15] Approved payment thank-you website release
+- Owner authorized publishing after 350 tests/49 files, build, lint, same-baseline typecheck, credential checks, real local Worker header/no-tracking/SSR checks and mocked browser redirect/refresh/failure checks. Website deployed with preserved settings as Worker `10c28fd0-e456-4408-862b-ffbb5282fb27`. Existing Supabase backend unchanged; no secrets/flags or money moved. New live route has private headers and never renders unverified paid success; a real new charge remains unverified.
+- Source release targets existing `ssr`; no generated runtime or isolated test fixture files included. Review: `docs/payment-thank-you-review.md`.
+
+### [2026-10-15] Verified payment thank-you page (local preparation)
+- Add a specialized advance/balance confirmation with next steps, reference, receipt access for advances and private-project return for balances. Redirect only from backend-confirmed payment, independently recheck on refresh, retain private-capability recovery, and show pending/refunded/error states without false success. Checkout authorization, verification and settlement logic are unchanged; admin tests stay in admin.
+- 350 tests/49 files, production build and scoped lint pass; 61 existing type diagnostics remain, none added. Mocked browser redirect/refresh/failure checks pass. No live charge, backend mutation, deployment or Git push; public activation remains unchanged. New feature live behavior remains unverified until approved publication.
 
 ### [2026-10-14] Approved backend-first pricing and recovery release
 - Applied versioned price schema and updated all three payment Edge Functions before the website. Preserved original amounts/secrets and restored the approved public activation after coordinated checks. Live admin price reads, landing/public forms/security boundaries and original-order recovery across complete tab closure pass. No charge or provider order creation; ledger counts unchanged. Active Worker `07a616b1-f31e-4073-82d7-ccf91b0991ba`, API/webhook/reconciler v18/v14/v12.
