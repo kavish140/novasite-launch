@@ -790,6 +790,11 @@ npm run deploy    # Build + deploy to Cloudflare Workers
 
 ## 11. Analytics & Tracking
 
+### Temporary live Starter advance for Google Tag Manager testing (2026-10-15)
+- Owner explicitly requested a temporary real-site test price and clarified that only the checkout advance should change. Used existing `save_payment_package_prices` with optimistic version checking and the existing sole site-admin identity to append pricing version `a4254f81-e752-4f91-a74d-ec165f2e35bf` at 06:24:48 UTC (11:54:48 IST). Starter advance is now **₹500 (50,000 paise)**; starting price remains **₹10,000**. Business remains **₹15,000 / ₹7,500 advance**. Prior version `00000000-0000-4000-8000-000000000000` is retained. Existing orders retain their original price snapshots; this does not discount or replace an already saved checkout.
+- Verified the current pointer and all four amounts with a separate database read. Read-only live `/pay?package=starter` returns HTTP 200, displays ₹500, includes `GTM-P587639R`, and retains `Cache-Control: no-store`. No order, payment, capture or refund was initiated; actual charge and Google tag delivery remain for the owner's test.
+- This is a runtime pricing setting, so no application/catalog/schema/credential/activation edit or website deployment is needed. Owner requested a GitHub push of the change record. **No automatic expiry is configured**: after testing, restore Settings → Package pricing → Starter advance to **₹5,000**, preserving the current starting price and Business values. A return to ₹5,000 must append another version through the existing save flow, never rewrite prior versions or payment intents. The ₹500 advance applies publicly to new Starter checkouts while active.
+
 All scripts are injected in `app/root.tsx` (`<head>` section) and are **deferred** to avoid hydration mismatches:
 
 | Service | ID / Tag | Notes |
@@ -1014,6 +1019,9 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-15] Temporary ₹500 Starter advance for owner tag testing
+- Owner approved changing only the real Starter checkout advance from ₹5,000 to ₹500 and pushing the record to GitHub. Existing versioned pricing RPC applied the live change; Starter starting price and all Business prices remain unchanged. Separate database and live public HTML reads verify the result and GTM presence. Existing orders preserve original amounts; no financial transaction or application deployment performed. Restoration details and the lack of automatic expiry are recorded in §11.
 
 ### [2026-10-15] Google Tag Manager on every page (source release)
 - At the owner's explicit request, removed payment/private/admin exclusions from the existing `GTM-P587639R` head script and body noscript fallback in the shared layout. Includes `/pay` and the payment thank-you page. Separate direct GA4/Ads, Clarity and Sentry exclusions remain in place. No new conversion events, checkout changes, GTM container publication or website deployment.
