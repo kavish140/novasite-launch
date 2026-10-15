@@ -794,12 +794,13 @@ All scripts are injected in `app/root.tsx` (`<head>` section) and are **deferred
 
 | Service | ID / Tag | Notes |
 |---|---|---|
-| Google Tag Manager | `GTM-P587639R` | Loads immediately (synchronous) |
+| Google Tag Manager | `GTM-P587639R` | Head bootstrap and body noscript fallback on every HTML page, including `/pay`, `/receipt`, `/project`, `/payment-thank-you` and admin (owner requested 2026-10-15). Script loading deferred 2000ms after window load to avoid hydration mutations; dataLayer initialized immediately. Container tags/triggers are managed in GTM. |
 | Google Analytics 4 | `G-EBZGS65QQH` | Deferred 2000ms after `window.load` |
 | Google Ads | `AW-18182593308` | Deferred 2500ms after `window.load`. Phone conversion: `9326060621` |
 | Microsoft Clarity | `xaxjnw6ykd` | Deferred 3000ms after `window.load` |
 
 ### Conversion Events
+- As of 2026-10-15, Google Tag Manager is no longer excluded from payment/private/admin pages. The separate direct GA4/Google Ads snippets, Clarity and Sentry retain their existing exclusions. Installing the container does not add a payment-success conversion; GTM configuration controls which tags fire. Private fragment capabilities and customer details must not be included in tag parameters or URL variables sent by configured tags. This supersedes historical claims of complete tracking suppression on those pages.
 - `submit_quote_form` — emitted once per accepted submission by `quote-client.ts`, after server storage; session and memory deduplication. The existing Google Ads quote action also fires here with `transaction_id=submissionId`. Neither confirmation page emits conversions.
 - Direct contact-click calls to the shared Google Ads conversion action were removed. Existing account settings and base tags remain unchanged.
 - `open_booking_calendar` records opening the external fallback; booking CTA clicks are separate from confirmed Calendar appointments. No personal contact details in event parameters.
@@ -1013,6 +1014,12 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-15] Google Tag Manager on every page (source release)
+- At the owner's explicit request, removed payment/private/admin exclusions from the existing `GTM-P587639R` head script and body noscript fallback in the shared layout. Includes `/pay` and the payment thank-you page. Separate direct GA4/Ads, Clarity and Sentry exclusions remain in place. No new conversion events, checkout changes, GTM container publication or website deployment.
+- Deferred container loading by 2000ms after window load (including an already-loaded document fallback); immediate dataLayer initialization preserves queued events. All five existing hydration checks pass after this change; the early script-insertion attribute warnings observed with immediate GTM loading are resolved. The genuine-mismatch test retains its expected React script warning.
+- Scoped root ESLint and whitespace checks pass. Production build could not complete because Windows locks `dist/client` (`EBUSY`), including with the CLI cleanup flag disabled. No production verification or deployment performed in this pass.
+- Owner authorized committing and pushing this GTM update to the existing GitHub `ssr` branch. Only `app/root.tsx` and this knowledge-base update are included; generated route types, local Worker state and deployment metadata remain outside the source commit. Website deployment is not part of this request.
 
 ### [2026-10-15] Approved payment thank-you website release
 - Owner authorized publishing after 350 tests/49 files, build, lint, same-baseline typecheck, credential checks, real local Worker header/no-tracking/SSR checks and mocked browser redirect/refresh/failure checks. Website deployed with preserved settings as Worker `10c28fd0-e456-4408-862b-ffbb5282fb27`. Existing Supabase backend unchanged; no secrets/flags or money moved. New live route has private headers and never renders unverified paid success; a real new charge remains unverified.
