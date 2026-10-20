@@ -1,0 +1,122 @@
+[
+  {
+    "id": "4a0f69a6-6b8b-4c48-935b-df594d74d395",
+    "slug": "website-for-architects-mumbai-2026",
+    "file": "architects",
+    "title": "Architecture Portfolio Engineering: Projects, Galleries and Commission Enquiries",
+    "excerpt": "Plan project narratives, responsive images, stable galleries and private drawing delivery for an architecture practice.",
+    "tags": [
+      "Architecture",
+      "Web Design",
+      "Performance"
+    ],
+    "words": 958,
+    "status": "published",
+    "original_content_md5": "ede1e5e7251621772f44ff2ec0414038"
+  },
+  {
+    "id": "2debabd8-7a95-466c-97e0-b03d90407b9b",
+    "slug": "5-things-every-ca-firm-website-must-have",
+    "file": "ca-firms",
+    "title": "A CA Firm Website: Professional Review, Enquiry Routing and Document Boundaries",
+    "excerpt": "A practical architecture for factual firm information, reviewed preparation checklists and controlled client-document workflows.",
+    "tags": [
+      "Professional Services",
+      "Web Design",
+      "Security"
+    ],
+    "words": 995,
+    "status": "published",
+    "original_content_md5": "fd884ce3660ecd4b8cb7f6af15562c51"
+  },
+  {
+    "id": "acc27b79-56a7-473a-bbc8-74f9e4d40336",
+    "slug": "5-things-every-salon-spa-website-needs",
+    "file": "salons",
+    "title": "Salon Website Booking Design: Services, Staff and Honest Availability",
+    "excerpt": "Design a salon service menu and appointment journey that distinguishes requests from reservations and handles scheduling conflicts.",
+    "tags": [
+      "Booking",
+      "Web Design",
+      "User Experience"
+    ],
+    "words": 967,
+    "status": "published",
+    "original_content_md5": "0c79b9b5d889e4c7620a6e8377d2b0ac"
+  },
+  {
+    "id": "b380bd2a-b03c-4419-b7ea-7b50a9305db7",
+    "slug": "why-every-doctor-in-mumbai-needs-a-website-in-2026",
+    "file": "clinics",
+    "title": "Clinic Website Architecture: Patient Information Before Appointment Requests",
+    "excerpt": "Organise verified practitioner information, MedicalClinic markup, mobile performance and a minimal appointment enquiry flow.",
+    "tags": [
+      "Healthcare",
+      "Web Design",
+      "Performance"
+    ],
+    "words": 983,
+    "status": "published",
+    "original_content_md5": "de1c2655075d724331582dc51e866e29"
+  },
+  {
+    "id": "046a68de-2030-4e7c-a91d-c72552928b02",
+    "slug": "do-interior-designers-mumbai-need-website-2026",
+    "file": "interiors",
+    "title": "Interior Design Portfolios: Room Stories, Image Delivery and Fit-Out Briefs",
+    "excerpt": "Build a maintainable interiors portfolio with clear project scope, stable before-and-after galleries and useful renovation enquiries.",
+    "tags": [
+      "Interiors",
+      "Web Design",
+      "Performance"
+    ],
+    "words": 932,
+    "status": "published",
+    "original_content_md5": "f9253d6188764a64e55d6ed197051bae"
+  },
+  {
+    "id": "20980f13-4477-4a03-aa9d-c6041a2dc971",
+    "slug": "do-photographers-mumbai-need-website-2026",
+    "file": "photographers",
+    "title": "Photography Website Engineering: Public Edits and Private Client Galleries",
+    "excerpt": "Separate portfolio publishing from client delivery, budget image bytes and make assignment enquiries explicit.",
+    "tags": [
+      "Photography",
+      "Web Design",
+      "Performance"
+    ],
+    "words": 903,
+    "status": "draft",
+    "original_content_md5": "3cd05b1f2dd98e821a1e4db41f757546"
+  },
+  {
+    "id": "520c0d17-8871-4e3a-a259-5d8801fc9358",
+    "slug": "do-consultants-in-mumbai-need-a-website-2026",
+    "file": "consultants",
+    "title": "Consultant Website Design: Engagement Fit, Evidence and Lead Triage",
+    "excerpt": "Explain consulting scope, distinguish outputs from outcomes and build a reviewed qualification and scheduling handoff.",
+    "tags": [
+      "Consulting",
+      "Professional Services",
+      "Web Design"
+    ],
+    "words": 949,
+    "status": "published",
+    "original_content_md5": "45d4e414524c17bf2ff318e98e33ea30"
+  },
+  {
+    "id": "5d26937d-a075-4a4b-9d37-604bd1d872d2",
+    "slug": "caterers-event-planners-mumbai-need-website-2026",
+    "file": "events",
+    "title": "Event and Catering Websites: Feasibility Briefs, Menus and Date Handling",
+    "excerpt": "Design event enquiries around guest count, venue constraints, local dates and a clear boundary between requests and confirmed availability.",
+    "tags": [
+      "Events",
+      "Booking",
+      "Web Design"
+    ],
+    "words": 994,
+    "status": "draft",
+    "original_content_md5": "1ba8407a1426e393d098680a5eb55e13"
+  }
+]

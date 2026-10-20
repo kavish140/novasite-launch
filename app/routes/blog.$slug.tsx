@@ -1,6 +1,9 @@
+import { getBlogServerClient } from "@/lib/blog-client.server";
 import type { Route } from "./+types/blog.$slug";
+import { redirect } from "react-router";
 import { buildMeta } from "@/lib/meta";
-import { createServerClient } from "@/lib/supabaseClient";
+import { postCanonical, summarizePost, isOriginalPost, legacyLocalArticles } from "@/lib/blog-content";
+import { rankPosts, editorialTopics } from "@/lib/relatedPosts";
 
 /**
  * Lightweight edge-compatible HTML sanitizer.
@@ -17,49 +20,20 @@ function edgeSanitize(html: string): string {
 }
 
 export async function loader({ params, context }: Route.LoaderArgs) {
-  // Debug: log what's available in context to diagnose env access
-  console.log("[blog loader] context keys:", Object.keys(context ?? {}));
-  console.log("[blog loader] context.cloudflare keys:", Object.keys((context as any)?.cloudflare ?? {}));
-  console.log("[blog loader] env keys:", Object.keys((context as any)?.cloudflare?.env ?? {}));
-
-  let supabaseUrl: string | undefined;
-  let supabaseAnonKey: string | undefined;
-
-  // Try multiple ways to access env vars — different CF plugin versions structure context differently
-  const cf = (context as any)?.cloudflare;
-  if (cf?.env) {
-    supabaseUrl = cf.env.SUPABASE_URL;
-    supabaseAnonKey = cf.env.SUPABASE_ANON_KEY;
-  }
-
-  // Fallback: env might be directly on context (some @cloudflare/vite-plugin versions)
-  if (!supabaseUrl) {
-    supabaseUrl = (context as any)?.env?.SUPABASE_URL ?? (context as any)?.SUPABASE_URL;
-    supabaseAnonKey = (context as any)?.env?.SUPABASE_ANON_KEY ?? (context as any)?.SUPABASE_ANON_KEY;
-  }
-
-  // Fallback: use VITE_ build-time vars (these are baked into the bundle)
-  if (!supabaseUrl) {
-    supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  }
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("[blog loader] Could not find Supabase credentials in any location");
-    throw new Response("Server configuration error", { status: 500 });
-  }
-
-  const { createClient } = await import("@supabase/supabase-js");
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  if (legacyLocalArticles[params.slug]) throw redirect(legacyLocalArticles[params.slug], 301);
+  const supabase = getBlogServerClient(context);
 
   const { data: post, error } = await supabase
     .from("blog_posts")
-    .select("*")
+    .select("id, title, slug, excerpt, content, published_at, updated_at, tags, canonical_url")
     .eq("slug", params.slug)
     .eq("status", "published")
     .single();
 
-  if (error || !post) {
+  if (error && error.code !== "PGRST116") {
+    throw new Response("Article temporarily unavailable", { status: 503 });
+  }
+  if (!post) {
     console.error("[blog loader] Post not found for slug:", params.slug, error);
     throw new Response("Not Found", { status: 404 });
   }
@@ -69,7 +43,19 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     // intentionally not awaited
   });
 
-  return { post: { ...post, content: edgeSanitize(post.content) } };
+  const { data: candidates, error: relatedError } = await supabase.from("blog_posts")
+    .select("id, title, slug, excerpt, content, published_at, tags, canonical_url").eq("status", "published").neq("slug", params.slug);
+  if (relatedError) console.error("Related articles unavailable", relatedError.code);
+  const summaries = (candidates ?? []).filter(isOriginalPost).map((candidate) => {
+    const summary = summarizePost(candidate);
+    return { id: summary.id, slug: summary.slug, title: summary.title,
+      excerpt: summary.excerpt, published_at: summary.published_at,
+      tags: editorialTopics(summary), view_count: 0, reading_time_minutes: summary.reading_time_minutes };
+  });
+  const relatedPosts = rankPosts(summaries, editorialTopics(post), 3);
+  return { post: { id: post.id, title: post.title, slug: post.slug, excerpt: summarizePost(post).excerpt,
+    tags: post.tags ?? [], published_at: post.published_at, updated_at: post.updated_at,
+    canonical_url: postCanonical(post), content: edgeSanitize(post.content) }, relatedPosts };
 }
 
 export function meta({ data }: Route.MetaArgs) {
@@ -84,11 +70,11 @@ export function meta({ data }: Route.MetaArgs) {
   return buildMeta({
     title: `${data.post.title} | SiteNova Blog`,
     description: data.post.excerpt || data.post.title,
-    canonicalPath: `/blog/${data.post.slug}`,
+    canonicalUrl: postCanonical(data.post),
     type: "article",
     publishedTime: data.post.published_at,
+    modifiedTime: data.post.updated_at || data.post.published_at,
     author: "Kavish Ganatra",
-    image: data.post.cover_image,
   });
 }
 

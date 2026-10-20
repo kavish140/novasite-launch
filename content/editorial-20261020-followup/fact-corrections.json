@@ -1,0 +1,381 @@
+{
+  "how-to-choose-web-designer-mumbai": [
+    ["Mumbai has thousands", "When comparing a Mumbai web developer, ask for evidence of relevant work, a clear scope and a workable handover. This checklist proposes questions to ask; it is not a census or ranking of local suppliers."],
+    ["not a portfolio — it's a mood board", "Ask to distinguish live client work, prototypes and design concepts. Each can show a different capability, but a concept should not be presented as a commissioned live build. Where a live site is unavailable, request an approved demonstration and clarify what the supplier actually delivered."],
+    ["that is what they will build for you", "A supplier's own site is one example to inspect, not proof that every delivered project will behave the same way. Review relevant live work and ask which defects or limitations affect the proposed scope. A single PageSpeed run should not be treated as a complete quality verdict."],
+    ["Will my site rank for searches", "Ask which content and technical search tasks are included and how their implementation will be checked. A responsible developer should distinguish those deliverables from ranking outcomes outside their control. A guarantee of a search position is not a stronger answer than an honest account of the work and its limits."],
+    ["all third-party verified", "Independent profiles and reviews can provide useful context, but verification methods vary by platform and listing. A profile alone does not establish that every testimonial or claim was independently checked. Review the specific evidence and permissions rather than describe all directory content as verified."],
+    ["Response time during the sales process is a strong indicator", "Agree response expectations, escalation and cover explicitly. An early response can inform your questions, but one delayed message does not establish the quality of future support. Ask for the actual support terms and recovery ownership."]
+  ],
+  "what-a-website-project-looks-like-start-to-finish": [
+    ["Structure decides whether visitors convert", "Structure and visual design both affect how a visitor understands the page, alongside content, performance and the offer itself. Neither alone determines whether a visitor becomes a customer. Test the specific task instead of assigning every outcome to the layout."],
+    ["tends to go stale within a year", "Define ownership for content changes, access, renewals and integration checks after handover. There is no universal one-year point at which an unsupported site becomes stale. Its condition needs direct inspection and responsibility for correcting confirmed problems."],
+    ["that's usually why it isn't pulling its weight", "Use this process as a review framework, not a diagnosis of an unknown previous project. Identify the specific gap and evidence before recommending a repair or rebuild. SiteNova's agreed scope and support arrangements determine the work included in a particular engagement."]
+  ],
+  "website-redesign-seo-checklist-mumbai": [
+    ["The page's history with Google is lost", "An old page returning 404 without a relevant replacement can disrupt users and search discovery. Map genuinely equivalent or consolidated content to the appropriate destination; do not describe every URL change as erasing all historical signals."],
+    ["Google is told not to index it", "A noindex directive requests exclusion from indexing when crawled; a robots.txt Disallow rule blocks crawling and does not itself guarantee removal of an already known URL. Inspect both separately and confirm that intended public pages are accessible and indexable after launch."],
+    ["Each page should have a self-referencing canonical", "Original indexable pages should normally identify their preferred final URL. Intentionally syndicated or duplicate content may instead point to the supported original. Check canonical targets against the actual consolidation plan rather than force every page to self-reference."],
+    ["Submit test enquiries through contact forms, quote forms and WhatsApp", "Test accepted website submissions and notification recovery. Check telephone and WhatsApp destinations separately: opening an app or clicking a contact link is not proof that an enquiry was sent. Conversion definitions should preserve those distinctions rather than count every test click as a confirmed lead."],
+    ["Yes, but only if you treat the redesign", "Treat the redesign as a migration with an explicit URL and content plan. Google documents that visibility can fluctuate during a move. Planning reduces avoidable technical errors but cannot guarantee unchanged rankings or that every effect will be small. Record the baseline and monitor the actual transition."],
+    ["Every redirect", "Test the planned redirects against exact old URLs, including relevant path variants. Inspect status, destination and loops rather than assume that generating a mapping file proves the deployed behaviour."]
+  ],
+  "ai-chatbots-small-business-websites-worth-it": [
+    [
+      "The chatbots of a few years ago",
+      "Chat interfaces vary: some follow fixed menus, some retrieve selected documents and some use a generative model with additional tools. Do not assume a system is trained on the business's website or can answer accurately because it uses an AI label. Define the approved information sources, test representative questions and identify answers that require staff review. A retrieval-based assistant can still misunderstand a question or generate an unsupported detail. Keep prices and availability tied to authoritative records rather than let the model invent them."
+    ],
+    [
+      "What it doesn't do is replace judgment",
+      "Keep human judgement available for unusual requests, binding quotations and sensitive matters. An assistant's availability does not prove that every answer or captured enquiry is correct. Explain its limits and provide an escalation route. A business should be able to disable the feature without losing its ordinary contact process."
+    ]
+  ],
+  "do-you-need-a-website-if-you-have-whatsapp-business": [
+    [
+      "WhatsApp Messenger is the personal app",
+      "Distinguish WhatsApp Messenger, the WhatsApp Business app and the WhatsApp Business Platform before comparing workflows. Their supported features, account arrangements and charges differ and can change. The Platform may be integrated directly or through a provider; it is not accurate to describe every setup as one phone or one mandatory third-party provider. Inventory the business's actual account, linked devices, staff access and integrations. Use the official WhatsApp documentation and the provider's current agreement to check limits rather than repeat an assumed device count or broadcast cap."
+    ],
+    [
+      "Someone searching .*finds your website, not your WhatsApp",
+      "A website can provide a stable service or product destination that search engines may index. Business profiles, social pages and other public material can also appear in search. A website does not guarantee discovery, and a phone number appearing on a listing is not the same thing as a useful indexed service page."
+    ],
+    [
+      "It automates what would otherwise cost you a message",
+      "A maintained page can answer routine questions without a separate conversation. Hosting, editing, software and support still have costs. Compare those responsibilities with the actual messaging workflow rather than describe a website as permanently free or assume every avoided question saves a billable message."
+    ],
+    [
+      "Skip the website, and here's what compounds",
+      "Depending on one contact platform creates an operational dependency, but a business without a website is not necessarily invisible on Google. Assess how customers currently discover the business and which missing information creates repeated work. A website also has ongoing responsibilities, including domain renewal, hosting, content corrections and integration maintenance. Compare the options using current account terms and observed enquiries, not an unsupported prediction that one bill will only rise."
+    ],
+    [
+      "Instagram and WhatsApp are both great",
+      "Public social content and business listings may appear in search, while messaging can support an existing conversation. A website offers another place for maintained service information and a defined contact journey. Test the discovery paths that actually matter to the business instead of claiming that other channels can never be found."
+    ],
+    [
+      "Once you're outgrowing the app's one-device",
+      "Consider the Platform when the documented workflow needs supported automation, integration or team operations that the current app arrangement cannot provide. Verify the current features, permissions, migration implications and charges first. A website may complement either arrangement; neither product label determines the right choice without the operating requirements."
+    ]
+  ],
+  "freelancer-vs-web-design-agency-when-to-switch": [
+    [
+      "This is one of the most common complaints we hear",
+      "An unresponsive supplier creates a support problem regardless of whether the supplier is an individual or a company. Establish who holds the accounts and source code before assuming another supplier can make a safe change. A lack of response needs investigation; it is not evidence that freelancers as a group are unreliable."
+    ],
+    [
+      "If a competitor's site is faster",
+      "A competitor's stronger site can justify reviewing your own implementation, but it does not establish the size or structure of the team that built it. Ask which concrete capability, support responsibility or acceptance check the current arrangement cannot provide."
+    ],
+    [
+      "A growing clinic, a CA firm",
+      "A more complex workflow can require additional expertise, documented cover and a clearer support agreement. A qualified solo developer or a team may provide that. Assess the work and the continuity plan rather than assume an agency label solves the operational problem."
+    ],
+    [
+      "Freelancers are usually cheaper upfront",
+      "Compare proposals by included work, account ownership, access, support and acceptance checks. Either an individual or a company can offer discovery, technical SEO and cross-device testing, or omit them. None of those services follows automatically from a supplier's legal structure. Ask who covers absence and how the business can retrieve its material without depending on one person's memory."
+    ],
+    [
+      "Usually yes, upfront",
+      "There is no universal price order between agencies and freelancers. Compare the written scope and recurring obligations, including content, testing, support and third-party charges. A smaller proposal can be appropriate when it honestly covers a smaller requirement."
+    ],
+    [
+      "Once it's doing real work for your business",
+      "The decision depends on the actual support gap and required capability. Bookings, payments and protected records need appropriate implementation and cover, whether supplied by a solo professional or a team. A transition is justified by an identified need, not the mere presence of business activity."
+    ]
+  ],
+  "google-ads-vs-meta-ads-which-is-right-for-your-business": [
+    [
+      "The simplest way to think about it",
+      "This comparison concerns Google Search campaigns and feed-based Meta campaigns, not every format either provider offers. Search campaigns can respond to an expressed query; feed placements can introduce an offer while someone browses. Either can reach people at several stages of a decision. Verify available formats and policies for the account and profession before recommending a campaign."
+    ],
+    [
+      "Your service is something people actively search",
+      "People may search for a specific service when a need arises. Regulated professions require a separate review of applicable advertising and professional rules before any targeting or creative is approved."
+    ],
+    [
+      "most first-time DIY campaigns waste 60-70%",
+      "Keyword research, destination quality and conversion definitions need deliberate review. This guide does not establish a percentage of budget wasted by self-managed campaigns. Inspect actual search terms, accepted enquiries and business outcomes before attributing poor performance to a targeting choice."
+    ],
+    [
+      "Eventually, most businesses benefit from both",
+      "There is no fixed sequence or evaluation period that suits every business. Begin with an offer the team can fulfil and a channel whose audience and policies fit it. Set a review window based on budget, response volume and sales cycle. Adding another channel is useful only if the business can support it and interpret the resulting observations."
+    ],
+    [
+      "We recommend a minimum of",
+      "The service pages describe SiteNova's suggested planning budget, not a platform minimum or a promise of meaningful results. The necessary budget and observation period depend on auctions, audience, offer and the business's response process. Agree a bounded trial and stop conditions rather than imply that a particular spend guarantees enough leads or data."
+    ]
+  ],
+  "google-ai-overviews-mumbai-businesses": [
+    [
+      "The important shift: AI Overviews",
+      "A supporting link in an AI answer and a traditional result are different presentations, but this guide cannot identify Google's private selection formula. Google documents that indexed pages eligible for a search snippet can be eligible for AI features. Eligibility does not guarantee that a particular business is shown. Keep the distinction between official guidance and an inference from an observed result."
+    ],
+    [
+      "Local searches .*trigger AI Overviews less often",
+      "The available result format can vary with the query and context. Do not infer a Mumbai-wide trend from one search or assume that a profile and schema are the only sources consulted. Record the exact query, date and result when documenting an observation. A page appearing in a summary does not establish how or why it was selected."
+    ],
+    [
+      "Without it, Google's AI has to guess",
+      "Appropriate structured data can describe visible business facts in a machine-readable form. Google states that no special schema is required for AI features. The markup must agree with the page and does not guarantee a citation, complete understanding or factual certainty."
+    ],
+    [
+      "Yes — AI citation and traditional ranking",
+      "A site may be presented differently across search features, but no profile-completeness or schema formula guarantees an AI citation. Evaluate indexed, useful pages against Google's published requirements and document particular observations without claiming to know the private selection process."
+    ],
+    [
+      "one-time technical fix that pays off continuously",
+      "Add or correct applicable structured data when it describes the real business and visible page. Review it when services, hours, prices or identity change. It is maintained information, not a permanent one-time fix or an assured return on investment."
+    ],
+    [
+      "relatively small, one-time technical addition",
+      "A basic implementation can be a bounded development task, but its facts and URLs need continuing ownership. Validate the implementation and agree who updates it when the business changes. Complexity depends on the site's entities and content system rather than on the JSON-LD format alone."
+    ]
+  ],
+  "google-business-profile-vs-website-do-you-need-both": [
+    [
+      "Your Google Business Profile .*is what shows up",
+      "An eligible, verified Google Business Profile can present information in Search and Maps, including contact and website options supported for the account. Verification, visibility and available features vary. It is not accurate to promise instant discovery or claim that a profile always outperforms every other source. First establish eligibility and ownership, then maintain truthful public details."
+    ],
+    [
+      "Yes — Google's local ranking system checks",
+      "Google describes local results through relevance, distance and prominence. Accurate business information and useful website content can support discovery, but a website alone does not guarantee an improved profile ranking. Investigate an observed result rather than assume a missing website explains it."
+    ],
+    [
+      "since mismatches quietly hurt your local ranking",
+      "Help customers identify the same real business across the profile and website. Correct conflicting addresses, telephone numbers and hours. Do not claim that every punctuation or abbreviation variation produces a ranking penalty; the practical goal is recognisable, accurate information."
+    ],
+    [
+      "increasingly leans on both",
+      "A profile and a website can support different information tasks. Their relative value depends on the business, the query and the customer's next action. There is no evidence here that lacking one removes a fixed fraction of potential visibility."
+    ],
+    [
+      "gets you discoverable immediately",
+      "Check profile eligibility and verification first. Keep information accurate and decide which website content would answer questions the profile does not address. Neither verification nor website publication guarantees immediate indexing or customer enquiries."
+    ],
+    [
+      "It's also the only place that builds long-term SEO value",
+      "An independent website can organise substantive articles and service explanations under maintained URLs. Other public sources can also appear in search and support discovery. Useful content and accessible implementation matter more than asserting that a single channel is the only source of lasting value."
+    ],
+    [
+      "a destination you fully own",
+      "A domain and website give the business a maintained destination, subject to registrar, hosting, software and account dependencies. Establish who controls those accounts and how access is recovered. A website complements a profile without becoming independent of every external service."
+    ]
+  ],
+  "hindi-marathi-website-mumbai-business": [
+    [
+      "Google's AI Mode now works in Hindi",
+      "Choose publication languages from actual customer needs, not an assumed list of supported search-product languages. Search and translation features change, so verify current provider documentation before describing their availability. A useful translation explains the real service in language reviewed by a competent speaker; it should not be commissioned solely to pursue an unverified AI-search advantage."
+    ]
+  ],
+  "how-long-does-it-take-to-build-a-website": [
+    [
+      "A larger site, or one with e-commerce",
+      "The stage estimates in this example are planning allowances, not a universal delivery promise or SiteNova's current contractual schedule. Tasks may overlap and approvals can change the critical path. Agree the actual launch date, required inputs and revision process in the proposal. A small ready-content build and a custom transactional system should not inherit the same schedule."
+    ],
+    [
+      "delays almost never come from the design",
+      "Delays can arise on either side: incomplete content, unavailable reviewers, implementation problems, integration constraints or changes to the brief. Record dependencies and owners before estimating. Do not assume that every missed date is caused by the client, or that a developer's optimistic first estimate establishes a feasible schedule."
+    ]
+  ],
+  "how-to-get-more-google-reviews-for-your-business": [
+    [
+      "Reviews aren't just social proof",
+      "Google says that review quantity and positive ratings can help local ranking within its broader prominence factors. This does not establish that recent review frequency has the same weight as quantity, or that one review pattern necessarily outranks another. Ask for genuine feedback and interpret search performance without inventing a private ranking formula."
+    ],
+    [
+      "WhatsApp message with the direct link right after service almost always",
+      "Choose a contact route the customer expects and that the business is permitted to use. A direct review link can reduce unnecessary navigation, but no channel is guaranteed to outperform another. Test the request process without pressuring the customer to leave a positive rating."
+    ],
+    [
+      "Google's local ranking system reads review engagement",
+      "A public reply can show future customers how the business responds, but this guide does not establish a ranking boost for replies. Keep the response accurate, calm and free of private case details. A review response is a customer-communication task, not proof of an algorithmic trust score."
+    ],
+    [
+      "The businesses with 100\\+ recent reviews",
+      "Make requests part of a documented, proportionate process rather than an occasional push. Offer the same opportunity to customers with different experiences, do not buy feedback and avoid repeated unwanted reminders. Review the provider's current rules and record who owns the process. Consistency in asking does not guarantee a particular number of published reviews."
+    ],
+    [
+      "It's almost never that they didn't enjoy",
+      "A missing review does not establish whether the customer was satisfied. They may be busy, reluctant to publish, unfamiliar with the platform or simply uninterested. Offer an optional route without assuming their motive. A clear link can make the task easier while leaving the decision and wording entirely to the customer."
+    ],
+    [
+      "beats a generic broadcast message by a wide margin",
+      "Use a courteous optional invitation linked to the actual interaction. The example wording is a communication suggestion, not a measured claim that personalised requests outperform broadcasts by a known margin. Do not imply that the customer owes the business a review."
+    ]
+  ],
+  "instagram-reach-drop-2026-why-you-need-a-website": [
+    [
+      "Google, not through an algorithm that resets",
+      "Search discovery and social discovery depend on different systems, both of which can change. A website provides a stable destination for maintained information, but appearing in search and receiving enquiries are not guaranteed. Evaluate actual accepted contacts rather than present one channel as unaffected by algorithms."
+    ],
+    [
+      "A verified Google Business Profile plus a real website captures",
+      "A verified profile and useful website can support local discovery where eligible. Public social material may also appear in search. No combination guarantees that a specific near-me query produces a contact, and social channels are not categorically absent from search results."
+    ],
+    [
+      "A SEO & speed audit will show you how much traffic",
+      "A technical speed review identifies implementation and loading issues. Comparing search and social enquiries additionally needs correctly configured analytics and business records. If those observations are unavailable, an audit should state the gap rather than claim it can infer channel attribution from a speed score."
+    ],
+    [
+      "A website shows up in Google search results independent",
+      "A website may be indexed and discovered through search, subject to search systems and the page's usefulness. A drop in social reach does not guarantee a rise in website enquiries. Check the business's real discovery paths and maintain accurate destinations for visitors arriving from any channel."
+    ]
+  ],
+  "landing-page-cost-for-google-meta-ads": [
+    [
+      "Google and Meta both factor page experience into ad costs",
+      "A readable, functioning destination matters to the campaign experience. Auction costs also depend on bidding, competition, relevance and other platform factors. Do not infer a specific cost-per-click increase from a slow page alone; investigate the actual campaign and provider guidance."
+    ],
+    [
+      "a dedicated page almost always outperforms",
+      "A dedicated destination can make a particular offer clearer, but it does not automatically outperform an existing relevant page. Compare the actual message, accepted action and supporting information. A controlled test with consistent conversion definitions is more useful than a universal claim about page type."
+    ]
+  ],
+  "mobile-app-or-website-what-you-actually-need": [
+    [
+      "Nobody finds a new app by searching Google",
+      "App listing pages and app-related content can appear in web search, while app stores provide another discovery route. A website can publish directly accessible information without installation. Compare the actual customer task instead of claiming that installed applications cannot be discovered through Google."
+    ],
+    [
+      "works instantly on any device",
+      "A browser-based site can offer information without an app installation, subject to network, browser support and access requirements. An installed app can support other device or offline workflows when implemented for them. Neither label guarantees instant performance, universal compatibility or a particular build cost."
+    ],
+    [
+      "It's dramatically cheaper to build",
+      "Compare estimates for the same required behaviour, ongoing support and supported environments. A small informational website may be a smaller undertaking than a new native application, but a complex web application can cost more than a limited app. State the actual scope rather than assume a fixed fraction."
+    ]
+  ],
+  "should-your-mumbai-business-list-on-ondc-in-2026": [
+    [
+      "Think of the platforms you already know",
+      "ONDC describes an interoperable network with buyer and seller participants rather than one single shopping application. A seller's availability to a buyer depends on the participating applications, supported category, geography, serviceability and integration. Do not assume that every buyer app can discover and order every seller's product. Verify the intended route with the selected participant before committing catalog or fulfilment work."
+    ],
+    [
+      "over 100 buyer apps",
+      "Compare the selected participant's actual onboarding, support, delivery coverage and order lifecycle. This article does not establish a current app count, a network-wide reliability ranking or universal commission savings. Review a worked order and exception using current terms, including cancellation, return and settlement responsibilities. A lower advertised fee alone does not establish lower total operating cost."
+    ],
+    [
+      "commission savings alone justify",
+      "Evaluate a bounded pilot using the business's actual category, documentation and serviceability requirements. Confirm the participant's eligibility and tax-document requirements rather than imply that one document rule covers all sellers. Define the cost and stop conditions before investing in a large catalog migration. A pilot may reveal that the channel is unsuitable as well as identify an opportunity."
+    ],
+    [
+      "There's no cost to register as a seller",
+      "Confirm onboarding, subscription, transaction, logistics and support charges with the selected participant. A network description does not establish that every seller's registration or operation is free. Keep dated terms with the decision and distinguish the participant's charges from other provider costs."
+    ],
+    [
+      "Restaurants and cafes looking for a lower-commission",
+      "Restaurants and cafes evaluating another discovery and ordering route can compare its full cost and operating requirements with their current channels. No lower commission or better margin is established for an unknown arrangement."
+    ]
+  ],
+  "website-analytics-numbers-to-track": [
+    [
+      "A high bounce rate .*visitors leaving after seeing just one page",
+      "In GA4, bounce rate is the percentage of sessions that are not engaged; it is not simply the share of visits containing one page. An engaged session meets at least one documented criterion: duration beyond the engagement threshold, a key event, or multiple page or screen views. Check the property's configuration and event definitions before comparing periods. A single-page visit can be engaged, and a useful visit need not become an enquiry."
+    ],
+    [
+      "often 70% or more",
+      "Inspect the device distribution in the business's own reports instead of assuming that a fixed share of Mumbai visitors uses phones. Consent choices, bots and tracking gaps can affect the observed sample. Test important journeys on supported phones and desktops, and prioritise confirmed defects rather than infer a lost conversion from a device percentage alone."
+    ],
+    [
+      "left satisfied still counts as a",
+      "A visitor who finds the needed contact information may leave after one page, but that alone does not determine GA4 bounce status. The measured duration, key events and page or screen views determine engagement under the configured definition. Interpret that measure alongside the task and its observed outcome."
+    ],
+    [
+      "direct visits .*typing your URL",
+      "Channel labels are attribution categories, not complete descriptions of customer behaviour. Direct traffic may include visits for which a source could not be identified, rather than only people typing a URL. Campaign tags, consent and integration changes can affect classification. Keep definitions and configuration changes with the report."
+    ],
+    [
+      "A site getting 1,000 visits",
+      "As an illustrative comparison, 1,000 visits with five accepted enquiries differs from 300 visits with fifteen accepted enquiries. The counts do not establish which business is more profitable: lead quality, fulfilment capacity and sales value matter too. Define the denominator and accepted event before comparing a rate."
+    ]
+  ],
+  "website-maintenance-cost-after-launch": [
+    [
+      "Google's ranking algorithm penalizes slow",
+      "Maintenance reduces operational risk but does not guarantee a ranking. Check actual broken pages, outdated information, loading problems and compromised components. An unchanged site does not automatically lose search visibility because a maintenance invoice was not paid. Agree monitoring and response ownership so confirmed failures can be repaired promptly."
+    ],
+    [
+      "all of which need updates, backups",
+      "Inventory the actual deployment: a static site, a managed store and a plugin-based CMS have different responsibilities. Some services handle certificates or infrastructure automatically while the owner still needs to verify their operation. Define content backup, access recovery, updates and monitoring for the system in use rather than assume every website runs the same server and plugins."
+    ]
+  ],
+  "website-security-basics-small-business": [
+    [
+      "We've seen this happen to a small retail business in Bhandup",
+      "Unexpected redirects, unfamiliar accounts and unexplained content changes warrant investigation. An illustrative plugin compromise can explain the risk, but this guide does not document a named SiteNova client's incident. Preserve evidence, restrict affected access and use qualified incident support rather than diagnose the cause from a traffic drop alone."
+    ],
+    [
+      "padlock icon and the URL starts",
+      "Check that the intended hostname uses a valid HTTPS connection and inspect any browser warning. HTTPS protects the connection; it does not prove that the business is legitimate, the application is free of vulnerabilities or private data is correctly authorised. Modern browser icons vary, so do not treat a padlock graphic as a complete security test."
+    ],
+    [
+      "An SSL certificate encrypts the connection",
+      "HTTPS uses TLS to protect data in transit when correctly configured. A valid certificate is one part of that connection, not a complete application-security assessment. Review server access controls, software dependencies, credentials and recovery too. A secure connection alone does not make a form or stored record safe."
+    ],
+    [
+      "most attacks on small business websites aren't targeted",
+      "Internet-facing websites can receive automated probes for known weaknesses as well as targeted attacks. This article does not establish the proportion affecting Mumbai small businesses. Inventory exposed services, supported software and administrative access before choosing protections. A lack of visible symptoms is not proof that no attempt or compromise occurred."
+    ]
+  ],
+  "what-happens-if-you-dont-update-your-website": [
+    [
+      "We've seen this happen to a small retail business in Andheri",
+      "Automated probes can exploit unpatched software, and targeted incidents are also possible. Treat a compromised plugin as an illustrative scenario unless an incident record supports a client-specific account. Investigate the actual version, access and evidence before assigning a cause. A maintenance history can inform that investigation without proving that any one missed update caused the event."
+    ],
+    [
+      "Google's ranking systems reward sites that are fast, secure, and regularly maintained",
+      "Google's published guidance supports useful content and good page experience, but there is no automatic ranking reward for a maintenance schedule. Unchanged code does not inherently become slower with age. Added scripts, changed infrastructure, stale information and defects should be checked directly. Prioritise observed problems and their consequences instead of assuming a gradual ranking decline whenever a site has not been edited."
+    ],
+    [
+      "all of them tend to accumulate",
+      "Broken pages, unavailable content or compromised components can affect users and discovery. Their presence needs verification; an old publication date or unchanged design does not establish that a site has those defects. Use actual checks and monitoring to decide what needs attention."
+    ]
+  ],
+  "what-happens-if-you-forget-to-renew-your-domain": [
+    [
+      "a freelancer who's since moved on",
+      "Check the actual registrar, hosting account, billing contact and recovery method. An old employee address or expired card can create a renewal risk, but this guide does not document a missed renewal by a SiteNova client or team. Define who owns each renewal and a fallback check. Provider terms and grace periods vary by service and domain."
+    ],
+    [
+      "it goes down the same moment the domain does",
+      "Email using the domain may also be disrupted if the domain expires or DNS stops resolving. Timing depends on the registrar's treatment, DNS caching and the mail setup; an unrelated website-hosting outage does not necessarily stop separately hosted email. Verify each service rather than promise simultaneous failure or recovery."
+    ]
+  ],
+  "why-web-design-quotes-vary-so-much-mumbai": [
+    [
+      "SEO setup and copywriting are the two most commonly excluded",
+      "Check explicitly whether copywriting, metadata, structured data and publication responsibilities are included. This guide does not establish which items suppliers omit most often. A polished design does not prove that content or technical SEO is complete, and neither inclusion guarantees discovery."
+    ],
+    [
+      "they almost never do; the cheaper one",
+      "Compare included pages, content preparation, revision rounds, implementation checks and support before judging the total. Two prices can differ for reasons other than omitted work. Ask each supplier to explain the same requirements and record any unresolved assumption. Do not infer a missing capability or dishonest quotation from a lower fee alone."
+    ]
+  ],
+  "wordpress-vs-custom-website-mumbai-business": [
+    [
+      "Upfront, yes. But factor in plugin licenses",
+      "There is no universal price order. Compare the same editing, integration, hosting, support and acceptance requirements. Plugin licences and custom development can both create recurring obligations. The appropriate choice depends on what the team can operate and maintain, not an assumed cost advantage from the platform name."
+    ],
+    [
+      "ending up with a slow, plugin-heavy site",
+      "Either approach can become difficult to maintain when extensions, integrations or custom code lack clear ownership. Review a concrete limitation before recommending a rebuild. A well-configured CMS may meet the requirement, while a custom system may create work the business is not equipped to maintain. The decision needs evidence about the actual site."
+    ],
+    [
+      "1–3 weeks for a standard site",
+      "Illustrative schedule only; confirm scope, content readiness, integrations and approval responsibilities before agreeing a date."
+    ],
+    [
+      "4–10\\+ weeks depending on complexity",
+      "Illustrative schedule only; custom development is estimated against the actual workflow and review process."
+    ]
+  ],
+  "headless-commerce-when-it-matters": [
+    [
+      "complete design freedom",
+      "A decoupled frontend can offer different presentation choices while still depending on the commerce backend, APIs, checkout capabilities and provider terms. It may serve more than one interface, but consistency and performance require deliberate implementation. Neither a framework nor removing a theme guarantees a faster or cheaper store."
+    ],
+    [
+      "for a fraction of the ongoing cost",
+      "Compare the measured limitation with the implementation and ongoing support needed to resolve it. A conventional storefront may be sufficient, and a decoupled one may be justified by a concrete requirement. Obtain comparable estimates instead of assuming a fixed cost ratio between the two approaches."
+    ]
+  ]
+}

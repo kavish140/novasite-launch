@@ -17,39 +17,39 @@ export default function DrDiptiGanatra() {
       backSlug="dr-dipti-ganatra"
       client={{
         name: "Dr. Dipti Ganatra",
-        role: "MD (Homeopathy) · Maharashtra CET Rank 1 · Mulund West",
+        role: "Homeopathy practice · Mulund West",
         liveUrl: "https://drdiptiganatra.com",
         review: clientReviews["dr-dipti-ganatra"],
       }}
       project={{
         headline:
-          "A homeopathic clinic website that ranks for every Mumbai patient search",
+          "A Mulund clinic website organised around patient information",
         summary:
-          "Dr. Dipti Ganatra is a Maharashtra CET Rank 1 homeopath based in Mulund West, Mumbai. SiteNova built a clean, fast clinic website that surfaces her 12 specialty areas to patients searching across Mulund, Bhandup, Thane, and Vikhroli — with an inquiry flow that works while the clinic is closed.",
+          "SiteNova built a clinic website for Dr. Dipti Ganatra in Mulund West, with treatment information and a consultation enquiry journey. The practice is responsible for approving its current credentials, service claims and consultation arrangements.",
         stats: [
-          { label: "Delivery", value: "12 Days" },
-          { label: "PageSpeed Score", value: "97 / 100" },
-          { label: "Specialties Covered", value: "12" },
+          { label: "Journey", value: "Consultation enquiry" },
+          { label: "Design", value: "Mobile responsive" },
+          { label: "Content", value: "Treatment information" },
           { label: "Location", value: "Mulund West" },
         ],
         features: [
           {
             icon: ClipboardList,
-            title: "12 Treatment-Specific Pages",
+            title: "Treatment Information Pages",
             description:
-              "Each of Dr. Dipti's specialties — from chronic disease to pediatric care — has its own dedicated page, capturing long-tail patient searches across Mumbai.",
+              "Treatment pages organise the practice's approved information so visitors can understand its services before making an enquiry. Published descriptions require review by the practitioner.",
           },
           {
             icon: Calendar,
             title: "Patient Inquiry & Booking Flow",
             description:
-              "A streamlined consultation inquiry form that captures name, condition, and contact details — stored securely in Supabase so no lead is ever missed.",
+              "A consultation enquiry form collects information for the practice to review. An enquiry is distinct from a confirmed appointment; storage, access and notification delivery need ongoing oversight.",
           },
           {
             icon: Search,
             title: "Local SEO for Mumbai Suburbs",
             description:
-              "Geo-targeted content and Schema.org markup rank the clinic for searches in Mulund, Bhandup, Vikhroli, Thane, and Nahur — beyond just the clinic's street address.",
+              "Service and location information describes the clinic's actual Mulund practice and surrounding catchment. Content and markup do not guarantee a search position.",
           },
           {
             icon: Smartphone,
@@ -67,19 +67,19 @@ export default function DrDiptiGanatra() {
             icon: Users,
             title: "MedicalOrganization Schema",
             description:
-              "Full Schema.org MedicalOrganization and Physician structured data help the clinic appear in Google's knowledge panel and AI search results.",
+              "Healthcare structured data describes practitioner and clinic information. Its facts must match the visible content; validation does not guarantee a knowledge panel or AI citation.",
           },
           {
             icon: MapPin,
-            title: "Multi-Area Coverage Signals",
+            title: "Catchment and Access Information",
             description:
-              "Location pages and geo-meta targeting Mulund West, Thane, Bhandup, Vikhroli, and Nahur extend organic reach to patients across a 10 km radius.",
+              "Content describes the clinic's actual location and nearby service catchment without implying that each neighbourhood has a separate clinic branch.",
           },
           {
             icon: Database,
             title: "Supabase Database Integration",
             description:
-              "Patient inquiry submissions are stored in a managed Supabase database — exportable, secure, and accessible via the admin dashboard.",
+              "The build uses Supabase for enquiry records and administrative access. Privacy and access controls require their own implementation checks; a managed database is not a blanket security guarantee.",
           },
         ],
         techStack: [

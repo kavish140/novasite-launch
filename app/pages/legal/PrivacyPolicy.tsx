@@ -14,7 +14,7 @@ const PrivacyPolicy = () => {
               Privacy Policy
             </h1>
             <div className="prose prose-invert max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-primary">
-              <p>Last updated: 10 October 2026</p>
+              <p>Last updated: 20 October 2026</p>
               
               <h2>1. Introduction</h2>
               <p>
@@ -56,7 +56,13 @@ const PrivacyPolicy = () => {
                 Under certain circumstances, you have rights under data protection laws in relation to your personal data, including the right to request access, correction, erasure, restriction, transfer, to object to processing, to portability of data and (where the lawful ground of processing is consent) to withdraw consent.
               </p>
 
-              <h2>6. Contact Us</h2>
+              <h2>6. Advertising &amp; Google AdSense Cookies</h2>
+              <p>SiteNova plans to display advertising on tools.sitenova.dev and ai-insights.sitenova.dev. We do not plan to display AdSense ads on the sitenova.dev agency website. This section covers advertising on those subdomains if and when it is enabled; it does not mean ads are currently active.</p>
+              <p>Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to sitenova.dev, its subdomains (including tools.sitenova.dev and ai-insights.sitenova.dev), or other websites. Google's advertising cookies enable Google and its partners to serve ads based on visits to our sites and/or other sites on the Internet. Older descriptions refer to the DoubleClick DART cookie; the cookies actually used depend on Google's current products and your settings.</p>
+              <p>You may opt out of personalized advertising through <a href="https://myadcenter.google.com/" target="_blank" rel="noopener noreferrer">Google Ads Settings (My Ad Center)</a>. You can also visit <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">aboutads.info choices</a> to learn about opting out of participating third-party vendors' personalized advertising. Opting out of personalization does not necessarily remove all ads.</p>
+              <p>See <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">how Google uses advertising information</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google's privacy policy</a>. Where required, advertising consent choices will be provided on the subdomain displaying ads.</p>
+
+              <h2>7. Contact Us</h2>
               <p>
                 If you have any questions about this privacy policy or our privacy practices, please contact us at: <br/>
                 Email: <a href={`mailto:${EMAIL}`}>{EMAIL}</a><br/>

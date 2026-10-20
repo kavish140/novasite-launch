@@ -62,6 +62,7 @@ export type BlogPost = {
   title: string;
   slug: string;
   excerpt?: string;
+  canonical_url?: string | null;
   content?: string;
   tags?: string[];
   status: "draft" | "review" | "published" | "archived";

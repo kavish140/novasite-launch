@@ -23,7 +23,7 @@ export default function CorporateZone() {
       }}
       project={{
         headline:
-          "A B2B wholesale catalog that turns bulk inquiries into bulk orders",
+          "A B2B wholesale catalog with a consolidated enquiry basket",
         summary:
           "Corporatezone is a B2B wholesale stationery and business essentials distributor based in Lower Parel, Mumbai, supplying corporate buyers across India. SiteNova built a full product catalog with 9 categories, a quote-basket inquiry system, real-time search and filter, and a WhatsApp CTA — all on Cloudflare Workers for fast load times for pan-India buyers.",
         stats: [
@@ -55,7 +55,7 @@ export default function CorporateZone() {
             icon: Globe,
             title: "Schema.org OfferCatalog",
             description:
-              "Full structured data — Organization, LocalBusiness, and OfferCatalog schema — helps Corporatezone appear in Google's product results and knowledge panel for B2B searches.",
+              "Structured data describes the organisation and catalog information. Schema validation and search-feature eligibility are separate checks; a particular result presentation is not guaranteed.",
           },
           {
             icon: MessageCircle,
@@ -65,21 +65,21 @@ export default function CorporateZone() {
           },
           {
             icon: ShoppingBag,
-            title: "Hero Carousel (6 Categories)",
+            title: "Category Carousel",
             description:
-              "A full-width carousel with 6 category slides — Office Supplies, Housekeeping, Pantry, Printing, IT Gear — gives buyers an immediate visual overview of the full catalog range.",
+              "A category carousel introduces the catalog, with browsing and search providing routes to product information and the quote basket.",
           },
           {
             icon: Zap,
             title: "Cloudflare Edge Delivery",
             description:
-              "Deployed on Cloudflare Workers with edge caching — ensuring fast load times for corporate buyers across Mumbai, Delhi, Bangalore, and other pan-India locations.",
+              "Deployed on Cloudflare Workers. Delivery and cache behaviour still need testing for the actual page and visitor conditions; hosting alone does not guarantee a load time.",
           },
           {
             icon: Package,
             title: "Cloudflare Web Analytics",
             description:
-              "Privacy-respecting Cloudflare Insights tracks catalog traffic and buyer behaviour — giving the Corporatezone team data to understand which product categories drive the most inquiries.",
+              "Cloudflare Web Analytics provides site-usage observations. Enquiry attribution needs an appropriately configured event and business-record process; a visitor count alone does not identify which category generated a sale.",
           },
         ],
         techStack: [

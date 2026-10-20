@@ -25,11 +25,11 @@ export default function JupiterFastFinance() {
         headline:
           "A finance advisory site that builds trust before the first phone call",
         summary:
-          "Jupiter Finance is a Mulund-based loan and investment advisory serving Mumbai, Thane, and nearby suburbs. SiteNova built a sleek, dark-themed website covering all five service verticals — home loans, LAP, mutual funds, SIP, and health insurance — with a WhatsApp lead funnel and fast load times that match the brand's own 'fast' promise.",
+          "Jupiter Finance is based in Mulund and presents lending, insurance and investment-related services. SiteNova's website work organises service information and contact routes. The client's maintained site is the reference for current offerings; the case study does not verify product suitability or regulatory eligibility.",
         stats: [
-          { label: "Delivery", value: "10 Days" },
+          { label: "Contact", value: "Enquiry and WhatsApp" },
           { label: "Design", value: "Mobile responsive" },
-          { label: "Service Verticals", value: "5" },
+          { label: "Content", value: "Service information" },
           { label: "Location", value: "Mulund, Mumbai" },
         ],
         features: [
@@ -61,7 +61,7 @@ export default function JupiterFastFinance() {
             icon: MessageCircle,
             title: "WhatsApp Lead Capture",
             description:
-              "Primary CTA across every page routes prospects to WhatsApp — the preferred contact channel for Indian finance clients who want a real conversation, fast.",
+              "WhatsApp is one contact route alongside the site's enquiry options. Opening the messaging app is not proof that an enquiry was sent or a service accepted.",
           },
           {
             icon: Search,
@@ -79,7 +79,7 @@ export default function JupiterFastFinance() {
             icon: Smartphone,
             title: "GA4 Analytics Integration",
             description:
-              "Google Analytics 4 tracking with conversion events, geo-targeting, and max-image-preview robots meta — so Jupiter can see exactly where leads come from.",
+              "Analytics can describe configured website events. Attribution depends on the implementation and available observations; robots metadata and geographic tags do not themselves track or locate leads.",
           },
         ],
         techStack: [

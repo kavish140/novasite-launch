@@ -1,41 +1,27 @@
+import { getBlogServerClient } from "@/lib/blog-client.server";
 import type { Route } from "./+types/blog._index";
 import { buildMeta } from "@/lib/meta";
+import { summarizePost, isOriginalPost } from "@/lib/blog-content";
 
 export async function loader({ context }: Route.LoaderArgs) {
-  let supabaseUrl: string | undefined;
-  let supabaseAnonKey: string | undefined;
-
-  const cf = (context as any)?.cloudflare;
-  if (cf?.env) {
-    supabaseUrl = cf.env.SUPABASE_URL;
-    supabaseAnonKey = cf.env.SUPABASE_ANON_KEY;
-  }
-  if (!supabaseUrl) {
-    supabaseUrl = (context as any)?.env?.SUPABASE_URL ?? (context as any)?.SUPABASE_URL;
-    supabaseAnonKey = (context as any)?.env?.SUPABASE_ANON_KEY ?? (context as any)?.SUPABASE_ANON_KEY;
-  }
-  if (!supabaseUrl) {
-    supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  }
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return { posts: [] };
-  }
-
   try {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    const { data: posts } = await supabase
+    const supabase = getBlogServerClient(context);
+    const { data: posts, error } = await supabase
       .from("blog_posts")
-      .select("id, title, slug, excerpt, published_at")
+      .select("id, title, slug, excerpt, published_at, content, canonical_url")
       .eq("status", "published")
       .order("published_at", { ascending: false });
 
-    return { posts: posts || [] };
+    if (error) throw error;
+    return { posts: (posts || []).filter(isOriginalPost).map((post) => {
+      const summary = summarizePost(post);
+      return { id: summary.id, title: summary.title, slug: summary.slug,
+        excerpt: summary.excerpt, published_at: summary.published_at,
+        reading_time_minutes: summary.reading_time_minutes };
+    }) };
   } catch (err) {
     console.error("Blog index loader error:", err);
-    return { posts: [] };
+    throw new Response("Article archive temporarily unavailable", { status: 503 });
   }
 }
 

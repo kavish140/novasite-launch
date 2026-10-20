@@ -1,0 +1,64 @@
+{
+  "source": "scripts/audit-results-2026-08-31.csv",
+  "sha256": "329b28e449ad83bca718b9a73e23a1deb4cdcc48e64a4fa82a93c28a630a38ef",
+  "snapshotLabel": "2026-08-31",
+  "attempted": 133,
+  "scored": 127,
+  "missingScore": 6,
+  "mobileMean": 54,
+  "desktopMean": 69.46,
+  "below50": 48,
+  "atLeast90": 9,
+  "metadataAssessed": 126,
+  "noJsonLdDetected": 45,
+  "industries": [
+    {
+      "industry": "Web Agency",
+      "count": 1,
+      "mobile": 69,
+      "desktop": 97
+    },
+    {
+      "industry": "Doctors",
+      "count": 20,
+      "mobile": 52.8,
+      "desktop": 68.45
+    },
+    {
+      "industry": "Finance",
+      "count": 19,
+      "mobile": 57,
+      "desktop": 71.26
+    },
+    {
+      "industry": "Consultants",
+      "count": 15,
+      "mobile": 59.13,
+      "desktop": 72.93
+    },
+    {
+      "industry": "Lawyers",
+      "count": 19,
+      "mobile": 53.58,
+      "desktop": 73.11
+    },
+    {
+      "industry": "Real Estate",
+      "count": 17,
+      "mobile": 46.24,
+      "desktop": 59.94
+    },
+    {
+      "industry": "Restaurants",
+      "count": 17,
+      "mobile": 50.53,
+      "desktop": 64.82
+    },
+    {
+      "industry": "Startups",
+      "count": 19,
+      "mobile": 57.89,
+      "desktop": 73.58
+    }
+  ]
+}

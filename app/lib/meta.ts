@@ -23,6 +23,7 @@ interface MetaOptions {
   title: string;
   description: string;
   canonicalPath?: string;
+  canonicalUrl?: string;
   image?: string;
   keywords?: string[];
   type?: "website" | "article";
@@ -38,6 +39,7 @@ export function buildMeta({
   title,
   description,
   canonicalPath = "/",
+  canonicalUrl: absoluteCanonical,
   image,
   keywords = [],
   type = "website",
@@ -48,10 +50,10 @@ export function buildMeta({
   locale = "en_IN",
   noindex = false,
 }: MetaOptions) {
-  const canonicalUrl =
+  const canonicalUrl = absoluteCanonical || (
     canonicalPath === "/"
       ? `${SITE_URL}/`
-      : `${SITE_URL}${canonicalPath.startsWith("/") ? canonicalPath : `/${canonicalPath}`}`;
+      : `${SITE_URL}${canonicalPath.startsWith("/") ? canonicalPath : `/${canonicalPath}`}`);
   const ogImage = image?.startsWith("http")
     ? image
     : image
@@ -109,7 +111,7 @@ export function buildMeta({
     tagName: "link",
     rel: "canonical",
     href: canonicalUrl,
-  } as any);
+  });
 
   return meta;
 }

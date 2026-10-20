@@ -1,5 +1,6 @@
 import { m as motion } from "framer-motion";
 import { PHONE_TEL_LINK, EMAIL, PHONE_NUMBER } from "@/lib/constants";
+import { usePackagePricing } from "@/lib/package-pricing";
 import { Link } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -42,15 +43,15 @@ const staggerChild = {
 const values = [
   {
     icon: Code2,
-    title: "Custom Code Only",
+    title: "Development Around Your Scope",
     description:
-      "We never use Wix, Squarespace, or bloated WordPress page builders. Every line of code is hand-written in React and TypeScript — built to last and built to perform.",
+      "We build custom React and TypeScript websites and select integrations around the agreed workflow. Store platforms, editing tools and third-party services are identified in the proposal.",
   },
   {
     icon: Zap,
     title: "Speed-First Engineering",
     description:
-      "We plan for loading speed from day one. Fast websites rank higher on Google, convert more visitors, and deliver better user experiences.",
+      "We plan for loading speed from day one and test the implemented pages. Performance work supports usability; it does not guarantee a search position or a conversion rate.",
   },
   {
     icon: Award,
@@ -66,17 +67,10 @@ const values = [
   },
 ];
 
-const stats = [
-  { value: "Custom", label: "Design & development" },
-  { value: "₹10K", label: "Starting price" },
-  { value: "7–14", label: "Days to launch" },
-  { value: "4+", label: "Niches served" },
-];
-
 const profiles = [
   {
     name: "Clutch",
-    description: "Verified client reviews",
+    description: "Agency profile",
     href: "https://www.clutch.co/profile/sitenova",
     icon: Star,
   },
@@ -101,6 +95,13 @@ const profiles = [
 ];
 
 const About = () => {
+  const { starterPrice } = usePackagePricing();
+  const stats = [
+    { value: "Custom", label: "Design & development" },
+    { value: starterPrice, label: "Starting price · scope applies" },
+    { value: "Agreed", label: "Project launch schedule" },
+    { value: "3", label: "Published client case studies" },
+  ];
   const jsonLd = [buildOrganizationJsonLd(), buildAboutPageJsonLd()];
 
   return (
@@ -153,8 +154,8 @@ const About = () => {
               >
                 SiteNova builds high-performance, React-based websites from scratch for
                 businesses across Mumbai. Every project is handled personally by the
-                founder — with zero templates, zero page builders, and zero compromises
-                on speed or SEO.
+                founder, with the implementation, performance targets and technical SEO
+                work defined for the agreed scope.
               </motion.p>
             </div>
           </section>
@@ -167,15 +168,15 @@ const About = () => {
                 initial="initial"
                 whileInView="whileInView"
                 viewport={{ once: true, margin: "-60px" }}
-                className="grid grid-cols-2 gap-4 sm:grid-cols-4"
+                className="grid grid-cols-2 gap-4 md:grid-cols-4"
               >
                 {stats.map((stat) => (
                   <motion.div
                     key={stat.label}
                     variants={staggerChild}
-                    className="glass-card rounded-2xl p-6 text-center"
+                    className="glass-card min-w-0 rounded-2xl p-4 lg:p-6 text-center"
                   >
-                    <p className="font-heading text-3xl font-bold gradient-text mb-1">
+                    <p className="inline-block whitespace-nowrap px-1 font-heading text-2xl lg:text-3xl font-bold gradient-text mb-1">
                       {stat.value}
                     </p>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
@@ -211,21 +212,21 @@ const About = () => {
                     Kavish Ganatra is a self-taught full-stack web developer and the
                     founder of SiteNova, based in Mulund, Mumbai. He started SiteNova
                     with a simple belief: every local business in Mumbai deserves a
-                    website that actually performs — fast, mobile-first, and ranked on
-                    Google.
+                    useful website with clear information, mobile-friendly navigation
+                    and a dependable contact process.
                   </p>
                   <p className="text-muted-foreground leading-relaxed mb-4">
                     Kavish personally manages every project from initial brief through to
-                    launch and ongoing SEO. He specialises in React 18, Next.js,
+                    launch and agreed ongoing support. He specialises in React, Next.js,
                     TypeScript, Tailwind CSS, Supabase, and Core Web Vitals
                     optimisation. Unlike large agencies that pass projects between teams,
                     you always deal directly with the person writing your code.
                   </p>
                   <p className="text-muted-foreground leading-relaxed mb-8">
-                    SiteNova has built websites for doctors, lawyers, finance
-                    professionals, real estate agencies, and retail businesses across
-                    Mulund, Thane, Powai, Andheri, and beyond — consistently delivering
-                    loading speed and search visibility.
+                    Published client case studies cover Dr. Dipti Ganatra's clinic,
+                    Jupiter Fast Finance and Corporatezone. The industry guides describe
+                    possible workflows; they do not imply a completed client project in
+                    every profession or service area.
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <span
@@ -261,9 +262,9 @@ const About = () => {
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {[
-                        "React 18", "Next.js", "TypeScript", "Tailwind CSS",
+                        "React", "React Router", "Next.js", "TypeScript", "Tailwind CSS",
                         "Framer Motion", "Node.js", "Supabase", "PostgreSQL",
-                        "Vite", "Vercel", "GitHub Actions",
+                        "Vite", "Cloudflare Workers", "GitHub Actions",
                       ].map((tech) => (
                         <span
                           key={tech}
@@ -367,13 +368,14 @@ const About = () => {
             <div className="mx-auto max-w-7xl px-6">
               <motion.div {...fadeUp} className="text-center mb-10">
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary mb-3">
-                  Verified listings
+                  Agency profiles
                 </p>
                 <h2 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight">
                   Find us across the web
                 </h2>
                 <p className="mt-3 max-w-xl mx-auto text-muted-foreground text-sm">
-                  SiteNova is independently listed and verified on leading B2B platforms.
+                  These links identify SiteNova's agency and business profiles. A listing
+                  is not an independent endorsement of every claim on this website.
                 </p>
               </motion.div>
 
@@ -409,6 +411,14 @@ const About = () => {
                   </motion.a>
                 ))}
               </motion.div>
+            </div>
+          </section>
+
+          <section className="py-12 border-t border-border/40" aria-labelledby="editorial-policy">
+            <div className="mx-auto max-w-3xl px-6">
+              <h2 id="editorial-policy" className="font-heading text-2xl font-semibold">Our editorial approach</h2>
+              <p className="mt-4 text-muted-foreground">SiteNova's agency blog is published by Kavish Ganatra, Founder &amp; Lead Developer in Mulund, Mumbai. It covers website implementation and the business decisions around it. Articles distinguish documented client work from illustrative workflows; an example is not a promise of traffic, rankings or revenue.</p>
+              <p className="mt-4 text-muted-foreground">Publication and last-updated dates appear on articles. Professional and regulated content needs review by the relevant practitioner. For a correction or a question about a guide, <Link to="/contact-us" className="text-primary underline">contact SiteNova</Link> with the article URL and the detail to check.</p>
             </div>
           </section>
 

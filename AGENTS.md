@@ -156,6 +156,7 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 |---|---|---|
 | `_index.tsx` | `/` | `pages/Index.tsx` |
 | `about.tsx` | `/about` | `pages/About.tsx` |
+| `locations.tsx` | `/locations` | `pages/Locations.tsx` — all 14 distinct local guides |
 | `contact-us.tsx` | `/contact-us` | `pages/Contact.tsx` |
 | `free-audit.tsx` | `/free-audit` | `pages/FreeAudit.tsx` |
 | `our-process.tsx` | `/our-process` | `pages/OurProcess.tsx` |
@@ -325,10 +326,17 @@ Stripped-down, distraction-free pages with no Navbar/Footer. `noindex, nofollow`
 
 
 ### Blog Pages
+
+**Editorial quality repair — database applied, website release pending (2026-10-20):** All 14 local pages now read distinct briefs from `app/lib/location-content.ts` (two market paragraphs, qualified illustrative searches, three unique FAQs and a relevant real project reference). Their shared template no longer repeats sales sections or claims a 50% bounce reduction. Service coverage never implies a local branch. Location JSON-LD retains SiteNova's actual Mulund business identity and uses the area only as `areaServed`.
+
+Blog listing/related reading times use full HTML at 200 words/minute on the server and return summaries without bodies. Related reading is SSR, published-only, original-only and ranked by tag overlap then recency (view counts are no longer fetched). One compact contextual CTA sits outside the editorial article; service/suburb link blocks, duplicate banners and blog popup/floating promotions are removed. Author identity, publication/update dates and the correction policy are visible. Five older suburb sales posts redirect permanently to their enriched local pages and are omitted from the index/sitemap.
+
+Eight distinct 900+ word rewrites and a guarded SQL batch are in `content/editorial-20261020/`; draft/published states and original publication dates are preserved. The owner applied the canonical schema and guarded content SQL on 2026-10-20. Read-only verification confirms all eight new titles/bodies, six published/two still draft, and the later root duplicate's canonical. Website code remains local: no deployment or push. Do not rerun the guarded content batch against the already-updated rows. Full mapping, checks, limitations and release order: `docs/editorial-quality-20261020.md`.
+
 | Page | File | Description |
 |---|---|---|
-| Blog Index | `pages/blog/BlogIndex.tsx` | Lists all blog posts fetched from Supabase |
-| Blog Post | `pages/blog/BlogPost.tsx` | Individual post, fetched by slug from Supabase |
+| Blog Index | `pages/blog/BlogIndex.tsx` | Server-loaded original published posts; full-content reading times projected to compact summaries |
+| Blog Post | `pages/blog/BlogPost.tsx` | Editorial article/byline/dates, one external contextual CTA, three SSR related posts and validated original canonical |
 
 ### Admin Pages (Protected — `/admin/*`)
 | Page | File | Description |
@@ -460,7 +468,7 @@ All live in `pages/niche/`. Each is a full, detailed page targeting a specific i
 - `Restaurants.tsx` → `/websites-for-restaurants`
 
 ### Location Pages (14 total)
-All live in `pages/locations/`. They are thin wrappers around `components/LocationPageTemplate.tsx`, passing location-specific data:
+All live in `pages/locations/`. They are thin wrappers around `components/LocationPageTemplate.tsx`, passing the location name to distinct records in `app/lib/location-content.ts`:
 Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dadar, LowerParel, Mahalakshmi, PedderRoad, Powai
 
 ---
@@ -496,8 +504,9 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 | `TestimonialsSection` | Three client review cards from `lib/client-reviews.ts`, with case-study links. Corporatezone is a five-star Google rating without written review text. |
 | `FaqSection` | FAQ accordion (uses `lib/faq-data.ts`) |
 | `CtaSection` | Bottom call-to-action banner |
-| `BlogCTA` | CTA block for blog pages |
-| `RelatedPosts` | Related blog post cards |
+| `BlogCTA` | Single compact contextual audit/project card outside the article; no shared price/delivery banner |
+| `Locations` (`pages/Locations.tsx`) | `/locations` directory of all 14 distinct code-backed briefs, linked from footer. |
+| `RelatedPosts` | Pure SSR related article cards supplied by the public route loader; no service/suburb grids or browser fetch |
 
 ### Utility Components
 | Component | Role |
@@ -583,7 +592,7 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 | `constants.ts` | **Single source of truth** for all contact info. `PHONE_NUMBER`, `PHONE_INTL`, `PHONE_TEL_LINK`, `EMAIL`, `EMAIL_COMPOSE_LINK`, `WHATSAPP_URL`, `buildWhatsAppUrl()`, `SITE_NAME`, `SITE_URL`, `SITE_OWNER`. **Always import from here — never hardcode contact data.** |
 | `meta.ts` | `buildMeta()` — generates `MetaDescriptor[]` for RR7 `meta()` exports. Handles title, description, canonical, OG, Twitter Card, keywords, article-specific tags. Also exports `SITE_NAME`, `SITE_URL`, `DEFAULT_OG_IMAGE`, `TWITTER_HANDLE`. |
 | `seo.ts` | JSON-LD structured data builders: `buildLocalBusinessJsonLd()`, `buildOrganizationJsonLd()`, `buildFaqJsonLd()`, `buildServiceJsonLd()`, `buildHowToJsonLd()`, `buildAboutPageJsonLd()`, `buildSpeakableJsonLd()`. Used via `<JsonLd>` component. `setPageSeo()` is a no-op legacy stub. |
-| `locationMeta.ts` | `buildLocationMeta()` + `buildLocationJsonLd()` — factory functions for location page meta and JSON-LD. Keeps all 14 location pages consistent. |
+| `locationMeta.ts` | `buildLocationMeta()` + `buildLocationJsonLd()` — metadata and actual-business/areaServed JSON-LD derived from the 14 distinct local briefs. |
 | `booking.ts` / `quote.ts` | Booking URL validation, promotion suppression, shared quote schema. |
 | `payments.ts` / `razorpay-client.ts` / `razorpay.server.ts` | Approved advance catalog/form schema, on-demand checkout/session recovery, and server-only Razorpay order/status verification. |
 | `quote-client.ts` | Shared submission client, attribution capture and conversion deduplication. |
@@ -592,6 +601,8 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 | `faq-data.ts` | Exports `faqs` array used by `FaqSection` and FAQ JSON-LD builder. |
 | `portfolio-meta.ts` | Exports `showcaseProjects` and `customerProjects` arrays. Showcase projects: AI SmartKit, Business Showcase, Design Showcase, E-commerce Showcase, Sanitaryware Showcase, Nuts Design Golden Showcase (all SiteNova sub-domains, all `useIframePreview: true`), plus Dr. Dipti Ganatra, Jupiter Fast Finance, and CorporateZone (real clients). |
 | `supabaseClient.ts` | Dual client exports (see §2 Architecture). |
+| `blog-content.ts` / `blog-client.server.ts` | Full-body reading statistics, canonical validation, summary projection, local-article redirects and typed per-request blog client with all credential fallbacks retained. |
+| `location-content.ts` | 14 individually edited market briefs with unique questions and qualified search-planning examples. |
 | `relatedPosts.ts` | `PostSummary` interface + `rankPosts(candidates, currentTags, limit)` — pure ranking function for the "Continue Reading" section. Scores candidates by tag overlap, then view count, then recency. No Supabase imports — fully testable. |
 | `blog-review-export.ts` | Manual AI review prompt, current-post/complete-published-archive TXT serialization, and paginated archive helper. Used by the blog editor copy/download actions. |
 | `seoRoutes.js` | **Legacy** — build-time SEO route injection. No longer used (replaced by RR7 `meta()` exports). Do not modify unless you know what you're doing. |
@@ -697,10 +708,11 @@ Managed via Admin Dashboard. Fetched by `BlogIndex.tsx` and `BlogPost.tsx`.
 | `excerpt` | text | Short summary shown in listing cards and used as meta description fallback |
 | `content` | text | Full HTML content (sanitized server-side before rendering) |
 | `tags` | text[] | Array of topic tags (e.g. `["SEO", "Google Ads"]`). Added 2026-09-04. Used by `RelatedPosts` for semantic matching. Set via comma-separated input in `AdminBlogEditor`. Default `'{}'`. |
+| `canonical_url` | text, nullable | Added through `20261020082731_editorial_canonical_url.sql`, applied by the owner on 2026-10-20; absolute HTTPS original URL; null defaults to the root blog slug. Existing RLS/grants unchanged. |
 | `published_at` | timestamptz | Publication date — distinct from `created_at`. Used in sitemap + OG meta |
 | `created_at` | timestamptz | Auto-set on insert |
 
-> **Confirmed from Supabase table screenshot (2026-08-14).** There is no `status` or `cover_image` column in the live table. The sitemap loader's `.eq("status", "published")` filter silently returns no rows if the column doesn't exist — this is handled gracefully via try/catch.
+> **Read-only schema confirmed 2026-10-20:** `status`, `source`, `updated_at`, contribution/review metadata and `review_version` exist (added after the original August screenshot). `cover_image` does not exist. `canonical_url` was subsequently applied by the owner and verified through production reads; public queries continue to require `status=published`.
 
 #### `blog_post_views`
 Created 2026-09-04. Records one row per blog page load (server-side, fire-and-forget). Used by `RelatedPosts` to compute all-time view counts as a ranking tiebreaker.
@@ -750,7 +762,7 @@ Older production `quote_requests` tables can retain a `quote_pending` status def
 
 ### `blog.$slug.tsx` Loader — Credential Fallback Quirk
 
-The blog post route loader uses a **3-tier fallback** for Supabase credentials due to known inconsistencies in how different versions of `@cloudflare/vite-plugin` expose the Cloudflare environment:
+The blog routes use `getBlogServerClient(context)` in `app/lib/blog-client.server.ts`, a typed per-request factory retaining the **3-tier fallback** for Supabase credentials due to known inconsistencies in how different versions of `@cloudflare/vite-plugin` expose the Cloudflare environment:
 
 ```
 Tier 1: context.cloudflare.env.SUPABASE_URL       ← correct production path
@@ -841,7 +853,7 @@ export function meta() {
 Injected via `<JsonLd>` component in page components, using builders from `app/lib/seo.ts`. Homepage uses all six JSON-LD types simultaneously (WebSite, Organization, ProfessionalService, FAQPage, HowTo, Speakable).
 
 ### Location Page SEO
-Use `buildLocationMeta()` and `buildLocationJsonLd()` from `app/lib/locationMeta.ts`. All 14 location pages follow the same title/description pattern: `"Website Designer in {Location}, Mumbai | 7-Day Delivery | SiteNova"`.
+Use `buildLocationMeta()` and `buildLocationJsonLd()` from `app/lib/locationMeta.ts`. All 14 location titles/descriptions now use the distinct market heading/introduction in `location-content.ts`; shared delivery promises and city-swapped descriptions were removed on 2026-10-20.
 
 ### GEO (Generative Engine Optimisation)
 The homepage contains a `#about-sitenova` section with rich prose content for AI crawlers (ChatGPT, Perplexity, Google AI Mode). Entity disambiguation against `sitenovaagency.com` is included in both Schema.org data and HTML comments.
@@ -987,13 +999,12 @@ When creating a new location page, pass these props to `<LocationPageTemplate>`:
 
 ```ts
 interface LocationPageProps {
-  locationName: string;       // e.g. "Bandra" — used in headings, JSON-LD, FAQ, and canonical URL
-  subTitle: string;           // Hero subtitle paragraph
-  description: string;        // Left-column body text in the Local SEO section
-  regionalFocusText: string;  // Second paragraph in the Local SEO section
-  nearbySuburbs: string[];    // Displayed in the right-column "Service Suburbs" card
-  keywords: string[];         // Passed to buildLocationMeta() for the keywords meta tag
+  locationName: string; // Must match a complete LocalMarket entry in location-content.ts.
 }
+// LocalMarket requires heading, introduction, localBusinessLandscape (two paragraphs),
+// localSearchBehavior (queries, analysis, competition), suburbSpecificFAQs (three unique
+// Q/As), caseStudyHighlight (real project + distinct relevance), and source.
+// Do not invent keyword volumes, local offices, testimonials or measured outcomes.
 ```
 
 Route file pattern for a new location:
@@ -1024,6 +1035,38 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-10-20] Owner-applied archive verified and GitHub source release
+- Owner ran the complete factual-review SQL successfully in Supabase SQL Editor. Independent connector reads verify all 63 titles/excerpts/canonicals/statuses/publication dates/tags/contribution fields, and every body after normalising the SQL Editor's CRLF/LF line endings. The 46 content updates and 17 canonical consolidations are saved; drafts stay drafts. Earlier connector failure/pending entries below are historical. Do not rerun the old-source-guarded batches or canonical migration.
+- Final source review adds readable body-derived excerpt fallback for empty CMS excerpts (the redesign guide began with an empty paragraph), keeping bodies out of listing payloads. Add privacy/terms/refund pages to the sitemap and update actual About/portfolio modification dates. Original agency conversion paths remain intact; no new database write or financial action.
+- CMS-backed checks found the sitemap's older client could silently omit blog URLs in the local Worker environment. It now uses the same typed per-request blog client/fallback as the public loaders, with a regression covering alternate context, publication filtering and legal discovery. Final production build, all 374 tests/52 files, scoped lint, SQL rollback/contribution preservation, staged credential/whitespace scans and the unchanged 61-diagnostic type baseline pass. Browser search/empty-state and mobile location-to-quote navigation pass without a real submission. Initial simultaneous build/test load caused two UI timeouts; the complete lower-concurrency final run passes.
+- Source release targets the existing `ssr` branch at the owner's request. Keep generated route types, local Worker state, environment files and pre-existing `.launch-public-deployments.json` outside the commit. This request authorises GitHub push; it does not initiate a manual Cloudflare deployment. Final validation and push status will be recorded after checks.
+- Final built-Worker crawl passes for all 50 CMS-backed public articles: matching card/article reading times, single canonicals, three relevant original/published related links, one contextual CTA, no repeated location grid, four draft denials, 18 permanent redirects, and full blog/legal sitemap discovery. Mobile browser checks pass for flagship links, search/empty state and Bandra-to-quote navigation with no page errors or real submission. Source is prepared for the owner's authorised `origin/ssr` commit/push; no manual deployment.
+
+### [2026-10-20] Factual reconciliation and owner-requested connector execution
+- Recompute the owner's original 31 August research CSV without changing it: 133 attempts, six missing score rows, 127 scored observations, mobile mean 54, 48/127 below 50 (38% rounded), real-estate mean 46.24. Separate the metadata-fetch failure; 45/126 successfully assessed scored rows lack detected JSON-LD. Preserve the research with explicit sample/client/date/detection limitations and add the anonymised scored-record download. No new network audit or fabricated before/after result.
+- Correct 46 prepared article bodies (21 full rewrites, 22 restructures, three targeted factual corrections) plus 17 canonical consolidations: 63 guarded records. Keep the earlier eight distinct rewrites and existing canonical copy. All 43 full/restructured revisions remain 900+ words; preserve draft status, publication dates, tags and ad-draft contribution markers/metadata. Correct provider-policy, GA4, AI/schema, security, platform-cost, agency-comparison and unsupported outcome claims. Source ledger/limits: `content/editorial-20261020-followup/FACTUAL-REVIEW.md`.
+- Reconcile About, three portfolio pages, homepage introduction and `public/llms.txt`: shared current price, agreed schedule, three documented case studies, no undocumented score/delivery/credential badges or every-query ranking/security promises. Geographic references now explicitly support context rather than business-demand measurement. Add existing news-copy 301 to original; its canonical was already set.
+- Owner explicitly requested execution through Supabase. Submitted the complete current atomic `apply.sql` through SiteNova Web; connector returned `INVALID_ARGUMENT / invalid_request_state`. Separate connector read confirms all 63 exact originals unchanged, zero prepared matches and zero status changes. Nothing from this follow-up committed. Do not claim SQL applied or rerun the original eight-row batch. Current file supersedes the earlier 54-row preparation; no credential bypass, schema/RLS/price/activation edits, deployment or push.
+- Validation: production build, 372 tests, scoped lint, isolated complete-SQL rollback and draft-contribution preservation pass. Final typecheck has the same 61 file/code/message diagnostics. Local Edge checks pass for the complete About glyph at 320/390/714/1024, all 14 guides, anonymous 127-row CSV, news-copy 301 and all 46 read-only review articles; no page errors. Main preview remains 8788; pending copy review 8790. Early sandbox child-process EPERM required local process escalation; a typecheck concurrent with generation briefly saw missing route types, and the final stable-build check confirms the unchanged baseline.
+
+### [2026-10-20] Full archive follow-up, location directory and About clipping
+- Fix the About stat's clipped final m using an intrinsic padded inline value, smaller narrow-screen typography and medium-breakpoint four-column layout. Add `/locations` with all 14 distinct code-backed records; add the directory to the sitemap/footer and correct Footer Mulund's link to `/location/mulund`.
+- Audit all 72 blog rows. Prepare 15 complete independent rewrites, 22 topic-specific restructures (all 37 are 900+ words) and 17 canonical consolidations with matching code 301s. Preserve draft/published states, publication dates and untouched rows; retain existing distinct articles. Source and exact status: `content/editorial-20261020-followup/README.md`.
+- Connector write attempt returned Invalid or expired requestState; read-back confirms its first-batch targets unchanged. No subsequent batch attempted. Full-file atomic `apply.sql` is the requested fallback and is NOT applied. Earlier owner-applied eight rewrites remain live. No schema/RLS/secret/payment changes, deployment or push.
+- Validation: 372 tests/52 files, build/scoped lint, identical 61 baseline type diagnostics, actual isolated SQL including complete rollback/conftribution preservation, and real local Worker/Edge glyph/directory/all-14-route/read-only-review checks pass. Local site remains on 8788; pending copy review (37 articles, no writes) on 8790. About screenshots checked at 320/390/714/1024; this is not a blanket claim of repairing inherited overflow elsewhere.
+
+### [2026-10-20] Owner applied editorial database changes
+- Owner screenshots show canonical migration and content batch success. Independent read-only production verification confirms all eight replacement titles/bodies and the later breach article's canonical to the earlier root version. Six target articles remain published; photographer and catering/event posts remain drafts. Shared content update time is 10:37:53 UTC (16:07:53 IST).
+- Website source, canonical head rendering, location pages, redirects, reading-time fix, homepage and privacy changes still require deployment. No deployment, push, secret/payment change or additional production write was performed by the agent. The content SQL now correctly fails its old-source guards if rerun.
+
+### [2026-10-20] Editorial quality, local content and canonical preparation
+- Replaced city-swapped location prose/FAQs with 14 distinct briefs and relevant existing project links. Consolidated five overlapping suburb blog sales URLs with 301s. Preserved quote state, main navigation, pricing access and agency purchase flows.
+- Fixed full-body server reading times; SSR related original/published articles; removed stacked blog sales banners/service/suburb grids and floating promotions. Added author/update visibility, editorial correction policy, original canonical metadata/editor support and sitemap exclusion of copies/redirects.
+- Prepared eight independent 903–995 word article rewrites and atomic optimistic SQL, preserving drafts/publication dates. Read-only comparison against all 59 published AI Insights posts found no substantive cross-domain duplicate; the two root breach posts are near-duplicates and the later copy is assigned the earlier root original in the prepared SQL. No invented AI Insights canonical.
+- Added homepage Latest Research & Guides with four verified root article slugs, subdomain-focused advertising/cookie disclosure (no root AdSense installation), and /privacy and /terms 301 aliases. Manual editorial review prompt discourages recycled outlines and invented examples.
+- Validation: all 372 tests/52 files, isolated actual migration/content SQL with atomic conflict rollback, production client/SSR build, scoped lint and mocked built-server Edge browser checks pass. Application typecheck retains the same 61 baseline diagnostics with no added messages. Desktop/mobile layouts inspected; quote prefill and sitemap/redirect checks use fixtures. Corrected homepage preload fetchPriority casing after a baseline browser warning.
+- Local preparation only: no production SQL, deployment, push, credential/activation edit or financial action. Live behaviour/Google review remain unverified. Release order and limits: docs/editorial-quality-20261020.md.
 
 ### [2026-10-15] Restore Starter advance to 50%
 - Owner clarified ₹5,000 (50% of the unchanged ₹10,000 starting price). Appended a new version through the existing production pricing RPC; Business values, prior price versions and existing orders remain unchanged. Separate current-price read confirms restoration. No order, charge, refund, schema/secret/activation change or website deployment.

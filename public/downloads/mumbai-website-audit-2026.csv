@@ -1,0 +1,128 @@
+record,industry,mobile_score,desktop_score,mobile_lcp,mobile_cls,mobile_tbt,mobile_inp_crux,platform,metadata_status,json_ld_detected
+001,Web Agency,69,97,3.60,0.000,530,N/A,WordPress,assessed,Yes
+002,Doctors,90,100,3.18,0.000,74,N/A,Custom/Unknown,assessed,Yes
+003,Finance,59,89,9.08,0.026,218,N/A,Custom/Unknown,assessed,Yes
+004,Consultants,79,99,4.09,0.007,10,N/A,Custom/Unknown,assessed,Yes
+005,Doctors,46,70,6.30,0.078,580,187,WordPress,assessed,Yes
+006,Doctors,36,39,52.45,0.237,340,N/A,WordPress,assessed,Yes
+007,Doctors,52,85,4.53,0.372,131,N/A,Custom/Unknown,assessed,No
+008,Doctors,36,37,30.87,0.006,1033,N/A,WordPress,assessed,Yes
+009,Doctors,67,85,7.35,0.035,N/A,166,Custom/Unknown,assessed,Yes
+010,Doctors,28,48,34.88,0.008,3815,241,WordPress,assessed,Yes
+011,Doctors,57,62,11.64,0.081,350,N/A,GoDaddy,assessed,Yes
+012,Doctors,20,62,13.49,0.452,1279,72,GoDaddy,assessed,Yes
+013,Doctors,28,34,21.06,0.339,431,N/A,WordPress,assessed,Yes
+014,Doctors,34,55,18.04,0.393,176,114,WordPress,assessed,Yes
+015,Doctors,44,52,7.47,0.016,985,110,Custom/Unknown,assessed,Yes
+016,Doctors,47,77,11.09,0.130,268,N/A,Custom/Unknown,assessed,Yes
+017,Doctors,24,68,10.82,0.162,1861,129,Custom/Unknown,assessed,Yes
+018,Doctors,83,88,2.59,0.077,17,122,WordPress,assessed,No
+019,Doctors,55,55,13.77,0.000,5,N/A,Custom/Unknown,assessed,No
+020,Doctors,99,100,1.66,0.019,N/A,N/A,WordPress,assessed,Yes
+021,Doctors,90,94,3.17,0.002,8,100,WordPress,assessed,Yes
+022,Doctors,65,85,11.63,0.000,N/A,N/A,GoDaddy,assessed,Yes
+023,Doctors,55,73,5.93,0.000,510,N/A,Next.js,assessed,Yes
+024,Finance,60,89,6.15,0.003,N/A,N/A,Custom/Unknown,assessed,No
+025,Finance,53,50,10.67,0.014,178,137,WordPress,assessed,No
+026,Finance,54,70,8.14,0.188,N/A,N/A,Custom/Unknown,assessed,No
+027,Finance,66,96,4.80,0.000,64,N/A,Custom/Unknown,assessed,No
+028,Finance,57,86,7.75,0.000,N/A,N/A,Custom/Unknown,assessed,No
+029,Finance,48,59,12.15,0.164,N/A,N/A,Custom/Unknown,assessed,No
+030,Finance,38,54,4.08,1.362,570,N/A,Custom/Unknown,assessed,Yes
+031,Finance,53,77,33.30,0.000,492,N/A,WordPress,assessed,Yes
+032,Finance,88,99,3.10,0.003,N/A,N/A,Custom/Unknown,assessed,No
+033,Finance,55,82,8.55,0.000,252,N/A,WordPress,assessed,Yes
+034,Finance,47,74,7.28,0.240,86,N/A,WordPress,assessed,Yes
+035,Finance,35,64,8.03,0.540,1,N/A,Custom/Unknown,assessed,No
+036,Finance,25,20,14.10,0.537,467,N/A,WordPress,assessed,Yes
+037,Finance,89,94,3.45,0.000,132,N/A,Custom/Unknown,assessed,Yes
+038,Finance,57,35,4.24,0.003,631,144,GoDaddy,assessed,Yes
+039,Finance,93,92,3.09,0.001,27,N/A,Custom/Unknown,assessed,Yes
+040,Finance,50,59,18.20,0.000,327,N/A,WordPress,assessed,Yes
+041,Finance,56,65,28.22,0.000,N/A,N/A,WordPress,assessed,Yes
+042,Lawyers,62,91,7.65,0.000,216,102,WordPress,assessed,Yes
+043,Lawyers,65,49,12.93,0.011,48,N/A,Custom/Unknown,assessed,Yes
+044,Lawyers,72,72,3.33,0.171,N/A,N/A,Custom/Unknown,assessed,No
+045,Lawyers,51,39,15.72,0.097,279,N/A,WordPress,assessed,Yes
+046,Lawyers,95,100,2.46,0.001,N/A,N/A,WordPress,assessed,No
+047,Lawyers,64,78,18.91,0.015,3,N/A,Custom/Unknown,assessed,No
+048,Lawyers,46,72,8.15,0.013,545,N/A,Custom/Unknown,assessed,No
+049,Lawyers,31,83,22.81,0.032,1745,N/A,WordPress,assessed,Yes
+050,Lawyers,28,41,16.88,1.044,215,N/A,Custom/Unknown,assessed,No
+051,Lawyers,51,56,20.00,0.153,77,N/A,WordPress,assessed,No
+052,Lawyers,55,46,11.40,0.036,28,N/A,Custom/Unknown,assessed,Yes
+053,Lawyers,64,73,25.77,0.012,N/A,N/A,Custom/Unknown,assessed,No
+054,Lawyers,39,99,8.81,0.011,2041,86,WordPress,assessed,Yes
+055,Lawyers,68,68,3.60,0.215,25,115,WordPress,assessed,No
+056,Lawyers,32,70,15.09,0.989,3,N/A,Custom/Unknown,assessed,No
+057,Lawyers,50,98,7.02,0.367,117,84,Custom/Unknown,assessed,Yes
+058,Lawyers,54,76,21.31,0.001,138,105,WordPress,assessed,No
+059,Lawyers,62,90,4.08,0.246,41,98,WordPress,assessed,Yes
+060,Lawyers,29,88,8.25,1.000,340,97,WordPress,assessed,Yes
+061,Real Estate,70,90,6.26,0.118,N/A,84,WordPress,assessed,Yes
+062,Real Estate,39,42,9.75,0.319,123,N/A,Custom/Unknown,assessed,Yes
+063,Real Estate,20,63,5.06,0.419,2898,301,Custom/Unknown,assessed,Yes
+064,Real Estate,70,91,4.53,0.000,104,155,WordPress,assessed,Yes
+065,Real Estate,84,88,3.03,0.008,2,100,WordPress,assessed,Yes
+066,Real Estate,8,39,34.39,0.411,2059,177,WordPress,assessed,Yes
+067,Real Estate,55,65,10.96,0.006,90,81,WordPress,assessed,No
+068,Real Estate,65,90,4.95,0.000,168,N/A,WordPress,assessed,Yes
+069,Real Estate,85,71,3.03,0.000,164,N/A,Next.js,assessed,Yes
+070,Real Estate,19,30,69.01,0.514,910,95,WordPress,assessed,Yes
+071,Real Estate,71,96,8.04,0.000,N/A,N/A,Custom/Unknown,assessed,No
+072,Real Estate,50,51,10.15,0.051,358,108,Custom/Unknown,assessed,Yes
+073,Real Estate,0,0,N/A,0.000,N/A,132,WordPress,assessed,Yes
+074,Real Estate,33,54,19.86,0.040,2256,278,Error,unavailable,unknown
+075,Real Estate,52,62,6.21,0.000,601,234,Custom/Unknown,assessed,Yes
+076,Real Estate,43,61,4.01,0.000,3285,233,Next.js,assessed,Yes
+077,Real Estate,22,26,29.21,0.744,540,124,WordPress,assessed,Yes
+078,Restaurants,31,56,22.58,0.999,51,196,Custom/Unknown,assessed,No
+079,Restaurants,61,89,11.63,0.000,135,79,Shopify,assessed,Yes
+080,Restaurants,45,22,29.30,0.000,407,117,Shopify,assessed,Yes
+081,Restaurants,45,80,5.13,0.000,1236,118,Shopify,assessed,Yes
+082,Restaurants,8,35,25.79,0.484,1516,187,Shopify,assessed,No
+083,Restaurants,56,66,57.08,0.179,59,108,WordPress,assessed,Yes
+084,Restaurants,76,87,3.43,0.004,N/A,N/A,Custom/Unknown,assessed,No
+085,Restaurants,28,80,12.48,0.000,10337,N/A,WordPress,assessed,No
+086,Restaurants,61,71,4.05,0.057,365,127,WordPress,assessed,Yes
+087,Restaurants,59,46,17.94,0.000,174,N/A,Custom/Unknown,assessed,Yes
+088,Restaurants,35,71,14.41,0.012,1108,156,Shopify,assessed,Yes
+089,Restaurants,49,47,21.88,0.000,490,124,Custom/Unknown,assessed,Yes
+090,Restaurants,46,46,20.78,0.151,530,170,WordPress,assessed,Yes
+091,Restaurants,60,87,10.61,0.000,121,N/A,Custom/Unknown,assessed,No
+092,Restaurants,100,100,0.79,0.000,N/A,N/A,Custom/Unknown,assessed,No
+093,Restaurants,58,68,71.91,0.000,N/A,84,Custom/Unknown,assessed,No
+094,Restaurants,41,51,33.38,0.000,740,134,WordPress,assessed,No
+095,Consultants,10,13,16.61,1.019,967,N/A,WordPress,assessed,Yes
+096,Consultants,52,78,13.84,0.230,N/A,N/A,Custom/Unknown,assessed,No
+097,Consultants,68,90,4.69,0.003,N/A,N/A,Custom/Unknown,assessed,No
+098,Consultants,32,65,6.72,0.437,309,N/A,WordPress,assessed,Yes
+099,Consultants,55,71,22.90,0.045,N/A,N/A,Custom/Unknown,assessed,No
+100,Consultants,71,93,6.38,0.000,N/A,92,Custom/Unknown,assessed,No
+101,Consultants,62,58,28.21,0.000,331,92,Custom/Unknown,assessed,No
+102,Consultants,41,76,6.93,0.000,923,161,WordPress,assessed,Yes
+103,Consultants,73,66,5.85,0.001,46,N/A,WordPress,assessed,Yes
+104,Consultants,92,92,2.90,0.007,75,183,WordPress,assessed,Yes
+105,Consultants,60,66,6.63,0.000,113,140,WordPress,assessed,Yes
+106,Consultants,90,97,2.59,0.009,46,N/A,Custom/Unknown,assessed,Yes
+107,Consultants,46,63,4.26,0.011,2831,207,Next.js,assessed,Yes
+108,Consultants,56,67,13.26,0.000,131,N/A,WordPress,assessed,Yes
+109,Startups,56,77,5.98,0.015,481,320,Custom/Unknown,assessed,No
+110,Startups,42,65,6.54,0.000,1501,141,Next.js,assessed,Yes
+111,Startups,55,57,16.68,0.000,217,292,Shopify,assessed,Yes
+112,Startups,62,87,7.69,0.007,70,99,Webflow,assessed,Yes
+113,Startups,69,92,5.43,0.048,46,192,Shopify,assessed,No
+114,Startups,43,59,12.72,0.055,800,245,WordPress,assessed,Yes
+115,Startups,25,42,11.22,0.003,11719,306,WordPress,assessed,Yes
+116,Startups,83,66,4.11,0.000,17,118,WordPress,assessed,Yes
+117,Startups,81,94,3.76,0.002,15,64,Custom/Unknown,assessed,No
+118,Startups,77,94,4.37,0.000,43,111,WordPress,assessed,Yes
+119,Startups,64,79,3.60,0.000,1601,292,Next.js,assessed,Yes
+120,Startups,42,60,4.11,0.000,2985,578,Custom/Unknown,assessed,No
+121,Startups,65,69,3.78,0.000,762,184,WordPress,assessed,Yes
+122,Startups,31,38,8.06,0.028,2428,237,Custom/Unknown,assessed,No
+123,Startups,50,90,6.35,0.238,262,152,Next.js,assessed,No
+124,Startups,78,88,4.58,0.000,N/A,361,WordPress,assessed,Yes
+125,Startups,11,43,13.31,0.773,1155,213,Custom/Unknown,assessed,No
+126,Startups,100,100,1.54,0.000,N/A,178,Custom/Unknown,assessed,No
+127,Startups,66,98,4.44,0.000,433,238,Custom/Unknown,assessed,No

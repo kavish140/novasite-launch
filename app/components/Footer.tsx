@@ -56,8 +56,9 @@ const Footer = () => {
           {/* Locations */}
           <div className="sm:col-span-2 lg:col-span-2">
             <h4 className="font-heading text-sm font-semibold mb-4">Service Areas</h4>
+            <Link to="/locations" className="mb-4 inline-block text-sm text-primary underline underline-offset-4">Explore all 14 local guides</Link>
             <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-              <li><Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mulund Web Design</Link></li>
+              <li><Link to="/location/mulund" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mulund Web Design</Link></li>
               <li><Link to="/location/thane" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Thane Web Design</Link></li>
               <li><Link to="/location/bandra" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bandra Web Design</Link></li>
               <li><Link to="/location/powai" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Powai Web Developer</Link></li>

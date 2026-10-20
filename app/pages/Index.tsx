@@ -17,6 +17,7 @@ import { faqs } from "@/lib/faq-data";
 import TechMarquee from "@/components/TechMarquee";
 import FeaturesSection from "@/components/FeaturesSection";
 import ResourcesSection from "@/components/ResourcesSection";
+import LatestGuidesSection from "@/components/LatestGuidesSection";
 import PortfolioSection from "@/components/PortfolioSection";
 import LocalAgencySection from "@/components/LocalAgencySection";
 import HowItWorksSection from "@/components/HowItWorksSection";
@@ -96,6 +97,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
           <section aria-labelledby="features-title">
             <FeaturesSection />
           </section>
+          <LatestGuidesSection />
           <ResourcesSection />
           <section aria-labelledby="pricing-title" className="pb-20 sm:pb-24">
             <div className="mx-auto max-w-7xl px-6">
@@ -164,7 +166,7 @@ const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: Inde
                     Website design for Mulund, Mumbai, and nearby areas
                   </h2>
                   <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-                    <strong className="font-semibold text-foreground">SiteNova is a professional web development agency based in Mulund, Mumbai, specializing in custom, high-performance websites.</strong> We help local businesses rank for searches like best website designer in Mulund and Mumbai. We combine fast, mobile-first design with content that speaks to the neighborhoods your customers actually search from.
+                    <strong className="font-semibold text-foreground">SiteNova is a professional web development agency based in Mulund, Mumbai, specializing in custom business websites.</strong> We combine mobile-friendly implementation with useful service information and technical search checks. The local guides explain different business contexts; they do not imply separate agency offices or guaranteed rankings.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

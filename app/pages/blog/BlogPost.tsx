@@ -3,12 +3,12 @@ import { Link } from "react-router";
 import { useEffect, useState, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
 import BlogCTA from "@/components/BlogCTA";
 import RelatedPosts from "@/components/RelatedPosts";
 import { ChevronLeft, Clock, ExternalLink } from "lucide-react";
+import { readingStats, postCanonical } from "@/lib/blog-content";
 import type { loader } from "@/routes/blog.$slug";
 
 // ── Reading progress bar ──────────────────────────────────────────────────────
@@ -137,25 +137,12 @@ function TableOfContents({ html }: { html: string }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function BlogPost() {
-  const { post } = useLoaderData<typeof loader>();
+  const { post, relatedPosts } = useLoaderData<typeof loader>();
 
-  const wordCount = post.content
-    .replace(/<[^>]+>/g, "")
-    .split(/\s+/)
-    .filter(Boolean).length;
-  const readMins = Math.max(1, Math.ceil(wordCount / 200));
+  const { wordCount, reading_time_minutes: readMins } = readingStats(post.content);
 
   return (
     <PageTransition>
-      <SEO
-        title={`${post.title} | SiteNova Blog`}
-        description={post.excerpt || post.content.replace(/<[^>]+>/g, "").substring(0, 160) || `Read our latest article on ${post.title}.`}
-        canonicalUrl={`/blog/${post.slug}`}
-        type="article"
-        publishedTime={post.published_at}
-        modifiedTime={post.published_at}
-        author="Kavish Ganatra"
-      />
       <JsonLd data={[
         {
           "@context": "https://schema.org",
@@ -163,7 +150,7 @@ export default function BlogPost() {
           "headline": post.title,
           "description": post.excerpt || post.content.replace(/<[^>]+>/g, "").substring(0, 160),
           "datePublished": post.published_at,
-          "dateModified": post.published_at,
+          "dateModified": post.updated_at || post.published_at,
           "inLanguage": "en-IN",
           "wordCount": wordCount,
           "image": {
@@ -174,7 +161,7 @@ export default function BlogPost() {
           },
           "mainEntityOfPage": {
             "@type": "WebPage",
-            "@id": `https://sitenova.dev/blog/${post.slug}`,
+            "@id": postCanonical(post),
           },
           "author": {
             "@type": "Person",
@@ -255,13 +242,15 @@ export default function BlogPost() {
                     {post.title}
                   </h1>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                    <span suppressHydrationWarning>
+                    <time dateTime={post.published_at}>
+                      Published {" "}
                       {new Date(post.published_at).toLocaleDateString("en-IN", {
                         year: "numeric",
                         month: "long",
                         day: "numeric",
+                        timeZone: "Asia/Kolkata",
                       })}
-                    </span>
+                    </time>
                     <span className="text-border">·</span>
                     <span className="inline-flex items-center gap-1.5">
                       <Clock size={13} />
@@ -269,7 +258,10 @@ export default function BlogPost() {
                     </span>
                     <span className="text-border">·</span>
                     <span>{wordCount.toLocaleString("en-IN")} words</span>
+                    <Link to="/about" rel="author">By Kavish Ganatra · Founder &amp; Lead Developer</Link>
+                    {post.updated_at && <span>Updated <time dateTime={post.updated_at}>{new Date(post.updated_at).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", year: "numeric", month: "long", day: "numeric" })}</time></span>}
                   </div>
+                  {postCanonical(post) !== `https://sitenova.dev/blog/${post.slug}` && <p className="mt-4 text-sm text-muted-foreground">This is a republished copy. <a className="text-primary underline" href={postCanonical(post)}>Read the original version</a>.</p>}
                 </header>
 
                 {/* Content — sanitized server-side in route loader */}
@@ -278,8 +270,6 @@ export default function BlogPost() {
                   dangerouslySetInnerHTML={{ __html: post.content }}
                 />
 
-                {/* Mid-article CTA */}
-                <BlogCTA variant="mid" />
 
                 {/* Author bio */}
                 <div className="not-prose mt-10 flex items-start gap-5 rounded-2xl border border-border/60 bg-gradient-to-r from-primary/5 via-card/80 to-card p-6">
@@ -290,7 +280,7 @@ export default function BlogPost() {
                     <div className="flex items-center gap-2 mb-1">
                       <p className="text-sm font-bold text-foreground">Kavish Ganatra</p>
                       <a
-                        href="https://sitenova.dev"
+                        href="/about"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-muted-foreground hover:text-primary transition-colors"
@@ -316,8 +306,8 @@ export default function BlogPost() {
 
             {/* End-of-article CTA */}
             <div className="max-w-3xl mt-2">
-              <BlogCTA variant="end" />
-              <RelatedPosts currentSlug={post.slug} currentTags={post.tags ?? []} />
+              <BlogCTA tags={post.tags ?? []} />
+              <RelatedPosts posts={relatedPosts} />
             </div>
           </div>
         </main>

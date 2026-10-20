@@ -14,6 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import type { BlogPost } from "./AdminDashboard";
+import { validCanonicalUrl } from "@/lib/blog-content";
 
 type PostStatus = BlogPost["status"];
 
@@ -24,6 +25,7 @@ export default function AdminBlogEditor() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [canonicalUrl, setCanonicalUrl] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
   const [status, setStatus] = useState<PostStatus>("draft");
@@ -105,6 +107,7 @@ export default function AdminBlogEditor() {
         setTitle(data.title);
         setSlug(data.slug);
         setExcerpt(data.excerpt ?? "");
+        setCanonicalUrl(data.canonical_url ?? "");
         setContent(data.content ?? "");
         setTags(Array.isArray(data.tags) ? data.tags.join(", ") : "");
         setStatus((data.status as PostStatus) ?? "draft");
@@ -139,7 +142,7 @@ export default function AdminBlogEditor() {
   const currentPost = (): ReviewPost => ({
     ...loadedPost,
     id: id ?? null,
-    title, slug, excerpt, content,
+    title, slug, excerpt, content, canonical_url: canonicalUrl.trim() || null,
     tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
     status, source,
     blanks_metadata: blanksMetadata,
@@ -187,6 +190,10 @@ export default function AdminBlogEditor() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (canonicalUrl.trim() && !validCanonicalUrl(canonicalUrl)) {
+      toast({ title: "Check the canonical URL", description: "Use an absolute HTTPS article URL without credentials, query parameters or a fragment.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     const parsedTags = tags
@@ -207,6 +214,7 @@ export default function AdminBlogEditor() {
 
     const postData: Record<string, unknown> = {
       title, slug, excerpt,
+      canonical_url: validCanonicalUrl(canonicalUrl),
       content: finalContent,
       tags: parsedTags,
       status,
@@ -446,6 +454,12 @@ export default function AdminBlogEditor() {
               </div>
 
               {/* Tags */}
+              <div className="space-y-2">
+                <Label htmlFor="canonical-url">Original publication URL (optional)</Label>
+                <Input id="canonical-url" type="url" value={canonicalUrl} onChange={(e) => setCanonicalUrl(e.target.value)} placeholder="https://ai-insights.sitenova.dev/..." />
+                <p className="text-xs text-muted-foreground">Leave blank for an original SiteNova article. Set this only to the verified original when republishing; copies are excluded from the agency index and sitemap.</p>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="tags">Tags (comma-separated)</Label>
                 <Input

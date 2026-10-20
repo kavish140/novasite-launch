@@ -1,8 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLoaderData } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { supabase } from "@/lib/supabaseClient";
 import SEO from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
@@ -14,10 +13,7 @@ interface BlogPost {
   slug: string;
   excerpt: string;
   published_at: string;
-}
-
-function readingTime(excerpt: string): number {
-  return Math.max(1, Math.ceil(excerpt.split(/\s+/).filter(Boolean).length / 40));
+  reading_time_minutes: number;
 }
 
 function formatDate(dateStr: string) {
@@ -38,7 +34,7 @@ function formatDateShort(dateStr: string) {
 
 // ── Featured hero card (most recent post) ────────────────────────────────────
 function FeaturedCard({ post }: { post: BlogPost }) {
-  const mins = readingTime(post.excerpt);
+  const mins = post.reading_time_minutes;
   return (
     <Link to={`/blog/${post.slug}`} className="group block mb-10">
       <article className="relative overflow-hidden rounded-3xl border border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_40px_-12px_hsl(var(--primary)/0.25)] interactive-card">
@@ -88,7 +84,7 @@ function FeaturedCard({ post }: { post: BlogPost }) {
 
 // ── Regular grid card ─────────────────────────────────────────────────────────
 function PostCard({ post }: { post: BlogPost }) {
-  const mins = readingTime(post.excerpt);
+  const mins = post.reading_time_minutes;
   return (
     <Link to={`/blog/${post.slug}`} className="group block h-full">
       <article className="flex flex-col h-full rounded-2xl border border-border/60 bg-card p-6 transition-all duration-300 hover:border-primary/25 hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.2)] interactive-card">
@@ -99,7 +95,7 @@ function PostCard({ post }: { post: BlogPost }) {
           </span>
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <Clock size={11} />
-            {mins} min
+            {mins} min read
           </span>
         </div>
 
@@ -141,29 +137,9 @@ function SkeletonGrid() {
 export default function BlogIndex() {
   const loaderData = useLoaderData<{ posts?: BlogPost[] }>();
   const initialPosts = loaderData?.posts ?? [];
-  const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
-  const [loading, setLoading] = useState(initialPosts.length === 0);
+  const posts = initialPosts;
+  const loading = false;
   const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    if (initialPosts.length > 0) return;
-    async function fetchPosts() {
-      try {
-        const { data, error } = await supabase
-          .from("blog_posts")
-          .select("id, title, slug, excerpt, published_at")
-          .eq("status", "published")
-          .order("published_at", { ascending: false });
-        if (error) console.error("Error fetching posts:", error);
-        else setPosts(data || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPosts();
-  }, [initialPosts.length]);
 
   const filteredPosts = useMemo(() => {
     const q = query.toLowerCase().trim();

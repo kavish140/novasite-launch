@@ -11,7 +11,7 @@ export function links() {
       rel: "preload",
       as: "image",
       href: dashboardPreview,
-      fetchpriority: "high",
+      fetchPriority: "high",
     } as const,
   ];
 }

@@ -1,0 +1,312 @@
+[
+  [
+    "ai-chatbots-small-business-websites-worth-it",
+    "Planning a Website Support Bot: Scope, Escalation and Operating Cost",
+    "A support bot should earn its place by resolving a defined class of questions. Begin with the requests your team actually receives, the answers you can maintain and the point where a person must take over. A confident response is not useful if it conceals missing information.",
+    [
+      "Define the questions the assistant may answer",
+      "Budget for monitoring as well as model usage",
+      "Select a bounded support task",
+      "Recognise when a simpler contact route is enough"
+    ],
+    "Test an unanswered question before launch",
+    "Use a small evaluation set containing supported questions, ambiguous requests, outdated information and a request involving private data. Record whether the system answers from an approved source, asks a useful clarification or hands off. Do not give a public chatbot broad account permissions merely to make a demonstration impressive. Separate a draft answer from any action that changes a booking, order or record. Provider pricing and feature availability change; verify the selected product's current terms before budgeting rather than treating the figures in a general article as a permanent quote."
+  ],
+  [
+    "do-you-need-a-website-if-you-have-whatsapp-business",
+    "Website and WhatsApp Handoffs: Keep Enquiries Recoverable",
+    "A customer can discover a service on a website and continue in WhatsApp, but the two stages need a clear handoff. The site should identify the service and explain whether opening the messaging application merely starts a conversation or creates a request the business can retrieve.",
+    [
+      "Identify the messaging product in use",
+      "Check current messaging rules with the provider",
+      "Give service information a stable public home",
+      "Carry a reference into the conversation",
+      "Track accepted requests separately from contact clicks"
+    ],
+    "Make the message link minimal and deliberate",
+    "Construct a click-to-chat link from the business's verified number and URL-encode a neutral message or product reference. Avoid including private names, health details or document links in the URL. Opening the app does not establish that the visitor sent a message. If the website itself accepts an enquiry, store it before showing a reference and make duplicate retries recover the same record. Check current product limits, messaging permissions and charges in the official provider documentation; this guide does not establish a specific policy change on an assumed date."
+  ],
+  [
+    "ecommerce-website-cost-mumbai",
+    "E-Commerce Scope Budgeting: Catalog, Checkout and Store Operations",
+    "The expensive part of an online-store brief is often the operating workflow around the product grid. Compare inventory, payment recovery, delivery rules and staff support before deciding whether two proposals describe the same store.",
+    [
+      "Account for the order lifecycle",
+      "Separate catalog preparation from checkout work",
+      "Read estimates against the selected store model",
+      "Identify unpriced exception handling",
+      "Assign recurring service and support ownership",
+      "Choose the smallest store the team can operate"
+    ],
+    "Compare one exception in both proposals",
+    "Ask each supplier to explain what happens when two buyers select the last item, payment arrives after a tab closes or an order cannot be fulfilled. The answer should identify the authoritative stock, payment and fulfilment systems, not just a checkout screenshot. Current platform charges need verification with the provider. SiteNova's own package information belongs on the maintained pricing page; final store scope remains proposal-based. A cheaper implementation may be appropriate when its limitations match the business's actual process."
+  ],
+  [
+    "freelancer-vs-web-design-agency-when-to-switch",
+    "Changing Website Suppliers: Ownership, Support and Handover",
+    "Changing supplier is a transfer of operational responsibility, not merely a new design purchase. First establish who controls the domain, deployment, accounts and content. A larger team cannot fix an access gap simply by receiving a copy of the homepage.",
+    [
+      "Identify what the current arrangement handles well",
+      "Document responsibilities that have become unclear",
+      "Compare team coverage against the actual support need",
+      "Price the work that changes hands",
+      "Plan a bounded transition before a replacement build"
+    ],
+    "Rehearse a handover with an ordinary content change",
+    "Ask the incoming supplier to make a harmless test edit in a controlled environment and explain how it reaches production, how it is rolled back and who approves it. Verify account ownership independently from access invitations. Remove obsolete access after the transition has been checked, rather than during diagnosis. Keep an inventory of external integrations so changing the website does not silently interrupt enquiries, analytics or a payment-status process."
+  ],
+  [
+    "google-ads-vs-meta-ads-which-is-right-for-your-business",
+    "Choosing an Ad Channel by the Customer Decision",
+    "Start with the action the business can fulfil and the evidence needed to assess it. A channel comparison is less useful when a contact click, a qualified enquiry and a sale are counted as the same result.",
+    [
+      "Match the channel to an existing or emerging need",
+      "Assess search-led acquisition for the specific offer",
+      "Assess discovery-led creative for the same offer",
+      "Define a comparison the business can interpret"
+    ],
+    "Write the measurement contract before the campaign",
+    "Define which server-accepted event counts as a lead and how staff identify a qualified response. Keep click and form-start events as diagnostic measures rather than report them as sales. Check that the campaign destination presents the actual offer and that errors do not fire a successful conversion. Budget and auction outcomes vary, so a general guide should not promise a fixed acquisition cost or a guaranteed result."
+  ],
+  [
+    "google-ai-overviews-mumbai-businesses",
+    "Making Service Information Useful in Search and AI Summaries",
+    "A business cannot guarantee that a search engine or AI summary will cite its website. It can publish clear service information, keep facts accurate and make useful pages accessible. Evaluate that work on the quality of the source, not an invented formula for citation.",
+    [
+      "Identify what a generated summary does and does not establish",
+      "Describe the local decision the page should support",
+      "Use accurate source information without a citation guarantee",
+      "Check the public page before adding more markup"
+    ],
+    "Verify a summary against the underlying page",
+    "When reviewing a generated description of a business, open the cited source and compare the exact claim. A correct address does not establish a correct price or qualification. Maintain visible authorship, dates and a correction route where appropriate. Structured data must agree with visible facts and should not invent reviews or outcomes. Record a mistaken summary as an observation; it does not prove which private ranking signal or generation step caused the error."
+  ],
+  [
+    "headless-commerce-when-it-matters",
+    "Headless Commerce Decisions: Integration Boundaries Before a Rebuild",
+    "A separate storefront changes the boundary between presentation and commerce operations. Before replacing a working store, identify the constraint that cannot be addressed within the current platform and the extra responsibilities the team is prepared to own.",
+    [
+      "Draw the storefront and commerce boundary",
+      "Name the capability the separation would enable",
+      "Check whether the constraint warrants a separate frontend",
+      "Keep simpler options in the comparison",
+      "Plan migration as a sequence of recoverable releases",
+      "Choose using an explicit operating requirement"
+    ],
+    "Trace price and inventory authority across the boundary",
+    "The storefront may display a cached observation, but the commerce backend must remain authoritative when an order is accepted. Define how variant selection, stock reservations, tax or shipping calculations and payment confirmation cross that boundary. Test an expired cart and an unavailable product, not only a normal purchase. A separate frontend introduces maintenance and integration work; it is not automatically faster or more scalable for every store."
+  ],
+  [
+    "hindi-marathi-website-mumbai-business",
+    "Planning Hindi and Marathi Pages: Translation, URLs and Maintenance",
+    "Adding a language creates another maintained version of the information, not just another set of visible labels. Decide which visitors need it and who can review and update the translated content when services, hours or commercial terms change.",
+    [
+      "Identify the task a local-language version should support",
+      "Choose the audience before translating the whole archive",
+      "Select a translation and publication workflow",
+      "Review language quality and layout using real content",
+      "Pilot a maintained subset before expanding"
+    ],
+    "Keep translations paired with the same factual source",
+    "Use stable language URLs and an explicit relationship between corresponding pages. A translated page should not silently keep an old price after the original changes. Review font rendering, line breaks and form errors with a fluent reader on a narrow screen. Automatic translation can assist a workflow, but its output still needs review where accuracy matters. Do not publish indexable language copies that contain only translated navigation around an unchanged or empty body."
+  ],
+  [
+    "how-long-does-it-take-to-build-a-website",
+    "Website Scheduling Around Decisions, Content and Integrations",
+    "A calendar estimate is meaningful only when the dependencies are visible. Record which decisions, source materials and account access must be ready before each stage, then identify the work that can proceed independently.",
+    [
+      "Schedule by accepted deliverables",
+      "Identify dependencies that can stop the next stage",
+      "Reduce waiting with explicit review ownership",
+      "Treat commerce and application work as separate planning cases"
+    ],
+    "Use a dependency register rather than an unexplained deadline",
+    "For each integration, record the account owner, access needed, approval step and acceptance check. A developer may finish a form while a domain or provider account remains unavailable. State that distinction in progress updates instead of marking the whole feature complete. Review a realistic sample of content early; a layout approved with placeholder material may require further work when the real catalog or long legal text arrives."
+  ],
+  [
+    "how-to-get-more-google-reviews-for-your-business",
+    "Customer Review Requests: Timing, Permissions and Responsible Replies",
+    "A review process should reflect real customer interactions and the platform's current rules. Give staff a consistent way to request feedback without inventing endorsements, offering unsupported incentives or exposing private details in public replies.",
+    [
+      "State what review evidence actually shows",
+      "Remove practical friction from the request",
+      "Choose an appropriate point in the customer journey",
+      "Make the request understandable and optional",
+      "Check restrictions before adding an incentive",
+      "Respond without disclosing a private case",
+      "Assign ownership for the routine"
+    ],
+    "Keep the review link separate from private customer context",
+    "Use the business's verified review destination and a neutral message. Do not put a patient's condition, an account balance or a private order dispute into a public reply. Record permission for any testimonial reused on the website and preserve the distinction between a star rating and written review text. Check the platform's current policies before automating requests, since a workflow can be technically functional while its solicitation method is inappropriate."
+  ],
+  [
+    "instagram-reach-drop-2026-why-you-need-a-website",
+    "Social Discovery and Owned Enquiries: Diagnose the Handoff",
+    "A decline in visible social engagement does not establish why an algorithm changed or how much demand a business lost. Review the actual path from a post to an enquiry before commissioning another channel or rewriting a website.",
+    [
+      "Separate observed reach from an assumed algorithm cause",
+      "Identify the business action affected",
+      "Inspect the destination and the handoff",
+      "Give each channel an explicit job"
+    ],
+    "Carry a product reference without carrying private data",
+    "A social link can point to a stable service or product page that preserves useful context. The website should explain the offering and offer an appropriate next action before asking for a long brief. Track accepted enquiries separately from link clicks, and acknowledge uncertainty when a customer returns through another channel. Do not use an unverified industry statistic or an assumed platform update as proof that a particular business needs a rebuild."
+  ],
+  [
+    "landing-page-cost-for-google-meta-ads",
+    "Landing Page Scope: Offer, Form Recovery and Measurement",
+    "A paid campaign destination needs a clear offer and a reliable response path. Its scope includes what happens after a person submits, not just the design of the opening screen or the number of sections beneath it.",
+    [
+      "Choose the task the campaign destination owns",
+      "Price the complete offer-to-response path",
+      "Read estimates against content and integration scope",
+      "Decide whether an existing page can fulfil the task"
+    ],
+    "Accept the enquiry before reporting a conversion",
+    "Validate on the server, store the accepted request and return a stable reference. A browser click or an attempted submission should not be labelled a successful enquiry. Reuse the request identifier when a visitor retries after a network interruption. Test that the business can retrieve the request if notification delivery is delayed. Current SiteNova prices belong on the pricing page, while a proposal identifies the landing page's actual included work."
+  ],
+  [
+    "mobile-app-or-website-what-you-actually-need",
+    "Choosing a Web or App Delivery Model by the Task",
+    "The right delivery model depends on the task, required device capabilities and operating process. Start with what the user must accomplish and how frequently, then compare the cost of maintaining each route.",
+    [
+      "Write the task before naming the platform",
+      "Identify capabilities that justify an installed client",
+      "Check what an accessible web journey can already do",
+      "Budget implementation and ongoing support separately",
+      "Plan a shared backend when two clients are justified"
+    ],
+    "Keep entitlement checks independent from the interface",
+    "Whether a person uses a browser or installed application, the server should decide which account may access a record or perform a protected action. A mobile screen is not a security boundary. Define authentication, offline behaviour and recovery deliberately, and test conflicting changes if more than one client can update the same data. A shared workflow can support several interfaces without granting either one authority to set its own payment or access status."
+  ],
+  [
+    "should-your-mumbai-business-list-on-ondc-in-2026",
+    "Evaluating an ONDC Channel Alongside Your Own Store",
+    "Before adding a commerce channel, compare the actual participant agreement, charges, fulfilment duties and support route offered to the business. A network-level description is not a substitute for the terms of the provider through which a merchant joins.",
+    [
+      "Identify the participant and service being evaluated",
+      "Compare current fee components rather than a headline percentage",
+      "Check fit against catalog and fulfilment capacity",
+      "Review support and exception handling",
+      "Keep the merchant's website role explicit",
+      "Pilot a bounded catalog before expanding"
+    ],
+    "Compare a complete order exception",
+    "Ask how the selected participant handles a missing item, a cancellation, a delayed settlement and a customer support request. Verify current commercial terms directly; a broad article cannot establish one universal commission for every arrangement. Keep catalog identifiers consistent across channels and define which system owns stock. A new channel should not cause two systems to sell the same last unit without a reconciliation process."
+  ],
+  [
+    "website-analytics-numbers-to-track",
+    "Website Measurement: From Sessions to Accepted Enquiries",
+    "A dashboard is useful when each event has a defined meaning. Start with the customer task and distinguish visits, contact clicks, stored requests and completed business outcomes before choosing which totals to report.",
+    [
+      "Locate discovery using comparable time windows",
+      "Define the accepted outcome and its denominator",
+      "Interpret short visits against the page task",
+      "Inspect device differences without assuming the cause",
+      "Trace entrances and exits through the journey",
+      "Remove metrics that cannot support a decision"
+    ],
+    "Reconcile one test enquiry end to end",
+    "Submit synthetic details, find the stored request, inspect the notification and check which analytics events were emitted. A refresh should not create another successful conversion for the same accepted request. Keep private contact details and narrative text out of event parameters. Where tracking is blocked or attribution is uncertain, describe the missing observation rather than fill it with an estimated source presented as fact."
+  ],
+  [
+    "website-maintenance-cost-after-launch",
+    "Website Maintenance Agreements: Ownership and Restore Readiness",
+    "A maintenance arrangement should describe who performs specific operating tasks and how a failure is handled. A monthly fee alone does not establish that backups can be restored, dependencies are reviewed or content corrections reach production.",
+    [
+      "Identify the operating work after handover",
+      "Separate monitoring, changes and recovery",
+      "Compare maintenance estimates against explicit responsibilities",
+      "Recognise the effect of unowned tasks",
+      "Agree the access and escalation arrangement"
+    ],
+    "Ask for a restore rehearsal",
+    "A backup is useful only when the business can recover the relevant application, data and configuration. Rehearse restoration in an isolated environment using an appropriate snapshot and record what remains manual. Keep account ownership and credential storage under the business's agreed control. Distinguish routine maintenance, a defect and a newly requested feature in the agreement so a support request does not become an unexplained commercial dispute."
+  ],
+  [
+    "website-security-basics-small-business",
+    "Practical Website Security: Accounts, Access and Recovery",
+    "A small business can begin a security review by identifying what the website stores, who can change it and how service is restored after a failure. A padlock or a familiar platform name does not answer those questions.",
+    [
+      "Inventory the information and operations that need protection",
+      "Use transport security without mistaking it for authorisation",
+      "Test the recovery path as well as the backup job",
+      "Review dependency changes and unsupported components",
+      "Assign account access to real responsibilities",
+      "Choose observable signals and an escalation route",
+      "Budget ownership rather than an implied guarantee"
+    ],
+    "Test with two ordinary accounts",
+    "For any private feature, verify that one account cannot read another customer's record by changing an identifier. Hiding an admin link does not enforce that boundary. Review logs and error monitoring for accidental secrets or personal data. Keep public uploads separate from private documents and validate access on the server. These checks do not prove complete security, but they can reveal specific failures that a visual review of the login page will miss."
+  ],
+  [
+    "what-happens-if-you-dont-update-your-website",
+    "Website Change Backlogs: Triage Risk Before a Rebuild",
+    "An update backlog can contain very different work: inaccurate content, a broken integration, an unsupported dependency or a new business requirement. Triage the actual items before treating every issue as a reason to replace the site.",
+    [
+      "Classify the backlog by impact and ownership",
+      "Check unsupported components against actual exposure",
+      "Investigate discovery changes using evidence",
+      "Reproduce the customer-visible failure",
+      "Estimate a bounded repair and a verification step"
+    ],
+    "Give each correction an acceptance check",
+    "Record the symptom, relevant evidence, proposed change and expected behaviour after repair. Recheck the same task in a fresh session, including errors and recovery where appropriate. A new build can succeed while a notification destination or account permission remains wrong. Keep a rollback route for meaningful releases, and distinguish an unmeasured risk from a confirmed failure when discussing priorities with the business."
+  ],
+  [
+    "what-happens-if-you-forget-to-renew-your-domain",
+    "Domain and Hosting Renewal: Ownership, Expiry and Recovery",
+    "Domain registration, DNS and hosting can be managed through different accounts. Identify the actual owner and recovery contact for each before an expiry interrupts the website or email. A renewal reminder sent to an abandoned mailbox is not a reliable operating process.",
+    [
+      "Identify the accounts and reminder destinations",
+      "Check the registrar's actual expiry process",
+      "Treat hosting and DNS continuity separately",
+      "Inspect dependent services before changing settings",
+      "Assign reminders, access and recovery ownership"
+    ],
+    "Keep a verified renewal inventory",
+    "Record the provider, account owner, renewal date and escalation route without putting credentials in a shared spreadsheet. Check the registrar's current recovery and redemption terms; timing and charges vary and should not be inferred from a generic article. Before a DNS change, inventory email and other records so recovering the website does not accidentally interrupt another service. Rehearse access recovery while the domain is still under control."
+  ],
+  [
+    "why-web-design-quotes-vary-so-much-mumbai",
+    "Comparing Website Quotes by Deliverables and Risk",
+    "A large price difference is a reason to compare scope, not proof that either supplier is dishonest. Ask both parties to describe the resulting behaviour, source responsibilities and exception handling using the same business brief.",
+    [
+      "Translate each quote into the same set of tasks",
+      "Identify work and responsibilities omitted from the estimate",
+      "Understand the support and staffing assumptions",
+      "Use one comparison sheet for both suppliers",
+      "Choose the smaller scope when its limits are acceptable"
+    ],
+    "Compare the treatment of a failed submission",
+    "Ask whether the form merely attempts an email or stores a request, whether the visitor can retry safely and who investigates delivery failure. Both proposals may list contact form while including different work. Do the same for content preparation, redirects, private access and handover. Current packages are only a starting reference; the agreed deliverables and ongoing responsibilities determine whether the estimate answers the actual brief."
+  ],
+  [
+    "wordpress-vs-custom-website-mumbai-business",
+    "WordPress and Custom Builds: Choose the Editing and Operating Model",
+    "Begin the platform choice with who will publish content, which workflows must be supported and what the team can maintain. Either approach can fail when responsibilities are unclear, and neither guarantees a ranking or performance score on its own.",
+    [
+      "Compare responsibility boundaries rather than labels",
+      "Evaluate an editor-led publishing requirement",
+      "Identify genuinely custom workflow constraints",
+      "Budget delivery, integrations and maintenance",
+      "Decide against a sample of the real content"
+    ],
+    "Prototype the hard content change",
+    "Ask the intended editor to update a representative page, add a long record and withdraw an item in the proposed system. Check the public result and the route for recovering an error. For plugins or custom integrations, identify who reviews updates and compatibility. A platform comparison should describe the actual implementation and team, rather than use one poor example as proof that every site built on that platform will behave the same way."
+  ]
+,
+[
+  "google-business-profile-vs-website-do-you-need-both",
+  "Business Profile and Website: Give Each Customer Task a Home",
+  "A profile can answer a quick local question while the website explains a service in more depth. Assign each part of the journey a useful job instead of duplicating the same promotional paragraph across both destinations.",
+  [
+    "Use the profile for accurate local facts",
+    "Use the website for the service decision",
+    "Connect the two without inventing extra locations",
+    "Identify the limits of a profile-only approach"
+  ],
+  "Check one branch-specific question",
+  "For a worked example, compare how a visitor finds today's session hours and how they understand what a consultation includes. The profile and website should agree on the underlying facts, while the website may provide the fuller explanation. A website is not itself a guarantee of local ranking, and profile ownership issues need the provider's account process. Test the destination links and verify that a request reaches the intended branch rather than infer success from a contact click."
+]
+]

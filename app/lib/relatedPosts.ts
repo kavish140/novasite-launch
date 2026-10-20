@@ -20,6 +20,23 @@ export interface PostSummary {
   published_at: string;
   tags: string[];
   view_count: number;
+  reading_time_minutes?: number;
+}
+
+/** Recover useful topic signals for legacy rows with empty or generic tags. */
+export function editorialTopics(post: { title: string; slug: string; tags?: string[] }): string[] {
+  const topics = new Set((post.tags ?? []).map((tag) => tag.toLowerCase().trim())
+    .filter((tag) => !/^(web design|website|mumbai|sitenova|business)$/.test(tag)));
+  const text = `${post.title} ${post.slug}`.toLowerCase();
+  if (/architect|interior|photograph|gallery|portfolio/.test(text)) { topics.add("visual portfolios"); topics.add("performance"); }
+  if (/pagespeed|performance|speed|vitals|mobile/.test(text)) topics.add("performance");
+  if (/clinic|doctor|patient|healthcare/.test(text)) { topics.add("healthcare"); topics.add("appointments"); }
+  if (/booking|salon|cater|event|wedding/.test(text)) topics.add("appointments");
+  if (/ca.firm|account|consultant|professional|lawyer/.test(text)) topics.add("professional services");
+  if (/security|privacy|document/.test(text)) topics.add("security");
+  if (/manufacturer|b2b|catalog|indiamart|wholesale/.test(text)) topics.add("b2b");
+  if (/seo|search|business.profile|google.reviews/.test(text)) topics.add("local discovery");
+  return [...topics];
 }
 
 /** Score a candidate post against the current post's tags. */
