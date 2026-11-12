@@ -1,0 +1,13 @@
+{
+  "freelancer-vs-web-design-agency-when-to-switch": [
+    ["An agency isn't automatically", "An agency proposal may offer several named contributors and documented cover, but verify that arrangement in the actual contract. Ask who performs design, development and search work, who can cover an absence, and how the business retrieves its material. A qualified solo developer may also provide an appropriate continuity plan; an agency label does not establish one."],
+    ["If your current site is cheap", "Compare the actual support gap, task failures and maintenance requirements with the cost of changing supplier. A slow or hard-to-update website warrants investigation, but this article does not measure lost leads or prove that a more expensive supplier produces a better outcome. Compare written deliverables and recurring costs using the same scope."],
+    ["This is one of the most common reasons", "If the previous supplier is unavailable, first verify business ownership and recover the relevant accounts. An incoming developer can assess the material that is accessible, but cannot promise takeover or urgent recovery before reviewing permissions, dependencies and the condition of the deployment."]
+  ],
+  "website-security-basics-small-business": [
+    ["The basics — SSL", "Use the relevant provider's current guidance to configure HTTPS, account access and supported multi-factor authentication. Get qualified help where the owner cannot verify the configuration. Incident response and sensitive recovery need an agreed process; this guide is not a complete security assessment."],
+    ["If your site gets hacked", "A recent, usable backup can help recover after an accidental deletion, failed update or compromise, but recovery time depends on its coverage, integrity and the application's dependencies. Test restoration in an appropriate isolated environment and establish what new records would be lost before replacing production data."],
+    ["\"admin123\" is still", "Use unique credentials, a password manager and supported multi-factor authentication for administrative accounts. Keep access limited to the people and services that need it, and review obsolete permissions. This article does not measure the frequency of any particular weak password among small businesses."],
+    ["Yes. Most attacks aren't", "Internet-facing services can receive automated probes as well as targeted attacks. A small business should review its actual exposures rather than assume that its size prevents attention. This guide does not establish the proportion of attacks that are automated."]
+  ]
+}

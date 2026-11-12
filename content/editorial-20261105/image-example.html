@@ -1,0 +1,9 @@
+<h2>A concrete example from SiteNova's image component</h2>
+<p>SiteNova's own <code>BlurImage</code> component accepts the image's width and height, forwards both to the image element and uses their ratio on the wrapper. This is an implementation detail visible in the project source, not a measured claim about how many milliseconds it saves. Supplying the correct dimensions gives the browser space to reserve before the image has loaded.</p>
+<pre><code>// A shortened excerpt from SiteNova's BlurImage component:
+style={width &amp;&amp; height ? { aspectRatio: `${width} / ${height}` } : undefined}
+// The nested image also receives width={width} and height={height}.
+</code></pre>
+<p>The component defaults to lazy loading, which makes its calling code important. A leading image identified as the LCP candidate should not inherit that default blindly. The relevant page can pass <code>loading="eager"</code> and, where the measurement supports it, <code>fetchPriority="high"</code>. Below-the-fold images have a different job. Inspect the actual generated HTML and request timing to confirm the caller supplies the intended values.</p>
+<p>This provides a small code-review exercise: find a page using the component, check the dimensions against the asset, then observe the layout while that asset loads slowly. Test an error response too. If the reserved ratio is wrong, the image can be cropped unexpectedly even though space was reserved. If no dimensions are supplied, this wrapper does not set its aspect ratio at all.</p>
+<p>Keep the trace and the relevant source change together when documenting a real improvement. Do not convert the presence of this component into a claim that every SiteNova page passes Core Web Vitals. For the separate historical sample and its limitations, read the <a href="/blog/2026-mumbai-website-performance-report">127-record research report</a>.</p>

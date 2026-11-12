@@ -1,0 +1,558 @@
+{
+  "checkedAt": "2026-11-05T14:46:41.627Z",
+  "originalPublishedArticles": 55,
+  "retiredPublishedRows": 18,
+  "identicalLongParagraphsAcrossArticles": 0,
+  "pages": [
+    {
+      "slug": "ai-agents-upi-payments-why-offline-businesses-need-ecommerce",
+      "title": "AI Agents on UPI: Why Offline Shops Need an E-Commerce Site | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/ai-agents-upi-payments-why-offline-businesses-need-ecommerce",
+      "action": "Prepared correction; not applied",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "why-your-website-dropped-google-inp-metric-2026",
+      "title": "Why Your Website Just Dropped on Google (Fixing the 2026 INP Metric) | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/why-your-website-dropped-google-inp-metric-2026",
+      "action": "Prepared correction; not applied",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "replace-pdf-catalogue-with-searchable-product-catalog",
+      "title": "Why 30MB PDF Catalogues Lose B2B Buyers (And What to Build Instead) | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/replace-pdf-catalogue-with-searchable-product-catalog",
+      "action": "Prepared correction; not applied",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "zero-click-searches-mumbai-local-businesses",
+      "title": "Local Search Without a Website Click: Accurate Information and Measurement | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/zero-click-searches-mumbai-local-businesses",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://support.google.com/business/answer/7091",
+        "https://developers.google.com/search/docs/appearance/ai-features",
+        "https://support.google.com/business/answer/14919056"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "mumbai-b2b-manufacturers-website-indiamart",
+      "title": "Manufacturing Websites: Capability Evidence and Technical RFQ Handling | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/mumbai-b2b-manufacturers-website-indiamart",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-redesign-seo-checklist-mumbai",
+      "title": "Website Redesign SEO Checks: URL Mapping and Migration Monitoring | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-redesign-seo-checklist-mumbai",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://developers.google.com/search/docs/crawling-indexing/site-move-with-url-changes"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "openai-agent-medicare-portal-breach",
+      "title": "The Medicare Statistics Incident: Permission Boundaries and Notification | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/openai-agent-medicare-portal-breach",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://openai.com/index/how-we-will-do-better-for-australia/"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "caterers-event-planners-mumbai-need-website-2026",
+      "title": "Event and Catering Websites: Feasibility Briefs, Menus and Date Handling | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/caterers-event-planners-mumbai-need-website-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "do-photographers-mumbai-need-website-2026",
+      "title": "Photography Website Engineering: Public Edits and Private Client Galleries | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/do-photographers-mumbai-need-website-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://web.dev/articles/optimize-cls"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "home-bakers-cloud-kitchens-mumbai-website-2026",
+      "title": "Bakery Websites: Custom Briefs, Pre-Order Capacity and Collection Slots | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/home-bakers-cloud-kitchens-mumbai-website-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://www.fssai.gov.in/"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-for-boutique-stores-mumbai-2026",
+      "title": "Boutique Storefronts: Variants, Fittings and the Last Item in Stock | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-for-boutique-stores-mumbai-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-for-wedding-planners-mumbai-2026",
+      "title": "Wedding Planner Websites: Multi-Function Briefs and Private Planning | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-for-wedding-planners-mumbai-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-for-architects-mumbai-2026",
+      "title": "Architecture Portfolio Engineering: Projects, Galleries and Commission Enquiries | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-for-architects-mumbai-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://web.dev/articles/optimize-lcp",
+        "https://developers.cloudflare.com/cache/concepts/cache-control/"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "coaching-classes-mumbai-need-website-2026",
+      "title": "Coaching Class Websites: Courses, Timetables and Parent Enquiries | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/coaching-classes-mumbai-need-website-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "instagram-reach-drop-2026-why-you-need-a-website",
+      "title": "Social Discovery and Owned Enquiries: Diagnose the Handoff | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/instagram-reach-drop-2026-why-you-need-a-website",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "do-interior-designers-mumbai-need-website-2026",
+      "title": "Interior Design Portfolios: Room Stories, Image Delivery and Fit-Out Briefs | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/do-interior-designers-mumbai-need-website-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://web.dev/articles/optimize-lcp"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "cut-cod-return-rates-mumbai-ecommerce-website",
+      "title": "COD Order Operations: Costs, Verification and Delivery Exceptions | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/cut-cod-return-rates-mumbai-ecommerce-website",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-ready-navratri-diwali-2026-mumbai",
+      "title": "Festive Website Operations: Offer Cutoffs, Capacity and Payment Recovery | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-ready-navratri-diwali-2026-mumbai",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "should-your-mumbai-business-list-on-ondc-in-2026",
+      "title": "Evaluating an ONDC Channel Alongside Your Own Store | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/should-your-mumbai-business-list-on-ondc-in-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://www.ondc.org/pages/seller-network-participants.html"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "googles-september-2026-update-local-rankings",
+      "title": "Investigating a Local Search Drop Without Assuming an Algorithm Update | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/googles-september-2026-update-local-rankings",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://status.search.google.com/"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "what-happens-if-you-forget-to-renew-your-domain",
+      "title": "Domain and Hosting Renewal: Ownership, Expiry and Recovery | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/what-happens-if-you-forget-to-renew-your-domain",
+      "action": "Prepared correction; not applied",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "headless-commerce-when-it-matters",
+      "title": "Headless Commerce Decisions: Integration Boundaries Before a Rebuild | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/headless-commerce-when-it-matters",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-security-basics-small-business",
+      "title": "Practical Website Security: Accounts, Access and Recovery | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-security-basics-small-business",
+      "action": "Prepared correction; not applied",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "how-to-get-more-google-reviews-for-your-business",
+      "title": "Customer Review Requests: Timing, Permissions and Responsible Replies | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/how-to-get-more-google-reviews-for-your-business",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://support.google.com/business/answer/3474122"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-analytics-numbers-to-track",
+      "title": "Website Measurement: From Sessions to Accepted Enquiries | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-analytics-numbers-to-track",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://support.google.com/analytics/answer/12195621"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "ai-chatbots-small-business-websites-worth-it",
+      "title": "Planning a Website Support Bot: Scope, Escalation and Operating Cost | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/ai-chatbots-small-business-websites-worth-it",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "landing-page-cost-for-google-meta-ads",
+      "title": "Landing Page Scope: Offer, Form Recovery and Measurement | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/landing-page-cost-for-google-meta-ads",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "google-business-profile-vs-website-do-you-need-both",
+      "title": "Business Profile and Website: Give Each Customer Task a Home | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/google-business-profile-vs-website-do-you-need-both",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://support.google.com/business/answer/7091"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "mobile-app-or-website-what-you-actually-need",
+      "title": "Choosing a Web or App Delivery Model by the Task | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/mobile-app-or-website-what-you-actually-need",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "ecommerce-website-cost-mumbai",
+      "title": "E-Commerce Scope Budgeting: Catalog, Checkout and Store Operations | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/ecommerce-website-cost-mumbai",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-maintenance-cost-after-launch",
+      "title": "Website Maintenance Agreements: Ownership and Restore Readiness | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-maintenance-cost-after-launch",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "what-happens-if-you-dont-update-your-website",
+      "title": "Website Change Backlogs: Triage Risk Before a Rebuild | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/what-happens-if-you-dont-update-your-website",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "do-you-need-a-website-if-you-have-whatsapp-business",
+      "title": "Website and WhatsApp Handoffs: Keep Enquiries Recoverable | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/do-you-need-a-website-if-you-have-whatsapp-business",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://business.whatsapp.com/products"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "why-web-design-quotes-vary-so-much-mumbai",
+      "title": "Comparing Website Quotes by Deliverables and Risk | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/why-web-design-quotes-vary-so-much-mumbai",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "do-gyms-fitness-studios-need-a-website-2026",
+      "title": "Gym Websites: Class Capacity, Trials and Membership Boundaries | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/do-gyms-fitness-studios-need-a-website-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "google-ai-overviews-mumbai-businesses",
+      "title": "Making Service Information Useful in Search and AI Summaries | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/google-ai-overviews-mumbai-businesses",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://developers.google.com/search/docs/appearance/ai-features"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "do-startups-need-a-website-before-an-app",
+      "title": "A Startup Validation Website: Test the Workflow Before Building the App | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/do-startups-need-a-website-before-an-app",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "freelancer-vs-web-design-agency-when-to-switch",
+      "title": "Changing Website Suppliers: Ownership, Support and Handover | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/freelancer-vs-web-design-agency-when-to-switch",
+      "action": "Prepared correction; not applied",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "do-consultants-in-mumbai-need-a-website-2026",
+      "title": "Consultant Website Design: Engagement Fit, Evidence and Lead Triage | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/do-consultants-in-mumbai-need-a-website-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://www.icai.org/"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "do-lawyers-in-mumbai-need-a-website-2026",
+      "title": "Legal Practice Websites: Approved Information and Controlled Intake | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/do-lawyers-in-mumbai-need-a-website-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://www.barcouncilofindia.org/"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "google-ads-vs-meta-ads-which-is-right-for-your-business",
+      "title": "Choosing an Ad Channel by the Customer Decision | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/google-ads-vs-meta-ads-which-is-right-for-your-business",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "does-your-restaurant-need-a-website-in-2026",
+      "title": "Restaurant Website Operations: Menus, Service Hours and Table Requests | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/does-your-restaurant-need-a-website-in-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://support.google.com/business/answer/7091"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "2026-mumbai-website-performance-report",
+      "title": "Mumbai Website Performance Research: Rechecking 127 Scored Records | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/2026-mumbai-website-performance-report",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://developer.chrome.com/docs/lighthouse/performance/performance-scoring",
+        "https://developers.google.com/search/docs/appearance/ai-features",
+        "https://developers.google.com/search/docs/appearance/core-web-vitals"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "wordpress-vs-custom-website-mumbai-business",
+      "title": "WordPress and Custom Builds: Choose the Editing and Operating Model | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/wordpress-vs-custom-website-mumbai-business",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "how-long-does-it-take-to-build-a-website",
+      "title": "Website Scheduling Around Decisions, Content and Integrations | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/how-long-does-it-take-to-build-a-website",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "what-a-website-project-looks-like-start-to-finish",
+      "title": "What a Website Project Actually Looks Like (Start to Finish) | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/what-a-website-project-looks-like-start-to-finish",
+      "action": "Prepared correction; not applied",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "5-things-every-salon-spa-website-needs",
+      "title": "Salon Website Booking Design: Services, Staff and Honest Availability | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/5-things-every-salon-spa-website-needs",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://web.dev/articles/optimize-cls"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "how-real-estate-agents-in-mumbai-can-get-leads-online",
+      "title": "Real-Estate Listing Websites: Status, Disclosure and Viewing Requests | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/how-real-estate-agents-in-mumbai-can-get-leads-online",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://maharera.maharashtra.gov.in/"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "5-things-every-ca-firm-website-must-have",
+      "title": "A CA Firm Website: Professional Review, Enquiry Routing and Document Boundaries | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/5-things-every-ca-firm-website-must-have",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://www.icai.org/"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "website-cost-mumbai-2026",
+      "title": "Budgeting a Website by Scope, Responsibility and Acceptance Checks | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/website-cost-mumbai-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "how-to-choose-web-designer-mumbai",
+      "title": "Choosing a Mumbai Web Developer: Evidence, Scope and Support | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/how-to-choose-web-designer-mumbai",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "local-seo-mumbai-businesses-guide-2026",
+      "title": "Local Discovery for Mumbai Businesses: Accurate Facts and Useful Pages | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/local-seo-mumbai-businesses-guide-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://support.google.com/business/answer/7091"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "small-business-website-mistakes-losing-customers",
+      "title": "Diagnosing a Website Enquiry Problem Before Commissioning a Redesign | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/small-business-website-mistakes-losing-customers",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "why-every-doctor-in-mumbai-needs-a-website-in-2026",
+      "title": "Clinic Website Architecture: Patient Information Before Appointment Requests | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/why-every-doctor-in-mumbai-needs-a-website-in-2026",
+      "action": "Retain URL and article; no new merge proposed",
+      "externalReferences": [
+        "https://schema.org/MedicalClinic",
+        "https://web.dev/articles/optimize-lcp"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    },
+    {
+      "slug": "pagespeed-score-95-mumbai-case-study",
+      "title": "A Repeatable Website Performance Investigation: From Trace to Retest | SiteNova Blog",
+      "status": 200,
+      "canonical": "https://sitenova.dev/blog/pagespeed-score-95-mumbai-case-study",
+      "action": "Prepared correction; not applied",
+      "externalReferences": [
+        "https://web.dev/articles/optimize-lcp",
+        "https://web.dev/articles/optimize-cls"
+      ],
+      "scope": "HTTP/canonical/content-structure and claim-risk review; not a fresh independent verification of every assertion"
+    }
+  ]
+}
