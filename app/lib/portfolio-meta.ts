@@ -29,16 +29,6 @@ export const showcaseProjects: PortfolioProjectMeta[] = [
     isSpecialHighlight: true, // We will use this to highlight it in the UI
   },
   {
-    slug: "ai-smartkit",
-    title: "AI SmartKit",
-    description:
-      "A cutting-edge AI tools platform with a clean interface, intuitive navigation, and high-performance architecture.",
-    image: aiSmartkitImg,
-    liveUrl: "https://aismartkit.tech",
-    localFocus: "Global-ready SaaS presentation for international product users.",
-    useIframePreview: true,
-  },
-  {
     slug: "business-showcase",
     title: "Business Showcase",
     description:

@@ -51,7 +51,12 @@ const isGtagReady = (): boolean =>
 export const trackEvent = (event: ConversionEvent, params?: EventParams): void => {
   if (typeof window === "undefined") return;
   window.dataLayer = window.dataLayer || [];
-  window.gtag = window.gtag || function (..._args: unknown[]) { window.dataLayer!.push(arguments); };
+  window.gtag = window.gtag || function (..._args: unknown[]) {
+    // Google documents an IArguments command queue, not an array of rest args.
+    // https://developers.google.com/tag-platform/tag-manager/datalayer
+    // eslint-disable-next-line prefer-rest-params -- Preserve the documented gtag queue format.
+    window.dataLayer!.push(arguments);
+  };
   window.gtag("event", event, params);
 };
 

@@ -10,7 +10,7 @@ import { PHONE_TEL_LINK, PHONE_NUMBER } from "@/lib/constants";
 const ThankYou = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state as { submissionId?: string; name?: string; projectType?: string; email?: string } | null;
+  const state = location.state as { submissionId?: string; name?: string; projectType?: string; email?: string; preview?: boolean } | null;
 
   // Guard: block direct URL access to prevent phantom conversions.
   // /thank-you is only valid when reached via a form submission (state is populated by React Router).
@@ -42,12 +42,13 @@ const ThankYou = () => {
   const whatsappUrl = `https://wa.me/919326060621?text=${whatsappMessage}`;
 
   return (
-    <main className="min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-16 relative overflow-hidden flex flex-col justify-center">
+    <main className="studio-page studio-thank-you min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-16 relative overflow-hidden flex flex-col justify-center">
       {/* Background glow orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-primary/10 blur-[150px] animate-pulse-glow pointer-events-none -z-10" />
       <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[120px] pointer-events-none -z-10" />
 
       <div className="mx-auto w-full max-w-3xl z-10 flex-1 flex flex-col justify-center">
+        {state.preview && <p role="status" className="mb-4 rounded-xl border border-primary/30 bg-primary/10 p-4 text-center text-sm">Preview only — this simulates a successful submission. No inquiry was sent and no follow-up will be made.</p>}
         <div className="glass-card p-6 sm:p-10 rounded-3xl border border-border/60 bg-card/40 shadow-2xl backdrop-blur-xl relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           
@@ -74,7 +75,7 @@ const ThankYou = () => {
                 {projectType === "Free Audit" ? " Our team will review your site and get back" : " Kavish will respond"} to <span className="text-foreground font-semibold">{email}</span>.
               </p>
               <p className="text-muted-foreground text-xs">
-                We typically respond within 24 hours. For the fastest booking, choose an option below:
+                We typically respond within 24 hours. We’ll confirm the scope, price and schedule before asking for an advance. You can book a call below if you’d like to talk sooner.
               </p>
             </div>
 

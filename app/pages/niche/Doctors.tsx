@@ -1,7 +1,7 @@
 import {usePackagePricing} from "@/lib/package-pricing";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { m as motion } from "framer-motion";
+import { m as motion, type HTMLMotionProps } from "framer-motion";
 import {
   Calendar,
   ClipboardList,
@@ -35,19 +35,19 @@ const fadeUp = {
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
   transition: { duration: 0.5, ease: "easeOut" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const staggerContainer = {
   initial: {},
   whileInView: { transition: { staggerChildren: 0.1 } },
   viewport: { once: true, margin: "-60px" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const staggerChild = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   transition: { duration: 0.45, ease: "easeOut" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const features = [
   {
@@ -195,13 +195,13 @@ export default function Doctors() {
             ]
           }
         ]} />
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="studio-page studio-niche-page studio-doctors min-h-screen bg-background text-foreground">
         <Navbar />
 
       {/* ══════════════════════════════════════════════
           HERO SECTION
       ══════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden pt-32 pb-20 lg:pb-28">
+      <section className="studio-service-hero relative overflow-hidden pt-32 pb-20 lg:pb-28">
         {/* Background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(45,212,191,0.08),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(120,119,198,0.06),transparent_50%)]" />

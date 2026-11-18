@@ -175,11 +175,11 @@ export default function Finance() {
             ]
           }
         ]} />
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="studio-page studio-niche-page studio-finance min-h-screen bg-background text-foreground">
         <Navbar />
 
       {/* ───────────────── Hero Section ───────────────── */}
-      <section className="relative overflow-hidden pt-32 pb-20">
+      <section className="studio-service-hero relative overflow-hidden pt-32 pb-20">
         {/* Background gradients */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(56,89,160,0.12),transparent_50%)]" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[300px] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
@@ -369,11 +369,11 @@ export default function Finance() {
             </h2>
           </motion.div>
 
-          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] items-center">
+          <div className="studio-finance-case-study-grid grid gap-10 lg:grid-cols-[1.2fr_0.8fr] items-center">
             {/* Screenshot */}
             <motion.div
-              initial={{ opacity: 0, x: -32 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7 }}
               className="relative group"
@@ -396,8 +396,8 @@ export default function Finance() {
 
             {/* Testimonial & Details */}
             <motion.div
-              initial={{ opacity: 0, x: 32 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.15 }}
               className="space-y-6"

@@ -34,7 +34,7 @@ export default function Project(){
   }catch(e){release();if(belongs()){setError(e instanceof Error?e.message:"Unable to open checkout");setSummary(previous=>previous?{...previous,canPay:false}:previous);}}
  }
  const label=(stage:string)=>PROJECT_STAGES[stage as keyof typeof PROJECT_STAGES]??stage;
- return <main className="project-portal min-h-screen bg-[#0c1221] px-4 py-10 text-slate-100 sm:py-16"><div className="mx-auto max-w-3xl">
+ return <main className="studio-page studio-project project-portal min-h-screen bg-[#0c1221] px-4 py-10 text-slate-100 sm:py-16"><div className="mx-auto max-w-3xl">
   <header className="mb-8 flex items-center justify-between gap-4"><a href="/" className="flex items-center gap-3 font-heading text-xl font-bold"><Zap className="text-cyan-400" aria-hidden="true"/>{SITE_NAME}</a><span className="flex items-center gap-2 text-xs text-slate-400"><LockKeyhole className="h-4 w-4" aria-hidden="true"/>Private project</span></header>
   {error&&<div role="alert" aria-busy={busy&&checking.current} className="mb-5 rounded-xl border border-red-400/40 bg-red-950/30 p-4 text-sm text-red-200"><p>{error}</p>{token.current&&<button disabled={busy} onClick={()=>void refresh(true)} className="mt-3 rounded-lg border border-red-400/40 px-4 py-2 disabled:opacity-50">{busy&&checking.current?"Reloading…":"Reload project"}</button>}</div>}{notice&&<p role="status" className="mb-5 rounded-xl border border-slate-700 p-4 text-sm">{notice}</p>}
   {summary?<>

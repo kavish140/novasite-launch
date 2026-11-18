@@ -68,6 +68,13 @@ export const HtmlInput = Extension.create({
             if (tag === "blockquote") return chain.splitBlock().lift("blockquote").run();
             if (tag === "li" || tag === "span" || tag === "div") return chain.run();
             if (tag === "pre") return chain.exitCode().run();
+            // Splitting mid-heading preserves the node type when text follows
+            // the caret. An HTML closing heading must start a paragraph instead.
+            if (/^h[1-6]$/.test(tag)) return chain.splitBlock().command(({tr}) => {
+              const {$from: next} = tr.selection;
+              if (next.parent.type.name === "heading") tr.setNodeMarkup(next.before(), editor.schema.nodes.paragraph);
+              return true;
+            }).unsetAllMarks().run();
             return chain.splitBlock().unsetAllMarks().run();
           }
           if (/^h[1-6]$/.test(tag)) return chain.setHeading({ level: Number(tag[1]) as 1 | 2 | 3 | 4 | 5 | 6 }).run();

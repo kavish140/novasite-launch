@@ -1,4 +1,4 @@
-import { m as motion } from "framer-motion";
+import { m as motion, type HTMLMotionProps, type Variants } from "framer-motion";
 import { ExternalLink, ArrowRight, type LucideIcon } from "lucide-react";
 import { Link } from "react-router";
 import Navbar from "@/components/Navbar";
@@ -8,19 +8,19 @@ import IframePreview from "@/components/IframePreview";
 import type { ClientReview } from "@/lib/client-reviews";
 import { WHATSAPP_URL } from "@/lib/constants";
 
-const fadeUp = {
+const fadeUp: HTMLMotionProps<"div"> = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
   transition: { duration: 0.5, ease: "easeOut" },
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.09 } },
 };
 
-const staggerChild = {
+const staggerChild: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
@@ -62,7 +62,7 @@ export default function PortfolioPageTemplate({
 }: PortfolioPageTemplateProps) {
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-portfolio-page-template min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
 
         <main id="main-content" className="flex-1">

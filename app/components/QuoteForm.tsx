@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { quoteSchema } from "@/lib/quote";
-import { submitQuote, captureAttribution } from "@/lib/quote-client";
+import { quoteBudgetPrefill } from "@/lib/quote-prefill";
+import { submitQuote, captureAttribution, isPreviewSubmission } from "@/lib/quote-client";
 
 const formSchema = quoteSchema.omit({
   submissionId: true,
@@ -29,21 +30,34 @@ export default function QuoteForm({
 }: {
   source?: "website" | "paid_ad";
 }) {
-  const {starterPrice,businessPrice}=usePackagePricing();
+  const {starterPrice,businessPrice,packages,available}=usePackagePricing();
   const choices=getchoices(starterPrice,businessPrice);
 
   const location = useLocation();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const previousStep = useRef(step);
+  useEffect(() => {
+    if(previousStep.current === step) return;
+    previousStep.current = step;
+    if(!window.matchMedia("(max-width: 640px)").matches) return;
+    const form = document.getElementById("website-quote-form");
+    const heading = form?.querySelector("h2");
+    heading?.setAttribute("tabindex","-1");
+    heading?.focus({preventScroll:true});
+    form?.scrollIntoView({block:"start",behavior:"instant"});
+  }, [step]);
   const [error, setError] = useState("");
   const submission = useRef<{ body: string; id: string } | undefined>(undefined);
+  const prefilledLocation = useRef<string | null>(null);
   const {
     register,
     handleSubmit,
     trigger,
+    resetField,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,11 +76,13 @@ export default function QuoteForm({
       budget?: string;
       timeline?: string;
       estimateMin?: number;
+      estimateTotal?: number;
       estimateMax?: number;
       addOns?: string[];
       packageName?: string;
     } | null;
-    if (!state) return;
+    if (!state || prefilledLocation.current === location.key) return;
+    prefilledLocation.current = location.key;
     const aliases: Record<string, FormValues["projectType"]> = {
       "Large Website": "Business Website",
       "E-Commerce Store": "E-commerce Store",
@@ -80,6 +96,8 @@ export default function QuoteForm({
       setStep(2);
     }
     if (state.packageName) setValue("packageName", state.packageName);
+    const budget = quoteBudgetPrefill(state, {packages, available});
+    if (budget) setValue("budget", budget);
     if (state.requirements)
       setValue(
         "requirements",
@@ -101,7 +119,7 @@ export default function QuoteForm({
         "requirements",
         `Calculator estimate: ₹${state.estimateMin}–₹${state.estimateMax ?? state.estimateMin}. Selected add-ons: ${state.addOns?.join(", ") || "None"}.`,
       );
-  }, [location.state, setValue]);
+  }, [location.key, location.state, packages, available, setValue]);
   const onSubmit = async (values: FormValues) => {
     setError("");
     const payload = { ...values, source, attribution: captureAttribution() };
@@ -116,6 +134,7 @@ export default function QuoteForm({
       navigate(source === "paid_ad" ? "/lp/thank-you-quote" : "/thank-you", {
         state: {
           submissionId,
+          preview: isPreviewSubmission(submissionId),
           name: values.name,
           email: values.email,
           projectType: values.projectType,
@@ -199,7 +218,14 @@ export default function QuoteForm({
                 type="button"
                 key={type}
                 onClick={() => {
+                  const customPackage = watch("packageName") === "Premium" ? "Premium" : undefined;
+                  if (!customPackage && watch("projectType") !== type) setValue("packageName", undefined);
                   setValue("projectType", type);
+                  if (!dirtyFields.budget) {
+                    const budget = quoteBudgetPrefill({projectType: type, packageName: customPackage}, {packages, available});
+                    if (budget) setValue("budget", budget);
+                    else resetField("budget");
+                  }
                   setStep(2);
                 }}
                 className="text-left border border-border hover:border-primary rounded-xl p-4"
@@ -238,6 +264,7 @@ export default function QuoteForm({
                 <option key={b}>{b}</option>
               ))}
             </select>
+            <p className="mt-2 text-xs text-muted-foreground">You can change this to match your budget.</p>
             {errors.budget && (
               <p role="alert" className="text-sm text-red-500 mt-1">
                 {errors.budget.message}

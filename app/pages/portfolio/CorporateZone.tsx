@@ -94,7 +94,6 @@ export default function CorporateZone() {
         industry: "B2B Wholesale · Stationery & Office Supplies",
         location: "Lower Parel, Mumbai",
       }}
-      projectImage=""
     />
   );
 }

@@ -114,6 +114,7 @@ export default function WebsiteCostCalculator() {
 
   const quoteState = {
     projectType: tier.label,          // normalised by Quote's typeMap
+    estimateTotal: grandTotal,
     estimateMin: grandMin,            // number → Quote maps to budgetOption bracket
     estimateMax: grandMax,
     timeline: timeline.label,         // normalised by Quote's timelineMap
@@ -191,11 +192,11 @@ export default function WebsiteCostCalculator() {
         ]} />
 
 
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="studio-page studio-website-cost-calculator min-h-screen bg-background text-foreground">
         <Navbar />
 
         {/* Hero */}
-        <section className="relative overflow-hidden pt-32 pb-12">
+        <section className="studio-service-hero relative overflow-hidden pt-32 pb-12">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(120,119,198,0.08),transparent_60%)]" />
           <div className="mx-auto max-w-7xl px-6 relative z-10 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-6">
@@ -440,6 +441,7 @@ export default function WebsiteCostCalculator() {
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
                 to="/quote"
+                state={available?quoteState:{projectType:tier.label}}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 Start My Quote <ArrowRight className="h-4 w-4" />

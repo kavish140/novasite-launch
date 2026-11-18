@@ -94,7 +94,6 @@ export default function DrDiptiGanatra() {
         industry: "Healthcare · Homeopathy",
         location: "Mulund West, Mumbai",
       }}
-      projectImage=""
     />
   );
 }

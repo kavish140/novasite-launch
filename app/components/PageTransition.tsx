@@ -1,4 +1,4 @@
-import { m as motion } from "framer-motion";
+import { m as motion, type Variants } from "framer-motion";
 import { ReactNode } from "react";
 
 interface PageTransitionProps {
@@ -6,7 +6,7 @@ interface PageTransitionProps {
   className?: string;
 }
 
-const variants = {
+const variants: Variants = {
   initial: {
     opacity: 1,
     y: 0,

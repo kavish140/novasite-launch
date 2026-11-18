@@ -11,7 +11,7 @@ export default function Receipt(){
  const refunded=receipt?.status==="refunded",paid=receipt?.status==="paid";
  const statusLabel=refunded?"Refund recorded":paid?"Payment received":"Payment status";
  const service=receipt?(serviceNames[receipt.package]??receipt.package):"";
- return <main className="receipt-page min-h-screen bg-[#0c1221] px-4 py-10 text-slate-100 sm:px-6 sm:py-16">
+ return <main className="studio-page studio-receipt receipt-page min-h-screen bg-[#0c1221] px-4 py-10 text-slate-100 sm:px-6 sm:py-16">
   <div className="mx-auto max-w-xl">
    <header className="mb-8 flex items-center justify-between gap-4">
     <a href="/" className="flex items-center gap-3 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300" aria-label={`${SITE_NAME} home`}><span className="rounded-xl bg-gradient-to-br from-blue-500 to-teal-400 p-2.5"><Zap className="h-5 w-5" aria-hidden="true"/></span><span className="font-heading text-xl font-bold tracking-tight">{SITE_NAME}</span></a>

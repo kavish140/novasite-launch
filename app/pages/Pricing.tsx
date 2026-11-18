@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
+import {usePackagePricing} from "@/lib/package-pricing";
 
 const pricingTiers = [
   {
@@ -21,7 +22,7 @@ const pricingTiers = [
       "Contact Form Integration",
       "1 Revision Included",
     ],
-    ctaText: "Get Started",
+    ctaText: "Discuss this package",
     popular: false,
   },
   {
@@ -37,7 +38,7 @@ const pricingTiers = [
       "Priority Email Support",
       "3 Revisions Included",
     ],
-    ctaText: "Choose Business",
+    ctaText: "Discuss this package",
     popular: true,
   },
   {
@@ -60,6 +61,7 @@ const pricingTiers = [
 ];
 
 const Pricing = () => {
+  const {checkoutOrigin}=usePackagePricing();
   const { paymentsEnabled, packages,pricingAvailable=true } = useLoaderData<{ paymentsEnabled: boolean; packages: PackageCatalog;pricingAvailable?:boolean }>();
 
   return (
@@ -92,7 +94,7 @@ const Pricing = () => {
             ]
           }
         }} />
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-pricing min-h-screen bg-background text-foreground flex flex-col">
         <header>
           <Navbar />
         </header>
@@ -102,40 +104,41 @@ const Pricing = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-center mb-16"
+              className="studio-pricing-intro mb-16"
             >
             <span className="text-sm font-medium text-primary uppercase tracking-widest">
-              Simple Pricing
+              The right starting point
             </span>
             <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mt-3 mb-6 tracking-tight">
-              Honest pricing for <span className="gradient-text">every business</span>
+              A clear investment.<br /><span className="gradient-text">A better website.</span>
             </h1>
             <p className="max-w-2xl mx-auto text-muted-foreground text-lg leading-relaxed">
-              No hidden fees, no surprises. Choose the plan that fits your goals, and let’s build something incredible together.
+              Start with the package that fits your business. We agree the scope, final price, and delivery schedule before the build begins.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="studio-pricing-grid grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {pricingTiers.map((tier, i) => (
               <motion.div
                 key={tier.name}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.15 }}
-                className={`relative flex flex-col glass-card p-8 rounded-3xl interactive-card ${
-                  tier.popular ? "border-primary/50 shadow-[0_0_30px_-15px_hsl(var(--primary))]" : ""
+                className={`studio-price-card relative flex flex-col glass-card p-8 rounded-3xl ${
+                  tier.popular ? "studio-price-card-featured" : ""
                 }`}
               >
                 {tier.popular && (
-                  <div className="absolute -top-4 left-0 right-0 flex justify-center">
-                    <span className="bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider py-1.5 px-4 rounded-full shadow-lg">
-                      Most Popular
+                  <div className="studio-price-recommendation">
+                    <span>
+                      Recommended for growing businesses
                     </span>
                   </div>
                 )}
                 
                 <div className="mb-6">
-                  <h3 className="font-heading text-2xl font-bold mb-2">{tier.name}</h3>
+                  <p className="studio-price-number">0{i + 1} / {tier.name === "Premium" ? "Made to measure" : "Website package"}</p>
+                  <h2 className="font-heading text-2xl font-bold mb-2">{tier.name}</h2>
                   <p className="text-muted-foreground text-sm min-h-[40px]">{tier.description}</p>
                 </div>
                 
@@ -173,8 +176,8 @@ const Pricing = () => {
                   <ArrowRight size={16} />
                 </Link>
                 {paymentsEnabled && tier.name !== "Premium" && (
-                  <Link reloadDocument to={`/pay?package=${tier.name.toLowerCase()}`} className="mt-4 text-center text-sm font-semibold text-primary underline underline-offset-4">
-                    Pay {formatINR(packages[tier.name.toLowerCase() as PaymentPackage].advance)} advance
+                  <Link reloadDocument to={`${checkoutOrigin}/pay?package=${tier.name.toLowerCase()}`} className="mt-4 text-center text-sm font-semibold text-primary underline underline-offset-4">
+                    Ready to proceed? Pay {formatINR(packages[tier.name.toLowerCase() as PaymentPackage].advance)} advance
                   </Link>
                 )}
               </motion.div>
@@ -182,6 +185,7 @@ const Pricing = () => {
           </div>
 
           <div className="text-center mt-8"><BookingCTA source="pricing" /></div>
+          <section className="mx-auto mt-8 max-w-4xl rounded-xl border border-border p-5 text-sm" aria-labelledby="payment-plan"><h2 id="payment-plan" className="font-semibold">How payment fits into your project</h2><p className="mt-2 text-muted-foreground">Discuss your needs → agree the proposal and scope → pay your advance → follow project progress → pay the remaining balance. Your advance counts toward the agreed total. Payment and project links let you check status and recover an interrupted checkout.</p><div className="mt-4 flex flex-wrap gap-5"><Link to="/payments" className="underline">Payment options & recovery</Link><Link to="/free-audit" className="underline">Have a website already? Get a free audit</Link></div></section>
           {/* FAQ Teaser */}
           <motion.div 
             initial={{ opacity: 0 }}

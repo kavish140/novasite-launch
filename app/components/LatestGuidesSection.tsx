@@ -1,4 +1,6 @@
+import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router";
+import "./studio-sections.css";
 
 const guides = [
   ["2026-mumbai-website-performance-report", "Mumbai business website performance report", "Read the published audit methodology, findings and performance recommendations."],
@@ -8,15 +10,8 @@ const guides = [
 ];
 
 export default function LatestGuidesSection() {
-  return <section className="section-padding border-y border-border/40" aria-labelledby="latest-guides">
-    <div className="mx-auto max-w-7xl">
-      <h2 id="latest-guides" className="font-heading text-3xl font-bold">Latest Research &amp; Guides</h2>
-      <p className="mt-3 text-muted-foreground">Practical reading from the SiteNova editorial archive.</p>
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {guides.map(([slug, title, description]) => <Link key={slug} to={`/blog/${slug}`} className="rounded-2xl border border-border bg-card p-6 hover:border-primary/50">
-          <h3 className="font-heading font-semibold">{title}</h3><p className="mt-3 text-sm text-muted-foreground">{description}</p>
-        </Link>)}
-      </div>
-    </div>
-  </section>;
+  return <section className="sn-section sn-guides" aria-labelledby="latest-guides"><div className="sn-container">
+    <div className="sn-section-head"><div><p className="sn-kicker">Notes from the studio</p><h2 id="latest-guides">A little insight.<br />A better decision.</h2></div><Link to="/blog" className="sn-text-link">All research &amp; guides<ArrowUpRight size={17} aria-hidden="true" /></Link></div>
+    <div className="sn-guide-list">{guides.map(([slug, title, description], index) => <Link key={slug} to={`/blog/${slug}`} className="sn-guide"><span aria-hidden="true">0{index + 1}</span><div><h3>{title}</h3><p>{description}</p></div><ArrowUpRight size={20} aria-hidden="true" /></Link>)}</div>
+  </div></section>;
 }

@@ -1,4 +1,4 @@
-import { m as motion } from "framer-motion";
+import { m as motion, type HTMLMotionProps } from "framer-motion";
 import { Link } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -25,19 +25,19 @@ const fadeUp = {
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
   transition: { duration: 0.5, ease: "easeOut" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const staggerContainer = {
   initial: {},
   whileInView: { transition: { staggerChildren: 0.1 } },
   viewport: { once: true, margin: "-60px" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const staggerChild = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   transition: { duration: 0.45, ease: "easeOut" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const advantages = [
   {
@@ -141,7 +141,7 @@ const WhyUs = () => {
       />
       <JsonLd data={jsonLd} />
 
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-why-us min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
 
         <main id="main-content" className="flex-1">
@@ -225,7 +225,7 @@ const WhyUs = () => {
               <motion.div
                 {...fadeUp}
                 transition={{ delay: 0.05 }}
-                className="mb-4 grid grid-cols-[1fr_1fr_1fr] gap-4 text-center text-sm font-semibold"
+                className="studio-comparison-head mb-4 grid grid-cols-[1fr_1fr_1fr] gap-4 text-center text-sm font-semibold"
               >
                 <div />
                 <div className="rounded-xl bg-primary/10 border border-primary/30 py-2.5 text-primary">
@@ -247,7 +247,7 @@ const WhyUs = () => {
                   <motion.div
                     key={row.title}
                     variants={staggerChild}
-                    className="grid grid-cols-[1fr_1fr_1fr] gap-3 items-start"
+                    className="studio-comparison-row grid grid-cols-[1fr_1fr_1fr] gap-3 items-start"
                   >
                     {/* Label */}
                     <div className="glass-card rounded-xl p-4 flex items-start gap-2.5">

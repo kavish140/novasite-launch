@@ -206,11 +206,11 @@ export default function MetaAds() {
 
 
 
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="studio-page studio-service-page studio-meta-ads min-h-screen bg-background text-foreground">
         <Navbar />
 
         {/* ── Hero ── */}
-        <section className="relative overflow-hidden pt-32 pb-20">
+        <section className="studio-service-hero relative overflow-hidden pt-32 pb-20">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(249,115,22,0.12),transparent_55%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(249,115,22,0.06),transparent_50%)]" />
           <div className="mx-auto max-w-7xl px-6 relative z-10 text-center">

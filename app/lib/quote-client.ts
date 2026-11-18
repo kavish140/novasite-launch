@@ -2,6 +2,12 @@ import { quoteSchema, type QuoteInput } from "./quote";
 import { trackQuoteSubmit, trackGoogleAdsConversion } from "./analytics";
 
 const recorded = new Set<string>();
+const previewSubmissions = new Set<string>();
+export function isPreviewSubmission(id: string) { return previewSubmissions.has(id); }
+function isLocalPreview() {
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host === "[::1]" || /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+}
 export function recordQuoteOnce(id: string, type: string) {
   if (recorded.has(id)) return;
   try {
@@ -35,7 +41,10 @@ export async function submitQuote(input: QuoteInput) {
       result.error ||
         "We couldn't confirm your quote was saved. Please try again.",
     );
-  recordQuoteOnce(result.submissionId, validated.projectType);
+  if (result.preview === true) {
+    if (!isLocalPreview()) throw new Error("Preview submissions are only available in the local preview.");
+    previewSubmissions.add(result.submissionId);
+  } else recordQuoteOnce(result.submissionId, validated.projectType);
   return result.submissionId as string;
 }
 

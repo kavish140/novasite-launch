@@ -10,6 +10,15 @@ vi.mock('../components/ClientProjects',()=>({default:()=>null}));
 const order={request_id:'request',order_id:'order_1',package:'test',amount:100,status:'pending',reconciliation_state:'needs_reconciliation',created_at:'2026-10-10T10:00:00Z',last_checked_at:null};
 beforeEach(()=>{vi.resetAllMocks();vi.mocked(adminPaymentRequest).mockResolvedValue({orders:[order],runs:[],alerts:[],nextOffset:null});});
 afterEach(cleanup);
+it('opens paid orders first and lets summary shortcuts select the relevant workflow',async()=>{
+ render(<PaymentsTab/>);
+ await screen.findByText('order_1');
+ expect(screen.getByRole('tab',{name:'Paid orders'}).getAttribute('data-state')).toBe('active');
+ fireEvent.click(screen.getByRole('button',{name:/Project reviews/}));
+ expect(screen.getByRole('tab',{name:'Client projects'}).getAttribute('data-state')).toBe('active');
+ fireEvent.click(screen.getByRole('button',{name:/Needs verification/}));
+ expect(screen.getByRole('tab',{name:'Unconfirmed checkouts'}).getAttribute('data-state')).toBe('active');
+});
 it('shows each checkout once despite repeated alert logs and separates creation from automatic check time',async()=>{
  const current={...order,created_at:'2026-10-12T09:08:35Z',last_checked_at:'2026-10-12T15:50:02Z',last_check_source:'cron'};
  vi.mocked(adminPaymentRequest).mockResolvedValueOnce({orders:[current,current],runs:[],alerts:Array.from({length:20},(_,i)=>({id:String(i),request_id:'request',order_id:'order_1',created_at:current.last_checked_at,error:'Repeated warning'})),nextOffset:null});

@@ -72,9 +72,8 @@ for (const entry of ["/quote", "/lp/web-design"]) {
     await page.goto(entry);
     const form = page.locator("#website-quote-form");
     await form.getByRole("button", { name: /Business Website/ }).click();
-    await form.getByRole("button", { name: "Continue", exact: true }).click();
-    await expect(form.getByRole("alert")).toContainText("select your budget");
-    await form.getByLabel("Project budget").selectOption("Rs. 15,000 - 30,000");
+    await expect(form.getByLabel("Project budget")).toHaveValue("Rs. 15,000 - 30,000");
+    await form.getByLabel("Project budget").selectOption("Rs. 30,000+");
     await form.getByRole("button", { name: "Continue", exact: true }).click();
     await form
       .getByLabel("Business name", { exact: true })
@@ -94,6 +93,7 @@ for (const entry of ["/quote", "/lp/web-design"]) {
       entry.startsWith("/lp") ? /lp\/thank-you-quote/ : /\/thank-you$/,
     );
     expect(submitted[0].submissionId).toBe(submitted[1].submissionId);
+    expect(submitted[0]).toMatchObject({budget:"Rs. 30,000+"});
     const countQuotes = () =>
       page.evaluate(
         () =>
@@ -143,12 +143,12 @@ test("pricing retains package and mobile layout has one contact bar", async ({
     page.getByLabel("Contact SiteNova", { exact: true }),
   ).toHaveCount(1);
   await page
-    .getByRole("link", { name: "Choose Business", exact: true })
+    .getByRole("link", { name: "Discuss this package", exact: true }).nth(1)
     .click();
   await expect(page.locator("#website-quote-form")).toContainText(
     "Business Website · Business package",
   );
-  await expect(page.getByLabel("Project budget")).toHaveValue("");
+  await expect(page.getByLabel("Project budget")).toHaveValue("Rs. 15,000 - 30,000");
   await expect(
     page.getByLabel("Contact SiteNova", { exact: true }),
   ).toHaveCount(0);

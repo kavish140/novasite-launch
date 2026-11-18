@@ -1,138 +1,59 @@
-import {usePackagePricing} from "@/lib/package-pricing";
-import BookingCTA from "./BookingCTA";
-import { m as motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles, ShieldCheck, Layers } from "lucide-react";
-import { useRef } from "react";
+import { ArrowUpRight, Check, MoveUpRight } from "lucide-react";
 import { Link } from "react-router";
+import { usePackagePricing } from "@/lib/package-pricing";
 import clientPreview from "@/assets/Drdiptiganatra.webp";
+import financePreview from "@/assets/jupiterfastfinance.webp";
 import BlurImage from "./BlurImage";
+import BookingCTA from "./BookingCTA";
 
-
-
-const HeroSection = () => {
-  const {starterPrice,businessPrice}=usePackagePricing();
-
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const shouldReduceMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-
-  const bgY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : 90]);
-  const orbY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : 160]);
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : -24]);
-  const previewY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : -42]);
-  const previewRotate = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : -1.5]);
-
-
-
+export default function HeroSection() {
+  const { starterPrice, available } = usePackagePricing();
   return (
-    <section ref={sectionRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background */}
-      <motion.div style={{ y: bgY }} className="absolute inset-0 z-0 will-change-transform">
-        <img src="/hero-bg.webp" alt="" role="presentation" className="w-full h-full object-cover opacity-30 scale-105" loading="eager" fetchPriority="high" decoding="async" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background" />
-      </motion.div>
-
-      {/* Glow orbs */}
-      <motion.div style={{ y: orbY }} className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[300px] md:w-[600px] md:h-[400px] rounded-full bg-primary/10 blur-[80px] md:blur-[120px] animate-pulse-glow pointer-events-none will-change-transform" />
-      <motion.div style={{ y: contentY }} className="absolute top-[30%] right-[10%] w-[200px] h-[200px] md:w-[300px] md:h-[300px] rounded-full bg-accent/20 blur-[60px] md:blur-[100px] animate-pulse-glow pointer-events-none will-change-transform" />
-      <motion.div style={{ y: contentY }} className="absolute top-[18%] right-[8%] w-[160px] h-[160px] md:w-[240px] md:h-[240px] rounded-full bg-secondary/30 blur-[50px] md:blur-[90px] pointer-events-none will-change-transform" />
-
-      <motion.div style={{ y: contentY }} className="relative z-10 mx-auto max-w-7xl px-6 text-center will-change-transform">
-        <div>
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 mb-8">
-            <Sparkles size={14} className="text-accent" />
-            <span className="text-xs font-medium text-muted-foreground">
-              Website design for Mulund, Mumbai, and nearby suburbs
-            </span>
+    <section className="studio-hero" aria-labelledby="hero-title">
+      <div className="studio-container">
+        <div className="studio-hero-topline">
+          <span><span className="studio-status-dot" /> Independent web design & development</span>
+          <span>Mulund, Mumbai · Working with businesses everywhere</span>
+        </div>
+        <div className="studio-hero-grid">
+          <div className="studio-hero-copy">
+            <p className="studio-eyebrow">Small studio. Big attention to detail.</p>
+            <h1 id="hero-title">A website that<br />means <em>business.</em></h1>
+            <p className="studio-hero-intro">Give your business a first impression worth remembering. Custom websites that look the part, work beautifully, and make the next step clear.</p>
+            <div className="studio-hero-actions">
+              <Link to="/quote" className="studio-button">Let’s build your website <ArrowUpRight size={20} aria-hidden="true" /></Link>
+              <Link to="/portfolio" className="studio-text-link">Explore our work <ArrowUpRight size={17} aria-hidden="true" /></Link>
+            </div>
+            <div className="studio-hero-reassurance">
+              <span><Check size={14} aria-hidden="true" /> {available ? `Projects from ${starterPrice}` : "A quote tailored to your project"}</span>
+              <span><Check size={14} aria-hidden="true" /> Work directly with the developer</span>
+            </div>
+            <BookingCTA source="homepage-hero" className="studio-hero-booking" />
           </div>
-
-          <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-balance">
-            Custom Websites for{" "}
-            <span className="block w-full gradient-text mt-2">
-              Mumbai Businesses
-            </span>
-          </h1>
-
-          <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 text-balance">
-            Work directly with Kavish to plan, build, and launch a fast, mobile-friendly website that makes it easy for customers to contact you.
-          </p>
-
-          <p className="font-semibold mb-6">Landing pages from {starterPrice} · Business websites from {businessPrice}</p>
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap">
-            <Link
-              to="/quote"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect group button-shimmer interactive-card btn-quote-pulse"
-            >
-              Get My Website Quote
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+          <div className="studio-hero-stage">
+            <span className="studio-stage-caption">THOUGHTFULLY DESIGNED. PURPOSEFULLY BUILT.</span>
+            <div className="studio-stage-orbit" aria-hidden="true" />
+            <svg className="studio-stage-star" viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M50 0v100M0 50h100M15 15l70 70M15 85l70-70" stroke="currentColor" strokeWidth="15" /></svg>
+            <Link to="/portfolio/dr-dipti-ganatra" className="studio-browser studio-browser-main" aria-label="Explore the Dr. Dipti Ganatra website case study">
+              <div className="studio-browser-bar"><span className="studio-browser-dots"><i /><i /><i /></span><span>drdiptiganatra.com</span><MoveUpRight size={13} aria-hidden="true" /></div>
+              <BlurImage src={clientPreview} alt="The real Dr. Dipti Ganatra clinic website, designed and built by SiteNova" width={1920} height={962} className="w-full h-auto" loading="eager" fetchPriority="high" />
+              <div className="studio-browser-label"><span>Dr. Dipti Ganatra</span><span>Healthcare · Custom website</span></div>
             </Link>
-            <BookingCTA source="homepage-hero" className="text-base px-8" />
-            <button
-              onClick={() => document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/30 px-8 py-3.5 text-base font-medium text-foreground hover:bg-secondary/60 hover:border-border transition-all interactive-card"
-              aria-label="Scroll to portfolio section"
-            >
-              <Layers size={18} className="text-muted-foreground" />
-              View Our Work
-            </button>
-          </div>
-
-          {/* Trust bar */}
-          <div className="mt-10 flex flex-col items-center gap-4">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground/60">
-              Trusted by doctors, financial firms & local businesses in Mumbai
-            </p>
-            <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
-              {[
-                { label: "Trusted by Doctors & Finance Firms", sublabel: "in Mumbai" },
-                { label: "5-Star Rated on Google", sublabel: "by our clients" },
-                { label: "Fast Delivery", sublabel: "days, not weeks" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <p className="text-sm font-bold text-foreground">{stat.label}</p>
-                  <p className="text-[11px] text-muted-foreground">{stat.sublabel}</p>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 mt-1 rounded-full border border-[#25D366]/20 bg-[#25D366]/5 px-4 py-1.5">
-              <ShieldCheck size={14} className="text-[#25D366]" />
-              <span className="text-[11px] font-medium text-[#25D366]">
-                Scope and pricing agreed before work begins
-              </span>
-            </div>
+            <Link to="/portfolio/jupiter-fast-finance" className="studio-browser studio-browser-secondary" aria-label="Explore the Jupiter Fast Finance case study">
+              <div className="studio-browser-bar"><span className="studio-browser-dots"><i /><i /><i /></span><span>Jupiter Fast Finance</span><MoveUpRight size={12} aria-hidden="true" /></div>
+              <BlurImage src={financePreview} alt="Jupiter Fast Finance website by SiteNova" width={1920} height={961} className="w-full h-auto" loading="lazy" />
+            </Link>
+            <span className="studio-stage-footnote">A selection of our actual client websites</span>
           </div>
         </div>
-
-        {/* Dashboard preview */}
-        <motion.div
-          initial={{ opacity: 1, y: 0 }}
-          style={{ y: previewY, rotateX: previewRotate }}
-          className="mt-16 md:mt-20 will-change-transform"
-        >
-          <div className="relative mx-auto max-w-5xl gradient-border rounded-2xl overflow-hidden">
-            <div className="rounded-2xl overflow-hidden border border-border/30">
-              <BlurImage
-                src={clientPreview}
-                alt="Dr. Dipti Ganatra clinic website built by SiteNova"
-                className="w-full h-auto"
-                width={1920}
-                height={962}
-                loading="eager"
-                fetchPriority="high"
-              />
-            </div>
-            {/* Bottom fade */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
-          </div>
-        </motion.div>
-      </motion.div>
+        <div className="studio-client-strip" aria-label="Selected clients">
+          <p>Built for real people.<br /><strong>And their businesses.</strong></p>
+          <span>Dr. Dipti Ganatra<small>Healthcare</small></span>
+          <span>Jupiter Fast Finance<small>Financial services</small></span>
+          <span>Corporatezone<small>Business essentials</small></span>
+          <Link to="/portfolio" aria-label="View selected client projects">Meet the work <ArrowUpRight size={17} aria-hidden="true" /></Link>
+        </div>
+      </div>
     </section>
   );
-};
-
-export default HeroSection;
+}

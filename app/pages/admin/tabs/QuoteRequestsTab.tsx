@@ -60,7 +60,8 @@ export default function QuoteRequestsTab({
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -149,8 +150,8 @@ export default function QuoteRequestsTab({
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      let aVal = (a[sortField] as string) ?? "";
-      let bVal = (b[sortField] as string) ?? "";
+      const aVal = (a[sortField] as string) ?? "";
+      const bVal = (b[sortField] as string) ?? "";
       const cmp = aVal.localeCompare(bVal);
       return sortDir === "asc" ? cmp : -cmp;
     });

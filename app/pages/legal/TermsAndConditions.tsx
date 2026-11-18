@@ -7,7 +7,7 @@ import { EMAIL } from "@/lib/constants";
 const TermsAndConditions = () => {
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-terms-and-conditions min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
         <main className="flex-1 pt-32 pb-20 sm:pt-40 sm:pb-24">
           <div className="mx-auto max-w-3xl px-6">

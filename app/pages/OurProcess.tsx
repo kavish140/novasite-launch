@@ -1,5 +1,5 @@
 import {usePackagePricing} from "@/lib/package-pricing";
-import { m as motion } from "framer-motion";
+import { m as motion, type HTMLMotionProps } from "framer-motion";
 import { Link } from "react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -23,19 +23,19 @@ const fadeUp = {
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
   transition: { duration: 0.5, ease: "easeOut" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const staggerContainer = {
   initial: {},
   whileInView: { transition: { staggerChildren: 0.12 } },
   viewport: { once: true, margin: "-60px" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const staggerChild = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   transition: { duration: 0.45, ease: "easeOut" },
-};
+} satisfies HTMLMotionProps<"div">;
 
 const steps = [
   {
@@ -135,7 +135,7 @@ const OurProcess = () => {
       />
       <JsonLd data={jsonLd} />
 
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-our-process min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
 
         <main id="main-content" className="flex-1">

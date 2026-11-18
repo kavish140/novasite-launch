@@ -1,273 +1,73 @@
-import { m as motion } from "framer-motion";
-import { ExternalLink, ArrowRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router";
-import { showcaseProjects, customerProjects } from "@/lib/portfolio-meta";
-import drDiptiImage from "@/assets/Drdiptiganatra.webp";
-import jupiterFinanceImage from "@/assets/jupiterfastfinance.webp";
-import smartkitImage from "@/assets/Aismartkit.webp";
-import businessShowcaseImage from "@/assets/business-showcase.webp";
-import designShowcaseImage from "@/assets/design-showcase.webp";
-import ecommerceShowcaseImage from "@/assets/ecommerce-showcase.webp";
-import BlurImage from "./BlurImage";
+import { useRouteLoaderData } from "react-router";
+import { useEffect, useState } from "react";
+import { parsePortfolio, type PortfolioRow } from "@/lib/portfolio";
+import { cn } from "@/lib/utils";
+import { type PortfolioProjectMeta } from "@/lib/portfolio-meta";
 import IframePreview from "./IframePreview";
+import "./studio-sections.css";
 
-const imageBySlug = {
-  "dr-dipti-ganatra": drDiptiImage,
-  "jupiter-finance": jupiterFinanceImage,
-  "corporate-zone": jupiterFinanceImage, // fallback only — useIframePreview renders live site
-  "toolbox": smartkitImage, // fallback only
-  "ai-smartkit": smartkitImage,
-  "business-showcase": businessShowcaseImage,
-  "design-showcase": designShowcaseImage,
-  "ecommerce-showcase": ecommerceShowcaseImage,
-  "sanitaryware-showcase": ecommerceShowcaseImage,
-  "nuts-design-golden-showcase": designShowcaseImage,
-  "artistry-showcase": designShowcaseImage,
-  "artisan-gallery": designShowcaseImage,
-} as const;
-
-
-const PortfolioSection = ({ mode = "all" }: { mode?: "all" | "customers" | "showcases" }) => {
-  const [inView, setInView] = useState(false);
-  const sectionRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const current = sectionRef.current;
-    if (!current) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "200px 0px" },
-    );
-
-    observer.observe(current);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <section id={mode === "showcases" ? "showcases" : "portfolio"} ref={sectionRef} className="section-padding relative" aria-labelledby={`${mode}-portfolio-title`}>
-      <div className="mx-auto max-w-7xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <span className="text-sm font-medium text-accent uppercase tracking-widest">Portfolio</span>
-          <h2 id={`${mode}-portfolio-title`} className="font-heading text-3xl md:text-5xl font-bold mt-3 mb-5">
-            {mode === "showcases" ? "Explore our design demos" : <>Websites Built by <span className="gradient-text">Kavish</span></>}
-          </h2>
-          <p className="max-w-xl mx-auto text-muted-foreground text-lg">
-            Real projects. Real results. Here's a showcase of sites crafted with SiteNova.
-          </p>
-        </motion.div>
-
-        {mode !== "showcases" && <>
-        {/* Customer Websites Section */}
-        <div>
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-8 border-b border-border/50 pb-4"
-          >
-            <h3 className="font-heading text-2xl md:text-3xl font-bold flex items-center gap-3">
-              <span className="h-6 w-1 rounded-full bg-primary" />
-              Customer Websites
-            </h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              Custom websites built for local businesses and independent professionals.
-            </p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {customerProjects.map((project, i) => {
-              // Slug → internal case study page mapping
-              const caseStudySlugMap: Record<string, string> = {
-                "dr-dipti-ganatra": "/portfolio/dr-dipti-ganatra",
-                "jupiter-finance": "/portfolio/jupiter-fast-finance",
-                "corporate-zone": "/portfolio/corporate-zone",
-              };
-              const caseStudyPath = caseStudySlugMap[project.slug];
-
-              return (
-                <motion.article
-                  key={project.slug}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.15 }}
-                  className="group"
-                >
-                  {caseStudyPath ? (
-                    <Link
-                      to={caseStudyPath}
-                      className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow flex flex-col"
-                      aria-label={`View ${project.title} case study`}
-                    >
-                      {/* Thumbnail */}
-                      <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
-                        {project.useIframePreview && inView ? (
-                          <IframePreview src={project.liveUrl} title={project.title} />
-                        ) : (
-                          <img
-                            src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                            alt={`${project.title} website screenshot by SiteNova`}
-                            className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                            loading="lazy"
-                            decoding="async"
-                            width="500"
-                            height="400"
-                          />
-                        )}
-                      </div>
-
-                      {/* Card body */}
-                      <div className="p-6 flex flex-col flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">{project.description}</p>
-                        <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
-                          View Case Study
-                          <ArrowRight size={16} />
-                        </span>
-                      </div>
-                    </Link>
-                  ) : (
-                    <a
-                      href={project.liveUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block relative overflow-hidden rounded-2xl border border-border/50 bg-card h-full interactive-card hover-glow flex flex-col"
-                      aria-label={`Open ${project.title} live website`}
-                    >
-                      {/* Thumbnail */}
-                      <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
-                        {project.useIframePreview && inView ? (
-                          <IframePreview src={project.liveUrl} title={project.title} />
-                        ) : (
-                          <img
-                            src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                            alt={`${project.title} website screenshot by SiteNova`}
-                            className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                            loading="lazy"
-                            decoding="async"
-                            width="500"
-                            height="400"
-                          />
-                        )}
-                      </div>
-
-                      {/* Card body */}
-                      <div className="p-6 flex flex-col flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
-                          <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">{project.description}</p>
-                        <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
-                          Open Website
-                          <ExternalLink size={16} />
-                        </span>
-                      </div>
-                    </a>
-                  )}
-                </motion.article>
-              );
-            })}
-          </div>
-        </div>
-        </>}
-        {mode !== "customers" && <>
-        {/* Showcase Websites Section */}
-        <div className="mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-8 border-b border-border/50 pb-4"
-          >
-            <h3 className="font-heading text-2xl md:text-3xl font-bold flex items-center gap-3">
-              <span className="h-6 w-1 rounded-full bg-accent" />
-              Showcase Websites (Live Previews)
-            </h3>
-            <p className="text-muted-foreground text-sm mt-1">
-              Internal products, demo templates, and modern SaaS platforms.
-            </p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {showcaseProjects.map((project, i) => (
-              <motion.article
-                key={project.slug}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.15 }}
-                className="group"
-              >
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`block relative overflow-hidden rounded-2xl border ${
-                    project.isSpecialHighlight
-                      ? "border-accent/60 shadow-[0_0_30px_-5px_rgba(var(--accent),0.3)] hover:shadow-[0_0_40px_-5px_rgba(var(--accent),0.5)]"
-                      : "border-border/50"
-                  } bg-card h-full interactive-card hover-glow`}
-                  aria-label={`Open ${project.title}`}
-                >
-                  {project.isSpecialHighlight && (
-                    <div className="absolute top-4 right-4 z-20 rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground shadow-sm animate-pulse">
-                      React App Bundle
-                    </div>
-                  )}
-                  <div className="aspect-[5/4] overflow-hidden bg-background/40 p-2 relative">
-                    {project.useIframePreview && inView ? (
-                      <IframePreview src={project.liveUrl} title={project.title} />
-                    ) : (
-                      <BlurImage
-                        src={imageBySlug[project.slug as keyof typeof imageBySlug]}
-                        alt={`${project.title} website screenshot by SiteNova`}
-                        className="w-full h-full object-contain object-top transition-transform duration-500 group-hover:scale-[1.02] !bg-transparent"
-                        width={500}
-                        height={400}
-                      />
-                    )}
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-heading text-lg font-semibold">{project.title}</h4>
-                      <ExternalLink size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-5">{project.description}</p>
-                    <span className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors button-shimmer">
-                      Open Website
-                      <ExternalLink size={16} />
-                    </span>
-                  </div>
-                </a>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-
-
-        </>}
-      </div>
-    </section>
-  );
+const caseStudies: Record<string, string> = {
+  "dr-dipti-ganatra": "/portfolio/dr-dipti-ganatra",
+  "jupiter-finance": "/portfolio/jupiter-fast-finance",
+  "corporate-zone": "/portfolio/corporate-zone",
+};
+const projectTypes: Record<string, string> = {
+  "dr-dipti-ganatra": "Healthcare · Business website",
+  "jupiter-finance": "Finance · Business website",
+  "corporate-zone": "Wholesale · Product catalog",
 };
 
-export default PortfolioSection;
+function ProjectCard({ project, index, showcase = false }: { project: PortfolioProjectMeta; index: number; showcase?: boolean }) {
+  const caseStudy = (project as PortfolioProjectMeta & {caseStudyPath?:string}).caseStudyPath ?? caseStudies[project.slug];
+  const content = <>
+    <div className="sn-project__visual">
+      <div className="sn-project__browser" aria-hidden="true"><span /><span /><span /><p>{new URL(project.liveUrl).hostname}</p><ArrowUpRight size={12} /></div>
+      <div className="sn-project__preview">
+        {project.useIframePreview
+          ? <IframePreview src={project.liveUrl} title={project.title} />
+          : <img src={project.image} alt={`${project.title} website designed and built by SiteNova`} width={1200} height={675} loading="lazy" decoding="async" />}
+      </div>
+      <span className="sn-project__open" aria-hidden="true"><ArrowUpRight size={22} /></span>
+    </div>
+    <div className="sn-project__details">
+      <div><p className="sn-project__category">{projectTypes[project.slug] || (project.isSpecialHighlight ? "SiteNova product · Interactive tools" : "SiteNova design demo")}</p><h3>{project.title}</h3></div>
+      <span className="sn-project__index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+      <p className="sn-project__description">{project.description}</p>
+      <span className="sn-text-link">{caseStudy ? "View case study" : "Explore live website"}<ArrowUpRight size={16} aria-hidden="true" /></span>
+    </div>
+  </>;
+  const className = cn("sn-project", showcase && "sn-project--demo");
+  return caseStudy
+    ? <Link to={caseStudy} className={className} aria-label={`View ${project.title} case study`}>{content}</Link>
+    : <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className={className} aria-label={`Open ${project.title} live website`}>{content}</a>;
+}
+
+export default function PortfolioSection({ mode = "all" }: { mode?: "all" | "customers" | "showcases" }) {
+  const loaded = useRouteLoaderData("routes/portfolio._index") as {projects:PortfolioRow[];available:boolean}|undefined;
+  const [catalog, setCatalog] = useState(loaded ?? {projects:[] as PortfolioRow[],available:true});
+  useEffect(() => {
+    if (loaded) { setCatalog(loaded); return; }
+    let active = true;
+    fetch("/api/portfolio").then(async response => { if (!response.ok) throw new Error(); return response.json(); })
+      .then(data => { if(active) setCatalog({projects:parsePortfolio(data.projects),available:true}); })
+      .catch(() => { if(active) setCatalog({projects:[],available:false}); });
+    return () => { active = false; };
+  }, [loaded]);
+  const customerProjects = catalog.projects.filter(row=>row.is_visible && row.category==="client").map(row=>row.project);
+  const showcaseProjects = catalog.projects.filter(row=>row.is_visible && row.category==="showcase").map(row=>row.project);
+  const demosOnly = mode === "showcases";
+  return <section id={demosOnly ? "showcases" : "portfolio"} className="sn-section sn-work" aria-labelledby={`${mode}-portfolio-title`}>
+    <div className="sn-container">
+      {!catalog.available && <p role="status">Projects are temporarily unavailable. Please try again shortly.</p>}
+      <div className="sn-section-head">
+        <div><p className="sn-kicker">{demosOnly ? "The design playground" : "Selected client work"}</p><h2 id={`${mode}-portfolio-title`}>{demosOnly ? <>More ideas.<br />More possibilities.</> : <>Different businesses.<br />Distinctly their own.</>}</h2></div>
+        <p className="sn-section-intro">{demosOnly ? "Explore our live design demos and digital products. A starting point for a conversation about your own website." : "A clinic, a finance firm, a wholesale business. See how we turn a real business into a clear, considered online experience."}</p>
+      </div>
+      {mode !== "showcases" && <div className="sn-projects sn-projects--clients">{customerProjects.map((project, index) => <ProjectCard key={project.slug} project={project} index={index} />)}</div>}
+      {mode !== "customers" && <div className="sn-demo-group">{mode === "all" && <h3 className="sn-subheading">Design demos &amp; SiteNova products</h3>}<div className="sn-projects sn-projects--demos">{showcaseProjects.map((project, index) => <ProjectCard key={project.slug} project={project} index={index} showcase />)}</div></div>}
+      {!demosOnly && <div className="sn-work-bottom"><p>Have a different kind of business? Let’s make something that feels like you.</p><Link to="/quote" className="sn-text-link">Discuss your website<ArrowUpRight size={18} aria-hidden="true" /></Link></div>}
+    </div>
+  </section>;
+}

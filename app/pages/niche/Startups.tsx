@@ -166,11 +166,11 @@ export default function Startups() {
             ]
           }
         ]} />
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="studio-page studio-niche-page studio-startups min-h-screen bg-background text-foreground">
         <Navbar />
 
       {/* ───────────────── Hero Section ───────────────── */}
-      <section className="relative overflow-hidden pt-32 pb-20">
+      <section className="studio-service-hero relative overflow-hidden pt-32 pb-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.12),transparent_50%)]" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[300px] rounded-full bg-purple-500/5 blur-[120px] pointer-events-none" />
 

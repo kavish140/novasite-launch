@@ -193,6 +193,7 @@ The project uses **React Router v7 file-system routing** (`@react-router/fs-rout
 | `admin.blog.new.tsx` | `/admin/blog/new` | `pages/admin/AdminBlogEditor.tsx` |
 | `admin.blog.$id.tsx` | `/admin/blog/:id` | `pages/admin/AdminBlogEditor.tsx` |
 | `services.ecommerce.tsx` | `/services/ecommerce` | `pages/services/Ecommerce.tsx` |
+| `services.business-websites.tsx` | `/services/business-websites` | `pages/services/BusinessWebsites.tsx` — dedicated service offer, capabilities, real client work and proposal-first Business-package enquiry |
 | `services.seo-optimization.tsx` | `/services/seo-optimization` | `pages/services/SeoSpeed.tsx` |
 | `services.web-applications.tsx` | `/services/web-applications` | `pages/services/WebApps.tsx` |
 | `services.google-ads.tsx` | `/services/google-ads` | `pages/services/GoogleAds.tsx` |
@@ -239,13 +240,13 @@ This injects `<title>`, meta tags, Open Graph, Twitter Card, canonical link, rob
 ### Core Pages
 | Page | File | Description |
 |---|---|---|
-| Homepage | `pages/Index.tsx` | Buyer-focused hero with prices and client imagery, customer portfolio and testimonials immediately after hero, features, Resources by SiteNova, service areas, pricing, demos, process, FAQ and GEO block |
+| Homepage | `pages/Index.tsx` | Conversion-focused studio design: split hero with actual client screenshots, client work/reviews, linked services, quote-first packages, process/direct-developer proof, audit, FAQ and project CTA, then compact guides/resources, local guides and GEO identity |
 | About | `pages/About.tsx` | Company story, founder bio, values, team section |
 | Contact | `pages/Contact.tsx` | Contact form + WhatsApp / phone links |
 | Free Audit | `pages/FreeAudit.tsx` | Lead capture form — saves to Supabase `audit_requests` table |
 | Our Process | `pages/OurProcess.tsx` | 4-step process: Discovery → Design → Development → Launch |
 | Pricing | `pages/Pricing.tsx` | Pricing tiers and breakdown |
-| Quote | `pages/Quote.tsx` | Shared `QuoteForm`: explicit budget, business/contact/project/timing, optional details; saves via `/api/quotes` before confirmation |
+| Quote | `pages/Quote.tsx` | Shared `QuoteForm`: editable budget preselected from known package prices/service estimates, business/contact/project/timing, optional details; saves via `/api/quotes` before confirmation |
 | Thank You | `pages/ThankYou.tsx` | Post-quote confirmation with optional booking CTA; requires accepted submission state; never fires a conversion on page load |
 | Website Cost Calculator | `pages/WebsiteCostCalculator.tsx` | Interactive calculator with dynamic pricing |
 | Why Us | `pages/WhyUs.tsx` | Differentiators, trust signals |
@@ -478,8 +479,8 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 ### Layout / Global
 | Component | File | Role |
 |---|---|---|
-| `Navbar` | `components/Navbar.tsx` | Fixed top nav. Scroll-to-section links (Features, Portfolio, How It Works, Testimonials), **Services** dropdown (3 core web services + 7 niche industry links), **Marketing** dropdown (Google Ads + Meta Ads + "Book a Free Strategy Call" → `/ads-contact`), Blog, Pricing, Cost Calculator, Free Audit, dark/light toggle, "Get a Quote" CTA button. Marketing dropdown uses orange/amber accent. |
-| `Footer` | `components/Footer.tsx` | Links to all services, **Marketing** column (Google Ads, Meta Ads, Book a Strategy Call), locations, company pages. Contact links (phone, WhatsApp, email, YouTube). Android app download button. |
+| `Navbar` | `components/Navbar.tsx` | Fixed studio navigation: Work, Services (web/marketing/industry links), Pricing, Studio (company, audit, calculator, guides and section links), Blog, theme toggle and quote CTA. Radix desktop menus and focus-trapped mobile Sheet; links close menus. Scoped `site-shell.css`. |
+| `Footer` | `components/Footer.tsx` | Dark editorial footer with studio identity and quote action; all services, marketing, industry, 14 local guides, company/legal/contact/YouTube and Android APK links retained. |
 | `PageTransition` | `components/PageTransition.tsx` | Wraps pages in a Framer Motion fade-in transition. |
 | `ScrollProgress` | `components/ScrollProgress.tsx` | Thin progress bar at top of viewport. Lazy-loaded. |
 | `CustomCursor` | `components/CustomCursor.tsx` | Custom cursor effect (desktop only). |
@@ -519,7 +520,7 @@ Mulund, Thane, Bhandup, Nahur, Bandra, Andheri, Ghatkopar, Vikhroli, Kurla, Dada
 | `ClientOnly` | Renders children only after client hydration (prevents SSR mismatches) |
 | `ErrorBoundary` | Top-level error boundary with fallback UI |
 | `ProtectedRoute` | Auth gate for admin pages |
-| `ThemeProvider` | next-themes wrapper (`storageKey: "novasite-theme"`, default: `"dark"`, no system preference) |
+| `ThemeProvider` | next-themes wrapper (`storageKey: "novasite-theme"`, default: `"light"`, no system preference; existing saved light/dark choices retained) |
 
 ### UI Primitives (`components/ui/`)
 Full shadcn/ui library: Accordion, AlertDialog, Avatar, Badge, Button, Card, Carousel, Checkbox, Command, Dialog, Drawer (vaul), DropdownMenu, Form, Input, Label, Popover, Progress, RadioGroup, ScrollArea, Select, Separator, Sheet, Sidebar, Skeleton, Slider, Sonner, Switch, Table, Tabs, Textarea, Toast, Toggle, Tooltip, etc.
@@ -527,6 +528,13 @@ Full shadcn/ui library: Accordion, AlertDialog, Avatar, Badge, Button, Card, Car
 ---
 
 ## 7. Design System
+
+### Conversion-focused studio redesign (2026-11-13, local source)
+
+- `app/styles/studio.css` supplies the shared warm-ivory/ink/orange tokens and homepage layout. `app/components/site-shell.css` styles navigation/footer/contact controls, `studio-sections.css` styles reusable editorial sections, and `app/styles/studio-pages.css` applies explicit scoped page classes to core, service, niche, blog, legal, landing and private pages plus location/case-study templates. Admin retains its own scoped tokens in `pages/admin/admin.css`, coordinated to the same palette.
+- New visitors start in light mode; the pre-hydration script and next-themes default agree, and existing saved theme choices persist. Solid surfaces, hairline borders, large typography and real client screenshots replace glass, glowing orbs, pulsing buttons and decorative gradients. Dark mode, focus indicators, semantic status colours, reduced motion, mobile navigation and receipt print layout remain supported.
+- Homepage sequence prioritises a website quote: clear offer and actual work, authentic reviews, service choices, starting-price packages, process and direct-developer proof, then audit/FAQ/project CTA. Guides/resources/local context follow the main sales journey. Quote is the primary package action; gated advance links retain full-document navigation and original server-authorised amounts. No claim of measured conversion improvement is made.
+- Quote keeps the existing three-step wizard in a focused split layout. Pricing keeps package prefill/payment readiness, and audit puts the form before its secondary quote alternative. APIs, auth, booking/quote submission, payment verification/recovery, analytics events and SEO route exports are unchanged. No database, credentials, activation flags, production deployment or Git push in this redesign.
 
 ### Admin workspace (2026-10-04)
 
@@ -539,30 +547,31 @@ Full shadcn/ui library: Accordion, AlertDialog, Avatar, Badge, Button, Card, Car
 - Topic Queue now highlights the next pending topic, orders by priority then age, offers searchable stage filters including in-progress topics, and shows all used topics. Its expanded creation form explains priority and separates the article angle from keywords; named actions and a delete confirmation replace tiny icon-only controls.
 
 ### Fonts
-- **Headings**: `Space Grotesk` (weights 400, 600, 700) — `font-heading` class
-- **Body**: `Inter` (weights 400, 500, 600) — `font-body` class
-- Loaded via Google Fonts with `<link rel="preload">` + async media swap for performance
+- **Headings**: `Manrope` (weights 400–800) — `font-heading` class
+- **Body**: `DM Sans` (weights 400–700) — `font-body` class
+- **Selective editorial accent**: `Instrument Serif` italic in the homepage headline
+- Loaded via Google Fonts with preconnect, stylesheet preload and a regular stylesheet link so font application does not depend on a React load handler surviving hydration.
 
 ### Color Tokens (CSS custom properties)
 The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 
-**Dark mode** (default):
-- Background: `hsl(225 25% 5%)` — very dark navy
-- Primary: `hsl(210 100% 56%)` — bright blue
-- Accent: `hsl(175 80% 48%)` — cyan/teal
-- Card: `hsl(225 20% 8%)`
+**Dark mode**:
+- Background: `hsl(90 4% 9%)` — warm ink
+- Primary/accent: `hsl(15 95% 72%)` — peach, with ink button text
+- Card: `hsl(90 4% 12%)`
 
-**Light mode**:
-- Background: `hsl(210 40% 98%)`
-- Primary: `hsl(222.2 47.4% 11.2%)` — dark navy
-- Accent: `hsl(210 40% 96.1%)`
+**Light mode** (default):
+- Background: `hsl(45 33% 95%)` — warm ivory
+- Foreground: `hsl(90 4% 12%)` — ink
+- Primary/accent: `hsl(11 74% 44%)` — accessible deep orange; decorative orange is `#ed5935`
+- Card: `hsl(48 33% 98%)`
 
 ### Custom CSS Classes (defined in `index.css`)
 | Class | Description |
 |---|---|
-| `.gradient-text` | Transparent text filled with `--gradient-primary` (blue → teal) |
+| `.gradient-text` | Legacy class now rendered as solid theme primary by `studio.css` |
 | `.gradient-border` | Pseudo-element gradient border using `--gradient-primary` |
-| `.glass-card` | `bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl` — frosted glass style |
+| `.glass-card` | Legacy class now solid themed card, hairline border and 14px radius; no backdrop blur |
 | `.section-padding` | Standard section padding: `px-6 md:px-8 lg:px-16 py-24 md:py-32` |
 | `.glow-effect` | Full box-shadow glow via `--shadow-glow` CSS var |
 | `.glow-effect-sm` | Smaller glow via `--shadow-glow-sm` CSS var |
@@ -570,8 +579,7 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 | `.interactive-card` | Hover lift: `translateY(-4px)` + `shadow-glow-sm` — use on clickable cards |
 | `.link-minimal` | Underline-on-hover link with `scale-x-0 → scale-x-100` transition |
 | `.hover-glow` | Adds `shadow-glow-sm` on hover only |
-| `.button-shimmer` | Shimmer sweep pseudo-element on hover — used on primary CTAs |
-| `.btn-quote-pulse` | Radial pulse animation on the "Get a Quote" button via `btn-quote-pulse-anim` keyframe |
+| `.button-shimmer` / `.btn-quote-pulse` | Legacy hooks retained; decorative shimmer/pulse disabled by studio system |
 | `.animated-gradient` | `background-size: 200% 200%` — pair with JS or a transition for moving gradients |
 | `.geo-entity-block` | Semantic wrapper for GEO content sections (used for AI crawler speakable targeting) |
 
@@ -611,6 +619,9 @@ The theme uses HSL CSS variables toggled by `.dark` class on `<html>`.
 ---
 
 ## 9. Data & Backend (Supabase)
+
+### Portfolio catalog (database applied 2026-11-18; website UI local)
+- `portfolio_projects`: slug primary key, validated project JSON, client/showcase category, position, published visibility and revision. Applied migration `20261118100613_portfolio_projects.sql` seeds 11 projects, excluding AI SmartKit. The original local draft was `20261117101158`; its file was renamed to match the connector-assigned production migration version. Published rows are public; writes and hidden reads require existing admin authorization. Admin saves/deletes compare revisions. Live rollback-only role/CRUD checks pass and leave no test rows. Connected local preview reads this catalog rather than a fixture. See `docs/blocker-fixes-20261118.md`.
 
 ### Package price history — LOCAL migration awaiting approval (2026-10-14)
 - `payment_package_prices` stores immutable Starter/Business starting-price/advance snapshots in paise. `payment_price_current` selects the one current version. Service-only invoker RPC `save_payment_package_prices` checks `site_admins`, strict JSON, amount bounds and a reviewed version before inserting history and updating the pointer atomically. No anonymous/authenticated browser read or write grants.
@@ -794,6 +805,7 @@ npm run deploy    # Build + deploy to Cloudflare Workers
 2. Passes request to React Router SSR handler with `{ cloudflare: { env, ctx } }` context.
 
 ### Assets Config (`wrangler.jsonc`)
+- `keep_vars: true` preserves existing dashboard runtime settings during Git-triggered deployments, including the live payment activation flag; secrets are not copied into source.
 - Static assets served from `./dist/client`
 - `/api/*` is Worker-first for server actions and booking settings.
 - `/sitemap.xml` is Worker-first (handled by the `sitemap[.]xml.tsx` route, not static file)
@@ -928,6 +940,9 @@ npm run dev
 # Run unit tests
 npm run test
 
+# Generate React Router types and check application + Vite configuration
+npm run typecheck
+
 # Run unit tests in watch mode
 npm run test:watch
 
@@ -1035,6 +1050,93 @@ Vitest covers validation, HMAC signing, endpoint failures, and the actual Apps S
 ---
 
 ## 16. Changelog
+
+### [2026-11-18] Approved UI release through GitHub
+- Owner explicitly authorised the production release by pushing to GitHub. Release targets the existing `ssr` branch of `kavish140/novasite-launch`; its Cloudflare Workers Builds integration deploys `novasite-launch` to sitenova.dev. The unrelated `main` GitHub Pages workflow is unchanged.
+- Includes the studio redesign, dedicated exploration/business service pages, compact mobile quote/audit forms, editable budget prefill, portfolio administration, clearer payment administration, route/404/editor fixes and clean TypeScript/lint checks. Portfolio migration `20261118100613` is already applied with 11 projects, RLS enabled and no AI SmartKit entry. No new backend function deployment, price edit, lead, order, charge, capture or refund is part of the release.
+- Validation: all 405 unit tests, all 32 isolated Edge browser tests, the 97-page/viewport crawl, portfolio SQL checks, full lint, typecheck, production build and Cloudflare bundle dry run pass. Local workerd serves the redesigned pages and genuine 404; payment readiness fails closed without its production credentials. Production forms and security denials are checked after deployment. Runtime configuration now explicitly preserves dashboard variables with `keep_vars: true`.
+- Source commit excludes environment files, local previews/reports, generated route changes, Wrangler databases and the local deployment snapshot. Detailed release notes: `docs/release-20261118.md`.
+
+### [2026-11-18] Automatic quote budget selection — local source
+- Shared quote intake selects the matching editable budget for Starter/Business package links, business/niche/location enquiries, website-type choices, e-commerce/web-app estimates and the website cost calculator. Current package starting prices determine the bracket; explicit valid budgets take precedence. Unknown redesign pricing still requires a visitor choice.
+- E-commerce now sends its numeric estimate instead of obsolete budget labels. The cost calculator passes its exact total (including add-ons/timeline) from both quote CTAs, so a range crossing a bracket boundary does not select the wrong bracket.
+- Visitor budget edits survive step navigation and catalog updates. Changing website type updates an untouched automatic suggestion. No quote is submitted, payment requested, production data changed or site deployed by these controls.
+- Validation: 17 quote-form tests and 19 isolated browser conversion/route tests pass, including mobile navigation, estimator handoff, custom budgets and mocked submit/retry payloads. Full lint, TypeScript and production build pass. Connected local preview refreshed; no Git push or deployment.
+
+### [2026-11-18] Dedicated Business Websites service page — local source
+- Added `/services/business-websites` with a concise responsive hero, actual clinic/finance project previews, four capabilities, current catalog price, proposal-first process context and Business-package-prefilled enquiry links. Existing-website visitors can choose the free audit; ready buyers can compare pricing/payment options. No guaranteed rankings or results are invented.
+- Business websites links in desktop/mobile navigation, services overview and footer now open the service page instead of jumping directly to `/quote`. Added SSR title/description/canonical metadata, Service JSON-LD, sitemap entry and llms.txt service reference. The overview stays an index route, preserving all service detail routes.
+- Validation: typecheck, full lint and production build pass. Eleven isolated browser scenarios pass, covering all service/case-study routes, 404 handling, the new menu destination on desktop/mobile, Business-package quote prefill, and no horizontal overflow at 320/390/1440px. New desktop/mobile screenshots inspected. No live lead/payment/admin mutation, Git push or website deployment.
+
+### [2026-11-18] Full-repository lint cleanup — local source
+- ESLint now excludes generated build/framework/runtime caches and test reports (`dist`, `.react-router`, `.wrangler`, `logs`, `test-results`, `playwright-report`), while keeping application source and tests in scope. No application-wide lint rule was disabled.
+- Replaced unused conditional-expression statements in the three admin lead/quote selection handlers with explicit if/else; selection behaviour is unchanged. Quote sorting uses const for immutable comparisons. Topic fetching is now a stable useCallback keyed on toast, with the effect depending on that callback instead of suppressing dependency checks.
+- Retained Google's documented Arguments-object gtag queue with a comment and a single-line prefer-rest-params exception; replacing that object with a rest array would change the command shape. Added tests that verify the exact queued object and conversion payload, preserve an existing gtag/dataLayer, and ensure SSR safety. No analytics request or real conversion is sent by tests.
+- Full `npm run lint` passes with zero errors/warnings; application and Vite typechecks remain clean; full unit suite 390/390 passes. Production client/SSR build passes (`logs/lint-fix-build.txt`), and the connected preview was refreshed and returns HTTP 200. No push, website deployment, database or financial changes.
+
+### [2026-11-18] Cleared the 60 TypeScript diagnostics — local source
+- Animation configuration objects now use the actual Framer Motion `HTMLMotionProps`/`Variants` contracts, preserving valid easing literals, cubic-bezier tuples and viewport margins instead of widened strings/arrays. Removed three unused empty `projectImage` props from case-study callers; iframe rendering remains unchanged.
+- Added TypeScript `rootDirs` for generated React Router types so blog/sitemap type imports resolve. Added `npm run typecheck` to generate those types and check both `tsconfig.app.json` and `tsconfig.node.json`. No compiler checks were disabled or loosened, and no new any/ignore suppressions were introduced.
+- Before: 60 application diagnostics. After: application and Vite-config typechecks pass with zero errors. Full unit suite: 387/387 pass; changed-source lint and whitespace checks pass. Production client/SSR build passes, recorded in `logs/type-fix-build.txt`; connected preview refreshed on port 8080. No Git push, website deployment, Supabase or financial change.
+
+### [2026-11-18] Release blocker fixes and verified portfolio persistence
+- Moved overview routes to `services._index.tsx` and `portfolio._index.tsx`, preventing them from swallowing the five service detail pages and three case studies. Updated portfolio loader lookup. The catch-all loader now returns HTTP 404 while keeping the designed NotFound page.
+- Fixed typed HTML heading closure at an existing-text boundary: the split right-hand heading is explicitly converted to a paragraph using the current transaction selection. This prevents an unintended second heading without corrupting document-end edits. Added regression coverage; the original editor typing/export browser test passes. Updated quote-test browser API mocks and the renamed Business CTA selector.
+- New SiteNova Web connector `link_6afd747e3c248191badc941d8ed2bb96` was verified against the project URL. Applied only the requested portfolio migration, recorded as `20261118100613_portfolio_projects`; renamed its local file to match remote history and updated the isolated SQL test. Eleven project rows, zero AI SmartKit entries, RLS/public visibility/admin-only writes verified. Real database insert/edit/hidden-read/delete checks ran inside ROLLBACK; no test row remains. Security advisors show no new portfolio findings, retaining the pre-existing warnings. No payment, quote, auth configuration or existing financial table changed.
+- Validation: production build and changed-file lint pass; full unit suite 387/387 and full isolated Edge suite 29/29 pass. Repeat crawl: 97 page/viewport checks, correct detail-page headings, no overflow or page errors; actual unknown URLs return 404. Connected local `/api/portfolio` returns 11 real rows and the service detail and 404 responses are verified. The prior application type-error backlog remains separate. No Git push or website/Edge Function deployment. Report: `docs/blocker-fixes-20261118.md`.
+
+### [2026-11-17] Release-readiness audit — no release performed
+- Owner requested thorough testing/status and explicitly prohibited push/deployment. Audit verdict: **not ready**. New overview parent routes intercept five service detail pages and three case studies; their components lack an Outlet/index separation. Portfolio persistence migration is still pending. Unknown paths render a 404 page with HTTP 200.
+- Production build, changed/new-file lint, 12 isolated PostgreSQL scripts and 97 viewport/page checks pass their execution/layout checks. Content verification found the route regression despite HTTP 200/no overflow. Full unit suite: 385/386 pass (missing jsdom matchMedia in quote-prefill test). Full isolated Edge suite: 17/20 pass (old package CTA selector, hidden SEO tool due to route issue, reproducible editor heading assertion failure). Full lint: 172 errors/3 warnings, largely generated/unrelated files. Typecheck retains 60 known diagnostics. Scoped private-credential scan: no exposure in 313 checked files.
+- Report: `docs/release-readiness-20261117.md`. No application fixes, Git push, deployment, production migration or real lead/admin/financial mutation during the audit. Isolated browser/database fixtures were used; actual Worker/provider/live authenticated persistence acceptance is not claimed.
+
+### [2026-11-17] Paid-order cards with large review actions — local source
+- Replaced the paid-order checkbox/flat rows with responsive cards and explicit 44px-minimum-height Mark as reviewed / Undo review buttons, plus View/Hide details and existing receipt actions. Payment verification status and the administrative review state are displayed separately. Details use expanded-state/controls semantics. Two columns on wide desktops, one on smaller screens.
+- Review buttons call the same existing acknowledgement endpoint and preserve reversible saved state, busy disabling and error handling. No settlement, receipt authorization, backend or production schema changes.
+- Validation: production build, scoped lint, ten payment UI unit cases (including explicit undo review) and three isolated Edge payment-operation scenarios pass. Mobile/desktop card snapshots inspected; no horizontal overflow. Browser actions use mocked APIs and do not mutate live payments. Connected preview restarted on port 8080; no push/deployment.
+
+### [2026-11-17] Admin payment workspace layout — local source
+- Reorganized Payments into four accessible keyboard-navigable panels: Paid orders (default), Unconfirmed checkouts, Client projects and Investigations/scheduler health. Compact overview cards use existing health counts and open the relevant panel; unknown counts display an em dash rather than zero. Dispute and reconciliation warnings remain above the panels.
+- Paid records now show business identity, amount and verified/refund status on a compact row; contact details, project briefs and payment references expand on demand. Receipt actions and acknowledgement stay readily accessible. Mounted panels retain forms/history when switching workflows. Checkout/provider checks, revisions, pagination, authorization, settlement and all endpoints remain unchanged. This is local UI source only.
+- Follow-up mobile review: repeated dashboard alerts collapse into a count summary on the Payments tab; the mobile overview is compact, and unconfirmed checkouts use labelled stacked rows instead of a sideways table. Desktop retains the table. Critical dispute/failure sections remain visible within the workspace.
+- Validation: production client/SSR build, scoped lint and nine payment UI unit tests pass. Three isolated Edge browser tests pass, covering phone layout without horizontal overflow, keyboard panel navigation, unsaved project input surviving panel switches, receipt access, acknowledgement and reconciliation history. All test payment/admin endpoints were mocked; no real financial or admin mutation was initiated. Connected preview restarted on port 8080. No deployment or Git push.
+
+### [2026-11-17] Quote/audit/payment hierarchy and live connected preview
+- Homepage keeps one hero enquiry CTA and replaces repeated package quote/payment cards and the duplicate final CTA with a compact package-comparison path plus a highlighted free-audit offer. Free audit is a first-level desktop/mobile navigation link; blog remains in studio/footer navigation. Pricing retains discussion as primary action and real advances as a secondary ready-buyer action. Quote confirmation explains proposal/scope agreement before payment.
+- `/payments` adds existing-payment recovery guidance and admin tracking access. Optional catalog `checkoutOrigin` allows the local preview to use canonical full-document live checkout links; production defaults remain same-origin. Local `/pay`, `/receipt`, `/project` and payment confirmation requests go to their real sitenova.dev pages, preserving Razorpay’s existing website restriction and financial checks.
+- User explicitly rejected simulated payments and then explicitly approved connecting local quote submissions and authenticated admin operations to production after an initial automatic approval rejection. The ignored preview now reads the real current catalog, proxies quotes/booking configuration and whitelisted authenticated non-charge admin payment actions to the existing production APIs, with same-origin validation and no contact logging. Real financial actions are never proxied as localhost; use canonical checkout/live admin. Existing direct Supabase-backed admin/lead features retain authentication/RLS. Quote simulations are no longer used by the running preview. No agent-created live order, accepted lead, charge, capture, refund, deployment or Git push.
+- Validation: production build, scoped lint and 12 focused package/quote tests pass. Public booking config returns 200/enabled; deliberately invalid quote returns 400 before insertion; unauthenticated payment queue returns 401. Real advances are visible on local pricing/payment pages and point to sitenova.dev. Mobile/desktop checks show no horizontal overflow. Signed-in admin and real charged checkout remain user-operated, not automatically exercised. Portfolio migration remains pending; Supabase connector calls require an unavailable link_id and the alternative CLI read-only check returns a management/login-role privilege HTTP 403. No production schema change was made.
+
+### [2026-11-17] Local quote confirmation preview
+- Owner requested testing the post-submission UI before release. The ignored local preview helper now simulates acceptance of quote POSTs without persisting or forwarding contact details. All other mutations remain blocked. Preview responses are explicitly flagged; the quote client accepts that flag only on localhost/private LAN hosts, suppresses conversion recording, and passes a preview marker to both confirmation pages, which show a clear simulation notice. Normal production acceptance/tracking is unchanged; no real lead or payment is created by this preview.
+- Validation: production build, scoped lint and six focused preview/real-handler tests pass. Automated 360px browser submission through all three steps reaches `/thank-you`, shows the preview notice, has no horizontal overflow, and records zero quote conversions. Preview restarted on port 8080.
+
+### [2026-11-17] Explain disabled preview submissions
+- Diagnosed the local quote error as the ignored read-only preview helper returning plain-text HTTP 405, which the quote client rendered as a generic save failure. Preview mutations now return a structured JSON explanation that submissions are disabled and no details were sent. No production quote API, credentials, lead storage or conversions changed.
+
+### [2026-11-17] Portfolio administration and mobile form access — local source
+- Removed the AI SmartKit / aismartkit.tech project. Added Admin → Content → Portfolio projects and command-palette access, with add/edit/delete confirmation, publish/hide, category, order, image URL, live URL, optional existing case-study path and project context. Existing case-study page bodies/routes are independent of listing deletion.
+- New migration `20261117101158_portfolio_projects.sql` seeds remaining projects in `public.portfolio_projects` (slug PK, project JSON, category, position, is_visible, revision). RLS permits only published public reads and verified `is_site_admin()` writes; no anonymous mutations. Saves/deletes compare revisions and retain unsaved input on failure. This migration is prepared and tested locally, not applied in production; the admin tab reports setup/load failures rather than pretending to save.
+- `/portfolio` SSR loader and `/api/portfolio` read through per-request clients. Shared portfolio sections refresh from this catalog; successful empty catalogs remain empty, and outages do not restore deleted static projects. Static fallback is only for the missing-table rollout stage. Screenshot seeds use stable `public/portfolio-images/` assets. No secrets, payments, production deployment or publication changed.
+- Mobile `/quote` uses a short heading and two-column project choices; long intro/pricing details remain desktop-only. Changing steps scrolls/focuses the form heading on phones. Mobile free-audit intro is compacted too. Desktop layout preserved. At 360×800, first project choice starts around y=312 (previously below the initial screen); all five choices fit. No horizontal overflow at 320/360/390/1440.
+- Validation: production build, 13 focused portfolio/admin/package tests, isolated PostgreSQL tests (public read, admin CRUD, non-admin write denial, hidden rows, URL validation and stale revisions), scoped lint and browser layout/removal checks passed. Existing unrelated TypeScript diagnostics remain. Local read-only preview uses ignored portfolio fixtures and cannot save admin changes.
+
+### [2026-11-17] Short homepage and dedicated exploration/payment pages (local)
+- Homepage now retains hero, compact navigation cards, packages and project CTA; full portfolio, service overview, reviews, resources and FAQs moved to `/portfolio`, `/services`, `/reviews`, `/resources`, `/faq`. Existing process, audit, blog and local-guide pages remain available through navigation. Homepage FAQ/HowTo schema removed with those sections.
+- Added `/payments` package selection using the existing catalog and gated full-document `/pay?package=` links. No checkout/verification/backend changes or production activation changes; the read-only preview cannot collect payments.
+- Desktop/mobile Work links and hero now navigate to `/portfolio`; added footer/navigation discovery and sitemap entries. Local preview requires a rebuild to reflect source changes.
+- Validation: production client/SSR build, scoped ESLint, 29 pricing/package-link tests and 14 desktop/mobile route checks pass. All six new pages return 200 with no horizontal overflow at 390px and 1440px. The rebuilt read-only preview is running on port 8080; production remains unchanged.
+
+### [2026-11-14] LAN-accessible local UI preview
+- Updated the ignored `logs/studio/server.mjs` read-only preview helper to listen on `0.0.0.0:8080`, allowing devices on the same local network to open the built UI preview. The preview remains read-only with payments disabled; this does not change the production Worker or deployment.
+
+### [2026-11-13] Conversion-focused studio UI redesign — local source
+- Owner requested a complete UI revolution and clarified that the primary goal is qualified website-building leads. Added an ivory/ink/orange studio identity, Manrope/DM Sans typography, a selective serif headline accent, actual client screenshot composition and new-visitor light theme while preserving saved theme choices.
+- Rebuilt shared navigation/footer/contact controls and homepage sections. Work/reviews, services, quote-first packages, process and direct-developer proof precede supporting guides/resources. Removed the obsolete homepage hero-background preload, unused legacy SEO mount and audit scarcity claim. Kept server metadata/JSON-LD, real review wording, all route destinations, contact constants, package state, full-document advance links and original gated payment behavior.
+- Coordinated explicit scoped styles across core/forms/services/niches/blog/LP/legal/private pages, all 14 location guides and three case studies through shared templates, plus admin. Preserved auth, form schemas/actions, booking, quote conversion deduplication, payment verification/recovery and receipt print rules. No backend/schema/credential/price/activation change.
+- Validation: production client/SSR build, all 374 existing tests/52 files, final 13 focused pricing/quote/hydration tests, eight existing conversion/home browser checks and six mocked admin browser checks pass. Scoped lint and whitespace checks pass. Full TypeScript still reports 60 diagnostics, including legacy animation/template typing and missing generated route imports; no clean typecheck claim.
+- Initial 84 representative page/width observations found Why Us and finance mobile overflow. Intrinsic grids/wrapping and a vertical finance entrance repair those without clipping. Final 32 built-source page/width checks across 320/390/768/1024/1440px pass with no overflow/page errors, fonts loaded and keyboard Escape/focus plus mobile close-on-navigation verified. Contrast repairs include ads buttons, white receipt/confirmation surfaces and dark-theme controls.
+- Cloudflare local preview exited with a network/proxy failure; browser checks use an isolated read-only built-app preview with local price fixtures and mocked/blocked services. No real lead, booking, charge, publication, Git push or deployment. Live behavior and actual conversion impact remain unmeasured. Report: `docs/ui-redesign-20261113.md`; ignored previews/check artifacts: `logs/studio/`.
 
 ### [2026-11-12] Approved editorial follow-up source release
 - Owner authorised pushing the manual review prompt, November content/SQL archive, validation/audit scripts, subdomain findings and documentation to the existing `origin/ssr` branch. The eight CMS corrections are already owner-applied and independently verified; no additional Supabase write or SQL rerun is needed for this batch.

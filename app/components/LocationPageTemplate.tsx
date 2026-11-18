@@ -9,7 +9,7 @@ import { locationContent } from "@/lib/location-content";
 export default function LocationPageTemplate({ locationName }: { locationName: string }) {
   const market = locationContent[locationName];
   if (!market) throw new Error(`Missing local editorial data: ${locationName}`);
-  return <PageTransition><div className="min-h-screen bg-background text-foreground">
+  return <PageTransition><div className="studio-page studio-location-page-template min-h-screen bg-background text-foreground">
     <JsonLd data={buildLocationJsonLd(locationName)} />
     <Navbar />
     <main className="pt-32 pb-20 mx-auto max-w-5xl px-6">

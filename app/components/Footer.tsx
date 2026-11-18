@@ -1,141 +1,50 @@
-import { Phone, Mail, MessageCircle, Youtube } from "lucide-react";
+import { ArrowDownToLine, ArrowUpRight, Mail, MessageCircle, Phone, Youtube } from "lucide-react";
 import { Link } from "react-router";
 import { PHONE_NUMBER, PHONE_TEL_LINK, EMAIL, EMAIL_COMPOSE_LINK, WHATSAPP_URL } from "@/lib/constants";
+import "./site-shell.css";
 
-const Footer = () => {
+const serviceLinks = [
+  ["Business websites", "/services/business-websites"], ["E-commerce stores", "/services/ecommerce"], ["Web applications", "/services/web-applications"], ["SEO & speed audits", "/services/seo-optimization"], ["Google Ads", "/services/google-ads"], ["Meta Ads", "/services/meta-ads"], ["Book a strategy call", "/ads-contact"],
+];
+const industryLinks = [
+  ["Doctors", "/websites-for-doctors"], ["Finance & CAs", "/websites-for-finance"], ["Lawyers", "/websites-for-lawyers"], ["Real estate", "/websites-for-real-estate"], ["Consultants", "/websites-for-consultants"], ["Startups", "/websites-for-startups"], ["Restaurants", "/websites-for-restaurants"],
+];
+const studioLinks = [
+  ["Portfolio", "/portfolio"], ["Payments", "/payments"], ["Reviews", "/reviews"], ["Resources", "/resources"], ["FAQs", "/faq"],
+  ["About SiteNova", "/about"], ["Our process", "/our-process"], ["Why work with us", "/why-us"], ["Pricing", "/pricing"], ["Blog", "/blog"], ["Website cost calculator", "/website-cost-calculator"], ["Free website audit", "/free-audit"], ["Contact us", "/contact-us"],
+];
+const areas = [
+  ["Mulund", "mulund"], ["Thane", "thane"], ["Bandra", "bandra"], ["Powai", "powai"], ["Andheri", "andheri"], ["Bhandup", "bhandup"], ["Nahur", "nahur"], ["Ghatkopar", "ghatkopar"], ["Vikhroli", "vikhroli"], ["Kurla", "kurla"], ["Dadar", "dadar"], ["Lower Parel", "lower-parel"], ["Mahalakshmi", "mahalakshmi"], ["Pedder Road", "pedder-road"],
+];
+
+export default function Footer() {
   return (
-    <footer className="border-t border-border/40 bg-card/30">
-      <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-10">
-          {/* Brand */}
-          <div className="sm:col-span-2 lg:col-span-1">
-            <span className="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight">
-              <img src="/logo-icon.png" className="h-8 w-8 object-contain" alt="SiteNova Logo" width="32" height="32" />
-              <span>Site<span className="gradient-text">Nova</span></span>
-            </span>
-            <p className="text-sm text-muted-foreground mt-3 mb-6 leading-relaxed">
-              We build stunning, high-performing websites for businesses in Mumbai and surrounding commercial areas.
-            </p>
-            <a
-              href="/downloads/sitenova-beta.apk"
-              download="SiteNova-Beta.apk"
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-accent/60 bg-accent/15 px-6 py-3 text-sm font-bold text-accent hover:bg-accent/25 transition-all glow-effect group interactive-card shadow-[0_0_20px_rgba(239,68,68,0.15)] hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]"
-            >
-              <span className="text-lg animate-bounce motion-reduce:animate-none">🎉</span>
-              Download Android App (Beta)
-            </a>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h4 className="font-heading text-sm font-semibold mb-4">Our Services</h4>
-            <ul className="space-y-2.5">
-              <li><Link to="/services/ecommerce" className="text-sm text-muted-foreground hover:text-foreground transition-colors">E-commerce Stores</Link></li>
-              <li><Link to="/services/web-applications" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Custom Web Apps</Link></li>
-              <li><Link to="/services/seo-optimization" className="text-sm text-muted-foreground hover:text-foreground transition-colors">SEO & Speed Tuning</Link></li>
-              <li><Link to="/websites-for-doctors" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Doctors</Link></li>
-              <li><Link to="/websites-for-lawyers" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Lawyers</Link></li>
-              <li><Link to="/websites-for-consultants" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Consultants</Link></li>
-              <li><Link to="/websites-for-finance" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Finance Pros</Link></li>
-              <li><Link to="/websites-for-real-estate" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Real Estate</Link></li>
-              <li><Link to="/websites-for-startups" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Startups</Link></li>
-              <li><Link to="/websites-for-restaurants" className="text-sm text-muted-foreground hover:text-foreground transition-colors">For Restaurants</Link></li>
-            </ul>
-          </div>
-
-          {/* Marketing */}
-          <div>
-            <h4 className="font-heading text-sm font-semibold mb-4 text-orange-500">Marketing</h4>
-            <ul className="space-y-2.5">
-              <li><Link to="/services/google-ads" className="text-sm text-muted-foreground hover:text-orange-500 transition-colors">Google Ads Management</Link></li>
-              <li><Link to="/services/meta-ads" className="text-sm text-muted-foreground hover:text-orange-500 transition-colors">Meta Ads Management</Link></li>
-              <li><Link to="/ads-contact" className="text-sm text-muted-foreground hover:text-orange-500 transition-colors">Book a Strategy Call</Link></li>
-            </ul>
-          </div>
-
-          {/* Locations */}
-          <div className="sm:col-span-2 lg:col-span-2">
-            <h4 className="font-heading text-sm font-semibold mb-4">Service Areas</h4>
-            <Link to="/locations" className="mb-4 inline-block text-sm text-primary underline underline-offset-4">Explore all 14 local guides</Link>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-              <li><Link to="/location/mulund" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mulund Web Design</Link></li>
-              <li><Link to="/location/thane" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Thane Web Design</Link></li>
-              <li><Link to="/location/bandra" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bandra Web Design</Link></li>
-              <li><Link to="/location/powai" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Powai Web Developer</Link></li>
-              <li><Link to="/location/andheri" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Andheri Web Designer</Link></li>
-              <li><Link to="/location/bhandup" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Bhandup Web Design</Link></li>
-              <li><Link to="/location/nahur" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Nahur Web Design</Link></li>
-              <li><Link to="/location/ghatkopar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Ghatkopar Web Design</Link></li>
-              <li><Link to="/location/vikhroli" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Vikhroli</Link></li>
-              <li><Link to="/location/kurla" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Kurla</Link></li>
-              <li><Link to="/location/dadar" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Dadar</Link></li>
-              <li><Link to="/location/lower-parel" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Lower Parel</Link></li>
-              <li><Link to="/location/mahalakshmi" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Mahalakshmi</Link></li>
-              <li><Link to="/location/pedder-road" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pedder Road</Link></li>
-            </ul>
-          </div>
-
-          {/* Company & Contact */}
-          <div>
-            <h4 className="font-heading text-sm font-semibold mb-4">Company</h4>
-            <ul className="space-y-2.5 mb-10">
-              <li><Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About SiteNova</Link></li>
-              <li><Link to="/our-process" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Our Process</Link></li>
-              <li><Link to="/why-us" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Why Choose Us</Link></li>
-              <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
-              <li><Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
-              <li><Link to="/website-cost-calculator" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Cost Calculator</Link></li>
-              <li><Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Free Audit</Link></li>
-            </ul>
-
-            <h4 className="font-heading text-sm font-semibold mb-4">Get in Touch</h4>
-            <ul className="space-y-3">
-              <li>
-                <a href={PHONE_TEL_LINK} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
-                  <Phone size={14} /> {PHONE_NUMBER}
-                </a>
-              </li>
-              <li>
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
-                  <MessageCircle size={14} /> WhatsApp
-                </a>
-              </li>
-              <li>
-                <a href={EMAIL_COMPOSE_LINK} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
-                  <Mail size={14} /> {EMAIL}
-                </a>
-              </li>
-              <li>
-                <a href="https://www.youtube.com/@SiteNova_Web_Design" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors interactive-card">
-                  <Youtube size={14} /> YouTube
-                </a>
-              </li>
-            </ul>
-          </div>
+    <footer className="studio-footer">
+      <div className="studio-footer-inner">
+        <div className="studio-footer-intro">
+          <div><p className="studio-footer-eyebrow">Independent design & development.</p><h2>Based in Mumbai.<br /><span>Built around your business.</span></h2></div>
+          <Link to="/quote" className="studio-footer-project" aria-label="Get a quote from SiteNova"><ArrowUpRight size={42} strokeWidth={1.3} /><span>Get a quote</span></Link>
         </div>
-
-        <div className="mt-14 pt-8 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} SiteNova. All rights reserved.
-          </p>
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-            <Link to="/contact-us" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link>
-            <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors">About</Link>
-            <Link to="/our-process" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Our Process</Link>
-            <Link to="/why-us" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Why Us</Link>
-            <Link to="/privacy-policy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
-            <Link to="/terms-and-conditions" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
-            <Link to="/refund-policy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Refunds</Link>
-            <Link to="/delivery-policy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Digital Delivery</Link>
-            <a href={EMAIL_COMPOSE_LINK} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Email</a>
-            <a href={PHONE_TEL_LINK} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Call Us</a>
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">WhatsApp</a>
-            <a href="https://www.youtube.com/@SiteNova_Web_Design" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">YouTube</a>
+        <div className="studio-footer-grid">
+          <div className="studio-footer-brand">
+            <Link to="/" className="studio-wordmark" aria-label="SiteNova home"><img src="/logo-icon.png" width={32} height={32} alt="" /><span>SiteNova<span className="studio-wordmark-dot">.</span></span></Link>
+            <p>Thoughtful websites.<br />Made for real businesses.</p>
+            <span className="studio-footer-location">Mulund, Mumbai, India<br />Mon–Sat · 10:00–19:00 IST</span>
+            <div className="studio-footer-contact">
+              <a href={PHONE_TEL_LINK}><Phone size={15} aria-hidden="true" />{PHONE_NUMBER}</a>
+              <a href={EMAIL_COMPOSE_LINK} target="_blank" rel="noopener noreferrer"><Mail size={15} aria-hidden="true" />{EMAIL}</a>
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><MessageCircle size={15} aria-hidden="true" />WhatsApp <ArrowUpRight size={12} aria-hidden="true" /></a>
+              <a href="https://www.youtube.com/@SiteNova_Web_Design" target="_blank" rel="noopener noreferrer"><Youtube size={15} aria-hidden="true" />YouTube <ArrowUpRight size={12} aria-hidden="true" /></a>
+            </div>
           </div>
+          <div><h3>Services</h3><ul>{serviceLinks.map(([label,to]) => <li key={to}><Link to={to}>{label}</Link></li>)}</ul></div>
+          <div><h3>Industries</h3><ul>{industryLinks.map(([label,to]) => <li key={to}><Link to={to}>{label}</Link></li>)}</ul></div>
+          <div><h3>Studio & resources</h3><ul>{studioLinks.map(([label,to]) => <li key={to}><Link to={to}>{label}</Link></li>)}</ul><a className="studio-app-download" href="/downloads/sitenova-beta.apk" download="SiteNova-Beta.apk"><ArrowDownToLine size={15} aria-hidden="true" />Android app <span>Beta</span></a></div>
         </div>
+        <div className="studio-footer-areas"><Link to="/locations">Around Mumbai <ArrowUpRight size={14} aria-hidden="true" /></Link><div>{areas.map(([label,slug]) => <Link key={slug} to={`/location/${slug}`}>{label}</Link>)}</div></div>
+        <div className="studio-footer-bottom"><p>© {new Date().getFullYear()} SiteNova. Built with care in Mumbai.</p><div><Link to="/privacy-policy">Privacy</Link><Link to="/terms-and-conditions">Terms</Link><Link to="/refund-policy">Refunds</Link><Link to="/delivery-policy">Digital delivery</Link></div></div>
+        <p className="studio-footer-large" aria-hidden="true">SiteNova<span>.</span></p>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

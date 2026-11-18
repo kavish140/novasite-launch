@@ -42,7 +42,7 @@ export default function PaymentThankYou(){
  const paid=confirmation?.state==="paid";
  const projectUrl=confirmation?.projectToken?`/project#${encodeURIComponent(confirmation.projectToken)}`:null;
  const service=kind==="balance"?"Remaining project balance":packageId==="business"?"Business website advance":"Starter website advance";
- return <main className="min-h-screen bg-[#0c1221] px-4 py-9 text-slate-100 sm:px-6 sm:py-14"><div className="mx-auto max-w-2xl">
+ return <main className="studio-page studio-payment-thank-you min-h-screen bg-[#0c1221] px-4 py-9 text-slate-100 sm:px-6 sm:py-14"><div className="mx-auto max-w-2xl">
   <header className="mb-8 flex items-center justify-between gap-4"><Link reloadDocument to="/" className="flex items-center gap-3 font-heading text-xl font-bold"><span className="rounded-xl bg-gradient-to-br from-blue-500 to-teal-400 p-2.5"><Zap className="h-5 w-5" aria-hidden="true"/></span>{SITE_NAME}</Link><span className="flex items-center gap-2 text-xs text-slate-400"><LockKeyhole className="h-4 w-4" aria-hidden="true"/>Private confirmation</span></header>
   <section className="overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl" aria-labelledby="payment-confirmation-title" aria-busy={busy}>
    <div className="h-1.5 bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-400"/>

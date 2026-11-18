@@ -16,7 +16,7 @@ it("shows separately configured advances with full-document package links and pr
  show();expect(screen.getByText("₹12,000.55")).toBeTruthy();
  expect(screen.getByRole("link",{name:"Pay ₹4,200.25 advance"}).getAttribute("href")).toBe("/pay?package=starter");
  expect(screen.getByRole("link",{name:"Pay ₹6,000.00 advance"}).getAttribute("href")).toBe("/pay?package=business");
- expect(screen.getAllByRole("link",{name:"Prefer a quote first?"})).toHaveLength(2);
+ expect(screen.getAllByRole("link",{name:"Discuss this package"})).toHaveLength(2);
  expect(screen.getAllByText(/Share your project details/)).toHaveLength(2);
  // Observe React's handling before cancelling native navigation in jsdom.
  // A SPA payment link would already have prevented the default at the root.
@@ -24,7 +24,7 @@ it("shows separately configured advances with full-document package links and pr
  window.addEventListener("click",stop,{once:true});fireEvent.click(screen.getByRole("link",{name:"Pay ₹4,200.25 advance"}));expect(spaNavigation).toBe(false);
 });
 it.each([[false,true],[true,false],[false,false]])("hides collection links when enabled=%s and pricing available=%s",(enabled,available)=>{
- show(enabled,available);expect(screen.queryByRole("link",{name:/Pay .* advance/})).toBeNull();expect(screen.getAllByRole("link",{name:"Get a project quote"})).toHaveLength(2);
+ show(enabled,available);expect(screen.queryByRole("link",{name:/Pay .* advance/})).toBeNull();expect(screen.getAllByRole("link",{name:"Discuss this package"})).toHaveLength(2);
  if(!available){expect(screen.getAllByText("Quote on request")).toHaveLength(2);expect(screen.queryByText("₹12,000.55")).toBeNull();}
 });
 it("uses the same current catalog in SSR metadata and drops numbers when unavailable",()=>{

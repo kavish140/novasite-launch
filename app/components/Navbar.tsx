@@ -1,341 +1,136 @@
-import { useEffect, useRef, useState, startTransition } from "react";
-import { m as motion, AnimatePresence } from "framer-motion";
-import { Menu, Moon, Sun, X, ChevronDown, Stethoscope, TrendingUp, Building2, Scale, Briefcase, Rocket, UtensilsCrossed, ShoppingCart, Search, Code2, Target, Megaphone, Zap } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { startTransition, useEffect, useState } from "react";
+import { ArrowUpRight, ChevronDown, Menu, Moon, Sun } from "lucide-react";
+import { Link, useLocation } from "react-router";
 import { useTheme } from "next-themes";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import "./site-shell.css";
 
-const navLinks = [
-  { label: "Features", id: "features" },
-  { label: "Portfolio", id: "portfolio" },
-  { label: "How It Works", id: "how-it-works" },
-  { label: "Testimonials", id: "testimonials" },
+const services = [
+  { label: "Business websites", to: "/services/business-websites", detail: "A considered home for your business" },
+  { label: "E-commerce stores", to: "/services/ecommerce", detail: "From browsing to checkout" },
+  { label: "Web applications", to: "/services/web-applications", detail: "Custom tools, dashboards & platforms" },
+  { label: "SEO & speed audits", to: "/services/seo-optimization", detail: "A stronger technical foundation" },
+];
+const industries = [
+  { label: "Doctors", to: "/websites-for-doctors" },
+  { label: "Finance & CAs", to: "/websites-for-finance" },
+  { label: "Real estate", to: "/websites-for-real-estate" },
+  { label: "Lawyers", to: "/websites-for-lawyers" },
+  { label: "Consultants", to: "/websites-for-consultants" },
+  { label: "Startups", to: "/websites-for-startups" },
+  { label: "Restaurants", to: "/websites-for-restaurants" },
+];
+const marketing = [
+  { label: "Google Ads", to: "/services/google-ads" },
+  { label: "Meta Ads", to: "/services/meta-ads" },
+  { label: "Book a strategy call", to: "/ads-contact" },
+];
+const studio = [
+  { label: "Payments", to: "/payments" },
+  { label: "Resources", to: "/resources" },
+  { label: "FAQs", to: "/faq" },
+  { label: "About SiteNova", to: "/about" },
+  { label: "Our process", to: "/our-process" },
+  { label: "Why work with us", to: "/why-us" },
+  { label: "Contact", to: "/contact-us" },
+  { label: "Free website audit", to: "/free-audit" },
+  { label: "Website cost calculator", to: "/website-cost-calculator" },
+  { label: "Local guides", to: "/locations" },
 ];
 
-const nicheLinks = [
-  { label: "Websites for Doctors", to: "/websites-for-doctors", icon: Stethoscope, description: "Clinics, dentists & healthcare" },
-  { label: "Websites for Finance", to: "/websites-for-finance", icon: TrendingUp, description: "CAs, advisors & insurance" },
-  { label: "Websites for Real Estate", to: "/websites-for-real-estate", icon: Building2, description: "Agents, builders & dealers" },
-  { label: "Websites for Lawyers", to: "/websites-for-lawyers", icon: Scale, description: "Advocates, firms & legal pros" },
-  { label: "Websites for Consultants", to: "/websites-for-consultants", icon: Briefcase, description: "Coaches, advisors & consultants" },
-  { label: "Websites for Startups", to: "/websites-for-startups", icon: Rocket, description: "SaaS, founders & tech" },
-  { label: "Websites for Restaurants", to: "/websites-for-restaurants", icon: UtensilsCrossed, description: "Cafes, diners & kitchens" },
-];
-
-const coreServiceLinks = [
-  { label: "E-Commerce Stores", to: "/services/ecommerce", icon: ShoppingCart, description: "Razorpay + Stripe, from ₹18,000" },
-  { label: "SEO & Speed Audits", to: "/services/seo-optimization", icon: Search, description: "Core Web Vitals & rankings" },
-  { label: "Web Applications", to: "/services/web-applications", icon: Code2, description: "Dashboards & custom apps" },
-];
-
-const marketingLinks = [
-  { label: "Google Ads", to: "/services/google-ads", icon: Target, description: "Search & display ad campaigns" },
-  { label: "Meta Ads", to: "/services/meta-ads", icon: Megaphone, description: "Facebook & Instagram ads" },
-];
-
-const Navbar = () => {
+export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [marketingOpen, setMarketingOpen] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
-  const isDarkMode = resolvedTheme !== "light";
   const location = useLocation();
-  const navigate = useNavigate();
-  const servicesRef = useRef<HTMLDivElement>(null);
-  const marketingRef = useRef<HTMLDivElement>(null);
+  const dark = resolvedTheme === "dark";
 
+  useEffect(() => { startTransition(() => setMounted(true)); }, []);
   useEffect(() => {
-    startTransition(() => { setMounted(true); });
-  }, []);
-
-  // Close dropdowns on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (servicesOpen && servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
-        setServicesOpen(false);
-      }
-      if (marketingOpen && marketingRef.current && !marketingRef.current.contains(e.target as Node)) {
-        setMarketingOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [servicesOpen, marketingOpen]);
-
-  // Close dropdowns on route change
-  useEffect(() => {
-    setServicesOpen(false);
-    setMarketingOpen(false);
     setMobileOpen(false);
+    setServicesOpen(false);
+    setStudioOpen(false);
   }, [location.pathname]);
 
-  const scrollToSection = (sectionId: string) => {
-    if (location.pathname !== "/") {
-      navigate("/", { state: { scrollTo: sectionId } });
-    } else {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+  const sectionRoutes: Record<string, string> = { portfolio: "/portfolio", features: "/services", testimonials: "/reviews", "how-it-works": "/our-process" };
+
+  const themeControl = (
+    <button type="button" className="studio-theme" onClick={() => setTheme(dark ? "light" : "dark")} aria-label="Toggle theme">
+      {mounted && dark ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}
+    </button>
+  );
 
   return (
-    <nav className="fixed top-[var(--banner-height,0px)] left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl transition-all duration-300">
-      <div className="mx-auto max-w-7xl flex items-center justify-between px-4 py-4">
-        <Link to="/" className="flex items-center gap-2 font-heading text-xl font-bold tracking-tight shrink-0">
-          <img src="/logo-icon.png" className="h-8 w-8 object-contain" alt="SiteNova Logo" width="32" height="32" />
-          <span>Site<span className="gradient-text">Nova</span></span>
+    <nav className="studio-nav" aria-label="Main navigation">
+      <div className="studio-nav-inner">
+        <Link to="/" className="studio-wordmark" aria-label="SiteNova home">
+          <img src="/logo-icon.png" alt="" width={32} height={32} />
+          <span>SiteNova<span className="studio-wordmark-dot">.</span></span>
         </Link>
-
-        {/* Desktop — only visible at lg+ */}
-        <div className="hidden lg:flex items-center gap-3 xl:gap-5">
-          {navLinks.map((link) => (
-            <button
-              type="button"
-              key={link.label}
-              onClick={() => scrollToSection(link.id)}
-              aria-label={`Scroll to ${link.label} section`}
-              className="hidden xl:block text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap"
-            >
-              {link.label}
-            </button>
-          ))}
-
-          {/* Services Dropdown */}
-          <div ref={servicesRef} className="relative">
-            <button
-              type="button"
-              onClick={() => { setServicesOpen(!servicesOpen); setMarketingOpen(false); }}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap"
-              aria-expanded={servicesOpen}
-              aria-haspopup="true"
-            >
-              Services
-              <ChevronDown size={14} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
-            </button>
-            <AnimatePresence>
-              {servicesOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full right-0 mt-2 w-72 rounded-xl border border-border/60 bg-background/95 backdrop-blur-xl shadow-xl p-2"
-                >
-                  <p className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-                    Web Services
-                  </p>
-                  {coreServiceLinks.map((service) => {
-                    const Icon = service.icon;
-                    return (
-                      <Link key={service.to} to={service.to}
-                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-secondary/60 transition-colors group">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
-                          <Icon size={18} />
-                        </div>
-                        <div>
-                          <span className="font-medium text-foreground">{service.label}</span>
-                          <p className="text-xs text-muted-foreground mt-0.5">{service.description}</p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  <div className="my-1 mx-3 border-t border-border/40" />
-                  <p className="px-3 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-                    By Industry
-                  </p>
-                  {nicheLinks.map((niche) => {
-                    const Icon = niche.icon;
-                    return (
-                      <Link key={niche.to} to={niche.to}
-                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-secondary/60 transition-colors group">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
-                          <Icon size={18} />
-                        </div>
-                        <div>
-                          <span className="font-medium text-foreground">{niche.label}</span>
-                          <p className="text-xs text-muted-foreground mt-0.5">{niche.description}</p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Marketing Dropdown — separate top-level item */}
-          <div ref={marketingRef} className="relative">
-            <button
-              type="button"
-              onClick={() => { setMarketingOpen(!marketingOpen); setServicesOpen(false); }}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap"
-              aria-expanded={marketingOpen}
-              aria-haspopup="true"
-            >
-              Marketing
-              <ChevronDown size={14} className={`transition-transform duration-200 ${marketingOpen ? "rotate-180" : ""}`} />
-            </button>
-            <AnimatePresence>
-              {marketingOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full right-0 mt-2 w-64 rounded-xl border border-orange-500/20 bg-background/95 backdrop-blur-xl shadow-xl p-2"
-                >
-                  <p className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-orange-500/70">
-                    Paid Advertising
-                  </p>
-                  {marketingLinks.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link key={item.to} to={item.to}
-                        className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm hover:bg-orange-500/8 transition-colors group">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500 group-hover:bg-orange-500/15 transition-colors">
-                          <Icon size={18} />
-                        </div>
-                        <div>
-                          <span className="font-medium text-foreground">{item.label}</span>
-                          <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  <div className="my-1 mx-3 border-t border-orange-500/15" />
-                  <Link to="/ads-contact"
-                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-semibold text-orange-500 hover:bg-orange-500/8 transition-colors">
-                    <Zap size={14} />
-                    Book a Free Strategy Call →
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap">Blog</Link>
-          <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap">Pricing</Link>
-          <Link to="/website-cost-calculator" className="hidden xl:block text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap">Calculator</Link>
-          <Link to="/free-audit" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 whitespace-nowrap">Free Audit</Link>
-          <button
-            type="button"
-            onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-            className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary/80 transition-colors shrink-0"
-            aria-label="Toggle theme"
-          >
-            {!mounted ? null : isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-          <Link to="/quote"
-            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm btn-quote-pulse whitespace-nowrap shrink-0">
-            Get a Quote
-          </Link>
+        <div className="studio-desktop-nav">
+          <Link to="/portfolio" className="studio-nav-link">Work</Link>
+          <DropdownMenu modal={false} open={servicesOpen} onOpenChange={setServicesOpen}>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className="studio-nav-link">Services <ChevronDown size={13} aria-hidden="true" /></button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" sideOffset={25} className="studio-mega-menu">
+              <div className="studio-mega-column">
+                <DropdownMenuLabel className="studio-menu-label">What we build</DropdownMenuLabel>
+                {services.map(item => (
+                  <DropdownMenuItem asChild key={item.to} className="studio-menu-item">
+                    <Link to={item.to}><span>{item.label}<small>{item.detail}</small></span><ArrowUpRight size={15} aria-hidden="true" /></Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuLabel className="studio-menu-label studio-menu-label-lower">Reach your audience</DropdownMenuLabel>
+                {marketing.map(item => <DropdownMenuItem asChild key={item.to} className="studio-menu-item"><Link to={item.to}>{item.label}<ArrowUpRight size={15} aria-hidden="true" /></Link></DropdownMenuItem>)}
+              </div>
+              <div className="studio-mega-column studio-mega-industries">
+                <DropdownMenuLabel className="studio-menu-label">Made for your industry</DropdownMenuLabel>
+                {industries.map(item => <DropdownMenuItem asChild key={item.to} className="studio-menu-item"><Link to={item.to}>{item.label}<ArrowUpRight size={15} aria-hidden="true" /></Link></DropdownMenuItem>)}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Link to="/pricing" className="studio-nav-link" aria-current={location.pathname === "/pricing" ? "page" : undefined}>Pricing</Link>
+          <DropdownMenu modal={false} open={studioOpen} onOpenChange={setStudioOpen}>
+            <DropdownMenuTrigger asChild><button type="button" className="studio-nav-link">Studio <ChevronDown size={13} aria-hidden="true" /></button></DropdownMenuTrigger>
+            <DropdownMenuContent align="start" sideOffset={25} className="studio-small-menu">
+              {studio.map(item => <DropdownMenuItem asChild key={item.to} className="studio-menu-item"><Link to={item.to}>{item.label}<ArrowUpRight size={15} aria-hidden="true" /></Link></DropdownMenuItem>)}
+              <DropdownMenuItem asChild className="studio-menu-item"><Link to={sectionRoutes["features"]}>Our approach<ArrowUpRight size={15} aria-hidden="true" /></Link></DropdownMenuItem>
+              <DropdownMenuItem asChild className="studio-menu-item"><Link to={sectionRoutes["testimonials"]}>Client reviews<ArrowUpRight size={15} aria-hidden="true" /></Link></DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Link to="/free-audit" className="studio-nav-link">Free audit</Link>
         </div>
-
-        {/* Mobile/tablet toggle — shows on md and below lg */}
-        <button
-          className="lg:hidden text-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-          aria-expanded={mobileOpen}
-          aria-controls="mobile-menu"
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="studio-nav-actions">
+          {themeControl}
+          <Link to="/quote" className="studio-nav-cta">Get a quote <ArrowUpRight size={17} aria-hidden="true" /></Link>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild><button type="button" className="studio-mobile-trigger" aria-label="Toggle mobile menu"><Menu size={22} /></button></SheetTrigger>
+            <SheetContent side="right" className="studio-mobile-menu">
+              <SheetTitle className="studio-wordmark">SiteNova<span className="studio-wordmark-dot">.</span></SheetTitle>
+              <SheetDescription className="sr-only">Explore our work, services, studio and resources.</SheetDescription>
+              <div className="studio-mobile-links">
+                <Link to="/portfolio" onClick={() => setMobileOpen(false)}>Our work <ArrowUpRight size={22} /></Link>
+                <Link to="/pricing" onClick={() => setMobileOpen(false)}>Pricing <ArrowUpRight size={22} /></Link>
+                <Link to="/free-audit" onClick={() => setMobileOpen(false)}>Free website audit <ArrowUpRight size={22} /></Link>
+                <details><summary>Services <ChevronDown size={18} /></summary>
+                  <div className="studio-mobile-submenu">{services.map(item => <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}>{item.label}</Link>)}
+                    <p>By industry</p>{industries.map(item => <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}>{item.label}</Link>)}
+                    <p>Marketing</p>{marketing.map(item => <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}>{item.label}</Link>)}
+                  </div>
+                </details>
+                <details><summary>Studio <ChevronDown size={18} /></summary><div className="studio-mobile-submenu">{studio.map(item => <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}>{item.label}</Link>)}<Link to={sectionRoutes["features"]}>Our approach</Link><Link to={sectionRoutes["how-it-works"]}>How it works</Link><Link to={sectionRoutes["testimonials"]}>Client reviews</Link></div></details>
+                <Link to="/blog" onClick={() => setMobileOpen(false)}>Blog <ArrowUpRight size={22} /></Link>
+              </div>
+              <Link to="/quote" className="studio-nav-cta studio-mobile-cta" onClick={() => setMobileOpen(false)}>Get a quote <ArrowUpRight size={20} /></Link>
+              <p className="studio-mobile-note">Independent web design & development.<br />Based in Mulund, Mumbai.</p>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            id="mobile-menu"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="lg:hidden overflow-hidden border-t border-border/40 bg-background/95 backdrop-blur-xl"
-          >
-            <div className="flex flex-col gap-4 px-6 py-6">
-              {navLinks.map((link) => (
-                <button
-                  type="button"
-                  key={link.label}
-                  onClick={() => { scrollToSection(link.id); setMobileOpen(false); }}
-                  aria-label={`Scroll to ${link.label} section`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
-                >
-                  {link.label}
-                </button>
-              ))}
-
-              {/* Mobile Services */}
-              <div className="border-t border-border/30 pt-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3">Services</p>
-                {coreServiceLinks.map((service) => {
-                  const Icon = service.icon;
-                  return (
-                    <Link key={service.to} to={service.to} onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      <Icon size={16} className="text-primary shrink-0" />
-                      {service.label}
-                    </Link>
-                  );
-                })}
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 mt-3 mb-2 px-2">By Industry</p>
-                {nicheLinks.map((niche) => {
-                  const Icon = niche.icon;
-                  return (
-                    <Link key={niche.to} to={niche.to} onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      <Icon size={16} className="text-primary shrink-0" />
-                      {niche.label}
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* Mobile Marketing */}
-              <div className="border-t border-orange-500/20 pt-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-orange-500/70 mb-3">Marketing</p>
-                {marketingLinks.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      <Icon size={16} className="text-orange-500 shrink-0" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-                <Link to="/ads-contact" onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm font-semibold text-orange-500 hover:text-orange-400 transition-colors">
-                  <Zap size={15} /> Book a Free Strategy Call
-                </Link>
-              </div>
-
-              <Link to="/blog" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
-              <Link to="/pricing" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
-              <Link to="/website-cost-calculator" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Cost Calculator</Link>
-              <Link to="/free-audit" onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Free Audit</Link>
-              <button
-                type="button"
-                onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-                className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary px-5 py-2.5 text-sm font-medium text-foreground"
-                aria-label="Toggle theme"
-              >
-                {!mounted ? null : isDarkMode ? (
-                  <span className="inline-flex items-center gap-2"><Sun size={16} /> Light Mode</span>
-                ) : (
-                  <span className="inline-flex items-center gap-2"><Moon size={16} /> Dark Mode</span>
-                )}
-              </button>
-              <Link to="/quote" onClick={() => setMobileOpen(false)}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground btn-quote-pulse">
-                Get a Quote
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </nav>
   );
-};
-
-export default Navbar;
+}

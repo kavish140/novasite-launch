@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "novasite-launch",
+  // Preserve dashboard settings such as the live payment activation flag.
+  "keep_vars": true,
   "compatibility_date": "2026-08-01",
   "compatibility_flags": [
     "nodejs_compat"

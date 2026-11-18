@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import TestPaymentButton from "./TestPaymentButton";
 export const TAB_LABELS: Record<string, string> = {
+  portfolio: "Portfolio projects",
   payments: "Payments",
   scheduled_calls: "Scheduled calls",
   overview: "Overview",
@@ -28,6 +29,7 @@ export const TAB_LABELS: Record<string, string> = {
   activity_log: "Activity log",
 };
 export const TAB_DESCRIPTIONS: Record<string, string> = {
+  portfolio: "Add, edit, publish, order and delete portfolio projects.",
   payments: "Review pending payments, provider checks, and reconciliation alerts.",
   overview: "A clear view of your leads, calls, and content.",
   scheduled_calls: "Keep upcoming conversations and Calendar updates in view.",

@@ -9,6 +9,8 @@ export async function loader({ context }: Route.LoaderArgs) {
   const staticPaths = [
     "/",
     "/pricing",
+    "/services/business-websites",
+    "/portfolio", "/services", "/reviews", "/resources", "/faq", "/payments",
     "/delivery-policy",
     "/contact-us",
     "/quote",
@@ -72,6 +74,7 @@ export async function loader({ context }: Route.LoaderArgs) {
   // Using today's date on every request tells Googlebot that nothing ever changes,
   // causing it to distrust and ignore lastmod signals entirely.
   const lastModified: Record<string, string> = {
+    "/services/business-websites": "2026-11-18",
     "/": "2026-10-20",
     "/pricing": "2026-10-10",
     "/delivery-policy": "2026-10-10",

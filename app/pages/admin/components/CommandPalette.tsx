@@ -30,6 +30,7 @@ interface CommandPaletteProps {
 }
 
 const TAB_COMMANDS: { tab: AdminTab; label: string; icon: React.ElementType }[] = [
+  { tab: "portfolio", label: "Portfolio projects", icon: LayoutDashboard },
   { tab: "payments", label: "Payments", icon: CreditCard },
   { tab: "scheduled_calls", label: "Scheduled Calls", icon: CalendarDays },
   { tab: "overview",       label: "Overview",        icon: LayoutDashboard },

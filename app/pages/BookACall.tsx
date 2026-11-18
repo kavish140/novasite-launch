@@ -14,7 +14,7 @@ export default function BookACall() {
   const settings = useBookingSettings();
   const available = bookingAvailable(settings);
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="studio-page studio-book-a-call min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="mx-auto max-w-5xl px-5 pt-32 pb-16">
         <div className="max-w-3xl mx-auto text-center mb-8">

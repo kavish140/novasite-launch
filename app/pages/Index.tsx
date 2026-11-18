@@ -1,264 +1,52 @@
-import {usePackagePricing} from "@/lib/package-pricing";
-import PackageAdvanceOptions from "@/components/PackageAdvanceOptions";
-import { useEffect, Suspense } from "react";
+import { useEffect } from "react";
 import { useLocation, Link } from "react-router";
+import { ArrowUpRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import { buildLocalBusinessJsonLd, buildFaqJsonLd, buildOrganizationJsonLd, buildAboutPageJsonLd, buildHowToJsonLd, buildSpeakableJsonLd } from "@/lib/seo";
-import SEO from "@/components/SEO";
+import { buildLocalBusinessJsonLd, buildOrganizationJsonLd, buildAboutPageJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import PageTransition from "@/components/PageTransition";
-import { faqs } from "@/lib/faq-data";
-
-// Static imports — required for SSR (renderToReadableStream).
-// React.lazy() inside Suspense with streaming SSR renders only the fallback
-// in the initial HTML shell, which would hide content from search crawlers.
-// The <Suspense> boundary below is kept for graceful client hydration only.
-import TechMarquee from "@/components/TechMarquee";
-import FeaturesSection from "@/components/FeaturesSection";
-import ResourcesSection from "@/components/ResourcesSection";
-import LatestGuidesSection from "@/components/LatestGuidesSection";
-import PortfolioSection from "@/components/PortfolioSection";
-import LocalAgencySection from "@/components/LocalAgencySection";
-import HowItWorksSection from "@/components/HowItWorksSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
-import CtaSection from "@/components/CtaSection";
-import FaqSection from "@/components/FaqSection";
+import { usePackagePricing } from "@/lib/package-pricing";
+// Keep public sections statically imported so their content is present in SSR.
 import Footer from "@/components/Footer";
 
-
-
-interface IndexProps {
-  seoTitle?: string;
-  seoDescription?: string;
-  seoCanonicalPath?: string;
-  seoKeywords?: string[];
-}
-
-const Index = ({ seoTitle, seoDescription, seoCanonicalPath, seoKeywords }: IndexProps) => {
-  const {starterPrice,businessPrice}=usePackagePricing();
-
+export default function Index() {
   const location = useLocation();
-
-  const jsonLd = [
-    buildLocalBusinessJsonLd(),
-    buildFaqJsonLd(faqs),
-    buildOrganizationJsonLd(),
-    buildAboutPageJsonLd(),
-    buildHowToJsonLd(),
-    buildSpeakableJsonLd(["#about-sitenova", "#faq", "h1", ".geo-entity-block"]),
-  ];
+  const { starterPrice, available } = usePackagePricing();
+  const jsonLd = [buildLocalBusinessJsonLd(), buildOrganizationJsonLd(), buildAboutPageJsonLd()];
 
   useEffect(() => {
-    // Handle scroll-to-section from Navbar (via state) or direct hash links
-    const scrollTarget = (location.state as { scrollTo?: string } | null)?.scrollTo || 
-      (location.hash ? location.hash.substring(1) : null);
-    
-    if (scrollTarget) {
-      setTimeout(() => {
-        const element = document.getElementById(scrollTarget);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }, 200);
-    }
+    const target = (location.state as { scrollTo?: string } | null)?.scrollTo || location.hash.slice(1);
+    if (!target) return;
+    const timer = window.setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }), 200);
+    return () => window.clearTimeout(timer);
   }, [location]);
 
   return (
     <PageTransition>
-      <SEO 
-        title={seoTitle || `Website Designer in Mulund, Mumbai | From ${starterPrice} | SiteNova`}
-        description={seoDescription || `Is your website losing you customers? SiteNova builds fast, SEO-ready websites for businesses in Mulund, Bhandup & Mumbai — mobile-first, delivered in 7–14 days. From ${starterPrice}.`}
-        canonicalUrl={seoCanonicalPath || "/"}
-        keywords={seoKeywords || [
-          "website designer in Mulund",
-          "web design Mulund Mumbai",
-          "best website designer in Mulund",
-          "website design company Mumbai",
-          "affordable web design Mumbai",
-          "local SEO Mumbai",
-          "website designer near me Mumbai"
-        ]}
-
-      />
       <JsonLd data={jsonLd} />
-      <div className="min-h-screen bg-background text-foreground">
-        <a href="#main-content" className="sr-only focus:not-sr-only">
-          Skip to main content
-        </a>
-        <header>
-          <Navbar />
-        </header>
+      <div className="studio-home studio-home-compact min-h-screen bg-background text-foreground">
+        <a href="#main-content" className="studio-skip-link sr-only focus:not-sr-only">Skip to main content</a>
+        <Navbar />
         <main id="main-content">
           <HeroSection />
-        <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
-          <PortfolioSection mode="customers" />
-          <TestimonialsSection />
-          <section aria-labelledby="features-title">
-            <FeaturesSection />
+          <section className="studio-container studio-discover" aria-label="Explore SiteNova">
+            {[["See the work", "Client websites, case studies and design demos.", "/portfolio"], ["Find your solution", "Websites, stores and custom applications.", "/services"], ["Hear from clients", "Real experiences of working with SiteNova.", "/reviews"]].map(([title, description, to]) => <Link key={to} to={to} className="studio-discover-card"><h2>{title}<ArrowUpRight size={22} /></h2><p>{description}</p></Link>)}
           </section>
-          <LatestGuidesSection />
-          <ResourcesSection />
-          <section aria-labelledby="pricing-title" className="pb-20 sm:pb-24">
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="grid gap-6 rounded-3xl border border-primary/20 bg-primary/5 p-4 shadow-sm sm:p-8 md:p-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
-                    Starting price
-                  </p>
-                  <h2 id="pricing-title" className="mt-3 font-heading text-3xl font-bold tracking-tight md:text-4xl">
-                    Websites from <span className="gradient-text">{starterPrice} onwards</span>
-                  </h2>
-                  <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">A simple, professional website is a great way to get started without overspending. Whether you need a landing page (from {starterPrice}), a business website (from {businessPrice}), or a fully custom build, I'll quote based on your exact scope.
-                  </p>
-                </div>
-                <PackageAdvanceOptions />
+          <section id="packages" className="studio-home-pricing" aria-labelledby="pricing-title">
+            <div className="studio-container">
+              <div className="studio-home-pricing-head">
+                <div><p className="studio-eyebrow">A clear starting point</p><h2 id="pricing-title">Good design.<br />A sensible investment.</h2></div>
+                <p>{available ? `Start with a landing page from ${starterPrice}, or give your business a complete online home.` : "Start with a focused landing page, or give your business a complete online home."} Your final scope, price, and schedule are agreed before work begins.</p>
               </div>
+              <div className="studio-discover studio-home-next-steps"><Link to="/pricing" className="studio-discover-card"><p className="studio-eyebrow">Building something new?</p><h2>Find your website package <ArrowUpRight size={22} /></h2><p>Compare the scope and starting prices. Discuss your project, or pay an advance when you’re ready.</p></Link><Link to="/free-audit" className="studio-discover-card studio-audit-offer"><p className="studio-eyebrow">Already have a website?</p><h2>Get my free website audit <ArrowUpRight size={22} /></h2><p>Find what could improve your speed, search visibility and mobile experience. Practical next steps, with no obligation.</p></Link></div>
+              <div className="studio-home-pricing-foot"><span>Need e-commerce or something more custom? Let’s talk through it.</span><Link to="/payments">Payment options <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
             </div>
           </section>
-
-
-          <LocalAgencySection />
-
-          {/* Free Audit CTA Banner */}
-          <section aria-label="Free website audit" className="py-16 sm:py-20">
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5 p-8 md:p-12">
-                <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
-                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary mb-2">Free for Mumbai businesses</p>
-                    <h2 className="font-heading text-2xl font-bold tracking-tight md:text-3xl">
-                      Is your website losing you customers?
-                    </h2>
-                    <p className="mt-2 text-muted-foreground max-w-lg">
-                      Get a free, no-obligation audit of your website's SEO, speed, and mobile experience — with actionable tips to fix what's broken.
-                    </p>
-                  </div>
-                  <Link
-                    to="/free-audit"
-                    className="shrink-0 inline-flex items-center justify-center rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors glow-effect-sm button-shimmer"
-                  >
-                    Get Your Free Audit
-                    <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section aria-labelledby="how-it-works-title">
-            <HowItWorksSection />
-          </section>
-          <section aria-label="Design demos and technologies">
-            <PortfolioSection mode="showcases" />
-            <TechMarquee />
-          </section>
-
-          <section aria-labelledby="service-areas-title" className="py-20 sm:py-24">
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="grid gap-8 rounded-3xl border border-border/60 bg-card/40 p-8 shadow-sm backdrop-blur md:p-12 lg:grid-cols-[1.1fr_0.9fr]">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-accent">
-                    Local SEO focus
-                  </p>
-                  <h2 id="service-areas-title" className="mt-3 font-heading text-3xl font-bold tracking-tight md:text-4xl">
-                    Website design for Mulund, Mumbai, and nearby areas
-                  </h2>
-                  <p className="mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-                    <strong className="font-semibold text-foreground">SiteNova is a professional web development agency based in Mulund, Mumbai, specializing in custom business websites.</strong> We combine mobile-friendly implementation with useful service information and technical search checks. The local guides explain different business contexts; they do not imply separate agency offices or guaranteed rankings.
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {[
-                    { label: "Mulund", href: "/location/mulund" },
-                    { label: "Mumbai", href: "/" },
-                    { label: "Thane", href: "/location/thane" },
-                    { label: "Bhandup", href: "/location/bhandup" },
-                    { label: "Nahur", href: "/location/nahur" },
-                    { label: "Ghatkopar", href: "/location/ghatkopar" },
-                    { label: "Vikhroli", href: "/location/vikhroli" },
-                    { label: "Powai", href: "/location/powai" },
-                    { label: "Andheri", href: "/location/andheri" },
-                    { label: "Kurla", href: "/location/kurla" },
-                    { label: "Dadar", href: "/location/dadar" },
-                    { label: "Lower Parel", href: "/location/lower-parel" },
-                    { label: "Mahalakshmi", href: "/location/mahalakshmi" },
-                    { label: "Pedder Road", href: "/location/pedder-road" },
-                  ].map((area) => (
-                    <Link
-                      key={area.label}
-                      to={area.href}
-                      className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-center text-sm font-medium text-foreground shadow-sm hover:border-primary/40 hover:bg-primary/5 transition-colors"
-                    >
-                      {area.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-          {/* Generative Engine Optimization (GEO) Semantic Entity Block */}
-          <section className="geo-entity-block sr-only" aria-label="Entity disambiguation">
-            <p>
-              SiteNova (sitenova.dev) is a custom web design and development agency founded by Kavish Ganatra in Mulund, Mumbai, India, in 2024. SiteNova specialises in React-based, SEO-ready websites for local Mumbai businesses including doctors, lawyers, finance firms, real estate agents, restaurants, consultants, and startups. SiteNova is not affiliated with sitenovaagency.com, which is a completely separate, unrelated business with a different owner, different location, and different services. SiteNova is verified on Clutch, TechBehemoths, Crunchbase, and Google Business Profile.
-            </p>
-          </section>
-          <section
-            id="about-sitenova"
-            aria-label="About SiteNova Web Design Agency"
-            className="geo-entity-block py-14 bg-background border-t border-border/40"
-          >
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="grid gap-8 lg:grid-cols-2">
-                <div className="prose prose-sm prose-invert max-w-none text-muted-foreground">
-                  <h3 className="text-foreground font-semibold text-lg mb-3">
-                    About SiteNova — Mumbai's Custom Web Design Studio
-                  </h3>
-                  <p>
-                    <strong className="text-foreground">SiteNova</strong> is a custom web design and development agency founded by{" "}
-                    <strong className="text-foreground">Kavish Ganatra</strong>, based in{" "}
-                    <strong className="text-foreground">Mulund, Mumbai, India</strong>. Every website is built from scratch using React and Next.js —
-                    with attention to loading speed and discoverability in search tools like{" "}
-                    <strong className="text-foreground">Google AI Mode</strong>, Perplexity, and ChatGPT.
-                  </p>
-                  <p>
-                    SiteNova is independently listed and reviewed on{" "}
-                    <a href="https://www.clutch.co/profile/sitenova" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Clutch</a>,{" "}
-                    <a href="https://techbehemoths.com/company/sitenova" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">TechBehemoths</a>,{" "}
-                    <a href="https://www.crunchbase.com/organization/sitenova-web-design" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Crunchbase</a>, and
-                    Google Business Profile as a leading web development agency in Mumbai. Every website includes Schema.org structured data,
-                    Generative Engine Optimisation (GEO), and Core Web Vitals tuning as standard.
-                  </p>
-                </div>
-                <div className="prose prose-sm prose-invert max-w-none text-muted-foreground">
-                  <h3 className="text-foreground font-semibold text-lg mb-3">
-                    What We Build
-                  </h3>
-                  <ul className="space-y-1 text-sm">
-                    <li><strong className="text-foreground">Business Websites</strong> — Custom multi-page sites from {businessPrice}, optimised for local SEO in Mumbai</li>
-                    <li><strong className="text-foreground">E-Commerce Stores</strong> — Scalable stores with Razorpay and Stripe integration</li>
-                    <li><strong className="text-foreground">Web Applications</strong> — Dashboards, booking systems, and API integrations from ₹30,000</li>
-                    <li><strong className="text-foreground">Doctor Websites</strong> — Clinic sites with appointment booking and patient SEO</li>
-                    <li><strong className="text-foreground">Finance & CA Websites</strong> — Professional sites for chartered accountants and advisors</li>
-                    <li><strong className="text-foreground">Real Estate Websites</strong> — Property showcases with lead-generation forms</li>
-                    <li><strong className="text-foreground">SEO & Speed Audits</strong> — Core Web Vitals and GEO optimisation from ₹8,000</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <FaqSection />
-          <section aria-labelledby="cta-title">
-            <CtaSection />
-          </section>
-          <Footer />
-        </Suspense>
-      </main>
-    </div>
+          <section className="geo-entity-block studio-home-entity" id="about-sitenova" aria-label="About SiteNova Web Design Agency"><div className="studio-container"><div><h3>SiteNova — an independent Mumbai web studio.</h3><p>Founded by Kavish Ganatra in 2024, SiteNova builds custom websites and web applications from Mulund, Mumbai, India. Work directly with the developer on business websites, online stores, and useful digital experiences. Find SiteNova on <a href="https://www.clutch.co/profile/sitenova" target="_blank" rel="noopener noreferrer">Clutch</a>, <a href="https://techbehemoths.com/company/sitenova" target="_blank" rel="noopener noreferrer">TechBehemoths</a>, and <a href="https://www.crunchbase.com/organization/sitenova-web-design" target="_blank" rel="noopener noreferrer">Crunchbase</a>.</p></div><div><h3>Built around the business behind the website.</h3><p>From doctors and finance firms to retailers, restaurants, consultants, and startups, each project starts with what your customers need to understand and do. SiteNova (sitenova.dev) is not affiliated with sitenovaagency.com, a separate, unrelated business.</p></div></div></section>
+        </main>
+        <Footer />
+      </div>
     </PageTransition>
   );
-};
-
-export default Index;
+}

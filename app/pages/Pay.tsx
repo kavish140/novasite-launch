@@ -116,7 +116,7 @@ export default function Pay() {
     } catch (e) { setError(e instanceof Error ? e.message : "Unable to open checkout"); setBusy(false); }
   }
 
-  return <div className="min-h-screen bg-background text-foreground px-5 py-8 sm:py-14">
+  return <div className="studio-page studio-pay min-h-screen bg-background text-foreground px-5 py-8 sm:py-14">
     <div className="mx-auto max-w-xl">
       <Link to="/pricing" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8"><ArrowLeft size={16} /> Back to pricing</Link>
       <div className="glass-card p-6 sm:p-9">

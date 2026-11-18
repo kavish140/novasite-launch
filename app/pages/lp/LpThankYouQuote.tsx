@@ -16,6 +16,7 @@ export default function LpThankYouQuote() {
   const navigate = useNavigate();
   const state = location.state as {
     submissionId?: string; name?: string;
+    preview?: boolean;
     projectType?: string;
     email?: string;
   } | null;
@@ -40,12 +41,13 @@ export default function LpThankYouQuote() {
   const whatsappUrl = `https://wa.me/919326060621?text=${whatsappMessage}`;
 
   return (
-    <main className="min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-16 relative overflow-hidden flex flex-col justify-center">
+    <main className="studio-page studio-lp-thank-you-quote min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-16 relative overflow-hidden flex flex-col justify-center">
       {/* Background glow orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-primary/10 blur-[150px] animate-pulse-glow pointer-events-none -z-10" />
       <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[120px] pointer-events-none -z-10" />
 
       <div className="mx-auto w-full max-w-3xl z-10 flex-1 flex flex-col justify-center">
+        {state.preview && <p role="status" className="mb-4 rounded-xl border border-primary/30 bg-primary/10 p-4 text-center text-sm">Preview only — this simulates a successful submission. No inquiry was sent and no follow-up will be made.</p>}
         <div className="glass-card p-6 sm:p-10 rounded-3xl border border-border/60 bg-card/40 shadow-2xl backdrop-blur-xl relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 

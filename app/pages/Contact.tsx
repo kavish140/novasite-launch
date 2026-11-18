@@ -24,7 +24,7 @@ const Contact = () => {
   const whatsappUrl = `https://wa.me/919326060621?text=${whatsappMessage}`;
 
   return (
-    <main className="min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-20 relative overflow-hidden flex flex-col">
+    <main className="studio-page studio-contact min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-20 relative overflow-hidden flex flex-col">
       {/* Background glow orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-primary/10 blur-[150px] animate-pulse-glow pointer-events-none -z-10" />
       <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[120px] pointer-events-none -z-10" />

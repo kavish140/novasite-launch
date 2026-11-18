@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { format } from "date-fns";
 import {
   Plus,
@@ -78,7 +78,7 @@ export default function TopicsTab() {
 
   const { toast } = useToast();
 
-  const fetchTopics = async () => {
+  const fetchTopics = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("blog_topics")
@@ -95,11 +95,11 @@ export default function TopicsTab() {
       setTopics((data ?? []) as BlogTopic[]);
     }
     setLoading(false);
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchTopics();
-  }, []);
+  }, [fetchTopics]);
 
   const updateStatus = async (id: string, status: BlogTopic["status"]) => {
     const patch: Record<string, unknown> = { status };

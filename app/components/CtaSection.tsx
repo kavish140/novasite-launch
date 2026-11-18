@@ -1,83 +1,10 @@
-import { m as motion } from "framer-motion";
-import {usePackagePricing} from "@/lib/package-pricing";
-import { Phone, Mail, MessageCircle, ShieldCheck, ArrowRight } from "lucide-react";
+import { ArrowUpRight, MessageCircle, Phone } from "lucide-react";
 import { Link } from "react-router";
-import { PHONE_NUMBER, PHONE_TEL_LINK, EMAIL_COMPOSE_LINK, WHATSAPP_URL } from "@/lib/constants";
+import { usePackagePricing } from "@/lib/package-pricing";
+import { EMAIL_COMPOSE_LINK, PHONE_NUMBER, PHONE_TEL_LINK, WHATSAPP_URL } from "@/lib/constants";
+import "./studio-sections.css";
 
-const CtaSection = () => {
-  const {starterPrice,available}=usePackagePricing();
-  return (
-    <section id="cta" className="section-padding relative overflow-hidden">
-      {/* Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full bg-primary/8 blur-[140px] pointer-events-none" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="relative mx-auto max-w-3xl text-center"
-      >
-        <p className="mx-auto mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-          {available?`Projects starting from ${starterPrice}`:"Request your project quote"}
-        </p>
-        <h2 id="cta-title" className="font-heading text-3xl md:text-5xl font-bold mb-6">
-          Ready to build something{" "}
-          <span className="gradient-text">affordable and effective?</span>
-        </h2>
-        <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
-          Get in touch today for a clean, modern website that fits your budget. Share your requirements and I’ll reply with a clear quote.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-          <Link
-            to="/quote"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground hover:bg-primary/90 transition-all glow-effect button-shimmer interactive-card btn-quote-pulse"
-          >
-            Request a Custom Quote
-            <ArrowRight size={20} />
-          </Link>
-          <a
-            href={WHATSAPP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-8 py-4 text-lg font-semibold text-white hover:bg-[#1ebe57] transition-all button-shimmer interactive-card"
-          >
-            <MessageCircle size={20} />
-            WhatsApp
-          </a>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-          <a
-            href={PHONE_TEL_LINK}
-            className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
-          >
-            <Phone size={20} />
-            {PHONE_NUMBER}
-          </a>
-          <a
-            href={EMAIL_COMPOSE_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-secondary px-8 py-4 text-lg font-semibold text-foreground hover:bg-secondary/80 transition-all button-shimmer interactive-card"
-          >
-            <Mail size={20} />
-            Email Us
-          </a>
-        </div>
-
-        {/* Risk reversal guarantee */}
-        <div className="mt-6 flex items-center justify-center gap-2 rounded-full border border-[#25D366]/20 bg-[#25D366]/5 px-5 py-2">
-          <ShieldCheck size={16} className="text-[#25D366] shrink-0" />
-          <span className="text-sm font-medium text-[#25D366]">
-            Scope and pricing agreed before work begins
-          </span>
-        </div>
-        <p className="mt-4 text-sm text-muted-foreground">We typically respond within 24 hours</p>
-      </motion.div>
-    </section>
-  );
-};
-
-export default CtaSection;
+export default function CtaSection() {
+  const { starterPrice, available } = usePackagePricing();
+  return <section id="cta" className="sn-section sn-cta" aria-labelledby="cta-title"><div className="sn-container sn-cta-inner"><div><p className="sn-kicker">Your business deserves a great website</p><h2 id="cta-title">Let’s build your<br />next big thing<span>.</span></h2><p>{available ? `Projects starting from ${starterPrice}. ` : ""}A clear scope. A considered design. A website you’re proud to share.</p></div><div className="sn-cta-actions"><Link to="/quote" className="sn-cta-primary">Tell us about your project<ArrowUpRight size={21} aria-hidden="true" /></Link><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="sn-cta-secondary"><MessageCircle size={19} aria-hidden="true" />Prefer WhatsApp?<ArrowUpRight size={17} aria-hidden="true" /></a><div className="sn-cta-contacts"><a href={PHONE_TEL_LINK}><Phone size={14} aria-hidden="true" />{PHONE_NUMBER}</a><a href={EMAIL_COMPOSE_LINK} target="_blank" rel="noopener noreferrer">Send an email<ArrowUpRight size={14} aria-hidden="true" /></a></div><small>Scope and pricing agreed before work begins.</small></div></div></section>;
+}

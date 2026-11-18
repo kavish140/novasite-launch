@@ -144,7 +144,7 @@ export default function AdsContact() {
 
 
 
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-ads-contact min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
 
         <main className="flex-1 relative pt-28 pb-20 overflow-hidden">

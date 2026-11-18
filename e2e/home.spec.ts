@@ -6,7 +6,7 @@ test('has title and main heading', async ({ page }) => {
   // Expect a title to contain "SiteNova"
   await expect(page).toHaveTitle(/SiteNova/);
 
-  // Expect the main heading to contain "SiteNova"
+  // The main offer remains visible in the redesigned hero.
   const heading = page.locator('h1');
-  await expect(heading).toContainText(/Mumbai Businesses/i);
+  await expect(heading).toContainText(/A website that\s*means business/i);
 });

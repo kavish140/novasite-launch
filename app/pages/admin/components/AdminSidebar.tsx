@@ -33,6 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export type AdminTab =
+  | "portfolio"
   | "payments"
   | "scheduled_calls"
   | "overview"
@@ -119,6 +120,7 @@ export default function AdminSidebar({
     {
       label: "Content",
       items: [
+        { id: "portfolio", label: "Portfolio projects", icon: LayoutDashboard },
         { id: "blogs", label: "Blog posts", icon: FileText },
         { id: "drafts", label: "AI drafts", icon: Bot, badge: badges.drafts },
         { id: "topics", label: "Topic queue", icon: ListChecks },

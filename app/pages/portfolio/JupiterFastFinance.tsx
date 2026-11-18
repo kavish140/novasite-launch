@@ -94,7 +94,6 @@ export default function JupiterFastFinance() {
         industry: "Finance & Loans",
         location: "Mulund, Mumbai",
       }}
-      projectImage=""
     />
   );
 }

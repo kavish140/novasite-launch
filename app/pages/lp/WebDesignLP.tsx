@@ -351,7 +351,7 @@ export default function WebDesignLP() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="studio-page studio-web-design-lp min-h-screen bg-background text-foreground flex flex-col">
       <MinimalHeader />
 
       {/* HERO — Quote Wizard */}

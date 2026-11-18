@@ -37,7 +37,7 @@ function FeaturedCard({ post }: { post: BlogPost }) {
   const mins = post.reading_time_minutes;
   return (
     <Link to={`/blog/${post.slug}`} className="group block mb-10">
-      <article className="relative overflow-hidden rounded-3xl border border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_40px_-12px_hsl(var(--primary)/0.25)] interactive-card">
+      <article className="studio-journal-feature relative overflow-hidden rounded-3xl border border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_40px_-12px_hsl(var(--primary)/0.25)] interactive-card">
         {/* Subtle gradient accent */}
         <div className="absolute top-0 right-0 w-[400px] h-[300px] rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
 
@@ -87,7 +87,7 @@ function PostCard({ post }: { post: BlogPost }) {
   const mins = post.reading_time_minutes;
   return (
     <Link to={`/blog/${post.slug}`} className="group block h-full">
-      <article className="flex flex-col h-full rounded-2xl border border-border/60 bg-card p-6 transition-all duration-300 hover:border-primary/25 hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.2)] interactive-card">
+      <article className="studio-journal-card flex flex-col h-full rounded-2xl border border-border/60 bg-card p-6 transition-all duration-300 hover:border-primary/25 hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.2)] interactive-card">
         {/* Meta */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs text-muted-foreground" suppressHydrationWarning>
@@ -174,7 +174,7 @@ export default function BlogIndex() {
         }
       }} />
 
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-blog-index min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
 
         <main className="flex-1 pt-32 pb-16 sm:pb-24 max-w-7xl mx-auto px-6 w-full">
@@ -206,6 +206,7 @@ export default function BlogIndex() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search articles…"
+                  aria-label="Search articles"
                   className="w-full h-11 pl-10 pr-10 rounded-xl border border-border/60 bg-card text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
                 />
                 {query && (

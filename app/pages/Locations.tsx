@@ -5,7 +5,7 @@ import PageTransition from "@/components/PageTransition";
 import { locationContent } from "@/lib/location-content";
 
 export default function Locations() {
-  return <PageTransition><div className="min-h-screen bg-background text-foreground">
+  return <PageTransition><div className="studio-page studio-locations min-h-screen bg-background text-foreground">
     <Navbar />
     <main className="mx-auto max-w-6xl px-6 pt-32 pb-20">
       <h1 className="font-heading text-4xl font-bold">Local business website guides</h1>

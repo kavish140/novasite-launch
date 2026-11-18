@@ -90,7 +90,7 @@ export default function Ecommerce() {
       state: {
         projectType: "E-commerce Store",
         requirements: specsSummary,
-        budget: calculatePrice() > 35000 ? "Rs. 35,000+" : "Rs. 18,000 - 35,000",
+        estimateTotal: calculatePrice(),
       },
     });
   };
@@ -125,11 +125,11 @@ export default function Ecommerce() {
             ]
           }
         ]} />
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="studio-page studio-service-page studio-ecommerce min-h-screen bg-background text-foreground">
         <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-32 pb-20">
+      <section className="studio-service-hero relative overflow-hidden pt-32 pb-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(120,119,198,0.1),transparent_50%)]" />
         <div className="mx-auto max-w-7xl px-6 relative z-10 text-center">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-6">

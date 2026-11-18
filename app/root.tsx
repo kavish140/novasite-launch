@@ -22,6 +22,8 @@ import { ClientOnly } from "@/components/ClientOnly";
 import { LazyMotion, domAnimation } from "framer-motion";
 
 import "@/index.css";
+import "@/styles/studio.css";
+import "@/styles/studio-pages.css";
 
 const ScrollProgress = lazy(() => import("@/components/ScrollProgress"));
 const BookCallWidget = lazy(() => import("@/components/BookCallWidget"));
@@ -45,12 +47,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta
           name="theme-color"
-          content="#0a0e1a"
+          content="#191a18"
           media="(prefers-color-scheme: dark)"
         />
         <meta
           name="theme-color"
-          content="#f8fafc"
+          content="#f7f5ef"
           media="(prefers-color-scheme: light)"
         />
 
@@ -70,26 +72,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="alternate" href="https://sitenova.dev/" hrefLang="en-IN" />
         <link rel="alternate" href="https://sitenova.dev/" hrefLang="x-default" />
 
-        {/* Hero image preload — static URL known at build time */}
-        <link rel="preload" as="image" href="/hero-bg.webp" fetchPriority="high" />
-
-        {/* Google Fonts — preload + async load */}
+        {/* Preload the font stylesheet; a normal link also works before hydration. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="preload"
           as="style"
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap"
           rel="stylesheet"
-          media="print"
-          onLoad={(e) => { (e.currentTarget as HTMLLinkElement).media = "all"; }}
         />
         <noscript>
           <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+            href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap"
             rel="stylesheet"
           />
         </noscript>
@@ -97,7 +94,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Theme flash prevention — runs before React hydrates */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('novasite-theme')||'dark';document.documentElement.classList.add(t==='light'?'light':'dark')}catch(e){document.documentElement.classList.add('dark')}`,
+            __html: `try{var t=localStorage.getItem('novasite-theme')||'light';document.documentElement.classList.add(t==='dark'?'dark':'light')}catch(e){document.documentElement.classList.add('light')}`,
           }}
         />
 
@@ -273,7 +270,7 @@ export default function App() {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="dark"
+      defaultTheme="light"
       enableSystem={false}
       storageKey="novasite-theme"
       themes={["dark", "light"]}

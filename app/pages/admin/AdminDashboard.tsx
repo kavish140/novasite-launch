@@ -28,6 +28,8 @@ import QuoteRequestsTab from "./tabs/QuoteRequestsTab";
 import SettingsTab from "./tabs/SettingsTab";
 import ActivityLogTab from "./tabs/ActivityLogTab";
 import PaymentsTab from "./tabs/PaymentsTab";
+import PortfolioTab from "./tabs/PortfolioTab";
+import {usePackagePricing} from "@/lib/package-pricing";
 import PaymentAlerts from "./components/PaymentAlerts";
 import {usePaymentHealth} from "./hooks/usePaymentHealth";
 import {paymentAlertCount} from "@/lib/payment-health";
@@ -124,6 +126,7 @@ export type LeadNote = {
 // ────────────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
+  const {checkoutOrigin}=usePackagePricing();
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const paymentHealth=usePaymentHealth();
   const scheduled = useScheduledCalls(activeTab === "overview" || activeTab === "scheduled_calls");
@@ -453,6 +456,7 @@ export default function AdminDashboard() {
 
   // ── Tab content map ────────────────────────────────────────────────────────
   const tabContent: Record<AdminTab, React.ReactNode> = {
+    portfolio: <PortfolioTab />,
     payments: paymentHealth.isAdmin?<PaymentsTab health={paymentHealth.health} refreshHealth={paymentHealth.refresh} now={paymentHealth.clock}/>:<p>Checking admin access…</p>,
     scheduled_calls: <ScheduledCallsTab {...scheduled} />,
     overview: (
@@ -565,7 +569,8 @@ export default function AdminDashboard() {
             </div>
             <span className="rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">{new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric" }).format(new Date())}</span>
           </div>
-          <PaymentAlerts health={paymentHealth.health} isAdmin={paymentHealth.isAdmin} error={paymentHealth.error} now={paymentHealth.clock} onOpen={()=>setActiveTab("payments")}/>
+          {activeTab==="payments" ? <details className="mb-4 rounded-lg border border-border px-4 py-3"><summary className="cursor-pointer text-sm font-medium">Payment alerts{paymentHealth.health?` · ${paymentAlertCount(paymentHealth.health,paymentHealth.clock)} review flags`:""}</summary><div className="mt-3"><PaymentAlerts health={paymentHealth.health} isAdmin={paymentHealth.isAdmin} error={paymentHealth.error} now={paymentHealth.clock} onOpen={()=>setActiveTab("payments")}/></div></details> : <PaymentAlerts health={paymentHealth.health} isAdmin={paymentHealth.isAdmin} error={paymentHealth.error} now={paymentHealth.clock} onOpen={()=>setActiveTab("payments")}/>}
+          {checkoutOrigin && <aside className="mb-6 rounded-xl border border-primary/30 p-4 text-sm"><p>You’re connected to real SiteNova data. Saved admin changes affect the live site. New payment checkouts open on sitenova.dev.</p><a href={`${checkoutOrigin}/admin/dashboard`} className="mt-3 inline-block font-semibold underline">Open live admin for checkout and payment tracking</a></aside>}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

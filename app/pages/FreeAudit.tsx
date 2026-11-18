@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { m as motion } from "framer-motion";
 import { Search, Smartphone, Zap, ArrowRight, CheckCircle2, ShieldCheck, Lock, Star } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -151,7 +151,7 @@ export default function FreeAudit() {
             ]
           }
         ]} />
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-free-audit min-h-screen bg-background text-foreground flex flex-col">
         <header>
           <Navbar />
         </header>
@@ -166,10 +166,10 @@ export default function FreeAudit() {
           <div className="relative z-10 mx-auto max-w-md px-6 w-full mb-10 text-center lg:hidden">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 mb-6">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="text-[10px] sm:text-xs font-semibold text-primary">Limited Time: 5 Free Audits Remaining This Week</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-primary">A practical review. No obligation.</span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-4">
-              Stop Losing Customers. Get Your <span className="gradient-text animated-gradient">Free Audit</span>
+              Find out what your website needs. Get a <span className="gradient-text animated-gradient">Free Audit</span>
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
               Discover exactly what's holding your website back on Google. We'll analyze your performance, SEO, and design, and give you a step-by-step plan to fix it.
@@ -187,11 +187,11 @@ export default function FreeAudit() {
             >
             <div className="hidden lg:inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 interactive-card">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="text-xs font-semibold text-primary">Limited Time: 5 Free Audits Remaining This Week</span>
+              <span className="text-xs font-semibold text-primary">A practical review. No obligation.</span>
             </div>
             
             <h1 className="hidden lg:block text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
-              Stop Losing Customers. Get Your <span className="gradient-text animated-gradient">Free Audit</span>
+              Find out what your website needs. Get a <span className="gradient-text animated-gradient">Free Audit</span>
             </h1>
             
             <p className="hidden lg:block text-lg text-muted-foreground leading-relaxed max-w-lg">
@@ -263,25 +263,6 @@ export default function FreeAudit() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="w-full max-w-md mx-auto lg:ml-auto lg:mr-0 relative flex flex-col gap-8 order-1 lg:order-2"
           >
-            {/* Highly Prominent Quote Banner */}
-            <div 
-              onClick={() => navigate("/quote")}
-              className="group relative overflow-hidden rounded-3xl p-[2px] cursor-pointer hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary opacity-80" />
-              <div className="relative bg-card rounded-[22px] p-7 text-center h-full flex flex-col items-center justify-center">
-                <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />
-                <h3 className="font-bold text-2xl mb-2 flex items-center gap-2">
-                  <Zap className="w-6 h-6 text-yellow-500 fill-current" />
-                  Ready to build?
-                </h3>
-                <p className="text-sm text-muted-foreground mb-6">Skip the free audit. Tell us what you need and get a custom quote instantly.</p>
-                <Button className="w-full font-bold shadow-lg text-base h-14 btn-quote-pulse" size="lg">
-                  Get A Free Quote <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-            </div>
-
             <div className="relative">
               {/* Glowing border effect */}
               <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/30 to-accent/30 rounded-3xl blur opacity-50" />
@@ -354,6 +335,11 @@ export default function FreeAudit() {
 
               </div>
             </div>
+            <Link to="/quote" className="studio-audit-quote rounded-xl border border-border p-5 text-left hover:border-primary transition-colors">
+              <p className="font-semibold">Planning a new website instead?</p>
+              <p className="mt-2 text-sm text-muted-foreground">Share your project requirements for a custom website quote.</p>
+              <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary">Get a free quote <ArrowRight size={16} /></span>
+            </Link>
           </motion.div>
           
         </div>

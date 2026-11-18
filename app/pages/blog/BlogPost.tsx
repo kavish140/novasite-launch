@@ -217,7 +217,7 @@ export default function BlogPost() {
         },
       ]} />
 
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="studio-page studio-blog-post min-h-screen bg-background text-foreground flex flex-col">
         <ReadingProgress />
         <Navbar />
 

@@ -1,85 +1,13 @@
-import { m as motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
+import { Link } from "react-router";
+import "./studio-sections.css";
 
 const steps = [
-	{
-		number: "01",
-		title: "Get in Touch",
-		description:
-			"Call us or send an email with your requirements. We'll discuss your vision, goals, and timeline.",
-	},
-	{
-		number: "02",
-		title: "We Design & Build",
-		description:
-			"Our team crafts a custom website tailored to your brand — stunning visuals, fast performance, fully responsive.",
-	},
-	{
-		number: "03",
-		title: "Launch & Support",
-		description:
-			"We deploy your site and provide ongoing support. Your website goes live and starts growing your business.",
-	},
+  { number: "01", title: "A conversation first.", description: "Tell us about your business, audience, and what you need your website to do. We agree the scope, price, and timeline before work begins.", deliverable: "A clear brief & proposal" },
+  { number: "02", title: "Make it feel like you.", description: "We design and build around your brand, with room for feedback along the way. Your content, customer journey, and mobile experience shape the result.", deliverable: "Your custom website, reviewed together" },
+  { number: "03", title: "Ready for the real world.", description: "We check the key pages and interactions, launch your website, and walk you through the handover. Ongoing support is available when you need it.", deliverable: "Launch, handover & next steps" },
 ];
 
-const HowItWorksSection = () => {
-	return (
-		<section
-			id="how-it-works"
-			className="section-padding relative overflow-hidden"
-		>
-			{/* Subtle grid */}
-			<div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
-
-			<div className="relative mx-auto max-w-7xl">
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: "-100px" }}
-					transition={{ duration: 0.5 }}
-					className="text-center mb-16"
-				>
-					<span className="text-sm font-medium text-primary uppercase tracking-widest">
-						How It Works
-					</span>
-					<h2
-						id="how-it-works-title"
-						className="font-heading text-3xl md:text-5xl font-bold mt-3 mb-5"
-					>
-						Three steps to your{" "}
-						<span className="gradient-text">dream site</span>
-					</h2>
-				</motion.div>
-
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-					{steps.map((step, i) => (
-						<motion.div
-							key={step.number}
-							initial={{ opacity: 0, y: 30 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.5, delay: i * 0.15 }}
-							className="relative text-center md:text-left"
-						>
-							<span className="font-heading text-6xl font-bold gradient-text opacity-30 block mb-4">
-								{step.number}
-							</span>
-							<h3 className="font-heading text-xl font-semibold mb-3">
-								{step.title}
-							</h3>
-							<p className="text-muted-foreground leading-relaxed">
-								{step.description}
-							</p>
-
-							{/* Connector line on desktop */}
-							{i < steps.length - 1 && (
-								<div className="hidden md:block absolute top-8 right-0 translate-x-1/2 w-12 h-px bg-gradient-to-r from-primary/40 to-transparent" />
-							)}
-						</motion.div>
-					))}
-				</div>
-			</div>
-		</section>
-	);
-};
-
-export default HowItWorksSection;
+export default function HowItWorksSection() {
+  return <section id="how-it-works" className="sn-section sn-process" aria-labelledby="how-it-works-title"><div className="sn-container sn-process-layout"><div className="sn-process-heading"><p className="sn-kicker">A straightforward process</p><h2 id="how-it-works-title">From “what if”<br />to live.</h2><p>You run your business.<br />We’ll make the web part clear.</p><Link to="/our-process" className="sn-text-link">Explore our process<ArrowUpRight size={18} aria-hidden="true" /></Link></div><div className="sn-process-steps">{steps.map((step) => <article key={step.number} className="sn-process-step"><span>{step.number}</span><div><h3>{step.title}</h3><p>{step.description}</p><small>{step.deliverable}</small></div></article>)}</div></div></section>;
+}

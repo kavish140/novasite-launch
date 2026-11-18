@@ -35,7 +35,13 @@ describe("HTML editor input", () => {
     type(editor, "<h2>Title</h2>Body");
     expect(editor.getHTML()).toMatch(/^<h2>Title<\/h2><p>Body<\/p>(<p><\/p>)?$/);
   });
-  it("handles lists and links typed at the caret", () => {
+  it("ends a typed heading before pre-existing text without making a second heading", () => {
+    const editor = createEditor("<p>Original content</p>");
+    editor.commands.setTextSelection(1);
+    type(editor, "<h2>Typed heading</h2><strong>Bold</strong> plain");
+    expect(editor.getHTML()).toMatch(/^<h2>Typed heading<\/h2><p><strong>Bold<\/strong> plainOriginal content<\/p>(<p><\/p>)?$/);
+  });
+  it("handles lists and links typed at the caret without leaking tags", () => {
     const editor = createEditor();
     type(editor, '<ul><li>First</li><li>Second</li></ul><a href="https://example.com">Source</a> plain');
     expect(editor.getHTML()).toContain("<ul><li><p>First</p></li><li><p>Second</p></li></ul>");

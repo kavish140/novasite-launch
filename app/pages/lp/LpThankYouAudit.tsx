@@ -44,7 +44,7 @@ export default function LpThankYouAudit() {
   const whatsappUrl = `https://wa.me/919326060621?text=${whatsappMessage}`;
 
   return (
-    <main className="min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-16 relative overflow-hidden flex flex-col justify-center">
+    <main className="studio-page studio-lp-thank-you-audit min-h-screen bg-background text-foreground px-4 py-8 sm:px-6 md:py-16 relative overflow-hidden flex flex-col justify-center">
       {/* Background glow orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-primary/10 blur-[150px] animate-pulse-glow pointer-events-none -z-10" />
       <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[120px] pointer-events-none -z-10" />
